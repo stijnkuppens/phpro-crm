@@ -1,0 +1,30 @@
+version: "3.8"
+
+services:
+  kong:
+    ports: []
+
+  studio:
+    profiles:
+      - donotstart
+
+  nextjs:
+    container_name: supabase-nextjs
+    build:
+      context: .
+      dockerfile: ./docker/nextjs/Dockerfile
+    restart: unless-stopped
+    networks:
+      - supabase-net
+    ports:
+      - "3000:3000"
+    depends_on:
+      kong:
+        condition: service_started
+    environment:
+      SUPABASE_URL: http://kong:8000
+      NEXT_PUBLIC_SUPABASE_URL: http://kong:8000
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: ${ANON_KEY}
+      SUPABASE_SERVICE_ROLE_KEY: ${SERVICE_ROLE_KEY}
+      NEXT_PUBLIC_APP_NAME: ${NEXT_PUBLIC_APP_NAME}
+      NEXT_PUBLIC_DEMO_MODE: ${NEXT_PUBLIC_DEMO_MODE}

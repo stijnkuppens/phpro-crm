@@ -1,0 +1,106 @@
+version: "3"
+
+tasks:
+  setup:
+    desc: "Run the full project setup script"
+    cmds:
+      - bash setup.sh
+
+  dev:
+    desc: "Start Supabase and Next.js dev server concurrently"
+    deps:
+      - dev:supabase
+    cmds:
+      - task: dev:next
+
+  dev:supabase:
+    desc: "Start Supabase services via docker compose"
+    cmds:
+      - docker compose up -d
+
+  dev:next:
+    desc: "Start Next.js development server"
+    cmds:
+      - npm run dev
+
+  dev:stop:
+    desc: "Stop all Supabase docker services"
+    cmds:
+      - docker compose down
+
+  db:migrate:
+    desc: "Run all migration files against the database"
+    cmds:
+      - for f in supabase/migrations/*.sql; do echo "Applying $(basename $f)..." && docker compose exec -T db psql -U postgres -d postgres < "$f"; done
+
+  db:new-migration:
+    desc: "Create a new migration file (usage: task db:new-migration -- <name>)"
+    cmds:
+      - |
+        NAME={{.CLI_ARGS}}
+        NUM=$(printf "%05d" $(( $(ls supabase/migrations/*.sql 2>/dev/null | wc -l) + 1 )))
+        FILE="supabase/migrations/${NUM}_${NAME}.sql"
+        touch "$FILE"
+        echo "Created $FILE"
+
+  db:reset:
+    desc: "Drop and recreate the public schema, re-run migrations and seed"
+    cmds:
+      - docker compose exec -T db psql -U postgres -d postgres -c "DROP SCHEMA public CASCADE; CREATE SCHEMA public; GRANT ALL ON SCHEMA public TO postgres; GRANT ALL ON SCHEMA public TO public;"
+      - task: db:migrate
+      - task: db:seed
+
+  db:seed:
+    desc: "Seed the database"
+    cmds:
+      - docker compose exec -T db psql -U postgres -d postgres < supabase/seed.sql
+
+  db:studio:
+    desc: "Open Supabase Studio in the browser"
+    cmds:
+      - open http://localhost:3001
+
+  types:generate:
+    desc: "Generate TypeScript types from the database schema"
+    cmds:
+      - npx supabase gen types typescript --db-url "postgresql://postgres:${POSTGRES_PASSWORD}@127.0.0.1:5432/postgres" --schema public > src/types/database.types.ts
+
+  entity:new:
+    desc: "Scaffold a new entity (usage: task entity:new -- <name>)"
+    cmds:
+      - bash scripts/entity-new.sh {{.CLI_ARGS}}
+
+  lint:
+    desc: "Run ESLint"
+    cmds:
+      - npm run lint
+
+  typecheck:
+    desc: "Run TypeScript type checking"
+    cmds:
+      - npx tsc --noEmit
+
+  build:
+    desc: "Build the Next.js application"
+    cmds:
+      - npm run build
+
+  prod:up:
+    desc: "Start production stack with docker compose"
+    cmds:
+      - docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build
+
+  clean:
+    desc: "Stop and remove all containers and volumes"
+    cmds:
+      - docker compose down -v --remove-orphans
+
+  logs:
+    desc: "Tail all docker compose logs"
+    cmds:
+      - docker compose logs -f
+
+  logs:supabase:
+    desc: "Tail logs for a specific Supabase service (usage: task logs:supabase -- <service>)"
+    cmds:
+      - docker compose logs -f {{.CLI_ARGS}}
