@@ -1,5 +1,5 @@
 import { cache } from 'react';
-import { createServerClient } from './server';
+import { createServerClient } from '@/lib/supabase/server';
 
 // One server client per request — shared by all cached queries below.
 const getServerClient = cache(() => createServerClient());
@@ -9,19 +9,6 @@ export const getUser = cache(async () => {
   const supabase = await getServerClient();
   const { data: { user } } = await supabase.auth.getUser();
   return user;
-});
-
-export const getUserRole = cache(async () => {
-  const user = await getUser();
-  if (!user) return null;
-  const supabase = await getServerClient();
-  const { data, error } = await supabase
-    .from('user_profiles')
-    .select('role')
-    .eq('id', user.id)
-    .single();
-  if (error) console.error('Failed to fetch user role:', error.message);
-  return data?.role ?? null;
 });
 
 export const getUserProfile = cache(async () => {
