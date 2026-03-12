@@ -1,5 +1,17 @@
 import { type NextRequest, NextResponse } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
+import { can } from '@/lib/acl';
+import type { Permission, Role } from '@/types/acl';
+
+const routePermissions: [string, Permission][] = [
+  ['/admin/notifications', 'notifications.read'],
+  ['/admin/contacts', 'contacts.read'],
+  ['/admin/settings', 'settings.read'],
+  ['/admin/users', 'users.read'],
+  ['/admin/audit', 'audit.read'],
+  ['/admin/files', 'files.read'],
+  ['/admin/demo', 'demo.read'],
+];
 
 export async function middleware(request: NextRequest) {
   let response = NextResponse.next({ request });
@@ -37,16 +49,23 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL('/login', request.url));
   }
 
-  // Redirect authenticated viewers/editors away from admin-only routes
+  // Check role-based permissions for admin routes
   if (isAdminRoute && user) {
     const { data } = await supabase
       .from('user_profiles')
       .select('role')
       .eq('id', user.id)
       .single();
-    const role = data?.role;
+    const role = data?.role as Role | undefined;
     if (!role) {
       return NextResponse.redirect(new URL('/login', request.url));
+    }
+
+    const match = routePermissions.find(([prefix]) =>
+      request.nextUrl.pathname.startsWith(prefix),
+    );
+    if (match && !can(role, match[1])) {
+      return NextResponse.redirect(new URL('/admin', request.url));
     }
   }
 

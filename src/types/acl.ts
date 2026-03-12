@@ -13,6 +13,8 @@ export type Permission =
   | 'users.write'
   | 'settings.read'
   | 'settings.write'
+  | 'audit.read'
+  | 'notifications.read'
   | 'demo.read';
 
 export type UserWithRole = {
