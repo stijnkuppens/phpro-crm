@@ -16,12 +16,7 @@ const FileUpload = dynamic(() => import('@/components/admin/file-upload'), {
   loading: () => <Skeleton className="h-48 w-full" />,
 });
 
-type StorageFile = {
-  name: string;
-  id: string;
-  created_at: string;
-  metadata: { size: number; mimetype: string } | null;
-};
+import type { StorageFile } from '@/features/files/types';
 
 export default function FilesPage() {
   const supabase = createBrowserClient();

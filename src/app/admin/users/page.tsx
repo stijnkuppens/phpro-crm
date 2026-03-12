@@ -1,4 +1,4 @@
-import { createServerClient } from '@/lib/supabase/server';
+import { getUsers } from '@/features/users/queries/get-users';
 import { PageHeader } from '@/components/admin/page-header';
 import { Card, CardContent } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -7,13 +7,7 @@ import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 
 export default async function UsersPage() {
-  const supabase = await createServerClient();
-
-  const { data: users } = await supabase
-    .from('user_profiles')
-    .select('*')
-    .order('created_at', { ascending: false })
-    .limit(100);
+  const users = await getUsers();
 
   return (
     <div className="space-y-6">

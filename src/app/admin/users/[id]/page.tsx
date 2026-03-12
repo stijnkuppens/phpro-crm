@@ -1,11 +1,11 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useTransition } from 'react';
 import { useParams } from 'next/navigation';
 import { createBrowserClient } from '@/lib/supabase/client';
+import { updateUserRole } from '@/features/users/actions/update-user-role';
 import { PageHeader } from '@/components/admin/page-header';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import {
   Select,
@@ -28,6 +28,7 @@ export default function UserDetailPage() {
   const { role: currentRole } = useAuth();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isPending, startTransition] = useTransition();
 
   useEffect(() => {
     async function load() {
@@ -42,18 +43,19 @@ export default function UserDetailPage() {
     load();
   }, [id]);
 
-  const handleRoleChange = async (newRole: string | null) => {
+  const handleRoleChange = (newRole: string | null) => {
     if (!newRole) return;
-    const { error } = await supabase
-      .from('user_profiles')
-      .update({ role: newRole as 'admin' | 'editor' | 'viewer' })
-      .eq('id', id);
-    if (error) {
-      toast.error(error.message);
-      return;
-    }
-    toast.success('Role updated');
-    setProfile((prev) => (prev ? { ...prev, role: newRole as 'admin' | 'editor' | 'viewer' } : prev));
+    startTransition(async () => {
+      try {
+        await updateUserRole(id, newRole);
+        toast.success('Role updated');
+        setProfile((prev) =>
+          prev ? { ...prev, role: newRole as 'admin' | 'editor' | 'viewer' } : prev,
+        );
+      } catch (err) {
+        toast.error(err instanceof Error ? err.message : 'Failed to update role');
+      }
+    });
   };
 
   if (loading) return <Skeleton className="h-96 w-full" />;
@@ -81,7 +83,7 @@ export default function UserDetailPage() {
           <div>
             <p className="text-sm font-medium text-muted-foreground">Role</p>
             {currentRole === 'admin' ? (
-              <Select value={profile.role} onValueChange={handleRoleChange}>
+              <Select value={profile.role} onValueChange={handleRoleChange} disabled={isPending}>
                 <SelectTrigger className="w-40">
                   <SelectValue />
                 </SelectTrigger>

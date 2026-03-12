@@ -24,6 +24,8 @@ const allPermissions: Permission[] = [
   'files.read', 'files.write', 'files.delete',
   'users.read', 'users.write',
   'settings.read', 'settings.write',
+  'audit.read',
+  'notifications.read',
   'demo.read',
 ];
 
