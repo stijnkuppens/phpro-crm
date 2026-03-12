@@ -1,11 +1,10 @@
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
-import { createServerClient } from '@/lib/supabase/server';
 import { PageHeader } from '@/components/admin/page-header';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Pencil } from 'lucide-react';
+import { getContact } from '@/features/contacts/queries/get-contact';
 
 type Props = {
   params: Promise<{ id: string }>;
@@ -13,15 +12,9 @@ type Props = {
 
 export default async function ContactDetailPage({ params }: Props) {
   const { id } = await params;
-  const supabase = await createServerClient();
+  const contact = await getContact(id);
 
-  const { data: contact, error } = await supabase
-    .from('contacts')
-    .select('*')
-    .eq('id', id)
-    .single();
-
-  if (error || !contact) notFound();
+  if (!contact) notFound();
 
   const fields = [
     { label: 'Email', value: contact.email },
