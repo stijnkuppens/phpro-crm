@@ -3,12 +3,13 @@
 import { headers } from 'next/headers';
 import { createServerClient } from '@/lib/supabase/server';
 import { createServiceRoleClient } from '@/lib/supabase/admin';
+import type { Json } from '@/types/database';
 
 export async function logAction(params: {
   action: string;
   entityType?: string;
   entityId?: string;
-  metadata?: Record<string, unknown>;
+  metadata?: Record<string, Json>;
 }): Promise<void> {
   const supabase = await createServerClient();
   const { data: { user } } = await supabase.auth.getUser();
