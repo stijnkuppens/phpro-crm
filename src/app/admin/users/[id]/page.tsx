@@ -18,6 +18,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
 import { useAuth } from '@/lib/hooks/use-auth';
 import { roles } from '@/lib/acl';
+import type { Role } from '@/types/acl';
 import type { Database } from '@/types/database';
 
 type Profile = Database['public']['Tables']['user_profiles']['Row'];
@@ -44,10 +45,11 @@ export default function UserDetailPage() {
   }, [id]);
 
   const handleRoleChange = (newRole: string | null) => {
-    if (!newRole) return;
+    if (!newRole || !['admin', 'editor', 'viewer'].includes(newRole)) return;
+    const role = newRole as Role;
     startTransition(async () => {
       try {
-        await updateUserRole(id, newRole);
+        await updateUserRole(id, role);
         toast.success('Role updated');
         setProfile((prev) =>
           prev ? { ...prev, role: newRole as 'admin' | 'editor' | 'viewer' } : prev,
