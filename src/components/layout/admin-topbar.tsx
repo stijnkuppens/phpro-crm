@@ -18,6 +18,7 @@ import {
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import { LogOut, User } from 'lucide-react';
 import { ThemeToggle } from '@/components/layout/theme-toggle';
+import { NotificationBell } from '@/features/notifications/components/notification-bell';
 
 export function AdminTopbar() {
   const { user } = useAuth();
@@ -45,6 +46,7 @@ export function AdminTopbar() {
       <SidebarTrigger />
       <div className="flex-1" />
       <ThemeToggle />
+      <NotificationBell />
       {mounted && (
         <DropdownMenu>
           <DropdownMenuTrigger

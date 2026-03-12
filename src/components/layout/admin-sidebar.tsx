@@ -23,6 +23,8 @@ import {
   Shield,
   Radio,
   LayoutGrid,
+  Bell,
+  ScrollText,
 } from 'lucide-react';
 
 const navSections = [
@@ -34,6 +36,8 @@ const navSections = [
       { label: 'Users', href: '/admin/users', icon: Users },
       { label: 'Files', href: '/admin/files', icon: FileText },
       { label: 'Settings', href: '/admin/settings', icon: Settings },
+      { label: 'Notifications', href: '/admin/notifications', icon: Bell },
+      { label: 'Audit Log', href: '/admin/audit', icon: ScrollText },
     ],
   },
   {
