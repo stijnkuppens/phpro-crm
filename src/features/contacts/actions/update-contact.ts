@@ -3,6 +3,7 @@
 import { requirePermission } from '@/lib/require-permission';
 import { createServerClient } from '@/lib/supabase/server';
 import { contactSchema } from '../types';
+import { logAction } from '@/features/audit/actions/log-action';
 
 export async function updateContact(id: string, values: unknown) {
   await requirePermission('contacts.write');
@@ -22,5 +23,10 @@ export async function updateContact(id: string, values: unknown) {
 
   if (error) throw new Error(error.message);
 
-  // TODO: logAction()
+  await logAction({
+    action: 'contact.updated',
+    entityType: 'contact',
+    entityId: id,
+    metadata: { name: parsed.name },
+  });
 }

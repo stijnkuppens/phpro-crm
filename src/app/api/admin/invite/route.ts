@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createServerClient } from '@/lib/supabase/server';
 import { createServiceRoleClient } from '@/lib/supabase/admin';
+import { logAction } from '@/features/audit/actions/log-action';
 
 export async function POST(request: Request) {
   const supabase = await createServerClient();
@@ -34,6 +35,12 @@ export async function POST(request: Request) {
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 400 });
   }
+
+  await logAction({
+    action: 'user.invited',
+    entityType: 'user',
+    metadata: { email },
+  });
 
   return NextResponse.json({ success: true });
 }

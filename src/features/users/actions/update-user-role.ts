@@ -2,6 +2,7 @@
 
 import { requirePermission } from '@/lib/require-permission';
 import { createServiceRoleClient } from '@/lib/supabase/admin';
+import { logAction } from '@/features/audit/actions/log-action';
 import type { Role } from '@/types/acl';
 
 export async function updateUserRole(userId: string, newRole: Role) {
@@ -12,5 +13,11 @@ export async function updateUserRole(userId: string, newRole: Role) {
     .update({ role: newRole })
     .eq('id', userId);
   if (error) throw new Error(error.message);
-  // TODO: logAction()
+
+  await logAction({
+    action: 'user.role_changed',
+    entityType: 'user',
+    entityId: userId,
+    metadata: { newRole },
+  });
 }
