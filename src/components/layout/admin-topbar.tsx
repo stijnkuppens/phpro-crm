@@ -17,6 +17,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import { LogOut, User } from 'lucide-react';
+import { ThemeToggle } from '@/components/layout/theme-toggle';
 
 export function AdminTopbar() {
   const { user } = useAuth();
@@ -43,6 +44,7 @@ export function AdminTopbar() {
     <header className="flex h-14 items-center gap-4 border-b bg-background px-4">
       <SidebarTrigger />
       <div className="flex-1" />
+      <ThemeToggle />
       {mounted && (
         <DropdownMenu>
           <DropdownMenuTrigger
