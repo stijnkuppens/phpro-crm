@@ -1,5 +1,6 @@
 import { createBrowserClient as createClient } from '@supabase/ssr';
 import type { Database } from '@/types/database';
+import { getClientEnv } from '@/lib/env';
 
 // Singleton — one client instance for the entire browser session.
 // Prevents multiple WebSocket connections and token refresh intervals.
@@ -7,10 +8,10 @@ let client: ReturnType<typeof createClient<Database>> | null = null;
 
 export function createBrowserClient() {
   if (!client) {
-    // Fallbacks allow SSR prerendering during `next build` when env vars are absent.
+    const env = getClientEnv();
     client = createClient<Database>(
-      process.env.NEXT_PUBLIC_SUPABASE_URL || 'http://localhost:54321',
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'placeholder-key',
+      env.NEXT_PUBLIC_SUPABASE_URL,
+      env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
     );
   }
   return client;
