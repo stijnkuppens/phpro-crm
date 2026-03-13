@@ -141,6 +141,7 @@ Used by `getEffectiveServices` logic: manual services + auto "Consultancy" if ac
 | email | text | |
 | phone | text | |
 | distribution | text | 4% / 50/50 |
+| services | text[] | e.g. ["PIM", "UX/UI", "Strategie"] — from CC_SERVICES |
 
 **`account_services`**
 | Column | Type | Notes |
@@ -159,8 +160,8 @@ Used by `getEffectiveServices` logic: manual services + auto "Consultancy" if ac
 | email | text | |
 | phone | text | |
 | title | text | Job title |
-| role | text | Decision Maker / Influencer / Champion / etc. |
-| is_steerco | bool | |
+| role | text | Decision Maker / Influencer / Champion / Sponsor / Technisch / Financieel / Operationeel / Contact |
+| is_steerco | bool | independent of role — any role can be steerco member |
 | is_pinned | bool | |
 
 **`contact_personal_info`**
@@ -865,7 +866,7 @@ Features:
 - Summary rows per division and grand total
 - Stat cards: total sold, per-division totals
 
-### 9.6 Dashboard
+### 9.7 Dashboard
 
 Stat cards: total open deal value (weighted by probability), active consultants count, high-priority bench count, YoY revenue, upcoming activities (7 days), overdue tasks.
 
