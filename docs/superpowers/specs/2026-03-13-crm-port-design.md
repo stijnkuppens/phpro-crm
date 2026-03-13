@@ -47,7 +47,7 @@ Port the full PHPro CRM demo into production-quality code on the existing Next.j
 
 ## 4. Database Schema
 
-All tables get `id (uuid PK, gen_random_uuid())`, `created_at`, `updated_at` with trigger, and RLS policies. Total: ~40 tables.
+All tables get `id (uuid PK, gen_random_uuid())`, `created_at`, `updated_at` with trigger, and RLS policies. Total: ~45 tables.
 
 ### 4.1 Foundation
 
@@ -96,6 +96,16 @@ All tables get `id (uuid PK, gen_random_uuid())`, `created_at`, `updated_at` wit
 | account_director | text | |
 | team | text | |
 | about | text | |
+| phpro_contract | text | Geen / Actief / Inactief / In onderhandeling |
+
+**`account_manual_services`**
+| Column | Type | Notes |
+|---|---|---|
+| id | uuid PK | |
+| account_id | uuid FK accounts | |
+| service_name | text | e.g. "Adobe Commerce", "Magento Open Source" |
+
+Used by `getEffectiveServices` logic: manual services + auto "Consultancy" if account has active consultants.
 
 **`account_tech_stacks`**
 | Column | Type | Notes |
@@ -178,8 +188,9 @@ All tables get `id (uuid PK, gen_random_uuid())`, `created_at`, `updated_at` wit
 | account_id | uuid FK accounts | |
 | contact_id | uuid FK contacts | nullable |
 | deal_id | uuid FK deals | nullable |
-| type | text | Meeting / Call / Demo / E-mail / Notitie |
+| type | text | email / note / meeting / call |
 | subject | text | |
+| to | text | nullable, recipient |
 | date | timestamptz | |
 | duration_minutes | int | |
 | content | jsonb | Plate rich text JSON |
@@ -214,6 +225,7 @@ All tables get `id (uuid PK, gen_random_uuid())`, `created_at`, `updated_at` wit
 | closed_type | text | won / lost / longterm, nullable |
 | closed_reason | text | |
 | closed_notes | text | |
+| longterm_date | date | nullable, follow-up date for longterm deals |
 
 **`activities`**
 | Column | Type | Notes |
@@ -272,15 +284,15 @@ All tables get `id (uuid PK, gen_random_uuid())`, `created_at`, `updated_at` wit
 | Column | Type | Notes |
 |---|---|---|
 | id | uuid PK | |
-| account_id | uuid FK accounts | |
+| account_id | uuid FK accounts | nullable, null for external clients |
 | first_name | text | |
 | last_name | text | |
 | role | text | |
 | city | text | |
 | cv_pdf_url | text | |
 | is_active | bool | |
-| client_name | text | |
-| client_city | text | |
+| client_name | text | fallback when account_id is null |
+| client_city | text | fallback when account_id is null |
 | start_date | date | |
 | end_date | date | nullable |
 | is_indefinite | bool | |
@@ -370,6 +382,15 @@ Unique constraint: `(account_id, year)`
 | tool_name | text | |
 | monthly_price | numeric | |
 
+**`indexation_indices`**
+| Column | Type | Notes |
+|---|---|---|
+| id | uuid PK | |
+| name | text | e.g. "Agoria", "Agoria Digital" |
+| value | numeric | e.g. 3.1, 2.8 |
+
+Reference data for quick-select indexation percentages in the simulator. Admin-configurable.
+
 **`indexation_config`**
 | Column | Type | Notes |
 |---|---|---|
@@ -458,7 +479,60 @@ Unique constraint: `(account_id, year)`
 
 ### 4.5 Finance
 
+**`divisions`**
+| Column | Type | Notes |
+|---|---|---|
+| id | uuid PK | |
+| name | text | e.g. "25Carat", "PHPro" |
+| color | text | hex color for UI |
+| sort_order | int | |
+
+**`division_services`**
+| Column | Type | Notes |
+|---|---|---|
+| id | uuid PK | |
+| division_id | uuid FK divisions | |
+| service_name | text | e.g. "OroCommerce", "Magento", "Consultancy" |
+| sort_order | int | |
+
+**`revenue_clients`**
+| Column | Type | Notes |
+|---|---|---|
+| id | uuid PK | |
+| name | text | e.g. "Belcolor", "Nordex Group" |
+| account_id | uuid FK accounts | nullable, links to CRM account if applicable |
+
+**`revenue_client_divisions`**
+| Column | Type | Notes |
+|---|---|---|
+| id | uuid PK | |
+| revenue_client_id | uuid FK revenue_clients | |
+| division_id | uuid FK divisions | |
+
+**`revenue_client_services`**
+| Column | Type | Notes |
+|---|---|---|
+| id | uuid PK | |
+| revenue_client_id | uuid FK revenue_clients | |
+| division_id | uuid FK divisions | |
+| service_name | text | |
+
 **`revenue_entries`**
+| Column | Type | Notes |
+|---|---|---|
+| id | uuid PK | |
+| revenue_client_id | uuid FK revenue_clients | |
+| division_id | uuid FK divisions | |
+| service_name | text | |
+| year | int | |
+| month | int | 0-11 |
+| amount | numeric | |
+
+Unique constraint: `(revenue_client_id, division_id, service_name, year, month)`
+
+Monthly granularity supports the Revenue page (drill down by month), Prognose editor (yearly aggregates with monthly breakdown for display), and Pipeline analytics.
+
+**`account_revenue`**
 | Column | Type | Notes |
 |---|---|---|
 | id | uuid PK | |
@@ -468,7 +542,23 @@ Unique constraint: `(account_id, year)`
 | amount | numeric | |
 | notes | text | |
 
-Prognose and Pipeline analytics are computed views/queries over deals + revenue_entries + active_consultants. No additional tables needed.
+This is the per-account "Omzet" tab — separate from the cross-client revenue tracking above. Tracks revenue by category (e.g. "Consultancy", "Adobe Commerce", "Hyva") per account per year.
+
+**`pipeline_entries`**
+| Column | Type | Notes |
+|---|---|---|
+| id | uuid PK | |
+| deal_id | uuid FK deals | nullable |
+| client | text | |
+| division_id | uuid FK divisions | |
+| service_name | text | |
+| sold_month | int | 0-11 |
+| start_month | int | 0-11 |
+| duration | int | months |
+| total | numeric | |
+| year | int | pipeline year |
+
+Standalone editable data: won deals broken into monthly pipeline entries. Not directly computed from deals — manually entered/adjusted.
 
 ### 4.6 HR
 
@@ -599,7 +689,7 @@ notifications.read
 
 ### 5.3 RLS Strategy
 
-Same pattern as existing — `get_user_role()` SQL function used in policies. Most tables: all authenticated can SELECT, write permissions gated by role. HR tables additionally restricted to `admin` for write, `admin` + `customer_success` for read.
+Same pattern as existing — `get_user_role()` SQL function used in policies. Most tables: all authenticated can SELECT, write permissions gated by role. HR tables restricted to `admin` for read and write. No other roles have HR access.
 
 ## 6. Navigation & Routing
 
@@ -742,19 +832,38 @@ Server-side computed based on contract dates:
 - **Effective tariff**: most recent `consultant_rate_history` entry
 - **Effective services**: manual services + auto-added "Consultancy" if account has active consultants
 
-### 9.4 Prognose Editor
+### 9.4 Revenue Tracking
 
-Per service line per client, client-side interactive:
-- **Copy** — carry forward last known year
-- **Custom** — enter different amount
-- **Stop** — set to €0
-- **Add new** — add service line
+The Revenue page is a multi-dimensional data viewer: `client → division → service → year → month[]`. Data comes from `revenue_entries` (monthly granularity). Two view modes:
 
-Final forecast saved as `revenue_entries` for forecast year.
+- **Client view** — rows are clients, expandable to show division/service breakdown. Columns are months + year total.
+- **Service view** — rows are services grouped by division, with client breakdown underneath.
 
-### 9.5 Pipeline Analytics
+Supports year selection, division filtering, time view toggle (months vs quarters), and client selection checkboxes.
 
-Won deals for a given year, spread over months by `close_date`. Grouped by client and service category. Shows consultancy vs project revenue split.
+### 9.5 Prognose Editor
+
+Per service line per client, client-side interactive. Data structure: `client → division → service` with history years for reference.
+
+Per service line:
+- **Copy (Zelfde)** — carry forward last known year's total
+- **Custom (Aanpassen)** — enter different amount, click-to-edit inline
+- **Stop (Gestopt)** — set to €0, shown with strikethrough
+- **Add new** — modal to add a new division+service line for a client
+
+Summary cards show: total forecast, last known year, consultancy subtotal. Separate tables for services vs consultancy. Final forecast saved as `revenue_entries` for the forecast year.
+
+### 9.6 Pipeline Analytics
+
+Standalone editable data grid — NOT computed from deals. Each row represents a sold deal entry with: client, division, service, sold month, start month, duration, total amount.
+
+Features:
+- Add/edit/delete pipeline entries via form
+- Data stored in `pipeline_entries` table
+- Grouped display by division, then by client within each division
+- Monthly spread: total is distributed across months from `start_month` for `duration` months
+- Summary rows per division and grand total
+- Stat cards: total sold, per-division totals
 
 ### 9.6 Dashboard
 
@@ -793,6 +902,10 @@ Ported from demo's `seed.ts` into `supabase/seed.sql` + auth seed script:
 - 3 active consultants with rate history
 - Revenue entries (multi-year, multi-category)
 - 3 pipelines with 22 stages total
+- 2 divisions (25Carat, PHPro) with their service catalogs
+- 10 revenue clients (Belcolor, Nordex Group, Solavio, etc.) with division/service mappings
+- Revenue entries (generated, 4 years × 12 months per client/service)
+- Indexation indices (Agoria: 3.1%, Agoria Digital: 2.8%)
 - 4 employees with salary history, materials, documents, leave, evaluations
 - 5 users: Jan (admin), Sophie (sales_manager), Pieter (sales_rep), Emma (customer_success), Lien (marketing)
 
@@ -832,10 +945,15 @@ Ported from demo's `seed.ts` into `supabase/seed.sql` + auth seed script:
 - ~18 tables
 
 ### Layer 5 — Finance
-- Revenue tracking (per account/year/category, OmzetTab, standalone page)
-- Prognose editor (interactive forecast table)
-- Pipeline analytics (won deals over months)
-- ~1 table
+- Divisions + division services (reference data)
+- Revenue clients + client-division-service mappings
+- Revenue entries (monthly granularity per client/division/service)
+- Revenue page (client view + service view, year/division/time filters)
+- Account revenue (OmzetTab — per account/year/category)
+- Prognose editor (interactive forecast table with copy/custom/stop)
+- Pipeline entries (standalone editable grid, monthly spread)
+- Pipeline analytics page (grouped by division/client, stat cards)
+- ~8 tables: divisions, division_services, revenue_clients, revenue_client_divisions, revenue_client_services, revenue_entries, account_revenue, pipeline_entries
 
 ### Layer 6 — HR
 - Employees (list, detail with 6 tabs)
