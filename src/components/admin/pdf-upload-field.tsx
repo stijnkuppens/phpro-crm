@@ -2,6 +2,7 @@
 
 import { useRef, useState } from 'react';
 import { Upload } from 'lucide-react';
+import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { createBrowserClient } from '@/lib/supabase/client';
 
@@ -30,6 +31,8 @@ export function PdfUploadField({ label, value, onChange, bucket = 'documents', f
 
       const { data } = supabase.storage.from(bucket).getPublicUrl(path);
       onChange(data.publicUrl);
+    } catch {
+      toast.error('Upload mislukt');
     } finally {
       setUploading(false);
     }
