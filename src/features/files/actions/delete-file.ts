@@ -16,3 +16,16 @@ export async function deleteFile(path: string) {
     metadata: { path },
   });
 }
+
+export async function deleteFiles(paths: string[]) {
+  await requirePermission('files.delete');
+  const admin = createServiceRoleClient();
+  const { error } = await admin.storage.from('documents').remove(paths);
+  if (error) throw new Error(error.message);
+
+  await logAction({
+    action: 'file.deleted',
+    entityType: 'file',
+    metadata: { paths },
+  });
+}

@@ -55,7 +55,7 @@ export function AdminSidebar() {
 
   return (
     <Sidebar>
-      <SidebarHeader className="border-b px-4 py-3">
+      <SidebarHeader className="flex h-14 items-center border-b px-4">
         <Link href="/admin" className="text-lg font-bold">
           {process.env.NEXT_PUBLIC_APP_NAME ?? 'Admin'}
         </Link>

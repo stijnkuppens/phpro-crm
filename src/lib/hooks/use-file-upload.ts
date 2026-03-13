@@ -6,10 +6,11 @@ import { toast } from 'sonner';
 
 type UseFileUploadOptions = {
   bucket: string;
+  pathPrefix?: string;
   onUpload?: (path: string) => void;
 };
 
-export function useFileUpload({ bucket, onUpload }: UseFileUploadOptions) {
+export function useFileUpload({ bucket, pathPrefix, onUpload }: UseFileUploadOptions) {
   const [uploading, setUploading] = useState(false);
   const [progress, setProgress] = useState(0);
 
@@ -19,12 +20,11 @@ export function useFileUpload({ bucket, onUpload }: UseFileUploadOptions) {
       setUploading(true);
       setProgress(0);
 
-      const ext = file.name.split('.').pop();
-      const path = `${crypto.randomUUID()}.${ext}`;
+      const path = pathPrefix ? `${pathPrefix}/${file.name}` : file.name;
 
       const { error } = await supabase.storage
         .from(bucket)
-        .upload(path, file, { upsert: false });
+        .upload(path, file, { upsert: true });
 
       if (error) {
         toast.error('Upload failed');
@@ -38,7 +38,42 @@ export function useFileUpload({ bucket, onUpload }: UseFileUploadOptions) {
       onUpload?.(path);
       return path;
     },
-    [bucket, onUpload],
+    [bucket, pathPrefix, onUpload],
+  );
+
+  const uploadMany = useCallback(
+    async (files: File[]) => {
+      const supabase = createBrowserClient();
+      setUploading(true);
+      setProgress(0);
+
+      let completed = 0;
+      let failed = 0;
+
+      for (const file of files) {
+        const path = pathPrefix ? `${pathPrefix}/${file.name}` : file.name;
+        const { error } = await supabase.storage
+          .from(bucket)
+          .upload(path, file, { upsert: true });
+
+        if (error) {
+          failed++;
+        }
+        completed++;
+        setProgress(Math.round((completed / files.length) * 100));
+      }
+
+      setUploading(false);
+
+      if (failed > 0) {
+        toast.error(`${failed} of ${files.length} uploads failed`);
+      } else {
+        toast.success(`${files.length} file${files.length > 1 ? 's' : ''} uploaded`);
+      }
+
+      onUpload?.('');
+    },
+    [bucket, pathPrefix, onUpload],
   );
 
   const remove = useCallback(
@@ -55,5 +90,5 @@ export function useFileUpload({ bucket, onUpload }: UseFileUploadOptions) {
     [bucket],
   );
 
-  return { upload, remove, uploading, progress };
+  return { upload, uploadMany, remove, uploading, progress };
 }

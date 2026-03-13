@@ -125,4 +125,17 @@
   html {
     @apply font-sans;
     }
+  button:not(:disabled),
+  a,
+  [role="button"]:not(:disabled),
+  [role="menuitem"],
+  [role="option"],
+  [role="tab"],
+  [type="checkbox"],
+  [type="radio"],
+  select,
+  summary,
+  label[for] {
+    cursor: pointer;
+  }
 }

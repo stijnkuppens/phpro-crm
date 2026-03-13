@@ -12,7 +12,7 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
-import type { ReactElement, ReactNode } from 'react';
+import type { ReactElement } from 'react';
 
 type ConfirmDialogProps = {
   title: string;
@@ -21,6 +21,8 @@ type ConfirmDialogProps = {
   variant?: 'default' | 'destructive';
   trigger?: ReactElement;
   children?: ReactElement;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 };
 
 export function ConfirmDialog({
@@ -30,12 +32,16 @@ export function ConfirmDialog({
   variant = 'destructive',
   trigger,
   children,
+  open,
+  onOpenChange,
 }: ConfirmDialogProps) {
   return (
-    <AlertDialog>
-      <AlertDialogTrigger
-        render={trigger ?? children ?? <Button variant={variant}>Delete</Button>}
-      />
+    <AlertDialog open={open} onOpenChange={onOpenChange}>
+      {(open === undefined) && (
+        <AlertDialogTrigger
+          render={trigger ?? children ?? <Button variant={variant}>Delete</Button>}
+        />
+      )}
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>{title}</AlertDialogTitle>

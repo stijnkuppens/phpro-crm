@@ -9,6 +9,7 @@ import { Upload, X } from 'lucide-react';
 
 type FileUploadProps = {
   bucket: string;
+  currentPath?: string;
   accept?: string;
   maxSize?: number;
   onUpload?: (path: string) => void;
@@ -16,39 +17,43 @@ type FileUploadProps = {
 
 export default function FileUpload({
   bucket,
+  currentPath,
   accept,
   maxSize = 5 * 1024 * 1024,
   onUpload,
 }: FileUploadProps) {
-  const { upload, uploading, progress } = useFileUpload({ bucket, onUpload });
+  const { uploadMany, uploading, progress } = useFileUpload({ bucket, pathPrefix: currentPath, onUpload });
   const [dragOver, setDragOver] = useState(false);
 
-  const handleFile = useCallback(
-    async (file: File) => {
-      if (maxSize && file.size > maxSize) {
-        const mb = (maxSize / 1024 / 1024).toFixed(0);
-        alert(`File too large. Maximum size is ${mb}MB.`);
-        return;
-      }
-      await upload(file);
+  const handleFiles = useCallback(
+    async (files: File[]) => {
+      const mb = (maxSize / 1024 / 1024).toFixed(0);
+      const valid = files.filter((f) => {
+        if (f.size > maxSize) {
+          alert(`"${f.name}" is too large. Maximum size is ${mb}MB.`);
+          return false;
+        }
+        return true;
+      });
+      if (valid.length > 0) await uploadMany(valid);
     },
-    [upload, maxSize],
+    [uploadMany, maxSize],
   );
 
   const handleDrop = useCallback(
     (e: DragEvent) => {
       e.preventDefault();
       setDragOver(false);
-      const file = e.dataTransfer.files[0];
-      if (file) handleFile(file);
+      const files = Array.from(e.dataTransfer.files);
+      if (files.length > 0) handleFiles(files);
     },
-    [handleFile],
+    [handleFiles],
   );
 
   return (
     <Card
-      className={`border-2 border-dashed transition-colors ${
-        dragOver ? 'border-primary bg-primary/5' : 'border-muted'
+      className={`border-2 border-dashed ring-0 transition-colors ${
+        dragOver ? 'border-primary bg-primary/5' : 'border-muted-foreground/30'
       }`}
       onDragOver={(e) => {
         e.preventDefault();
@@ -61,7 +66,7 @@ export default function FileUpload({
         <Upload className="h-8 w-8 text-muted-foreground" />
         <div className="text-center">
           <p className="text-sm text-muted-foreground">
-            Drag and drop a file here, or
+            Drag and drop files here, or
           </p>
           <Button
             variant="link"
@@ -70,10 +75,11 @@ export default function FileUpload({
             onClick={() => {
               const input = document.createElement('input');
               input.type = 'file';
+              input.multiple = true;
               if (accept) input.accept = accept;
               input.onchange = (e) => {
-                const file = (e.target as HTMLInputElement).files?.[0];
-                if (file) handleFile(file);
+                const files = Array.from((e.target as HTMLInputElement).files ?? []);
+                if (files.length > 0) handleFiles(files);
               };
               input.click();
             }}

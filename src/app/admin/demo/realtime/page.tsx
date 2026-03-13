@@ -11,6 +11,7 @@ import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Plus, Trash2, Users, Radio } from 'lucide-react';
 import { toast } from 'sonner';
+import { ConfirmDialog } from '@/components/admin/confirm-dialog';
 import type { Database } from '@/types/database';
 
 type Contact = Database['public']['Tables']['contacts']['Row'];
@@ -122,13 +123,16 @@ function RealtimeContent({
                     <p className="font-medium">{contact.name}</p>
                     <p className="text-sm text-muted-foreground">{contact.email ?? '—'}</p>
                   </div>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => handleDelete(contact.id)}
-                  >
-                    <Trash2 className="h-4 w-4 text-destructive" />
-                  </Button>
+                  <ConfirmDialog
+                    title="Delete contact?"
+                    description="This will permanently delete this contact. This action cannot be undone."
+                    onConfirm={() => handleDelete(contact.id)}
+                    trigger={
+                      <Button variant="ghost" size="sm">
+                        <Trash2 className="h-4 w-4 text-destructive" />
+                      </Button>
+                    }
+                  />
                 </CardContent>
               </Card>
             ))}

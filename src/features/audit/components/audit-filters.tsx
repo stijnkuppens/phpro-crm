@@ -7,7 +7,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Input } from '@/components/ui/input';
+import { DateRangePicker } from '@/components/ui/date-range-picker';
+import { format } from 'date-fns';
+import type { DateRange } from 'react-day-picker';
 import type { AuditLogFilters } from '../types';
 
 const ACTION_OPTIONS = [
@@ -79,26 +81,20 @@ export function AuditFilters({ filters, onFilterChange }: AuditFiltersProps) {
       </div>
 
       <div className="space-y-1">
-        <label className="text-xs font-medium text-muted-foreground">From</label>
-        <Input
-          type="date"
-          value={filters.dateFrom ?? ''}
-          onChange={(e) =>
-            onFilterChange({ ...filters, dateFrom: e.target.value || undefined })
+        <label className="block text-xs font-medium text-muted-foreground">Period</label>
+        <DateRangePicker
+          value={
+            filters.dateFrom
+              ? { from: new Date(filters.dateFrom), to: filters.dateTo ? new Date(filters.dateTo) : undefined }
+              : undefined
           }
-          className="w-40"
-        />
-      </div>
-
-      <div className="space-y-1">
-        <label className="text-xs font-medium text-muted-foreground">To</label>
-        <Input
-          type="date"
-          value={filters.dateTo ?? ''}
-          onChange={(e) =>
-            onFilterChange({ ...filters, dateTo: e.target.value || undefined })
+          onChange={(range: DateRange | undefined) =>
+            onFilterChange({
+              ...filters,
+              dateFrom: range?.from ? format(range.from, 'yyyy-MM-dd') : undefined,
+              dateTo: range?.to ? format(range.to, 'yyyy-MM-dd') : undefined,
+            })
           }
-          className="w-40"
         />
       </div>
     </div>

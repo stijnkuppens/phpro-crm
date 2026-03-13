@@ -7,6 +7,7 @@ import type { ColumnDef } from '@tanstack/react-table';
 import { useEntity } from '@/lib/hooks/use-entity';
 import { PageHeader } from '@/components/admin/page-header';
 import { RoleGuard } from '@/components/admin/role-guard';
+import { ConfirmDialog } from '@/components/admin/confirm-dialog';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import Link from 'next/link';
@@ -24,6 +25,7 @@ export default function ContactsPage() {
   });
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
+  const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout>>(null);
 
   const handleSearch = useCallback((query: string) => {
@@ -41,17 +43,19 @@ export default function ContactsPage() {
     });
   }, [page, search, fetchList]);
 
-  const handleDelete = useCallback(
-    async (id: string) => {
-      const ok = await remove(id);
+  const confirmDelete = useCallback(
+    async () => {
+      if (!pendingDeleteId) return;
+      const ok = await remove(pendingDeleteId);
+      setPendingDeleteId(null);
       if (ok) fetchList({ page });
     },
-    [remove, fetchList, page],
+    [remove, fetchList, page, pendingDeleteId],
   );
 
   const columns = useMemo(
-    () => getContactColumns({ onDelete: handleDelete, onNavigate: router.push }),
-    [handleDelete, router.push],
+    () => getContactColumns({ onDelete: setPendingDeleteId, onNavigate: router.push }),
+    [router.push],
   );
 
   return (
@@ -83,8 +87,20 @@ export default function ContactsPage() {
               if (ok) fetchList({ page });
             },
             variant: 'destructive',
+            confirm: {
+              title: 'Delete contacts?',
+              description: 'This will permanently delete the selected contacts. This action cannot be undone.',
+            },
           },
         ]}
+      />
+
+      <ConfirmDialog
+        open={pendingDeleteId !== null}
+        onOpenChange={(open) => { if (!open) setPendingDeleteId(null); }}
+        title="Delete contact?"
+        description="This will permanently delete this contact. This action cannot be undone."
+        onConfirm={confirmDelete}
       />
     </div>
   );

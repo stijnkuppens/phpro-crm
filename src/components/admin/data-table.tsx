@@ -4,8 +4,10 @@ import { useState } from 'react';
 import {
   flexRender,
   getCoreRowModel,
+  getSortedRowModel,
   useReactTable,
   type ColumnDef,
+  type SortingState,
 } from '@tanstack/react-table';
 import {
   Table,
@@ -28,11 +30,13 @@ import {
   PaginationPrevious,
 } from '@/components/ui/pagination';
 import { ArrowUpDown } from 'lucide-react';
+import { ConfirmDialog } from '@/components/admin/confirm-dialog';
 
 type BulkAction = {
   label: string;
   action: (ids: string[]) => void;
   variant?: 'default' | 'destructive' | 'outline' | 'secondary';
+  confirm?: { title: string; description: string };
 };
 
 type DataTableProps<T> = {
@@ -62,6 +66,7 @@ export default function DataTable<T extends Record<string, any>>({
   loading,
 }: DataTableProps<T>) {
   const [rowSelection, setRowSelection] = useState<Record<string, boolean>>({});
+  const [sorting, setSorting] = useState<SortingState>([]);
   const [searchQuery, setSearchQuery] = useState('');
 
   const allColumns: ColumnDef<T>[] = bulkActions
@@ -90,8 +95,10 @@ export default function DataTable<T extends Record<string, any>>({
     data,
     columns: allColumns,
     getCoreRowModel: getCoreRowModel(),
+    getSortedRowModel: getSortedRowModel(),
+    onSortingChange: setSorting,
     onRowSelectionChange: setRowSelection,
-    state: { rowSelection },
+    state: { rowSelection, sorting },
     getRowId: (row) => row.id ?? '',
   });
 
@@ -117,16 +124,30 @@ export default function DataTable<T extends Record<string, any>>({
             <span className="text-sm text-muted-foreground">
               {selectedIds.length} selected
             </span>
-            {bulkActions.map((action) => (
-              <Button
-                key={action.label}
-                variant={action.variant ?? 'outline'}
-                size="sm"
-                onClick={() => action.action(selectedIds)}
-              >
-                {action.label}
-              </Button>
-            ))}
+            {bulkActions.map((action) =>
+              action.confirm ? (
+                <ConfirmDialog
+                  key={action.label}
+                  title={action.confirm.title}
+                  description={action.confirm.description}
+                  onConfirm={() => action.action(selectedIds)}
+                  trigger={
+                    <Button variant={action.variant ?? 'outline'} size="sm">
+                      {action.label}
+                    </Button>
+                  }
+                />
+              ) : (
+                <Button
+                  key={action.label}
+                  variant={action.variant ?? 'outline'}
+                  size="sm"
+                  onClick={() => action.action(selectedIds)}
+                >
+                  {action.label}
+                </Button>
+              ),
+            )}
           </div>
         )}
       </div>
@@ -145,15 +166,7 @@ export default function DataTable<T extends Record<string, any>>({
                             ? 'flex cursor-pointer select-none items-center gap-1'
                             : ''
                         }
-                        onClick={() => {
-                          if (header.column.getCanSort() && onSort) {
-                            const current = header.column.getIsSorted();
-                            onSort(
-                              header.column.id,
-                              current === 'asc' ? 'desc' : 'asc',
-                            );
-                          }
-                        }}
+                        onClick={header.column.getToggleSortingHandler()}
                       >
                         {flexRender(header.column.columnDef.header, header.getContext())}
                         {header.column.getCanSort() && (
