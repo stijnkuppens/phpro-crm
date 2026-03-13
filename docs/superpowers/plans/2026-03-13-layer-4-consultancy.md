@@ -402,24 +402,7 @@ npx supabase db push
 -- ============================================================================
 
 -- ── indexation_indices ───────────────────────────────────────────────────────
-CREATE TABLE indexation_indices (
-  id              uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  name            text NOT NULL UNIQUE,
-  value           numeric NOT NULL,
-  created_at      timestamptz NOT NULL DEFAULT now(),
-  updated_at      timestamptz NOT NULL DEFAULT now()
-);
-
-CREATE TRIGGER set_updated_at BEFORE UPDATE ON indexation_indices
-  FOR EACH ROW EXECUTE FUNCTION set_updated_at();
-
-ALTER TABLE indexation_indices ENABLE ROW LEVEL SECURITY;
-
-CREATE POLICY "indexation_indices_select" ON indexation_indices FOR SELECT TO authenticated
-  USING (true);
-CREATE POLICY "indexation_indices_write" ON indexation_indices FOR ALL TO authenticated
-  USING (get_user_role() IN ('admin'))
-  WITH CHECK (get_user_role() IN ('admin'));
+-- Already created in Layer 1 (00010_indexation_indices.sql) — do not recreate
 
 -- ── indexation_config ───────────────────────────────────────────────────────
 CREATE TABLE indexation_config (
@@ -641,11 +624,7 @@ CREATE POLICY "indexation_history_sla_tools_write" ON indexation_history_sla_too
   USING (get_user_role() IN ('admin', 'sales_manager'))
   WITH CHECK (get_user_role() IN ('admin', 'sales_manager'));
 
--- Seed indexation indices
-INSERT INTO indexation_indices (name, value) VALUES
-  ('Agoria', 3.1),
-  ('Agoria Digital', 2.8)
-ON CONFLICT (name) DO NOTHING;
+-- indexation_indices seed already in Layer 1 (00010_indexation_indices.sql)
 ```
 
 - [ ] **Step 2: Run the migration and regenerate types**

@@ -310,6 +310,13 @@ Create `supabase/migrations/00008_update_roles.sql`:
 
 ```sql
 -- Update the role check constraint to support new roles
+-- Migrate existing users from old roles to new roles
+UPDATE user_profiles SET role = 'sales_rep' WHERE role = 'editor';
+UPDATE user_profiles SET role = 'marketing' WHERE role = 'viewer';
+
+-- Update default role for new user trigger
+ALTER TABLE user_profiles ALTER COLUMN role SET DEFAULT 'sales_rep';
+
 ALTER TABLE user_profiles DROP CONSTRAINT IF EXISTS user_profiles_role_check;
 ALTER TABLE user_profiles ADD CONSTRAINT user_profiles_role_check
   CHECK (role IN ('admin', 'sales_manager', 'sales_rep', 'customer_success', 'marketing'));
@@ -320,9 +327,57 @@ RETURNS text
 LANGUAGE sql
 STABLE
 SECURITY DEFINER
+SET search_path = public
 AS $$
   SELECT role FROM public.user_profiles WHERE id = auth.uid();
 $$;
+
+-- Update handle_new_user to use valid default role
+CREATE OR REPLACE FUNCTION public.handle_new_user()
+RETURNS trigger AS $$
+BEGIN
+  INSERT INTO public.user_profiles (id, full_name, avatar_url, role)
+  VALUES (
+    NEW.id,
+    COALESCE(NEW.raw_user_meta_data->>'full_name', ''),
+    COALESCE(NEW.raw_user_meta_data->>'avatar_url', ''),
+    'sales_rep'
+  );
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
+
+-- ── Update storage policies to use new role names ─────────────────────
+-- Old policies reference 'editor' which no longer exists
+
+DROP POLICY IF EXISTS "editors_can_upload_avatars" ON storage.objects;
+CREATE POLICY "crm_users_can_upload_avatars" ON storage.objects
+  FOR INSERT TO authenticated WITH CHECK (
+    bucket_id = 'avatars' AND public.get_user_role() IN ('admin', 'sales_manager', 'sales_rep', 'customer_success')
+  );
+
+DROP POLICY IF EXISTS "editors_can_update_avatars" ON storage.objects;
+CREATE POLICY "crm_users_can_update_avatars" ON storage.objects
+  FOR UPDATE TO authenticated
+  USING (bucket_id = 'avatars' AND public.get_user_role() IN ('admin', 'sales_manager', 'sales_rep', 'customer_success'))
+  WITH CHECK (bucket_id = 'avatars' AND public.get_user_role() IN ('admin', 'sales_manager', 'sales_rep', 'customer_success'));
+
+DROP POLICY IF EXISTS "editors_can_upload_documents" ON storage.objects;
+CREATE POLICY "crm_users_can_upload_documents" ON storage.objects
+  FOR INSERT TO authenticated WITH CHECK (
+    bucket_id = 'documents' AND public.get_user_role() IN ('admin', 'sales_manager', 'sales_rep', 'customer_success')
+  );
+
+DROP POLICY IF EXISTS "editors_can_update_documents" ON storage.objects;
+CREATE POLICY "crm_users_can_update_documents" ON storage.objects
+  FOR UPDATE TO authenticated
+  USING (bucket_id = 'documents' AND public.get_user_role() IN ('admin', 'sales_manager', 'sales_rep', 'customer_success'))
+  WITH CHECK (bucket_id = 'documents' AND public.get_user_role() IN ('admin', 'sales_manager', 'sales_rep', 'customer_success'));
+
+-- ── Update app_settings policy to use new roles ──────────────────────
+DROP POLICY IF EXISTS "authenticated_can_read_settings" ON public.app_settings;
+CREATE POLICY "authenticated_can_read_settings" ON public.app_settings
+  FOR SELECT TO authenticated USING (true);
 ```
 
 - [ ] **Step 4: Update the proxy route permissions**
@@ -816,6 +871,42 @@ INSERT INTO indexation_indices (name, value) VALUES
 ```bash
 git add supabase/migrations/00010_indexation_indices.sql
 git commit -m "feat: add indexation indices reference table"
+```
+
+---
+
+### Task 6b: Drop old contacts table and stale RLS policies
+
+**Files:**
+- Create: `supabase/migrations/00010b_drop_old_contacts.sql`
+
+The old `contacts` table from `00002_contacts_example.sql` has an incompatible schema (single `name` column) that will block Layer 2's new `contacts` table. Drop it now.
+
+- [ ] **Step 1: Create the bridge migration**
+
+Create `supabase/migrations/00010b_drop_old_contacts.sql`:
+
+```sql
+-- Drop old contacts table from starter template (00002_contacts_example.sql)
+-- Layer 2 will recreate this table with the CRM schema
+DROP POLICY IF EXISTS "authenticated_can_read_contacts" ON public.contacts;
+DROP POLICY IF EXISTS "editors_can_insert_contacts" ON public.contacts;
+DROP POLICY IF EXISTS "editors_can_update_contacts" ON public.contacts;
+DROP POLICY IF EXISTS "admins_can_delete_contacts" ON public.contacts;
+DROP TABLE IF EXISTS public.contacts CASCADE;
+```
+
+- [ ] **Step 2: Run the migration**
+
+```bash
+task db:migrate
+```
+
+- [ ] **Step 3: Commit**
+
+```bash
+git add supabase/migrations/00010b_drop_old_contacts.sql
+git commit -m "chore: drop old contacts table to prepare for CRM schema"
 ```
 
 ---

@@ -17,7 +17,7 @@
 ## Task 1: Database Migration — Accounts and Sub-Tables
 
 **Files:**
-- Create: `supabase/migrations/00010_accounts.sql`
+- Create: `supabase/migrations/00011_accounts.sql`
 
 **Steps:**
 
@@ -265,7 +265,7 @@ task types:generate
 ## Task 2: Database Migration — Contacts and Personal Info
 
 **Files:**
-- Create: `supabase/migrations/00011_contacts.sql`
+- Create: `supabase/migrations/00012_contacts.sql`
 
 **Steps:**
 
@@ -361,7 +361,7 @@ npx supabase db push
 ## Task 3: Database Migration — Communications
 
 **Files:**
-- Create: `supabase/migrations/00012_communications.sql`
+- Create: `supabase/migrations/00013_communications.sql`
 
 **Steps:**
 
@@ -2263,7 +2263,7 @@ export default function ContactsPage() {
 ## Task 16: Seed Data
 
 **Files:**
-- Create: `supabase/migrations/00013_seed_core_crm.sql`
+- Create: `supabase/migrations/00014_seed_core_crm.sql`
 
 **Steps:**
 
