@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useLocale } from 'next-intl';
 import { useAuth } from '@/lib/hooks/use-auth';
 import { createBrowserClient } from '@/lib/supabase/client';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -19,6 +20,25 @@ import { SidebarTrigger } from '@/components/ui/sidebar';
 import { LogOut, User } from 'lucide-react';
 import { ThemeToggle } from '@/components/layout/theme-toggle';
 import { NotificationBell } from '@/features/notifications/components/notification-bell';
+
+function LocaleSwitcher() {
+  const locale = useLocale();
+
+  const switchLocale = (newLocale: string) => {
+    document.cookie = `locale=${newLocale};path=/;max-age=31536000`;
+    window.location.reload();
+  };
+
+  return (
+    <button
+      onClick={() => switchLocale(locale === 'nl' ? 'en' : 'nl')}
+      className="rounded-lg border px-2 py-1.5 text-xs font-medium hover:bg-accent"
+      type="button"
+    >
+      {locale === 'nl' ? 'EN' : 'NL'}
+    </button>
+  );
+}
 
 export function AdminTopbar() {
   const { user } = useAuth();
@@ -45,6 +65,7 @@ export function AdminTopbar() {
     <header className="flex h-14 items-center gap-4 border-b bg-background px-4">
       <SidebarTrigger />
       <div className="flex-1" />
+      <LocaleSwitcher />
       <ThemeToggle />
       <NotificationBell />
       {mounted && (
