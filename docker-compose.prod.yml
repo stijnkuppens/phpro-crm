@@ -1,5 +1,3 @@
-version: "3.8"
-
 services:
   kong:
     ports: []
@@ -9,13 +7,11 @@ services:
       - donotstart
 
   nextjs:
-    container_name: supabase-nextjs
+    container_name: ${PROJECT_NAME}-nextjs
     build:
       context: .
       dockerfile: ./docker/nextjs/Dockerfile
     restart: unless-stopped
-    networks:
-      - supabase-net
     ports:
       - "3000:3000"
     depends_on:

@@ -1,19 +1,19 @@
 networks:
-  supabase-net:
+  default:
+    name: ${PROJECT_NAME}-net
     driver: bridge
 
 volumes:
   db-data:
+    name: ${PROJECT_NAME}-db-data
 
 services:
   db:
-    container_name: supabase-db
+    container_name: ${PROJECT_NAME}-db
     image: supabase/postgres:15.8.1.060
     restart: unless-stopped
-    networks:
-      - supabase-net
     ports:
-      - "127.0.0.1:5432:5432"
+      - "127.0.0.1:${POSTGRES_EXPOSED_PORT:-5432}:5432"
     environment:
       POSTGRES_HOST: /var/run/postgresql
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
@@ -29,11 +29,9 @@ services:
       retries: 10
 
   auth:
-    container_name: supabase-auth
+    container_name: ${PROJECT_NAME}-auth
     image: supabase/gotrue:v2.158.1
     restart: unless-stopped
-    networks:
-      - supabase-net
     depends_on:
       db:
         condition: service_healthy
@@ -59,11 +57,9 @@ services:
       GOTRUE_SMTP_SENDER_NAME: ${GOTRUE_SMTP_SENDER_NAME}
 
   rest:
-    container_name: supabase-rest
+    container_name: ${PROJECT_NAME}-rest
     image: postgrest/postgrest:v12.2.3
     restart: unless-stopped
-    networks:
-      - supabase-net
     depends_on:
       db:
         condition: service_healthy
@@ -77,11 +73,9 @@ services:
       PGRST_APP_SETTINGS_JWT_EXP: ${JWT_EXP}
 
   realtime:
-    container_name: supabase-realtime
+    container_name: ${PROJECT_NAME}-realtime
     image: supabase/realtime:v2.30.34
     restart: unless-stopped
-    networks:
-      - supabase-net
     depends_on:
       db:
         condition: service_healthy
@@ -104,11 +98,9 @@ services:
       SEED_SELF_HOST: "true"
 
   storage:
-    container_name: supabase-storage
+    container_name: ${PROJECT_NAME}-storage
     image: supabase/storage-api:v1.11.13
     restart: unless-stopped
-    networks:
-      - supabase-net
     depends_on:
       db:
         condition: service_healthy
@@ -136,11 +128,9 @@ services:
       - ./docker/supabase/volumes/storage:/var/lib/storage
 
   imgproxy:
-    container_name: supabase-imgproxy
+    container_name: ${PROJECT_NAME}-imgproxy
     image: darthsim/imgproxy:v3.8.0
     restart: unless-stopped
-    networks:
-      - supabase-net
     environment:
       IMGPROXY_BIND: ":8080"
       IMGPROXY_LOCAL_FILESYSTEM_ROOT: /
@@ -148,11 +138,9 @@ services:
       IMGPROXY_ENABLE_WEBP_DETECTION: ${IMGPROXY_ENABLE_WEBP_DETECTION}
 
   meta:
-    container_name: supabase-meta
+    container_name: ${PROJECT_NAME}-meta
     image: supabase/postgres-meta:v0.83.2
     restart: unless-stopped
-    networks:
-      - supabase-net
     depends_on:
       db:
         condition: service_healthy
@@ -166,11 +154,9 @@ services:
       PG_META_CRYPTO_KEY: ${PG_META_CRYPTO_KEY}
 
   kong:
-    container_name: supabase-kong
+    container_name: ${PROJECT_NAME}-kong
     image: kong:2.8.1
     restart: unless-stopped
-    networks:
-      - supabase-net
     ports:
       - "127.0.0.1:${KONG_HTTP_PORT}:8000"
     depends_on:
@@ -200,13 +186,11 @@ services:
       - ./docker/supabase/volumes/api/kong.yml:/home/kong/temp.yml:ro
 
   studio:
-    container_name: supabase-studio
+    container_name: ${PROJECT_NAME}-studio
     image: supabase/studio:20240422-5cf8f30
     restart: unless-stopped
-    networks:
-      - supabase-net
     ports:
-      - "127.0.0.1:3001:3000"
+      - "127.0.0.1:${STUDIO_PORT:-3001}:3000"
     depends_on:
       kong:
         condition: service_started
@@ -215,8 +199,8 @@ services:
     environment:
       STUDIO_PG_META_URL: http://meta:8080
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      DEFAULT_ORGANIZATION_NAME: "My Org"
-      DEFAULT_PROJECT_NAME: "My Project"
+      DEFAULT_ORGANIZATION_NAME: ${NEXT_PUBLIC_APP_NAME}
+      DEFAULT_PROJECT_NAME: ${NEXT_PUBLIC_APP_NAME}
       SUPABASE_URL: http://kong:8000
       SUPABASE_PUBLIC_URL: ${SUPABASE_PUBLIC_URL}
       SUPABASE_ANON_KEY: ${ANON_KEY}

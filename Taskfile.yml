@@ -2,15 +2,19 @@ version: "3"
 
 tasks:
   setup:
-    desc: "Run the full project setup script"
+    desc: "Run the full interactive project setup"
     cmds:
       - bash setup.sh
 
   dev:
-    desc: "Start Supabase and Next.js dev server concurrently"
-    deps:
-      - dev:supabase
+    desc: "Start Supabase and Next.js dev server (auto-setup on first run)"
     cmds:
+      - |
+        if [ ! -f .env ]; then
+          bash setup.sh
+        else
+          docker compose up -d
+        fi
       - task: dev:next
 
   dev:supabase:
@@ -58,12 +62,12 @@ tasks:
   db:studio:
     desc: "Open Supabase Studio in the browser"
     cmds:
-      - open http://localhost:3001
+      - open http://localhost:${STUDIO_PORT:-3001}
 
   types:generate:
     desc: "Generate TypeScript types from the database schema"
     cmds:
-      - npx supabase gen types typescript --db-url "postgresql://postgres:${POSTGRES_PASSWORD}@127.0.0.1:5432/postgres" --schema public > src/types/database.types.ts
+      - npx supabase gen types typescript --db-url "postgresql://postgres:${POSTGRES_PASSWORD}@127.0.0.1:${POSTGRES_EXPOSED_PORT:-5432}/postgres" --schema public > src/types/database.types.ts
 
   entity:new:
     desc: "Scaffold a new entity (usage: task entity:new -- <name>)"
