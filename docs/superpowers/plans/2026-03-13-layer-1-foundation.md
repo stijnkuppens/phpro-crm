@@ -416,10 +416,20 @@ This removes the deleted `/admin/contacts` (old) and `/admin/demo` entries and a
 task typecheck
 ```
 
-- [ ] **Step 6: Commit**
+- [ ] **Step 6: Update `supabase/seed.sql` for new roles**
+
+In `supabase/seed.sql`:
+1. Replace `SET role = 'editor'` with `SET role = 'sales_manager'`
+2. Replace `SET role = 'viewer'` with `SET role = 'marketing'`
+3. Replace `'editor@example.com'` with `'manager@example.com'` and `'Editor User'` with `'Sales Manager'`
+4. Replace `'viewer@example.com'` with `'marketing@example.com'` and `'Viewer User'` with `'Marketing User'`
+5. Remove the old contacts INSERT block (lines 81-103) — the contacts table is being dropped
+6. Rename variable `editor_id` → `manager_id` and `viewer_id` → `marketing_id`
+
+- [ ] **Step 7: Commit**
 
 ```bash
-git add src/types/acl.ts src/lib/acl.ts supabase/migrations/00008_update_roles.sql src/proxy.ts
+git add src/types/acl.ts src/lib/acl.ts supabase/migrations/00008_update_roles.sql src/proxy.ts supabase/seed.sql
 git commit -m "feat: update roles and ACL to CRM permission model"
 ```
 
@@ -1077,13 +1087,11 @@ export function AdminSidebar() {
 
 - [ ] **Step 2: Add locale switcher to topbar**
 
-In `src/components/layout/admin-topbar.tsx`, add a simple NL/EN toggle button. It should set a `locale` cookie and reload the page:
+In `src/components/layout/admin-topbar.tsx`:
+1. Add `import { useLocale } from 'next-intl';` to the imports
+2. Add this function INSIDE the file, before `AdminTopbar`:
 
 ```tsx
-'use client';
-
-import { useLocale } from 'next-intl';
-
 function LocaleSwitcher() {
   const locale = useLocale();
 
@@ -1096,6 +1104,7 @@ function LocaleSwitcher() {
     <button
       onClick={() => switchLocale(locale === 'nl' ? 'en' : 'nl')}
       className="rounded-lg border px-2 py-1.5 text-xs font-medium hover:bg-accent"
+      type="button"
     >
       {locale === 'nl' ? 'EN' : 'NL'}
     </button>
@@ -1103,7 +1112,12 @@ function LocaleSwitcher() {
 }
 ```
 
-Add `<LocaleSwitcher />` next to the existing theme toggle in the topbar.
+3. In the `AdminTopbar` JSX, add `<LocaleSwitcher />` immediately BEFORE the `<ThemeToggle />` element on line 48:
+
+```tsx
+      <LocaleSwitcher />
+      <ThemeToggle />
+```
 
 - [ ] **Step 3: Verify sidebar renders correctly**
 

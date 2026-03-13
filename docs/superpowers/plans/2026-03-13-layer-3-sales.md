@@ -2532,6 +2532,98 @@ task db:migrate
 
 ---
 
+## Task 13b: Deal, Activity, and Task form components
+
+**Files:**
+- Create: `src/features/deals/components/deal-form.tsx`
+- Create: `src/features/deals/components/close-deal-modal.tsx`
+- Create: `src/features/activities/components/activity-form.tsx`
+- Create: `src/features/tasks/components/task-form.tsx`
+
+Each form component should use the existing Zod schemas and server actions from the feature's `types.ts` and `actions/`. Each form accepts an optional `defaultValues` prop for edit mode.
+
+- [ ] **Step 1: Create `deal-form.tsx`**
+
+Create/edit deal modal using `dealFormSchema`. Fields: `title`, `account_id`, `contact_id`, `pipeline_id`, `stage_id`, `value`, `probability`, `expected_close_date`, `forecast_category`, `bench_consultant_id`, `notes`. Use `createDeal` / `updateDeal` server actions.
+
+- [ ] **Step 2: Create `close-deal-modal.tsx`**
+
+Won/lost/longterm close flow. Accept `dealId` and `closeType` ('won'|'lost'|'longterm'). Fields vary by type:
+- won: `close_date`, `final_value`
+- lost: `close_date`, `lost_reason`
+- longterm: `follow_up_date`, `notes`
+
+Call `closeDeal` server action on submit.
+
+- [ ] **Step 3: Create `activity-form.tsx`**
+
+Create/edit activity modal using `activityFormSchema`. Fields: `type`, `subject`, `body` (textarea), `activity_date`, `account_id`, `deal_id` (optional), `contact_id` (optional). Use `createActivity` / `updateActivity` server actions.
+
+- [ ] **Step 4: Create `task-form.tsx`**
+
+Create/edit task modal using `taskFormSchema`. Fields: `title`, `description`, `due_date`, `priority`, `account_id` (optional), `deal_id` (optional), `assigned_to` (user select). Use `createTask` / `updateTask` server actions.
+
+- [ ] **Step 5: Wire forms into list/detail pages**
+
+- Add "Nieuwe Deal" button to deals page header (opens DealForm modal)
+- Add "Sluiten" button to deal detail page (opens CloseDealModal)
+- Add "Nieuwe Activiteit" button to activities page header (opens ActivityForm modal)
+- Add "Nieuwe Taak" button to tasks page header (opens TaskForm modal)
+- Add edit/delete row actions to all list pages
+
+- [ ] **Step 6: Commit**
+
+```bash
+git add src/features/deals/components/ src/features/activities/components/ src/features/tasks/components/
+git commit -m "feat: add deal, activity, and task form components"
+```
+
+---
+
+## Task 13c: Replace account detail Deals tab stub with AccountDealsTab
+
+**Files:**
+- Create: `src/features/deals/components/account-deals-tab.tsx`
+- Modify: `src/features/accounts/components/account-detail.tsx`
+
+- [ ] **Step 1: Create `account-deals-tab.tsx`**
+
+Create `src/features/deals/components/account-deals-tab.tsx`. This component:
+- Accepts `accountId: string` prop
+- Calls `getDealsByAccount(accountId)` query (add this query to `src/features/deals/queries/get-deals-by-account.ts` if not present)
+- Renders a table of deals with columns: title, stage, value, probability, expected close date, status
+- Shows a "Nieuwe Deal" button that opens DealForm pre-filled with the account_id
+
+`getDealsByAccount` query pattern:
+```ts
+import { cache } from 'react';
+import { createServerClient } from '@/lib/supabase/server';
+
+export const getDealsByAccount = cache(async (accountId: string) => {
+  const supabase = await createServerClient();
+  const { data, error } = await supabase
+    .from('deals')
+    .select('*, stage:pipeline_stages(name, pipeline:pipelines(name))')
+    .eq('account_id', accountId)
+    .order('created_at', { ascending: false });
+  if (error) return [];
+  return data ?? [];
+});
+```
+
+- [ ] **Step 2: Wire into account detail**
+
+In `src/features/accounts/components/account-detail.tsx`, replace the Deals tab stub with `<AccountDealsTab accountId={account.id} />`.
+
+- [ ] **Step 3: Commit**
+
+```bash
+git add src/features/deals/
+git commit -m "feat(accounts): replace deals tab stub with AccountDealsTab"
+```
+
+---
+
 ## Task 14: Verify and Commit
 
 **Steps:**

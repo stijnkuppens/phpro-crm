@@ -577,6 +577,13 @@ export async function upsertRevenueEntry(
     return { error: error.message };
   }
 
+  await logAction({
+    action: 'revenue_entry.upserted',
+    entityType: 'revenue_entry',
+    entityId: `${revenueClientId}:${year}:${month}`,
+    metadata: { division_id: divisionId, service_name: serviceName, amount },
+  });
+
   revalidatePath('/admin/revenue');
   return { success: true };
 }
@@ -594,7 +601,7 @@ import { revalidatePath } from 'next/cache';
 import { accountRevenueFormSchema, type AccountRevenueFormValues } from '../types';
 
 export async function createAccountRevenue(accountId: string, values: AccountRevenueFormValues) {
-  await requirePermission('accounts.write');
+  await requirePermission('revenue.write');
 
   const parsed = accountRevenueFormSchema.safeParse(values);
   if (!parsed.success) {
@@ -624,7 +631,7 @@ export async function createAccountRevenue(accountId: string, values: AccountRev
 }
 
 export async function updateAccountRevenue(id: string, values: AccountRevenueFormValues) {
-  await requirePermission('accounts.write');
+  await requirePermission('revenue.write');
 
   const parsed = accountRevenueFormSchema.safeParse(values);
   if (!parsed.success) {
@@ -652,7 +659,7 @@ export async function updateAccountRevenue(id: string, values: AccountRevenueFor
 }
 
 export async function deleteAccountRevenue(id: string) {
-  await requirePermission('accounts.write');
+  await requirePermission('revenue.write');
 
   const supabase = await createServerClient();
   const { error } = await supabase
@@ -1674,6 +1681,66 @@ INSERT INTO account_revenue (account_id, year, category, amount, notes) VALUES
 
 ```bash
 task db:migrate
+```
+
+---
+
+## Task 11b: Add Finance nav entries to sidebar
+
+**Files:**
+- Modify: `src/components/layout/admin-sidebar.tsx`
+
+- [ ] **Step 1: Add Analyse section nav entries**
+
+In `src/components/layout/admin-sidebar.tsx`, find the "Analyse" section in `navSections` and ensure it contains entries for all three finance pages:
+
+```ts
+{
+  section: 'Analyse',
+  items: [
+    { label: 'Omzet', href: '/admin/revenue', icon: BarChart2 },
+    { label: 'Prognose', href: '/admin/prognose', icon: TrendingUp },
+    { label: 'Pipeline', href: '/admin/pipeline', icon: Activity },
+  ],
+},
+```
+
+Import the icons from `lucide-react` if not already imported.
+
+- [ ] **Step 2: Commit**
+
+```bash
+git add src/components/layout/admin-sidebar.tsx
+git commit -m "feat(sidebar): add revenue, prognose, and pipeline nav entries under Analyse"
+```
+
+---
+
+## Task 11c: OmzetTab component and account detail integration
+
+**Files:**
+- Create: `src/features/revenue/components/omzet-tab.tsx`
+- Modify: `src/features/accounts/components/account-detail.tsx`
+
+- [ ] **Step 1: Create `omzet-tab.tsx`**
+
+Create `src/features/revenue/components/omzet-tab.tsx`. This component:
+- Accepts `accountId: string`
+- Calls `getAccountRevenue(accountId)` query (from `src/features/revenue/queries/get-account-revenue.ts`)
+- Renders an editable table with columns: `year`, `category`, `amount`, `notes`
+- Each row has edit/delete buttons using `updateAccountRevenue` / `deleteAccountRevenue` actions
+- Has a "Toevoegen" button that opens an inline form for new entries, using `createAccountRevenue`
+- Groups rows by year (descending)
+
+- [ ] **Step 2: Wire into account detail**
+
+In `src/features/accounts/components/account-detail.tsx`, replace the "Omzet" tab stub with `<OmzetTab accountId={account.id} />`. Import from `@/features/revenue/components/omzet-tab`.
+
+- [ ] **Step 3: Commit**
+
+```bash
+git add src/features/revenue/components/ src/features/accounts/components/account-detail.tsx
+git commit -m "feat(accounts): replace Omzet tab stub with OmzetTab component"
 ```
 
 ---

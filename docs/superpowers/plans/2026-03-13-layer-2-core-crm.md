@@ -1721,6 +1721,41 @@ export default function AccountsPage() {
 
 ---
 
+## Task 13b: Account create page
+
+**Files:**
+- Create: `src/app/admin/accounts/new/page.tsx`
+
+- [ ] **Step 1: Create the page**
+
+Create `src/app/admin/accounts/new/page.tsx`:
+
+```tsx
+import { requirePermission } from '@/lib/require-permission';
+import { AccountForm } from '@/features/accounts/components/account-form';
+
+export default async function NewAccountPage() {
+  await requirePermission('accounts.write');
+  return (
+    <div className="space-y-6">
+      <h1 className="text-2xl font-bold">Nieuw Account</h1>
+      <AccountForm />
+    </div>
+  );
+}
+```
+
+Note: `AccountForm` is created in the form/modal task (see Task 16b).
+
+- [ ] **Step 2: Commit**
+
+```bash
+git add src/app/admin/accounts/new/
+git commit -m "feat(accounts): add create account page"
+```
+
+---
+
 ## Task 14: Account Detail Page (Tabbed Layout)
 
 **Files:**
@@ -2380,6 +2415,67 @@ INSERT INTO contact_personal_info (contact_id, hobbies, marital_status, has_chil
 
 ```bash
 task db:migrate
+```
+
+---
+
+## Task 16b: Account, Contact, and Communication form components
+
+**Files:**
+- Create: `src/features/accounts/components/account-form.tsx`
+- Create: `src/features/contacts/components/contact-form.tsx`
+- Create: `src/features/communications/components/communication-modal.tsx`
+
+Each form component should:
+1. Use the existing Zod schema from the feature's `types.ts`
+2. Use the `Modal` component from `@/components/shared/modal`
+3. Call the existing server action (create or update) on submit
+4. Accept an optional `defaultValues` prop for edit mode
+5. Use `useTranslations` for field labels
+
+- [ ] **Step 1: Create `account-form.tsx`**
+
+Build a form with fields matching `accountFormSchema`:
+- `name` (text, required)
+- `sector` (text)
+- `status` (select: prospect/actief/inactief/ex-klant)
+- `account_manager_id` (user select)
+- `notes` (textarea)
+- `phpro_contract` (text)
+
+Use `createAccount` / `updateAccount` server actions. After submit: close modal, toast success.
+
+- [ ] **Step 2: Create `contact-form.tsx`**
+
+Fields matching `contactFormSchema`:
+- `first_name`, `last_name` (text, required)
+- `email`, `phone`, `mobile` (text)
+- `role` (select from CONTACT_ROLES)
+- `is_steerco` (checkbox)
+- `account_id` (hidden or account select)
+
+- [ ] **Step 3: Create `communication-modal.tsx`**
+
+Fields matching `communicationFormSchema`:
+- `type` (select: email/note/meeting/call)
+- `subject` (text)
+- `body` (rich text via Plate editor placeholder — textarea for now)
+- `to` (text)
+- `account_id` (hidden)
+- `deal_id` (optional deal select)
+
+- [ ] **Step 4: Wire forms into list/detail pages**
+
+- Add "Nieuw Account" button to accounts list page header, linking to `/admin/accounts/new`
+- Add "Nieuw Contact" button to contacts list page header, opening ContactForm modal
+- Add "Nieuwe Communicatie" button to AccountCommunicationsTab, opening CommunicationModal
+- Add edit buttons to account detail, contact rows, communication rows
+
+- [ ] **Step 5: Commit**
+
+```bash
+git add src/features/accounts/components/ src/features/contacts/components/ src/features/communications/components/
+git commit -m "feat: add account, contact, and communication form components"
 ```
 
 ---

@@ -1086,6 +1086,49 @@ export async function createActiveConsultant(values: ActiveConsultantFormValues)
 }
 ```
 
+- [ ] **Step 4b: Create `src/features/consultants/actions/update-active-consultant.ts`**
+
+Standard update pattern: `requirePermission('consultants.write')` → Zod parse → `supabase.from('active_consultants').update(parsed).eq('id', id)` → `logAction` → `revalidatePath('/admin/consultants')`.
+
+```ts
+'use server';
+
+import { createServerClient } from '@/lib/supabase/server';
+import { requirePermission } from '@/lib/require-permission';
+import { logAction } from '@/features/audit/actions/log-action';
+import { revalidatePath } from 'next/cache';
+import { activeConsultantFormSchema, type ActiveConsultantFormValues } from '../types';
+
+export async function updateActiveConsultant(id: string, values: ActiveConsultantFormValues) {
+  await requirePermission('consultants.write');
+
+  const parsed = activeConsultantFormSchema.safeParse(values);
+  if (!parsed.success) {
+    return { error: parsed.error.flatten().fieldErrors };
+  }
+
+  const supabase = await createServerClient();
+  const { error } = await supabase
+    .from('active_consultants')
+    .update(parsed.data)
+    .eq('id', id);
+
+  if (error) {
+    return { error: error.message };
+  }
+
+  await logAction({
+    action: 'active_consultant.updated',
+    entityType: 'active_consultant',
+    entityId: id,
+    metadata: { name: `${parsed.data.first_name} ${parsed.data.last_name}` },
+  });
+
+  revalidatePath('/admin/consultants');
+  return { success: true };
+}
+```
+
 - [ ] **Step 5: Create `src/features/consultants/actions/stop-consultant.ts`**
 
 ```ts
@@ -1603,6 +1646,83 @@ export const indexationDraftSchema = z.object({
 });
 
 export type IndexationDraftValues = z.infer<typeof indexationDraftSchema>;
+
+export type IndexationConfig = Database['public']['Tables']['indexation_config']['Row'];
+
+export const indexationConfigFormSchema = z.object({
+  account_id: z.string().uuid(),
+  use_cpi: z.boolean().default(true),
+  cpi_index_id: z.string().uuid().optional().nullable(),
+  custom_percentage: z.coerce.number().min(0).max(100).optional().nullable(),
+  notes: z.string().optional().nullable(),
+});
+
+export type IndexationConfigFormValues = z.infer<typeof indexationConfigFormSchema>;
+```
+
+- [ ] **Step 1b: Create `src/features/indexation/queries/get-indexation-config.ts`**
+
+```ts
+import { cache } from 'react';
+import { createServerClient } from '@/lib/supabase/server';
+import type { IndexationConfig } from '../types';
+
+export const getIndexationConfig = cache(
+  async (accountId: string): Promise<IndexationConfig | null> => {
+    const supabase = await createServerClient();
+    const { data, error } = await supabase
+      .from('indexation_config')
+      .select('*')
+      .eq('account_id', accountId)
+      .maybeSingle();
+
+    if (error) {
+      console.error('Failed to fetch indexation config:', error.message);
+      return null;
+    }
+
+    return data;
+  },
+);
+```
+
+- [ ] **Step 1c: Create `src/features/indexation/actions/upsert-indexation-config.ts`**
+
+```ts
+'use server';
+
+import { createServerClient } from '@/lib/supabase/server';
+import { requirePermission } from '@/lib/require-permission';
+import { logAction } from '@/features/audit/actions/log-action';
+import { revalidatePath } from 'next/cache';
+import { indexationConfigFormSchema, type IndexationConfigFormValues } from '../types';
+
+export async function upsertIndexationConfig(values: IndexationConfigFormValues) {
+  await requirePermission('consultants.write');
+
+  const parsed = indexationConfigFormSchema.safeParse(values);
+  if (!parsed.success) {
+    return { error: parsed.error.flatten().fieldErrors };
+  }
+
+  const supabase = await createServerClient();
+  const { error } = await supabase
+    .from('indexation_config')
+    .upsert(parsed.data, { onConflict: 'account_id' });
+
+  if (error) {
+    return { error: error.message };
+  }
+
+  await logAction({
+    action: 'indexation_config.upserted',
+    entityType: 'indexation_config',
+    entityId: parsed.data.account_id,
+  });
+
+  revalidatePath('/admin/consultants');
+  return { success: true };
+}
 ```
 
 - [ ] **Step 2: Create `src/features/indexation/queries/get-indexation-indices.ts`**
@@ -2311,6 +2431,92 @@ task db:migrate
 
 ---
 
+## Task 10b: Bench and Consultant UI components (detail modals, forms)
+
+**Files:**
+- Create: `src/features/bench/components/bench-detail-modal.tsx`
+- Create: `src/features/bench/components/bench-form.tsx`
+- Create: `src/features/consultants/components/consultant-detail-modal.tsx`
+- Create: `src/features/consultants/components/stop-consultant-modal.tsx`
+- Create: `src/features/consultants/components/extend-consultant-modal.tsx`
+- Create: `src/features/consultants/components/rate-change-modal.tsx`
+- Create: `src/features/indexation/components/indexation-wizard.tsx`
+- Create: `src/features/contracts/components/contracts-tab.tsx`
+
+- [ ] **Step 1: Create `bench-detail-modal.tsx`**
+
+View/edit bench consultant modal. Accepts `consultant: BenchConsultant` and `onClose`. Renders all consultant fields in read mode; includes an "Bewerken" button that switches to edit mode using `BenchForm`.
+
+- [ ] **Step 2: Create `bench-form.tsx`**
+
+Create/edit bench consultant form using `benchConsultantFormSchema`. Fields: `first_name`, `last_name`, `city`, `priority` (select: High/Medium/Low), `available_date`, `min_hourly_rate`, `max_hourly_rate`, `roles` (tag input), `technologies` (tag input), `description`, `cv_pdf_url`. Use `createBenchConsultant` / `updateBenchConsultant` server actions. Add "Nieuwe Consultant" button to bench page header.
+
+- [ ] **Step 3: Create `consultant-detail-modal.tsx`**
+
+View active consultant details modal. Accepts `consultant: ActiveConsultantWithDetails`. Shows rate history table, extensions list, contract attribution. Include buttons for: "Tarief wijzigen" → opens RateChangeModal, "Verlengd" → opens ExtendConsultantModal, "Stopzetten" → opens StopConsultantModal.
+
+- [ ] **Step 4: Create `stop-consultant-modal.tsx`**
+
+Stop consultant form. Accepts `consultantId: string`. Fields: `stop_date` (date), `reason` (textarea). Calls `stopConsultant` action on submit.
+
+- [ ] **Step 5: Create `extend-consultant-modal.tsx`**
+
+Extend consultant form. Accepts `consultantId: string`. Fields: `new_end_date` (date), `notes` (textarea). Calls `extendConsultant` action on submit.
+
+- [ ] **Step 6: Create `rate-change-modal.tsx`**
+
+Rate change form. Accepts `consultantId: string`. Fields: `date` (date), `rate` (number), `reason` (text), `notes` (textarea). Calls `addRateChange` action on submit.
+
+- [ ] **Step 7: Create `indexation-wizard.tsx`**
+
+4-step modal wizard for the indexation flow:
+1. Step 1 — Select index: choose from `IndexationIndex` list or enter custom percentage
+2. Step 2 — Simulate: show `SimulationResult` from `simulateIndexation` action
+3. Step 3 — Review draft: edit proposed rates if needed, call `saveIndexationDraft`
+4. Step 4 — Approve: confirmation screen, call `approveIndexation`
+
+Use `useIndexationConfig` (from `getIndexationConfig`) to pre-fill Step 1.
+
+- [ ] **Step 8: Create `contracts-tab.tsx`**
+
+Create `src/features/contracts/components/contracts-tab.tsx`. This component:
+- Accepts `accountId: string`
+- Calls `getContract(accountId)`, `getHourlyRates(accountId)`, `getSlaRates(accountId)`
+- Renders 3 sections: Framework Contract card, Service Contract card, Hourly Rates table per year
+- Add "Bewerken" button opening `UpsertContractForm` modal (inline form, no separate file needed)
+- Add "Tarieven importeren" button for future use (disabled for now)
+
+- [ ] **Step 9: Commit**
+
+```bash
+git add src/features/bench/components/ src/features/consultants/components/ src/features/indexation/components/ src/features/contracts/components/
+git commit -m "feat: add consultancy UI components (bench form, consultant modals, contracts tab, indexation wizard)"
+```
+
+---
+
+## Task 10c: Replace account detail stubs with consultancy tabs
+
+**Files:**
+- Modify: `src/features/accounts/components/account-detail.tsx`
+
+- [ ] **Step 1: Replace "Contracten & Tarieven" stub**
+
+In `src/features/accounts/components/account-detail.tsx`, replace the "Contracten & Tarieven" tab stub with `<ContractsTab accountId={account.id} />`. Import from `@/features/contracts/components/contracts-tab`.
+
+- [ ] **Step 2: Replace "Consultants" stub**
+
+In the same file, replace the "Consultants" tab stub with `<AccountConsultantsTab accountId={account.id} />`. This component (already created in Task 9 Step 4) renders active consultants filtered by account, with each row opening `ConsultantDetailModal`.
+
+- [ ] **Step 3: Commit**
+
+```bash
+git add src/features/accounts/components/account-detail.tsx
+git commit -m "feat(accounts): replace consultancy tab stubs with ContractsTab and AccountConsultantsTab"
+```
+
+---
+
 ## Task 11: Verify and Commit
 
 **Steps:**
@@ -2332,7 +2538,9 @@ task build
 Visit:
 - `/admin/bench` — card grid with 3 bench consultants
 - `/admin/consultants` — list with 3 active consultants
-- `/admin/accounts/a0000000-0000-0000-0000-000000000001` (Contracten tab) — should show contract data
+Verify contract queries work by running in Supabase Studio:
+`SELECT * FROM contracts WHERE account_id = 'a0000000-0000-0000-0000-000000000001';`
+Full Contracten tab UI verification deferred to account detail integration.
 
 - [ ] **Step 4: Commit**
 
