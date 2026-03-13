@@ -67,7 +67,7 @@ tasks:
   types:generate:
     desc: "Generate TypeScript types from the database schema"
     cmds:
-      - npx supabase gen types typescript --db-url "postgresql://postgres:${POSTGRES_PASSWORD}@127.0.0.1:${POSTGRES_EXPOSED_PORT:-5432}/postgres" --schema public > src/types/database.types.ts
+      - npx supabase gen types typescript --db-url "postgresql://postgres:${POSTGRES_PASSWORD}@127.0.0.1:${POSTGRES_EXPOSED_PORT:-5432}/postgres" --schema public > src/types/database.ts
 
   entity:new:
     desc: "Scaffold a new entity (usage: task entity:new -- <name>)"

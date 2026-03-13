@@ -10,6 +10,8 @@
 
 **Spec:** `docs/superpowers/specs/2026-03-13-crm-port-design.md`
 
+**IMPORTANT — Cross-cutting pattern:** Every server action that performs a write (create/update/delete) MUST call `revalidatePath('/admin/<entity>')` before returning. Import: `import { revalidatePath } from 'next/cache';`
+
 **Depends on:** Layer 1 (Foundation)
 
 ---
@@ -251,7 +253,7 @@ CREATE POLICY "account_services_delete" ON account_services FOR DELETE TO authen
 - [ ] **Step 2: Run the migration**
 
 ```bash
-npx supabase db push
+task db:migrate
 ```
 
 - [ ] **Step 3: Regenerate TypeScript types**
@@ -353,7 +355,7 @@ CREATE POLICY "contact_personal_info_delete" ON contact_personal_info FOR DELETE
 - [ ] **Step 2: Run the migration**
 
 ```bash
-npx supabase db push
+task db:migrate
 ```
 
 ---
@@ -415,7 +417,7 @@ ALTER PUBLICATION supabase_realtime ADD TABLE communications;
 - [ ] **Step 2: Run the migration and regenerate types**
 
 ```bash
-npx supabase db push && task types:generate
+task db:migrate && task types:generate
 ```
 
 ---
@@ -631,6 +633,7 @@ export const getAccount = cache(
 import { createServerClient } from '@/lib/supabase/server';
 import { requirePermission } from '@/lib/require-permission';
 import { logAction } from '@/features/audit/actions/log-action';
+import { revalidatePath } from 'next/cache';
 import { accountFormSchema, type AccountFormValues } from '../types';
 
 export async function createAccount(values: AccountFormValues) {
@@ -659,6 +662,7 @@ export async function createAccount(values: AccountFormValues) {
     metadata: { name: parsed.data.name },
   });
 
+  revalidatePath('/admin/accounts');
   return { data };
 }
 ```
@@ -671,6 +675,7 @@ export async function createAccount(values: AccountFormValues) {
 import { createServerClient } from '@/lib/supabase/server';
 import { requirePermission } from '@/lib/require-permission';
 import { logAction } from '@/features/audit/actions/log-action';
+import { revalidatePath } from 'next/cache';
 import { accountFormSchema, type AccountFormValues } from '../types';
 
 export async function updateAccount(id: string, values: AccountFormValues) {
@@ -698,6 +703,7 @@ export async function updateAccount(id: string, values: AccountFormValues) {
     metadata: { name: parsed.data.name },
   });
 
+  revalidatePath('/admin/accounts');
   return { success: true };
 }
 ```
@@ -710,6 +716,7 @@ export async function updateAccount(id: string, values: AccountFormValues) {
 import { createServerClient } from '@/lib/supabase/server';
 import { requirePermission } from '@/lib/require-permission';
 import { logAction } from '@/features/audit/actions/log-action';
+import { revalidatePath } from 'next/cache';
 
 export async function deleteAccount(id: string) {
   await requirePermission('accounts.delete');
@@ -730,6 +737,7 @@ export async function deleteAccount(id: string) {
     entityId: id,
   });
 
+  revalidatePath('/admin/accounts');
   return { success: true };
 }
 ```
@@ -1099,6 +1107,7 @@ export const getContactsByAccount = cache(
 import { createServerClient } from '@/lib/supabase/server';
 import { requirePermission } from '@/lib/require-permission';
 import { logAction } from '@/features/audit/actions/log-action';
+import { revalidatePath } from 'next/cache';
 import { contactFormSchema, type ContactFormValues } from '../types';
 
 export async function createContact(values: ContactFormValues) {
@@ -1132,6 +1141,7 @@ export async function createContact(values: ContactFormValues) {
     metadata: { name: `${parsed.data.first_name} ${parsed.data.last_name}` },
   });
 
+  revalidatePath('/admin/contacts');
   return { data };
 }
 ```
@@ -1144,6 +1154,7 @@ export async function createContact(values: ContactFormValues) {
 import { createServerClient } from '@/lib/supabase/server';
 import { requirePermission } from '@/lib/require-permission';
 import { logAction } from '@/features/audit/actions/log-action';
+import { revalidatePath } from 'next/cache';
 import { contactFormSchema, type ContactFormValues } from '../types';
 
 export async function updateContact(id: string, values: ContactFormValues) {
@@ -1171,6 +1182,7 @@ export async function updateContact(id: string, values: ContactFormValues) {
     metadata: { name: `${parsed.data.first_name} ${parsed.data.last_name}` },
   });
 
+  revalidatePath('/admin/contacts');
   return { success: true };
 }
 ```
@@ -1183,6 +1195,7 @@ export async function updateContact(id: string, values: ContactFormValues) {
 import { createServerClient } from '@/lib/supabase/server';
 import { requirePermission } from '@/lib/require-permission';
 import { logAction } from '@/features/audit/actions/log-action';
+import { revalidatePath } from 'next/cache';
 
 export async function deleteContact(id: string) {
   await requirePermission('contacts.delete');
@@ -1203,6 +1216,7 @@ export async function deleteContact(id: string) {
     entityId: id,
   });
 
+  revalidatePath('/admin/contacts');
   return { success: true };
 }
 ```
@@ -1380,6 +1394,7 @@ export const getCommunications = cache(
 import { createServerClient } from '@/lib/supabase/server';
 import { requirePermission } from '@/lib/require-permission';
 import { logAction } from '@/features/audit/actions/log-action';
+import { revalidatePath } from 'next/cache';
 import { communicationFormSchema, type CommunicationFormValues } from '../types';
 
 export async function createCommunication(values: CommunicationFormValues) {
@@ -1408,6 +1423,7 @@ export async function createCommunication(values: CommunicationFormValues) {
     metadata: { subject: parsed.data.subject, type: parsed.data.type },
   });
 
+  revalidatePath('/admin/accounts');
   return { data };
 }
 ```
@@ -1420,6 +1436,7 @@ export async function createCommunication(values: CommunicationFormValues) {
 import { createServerClient } from '@/lib/supabase/server';
 import { requirePermission } from '@/lib/require-permission';
 import { logAction } from '@/features/audit/actions/log-action';
+import { revalidatePath } from 'next/cache';
 import { communicationFormSchema, type CommunicationFormValues } from '../types';
 
 export async function updateCommunication(id: string, values: CommunicationFormValues) {
@@ -1446,6 +1463,7 @@ export async function updateCommunication(id: string, values: CommunicationFormV
     entityId: id,
   });
 
+  revalidatePath('/admin/accounts');
   return { success: true };
 }
 ```
@@ -1458,6 +1476,7 @@ export async function updateCommunication(id: string, values: CommunicationFormV
 import { createServerClient } from '@/lib/supabase/server';
 import { requirePermission } from '@/lib/require-permission';
 import { logAction } from '@/features/audit/actions/log-action';
+import { revalidatePath } from 'next/cache';
 
 export async function deleteCommunication(id: string) {
   await requirePermission('communications.write');
@@ -1478,6 +1497,7 @@ export async function deleteCommunication(id: string) {
     entityId: id,
   });
 
+  revalidatePath('/admin/accounts');
   return { success: true };
 }
 ```
@@ -2359,7 +2379,7 @@ INSERT INTO contact_personal_info (contact_id, hobbies, marital_status, has_chil
 - [ ] **Step 2: Run the seed migration**
 
 ```bash
-npx supabase db push
+task db:migrate
 ```
 
 ---
@@ -2377,7 +2397,7 @@ task types:generate
 - [ ] **Step 2: Verify the app compiles**
 
 ```bash
-npx next build
+task build
 ```
 
 - [ ] **Step 3: Verify all pages load in dev**

@@ -10,6 +10,8 @@
 
 **Spec:** `docs/superpowers/specs/2026-03-13-crm-port-design.md`
 
+**IMPORTANT — Cross-cutting pattern:** Every server action that performs a write (create/update/delete) MUST call `revalidatePath('/admin/<entity>')` before returning. Import: `import { revalidatePath } from 'next/cache';`
+
 **Depends on:** Layer 1 (Foundation), Layer 2 (Core CRM), Layer 3 (Sales — deals FK)
 
 ---
@@ -100,7 +102,7 @@ CREATE INDEX idx_deals_bench_consultant ON deals(bench_consultant_id);
 - [ ] **Step 2: Run the migration**
 
 ```bash
-npx supabase db push
+task db:migrate
 ```
 
 ---
@@ -244,7 +246,7 @@ CREATE POLICY "consultant_contract_attributions_write" ON consultant_contract_at
 - [ ] **Step 2: Run the migration**
 
 ```bash
-npx supabase db push
+task db:migrate
 ```
 
 ---
@@ -382,7 +384,7 @@ CREATE POLICY "sla_tools_write" ON sla_tools FOR ALL TO authenticated
 - [ ] **Step 2: Run the migration**
 
 ```bash
-npx supabase db push
+task db:migrate
 ```
 
 ---
@@ -630,7 +632,7 @@ CREATE POLICY "indexation_history_sla_tools_write" ON indexation_history_sla_too
 - [ ] **Step 2: Run the migration and regenerate types**
 
 ```bash
-npx supabase db push && task types:generate
+task db:migrate && task types:generate
 ```
 
 ---
@@ -758,6 +760,7 @@ export const getBenchConsultant = cache(
 import { createServerClient } from '@/lib/supabase/server';
 import { requirePermission } from '@/lib/require-permission';
 import { logAction } from '@/features/audit/actions/log-action';
+import { revalidatePath } from 'next/cache';
 import { benchConsultantFormSchema, type BenchConsultantFormValues, type LanguageFormValues } from '../types';
 
 export async function createBenchConsultant(
@@ -796,6 +799,7 @@ export async function createBenchConsultant(
     metadata: { name: `${parsed.data.first_name} ${parsed.data.last_name}` },
   });
 
+  revalidatePath('/admin/bench');
   return { data };
 }
 ```
@@ -808,6 +812,7 @@ export async function createBenchConsultant(
 import { createServerClient } from '@/lib/supabase/server';
 import { requirePermission } from '@/lib/require-permission';
 import { logAction } from '@/features/audit/actions/log-action';
+import { revalidatePath } from 'next/cache';
 import { benchConsultantFormSchema, type BenchConsultantFormValues, type LanguageFormValues } from '../types';
 
 export async function updateBenchConsultant(
@@ -846,6 +851,7 @@ export async function updateBenchConsultant(
     entityId: id,
   });
 
+  revalidatePath('/admin/bench');
   return { success: true };
 }
 ```
@@ -858,6 +864,7 @@ export async function updateBenchConsultant(
 import { createServerClient } from '@/lib/supabase/server';
 import { requirePermission } from '@/lib/require-permission';
 import { logAction } from '@/features/audit/actions/log-action';
+import { revalidatePath } from 'next/cache';
 
 export async function archiveBenchConsultant(id: string, archive = true) {
   await requirePermission('bench.write');
@@ -878,6 +885,7 @@ export async function archiveBenchConsultant(id: string, archive = true) {
     entityId: id,
   });
 
+  revalidatePath('/admin/bench');
   return { success: true };
 }
 ```
@@ -1036,6 +1044,7 @@ export const getConsultantsByAccount = cache(
 import { createServerClient } from '@/lib/supabase/server';
 import { requirePermission } from '@/lib/require-permission';
 import { logAction } from '@/features/audit/actions/log-action';
+import { revalidatePath } from 'next/cache';
 import { activeConsultantFormSchema, type ActiveConsultantFormValues } from '../types';
 
 export async function createActiveConsultant(values: ActiveConsultantFormValues) {
@@ -1072,6 +1081,7 @@ export async function createActiveConsultant(values: ActiveConsultantFormValues)
     metadata: { name: `${parsed.data.first_name} ${parsed.data.last_name}` },
   });
 
+  revalidatePath('/admin/consultants');
   return { data };
 }
 ```
@@ -1084,6 +1094,7 @@ export async function createActiveConsultant(values: ActiveConsultantFormValues)
 import { createServerClient } from '@/lib/supabase/server';
 import { requirePermission } from '@/lib/require-permission';
 import { logAction } from '@/features/audit/actions/log-action';
+import { revalidatePath } from 'next/cache';
 
 export async function stopConsultant(id: string, stopDate: string, reason: string) {
   await requirePermission('consultants.write');
@@ -1110,6 +1121,7 @@ export async function stopConsultant(id: string, stopDate: string, reason: strin
     metadata: { stop_date: stopDate, reason },
   });
 
+  revalidatePath('/admin/consultants');
   return { success: true };
 }
 ```
@@ -1122,6 +1134,7 @@ export async function stopConsultant(id: string, stopDate: string, reason: strin
 import { createServerClient } from '@/lib/supabase/server';
 import { requirePermission } from '@/lib/require-permission';
 import { logAction } from '@/features/audit/actions/log-action';
+import { revalidatePath } from 'next/cache';
 
 export async function extendConsultant(id: string, newEndDate: string, notes?: string) {
   await requirePermission('consultants.write');
@@ -1154,6 +1167,7 @@ export async function extendConsultant(id: string, newEndDate: string, notes?: s
     metadata: { new_end_date: newEndDate },
   });
 
+  revalidatePath('/admin/consultants');
   return { success: true };
 }
 ```
@@ -1166,6 +1180,7 @@ export async function extendConsultant(id: string, newEndDate: string, notes?: s
 import { createServerClient } from '@/lib/supabase/server';
 import { requirePermission } from '@/lib/require-permission';
 import { logAction } from '@/features/audit/actions/log-action';
+import { revalidatePath } from 'next/cache';
 
 export async function addRateChange(
   consultantId: string,
@@ -1209,6 +1224,7 @@ export async function addRateChange(
     metadata: { rate, reason },
   });
 
+  revalidatePath('/admin/consultants');
   return { success: true };
 }
 ```
@@ -1377,6 +1393,7 @@ export const getSlaRates = cache(
 import { createServerClient } from '@/lib/supabase/server';
 import { requirePermission } from '@/lib/require-permission';
 import { logAction } from '@/features/audit/actions/log-action';
+import { revalidatePath } from 'next/cache';
 import { contractFormSchema, type ContractFormValues } from '../types';
 
 export async function upsertContract(accountId: string, values: ContractFormValues) {
@@ -1405,6 +1422,7 @@ export async function upsertContract(accountId: string, values: ContractFormValu
     metadata: { account_id: accountId },
   });
 
+  revalidatePath('/admin/accounts');
   return { success: true };
 }
 ```
@@ -1417,6 +1435,7 @@ export async function upsertContract(accountId: string, values: ContractFormValu
 import { createServerClient } from '@/lib/supabase/server';
 import { requirePermission } from '@/lib/require-permission';
 import { logAction } from '@/features/audit/actions/log-action';
+import { revalidatePath } from 'next/cache';
 
 type RateEntry = { role: string; rate: number };
 
@@ -1449,6 +1468,7 @@ export async function upsertHourlyRates(accountId: string, year: number, rates: 
     metadata: { account_id: accountId, year, count: rates.length },
   });
 
+  revalidatePath('/admin/accounts');
   return { success: true };
 }
 ```
@@ -1461,6 +1481,7 @@ export async function upsertHourlyRates(accountId: string, year: number, rates: 
 import { createServerClient } from '@/lib/supabase/server';
 import { requirePermission } from '@/lib/require-permission';
 import { logAction } from '@/features/audit/actions/log-action';
+import { revalidatePath } from 'next/cache';
 import type { SlaRateFormValues } from '../types';
 
 export async function upsertSlaRates(accountId: string, year: number, values: SlaRateFormValues) {
@@ -1505,6 +1526,7 @@ export async function upsertSlaRates(accountId: string, year: number, values: Sl
     metadata: { account_id: accountId, year },
   });
 
+  revalidatePath('/admin/accounts');
   return { success: true };
 }
 ```
@@ -1739,6 +1761,7 @@ export async function simulateIndexation(
 import { createServerClient } from '@/lib/supabase/server';
 import { requirePermission } from '@/lib/require-permission';
 import { logAction } from '@/features/audit/actions/log-action';
+import { revalidatePath } from 'next/cache';
 import { indexationDraftSchema, type IndexationDraftValues } from '../types';
 
 /**
@@ -1811,6 +1834,7 @@ export async function saveIndexationDraft(accountId: string, values: IndexationD
     metadata: { account_id: accountId, target_year: parsed.data.target_year },
   });
 
+  revalidatePath('/admin/accounts');
   return { data: draft };
 }
 ```
@@ -1823,6 +1847,7 @@ export async function saveIndexationDraft(accountId: string, values: IndexationD
 import { createServerClient } from '@/lib/supabase/server';
 import { requirePermission } from '@/lib/require-permission';
 import { logAction } from '@/features/audit/actions/log-action';
+import { revalidatePath } from 'next/cache';
 
 /**
  * Step 4 of the indexeringssimulator: approve a draft.
@@ -1968,6 +1993,7 @@ export async function approveIndexation(draftId: string) {
     metadata: { account_id: accountId, target_year: targetYear, percentage: draft.percentage },
   });
 
+  revalidatePath('/admin/accounts');
   return { success: true };
 }
 ```
@@ -2280,7 +2306,7 @@ INSERT INTO sla_tools (sla_rate_id, tool_name, monthly_price) VALUES
 - [ ] **Step 2: Run the seed migration**
 
 ```bash
-npx supabase db push
+task db:migrate
 ```
 
 ---
@@ -2298,7 +2324,7 @@ task types:generate
 - [ ] **Step 2: Verify the app compiles**
 
 ```bash
-npx next build
+task build
 ```
 
 - [ ] **Step 3: Verify pages load in dev**

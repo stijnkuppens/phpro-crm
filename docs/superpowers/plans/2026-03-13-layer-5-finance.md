@@ -10,6 +10,8 @@
 
 **Spec:** `docs/superpowers/specs/2026-03-13-crm-port-design.md`
 
+**IMPORTANT — Cross-cutting pattern:** Every server action that performs a write (create/update/delete) MUST call `revalidatePath('/admin/<entity>')` before returning. Import: `import { revalidatePath } from 'next/cache';`
+
 **Depends on:** Layer 1 (Foundation), Layer 2 (Core CRM), Layer 3 (Sales — deals FK for pipeline entries)
 
 ---
@@ -89,7 +91,7 @@ INSERT INTO division_services (division_id, service_name, sort_order) VALUES
 - [ ] **Step 2: Run the migration**
 
 ```bash
-npx supabase db push
+task db:migrate
 ```
 
 ---
@@ -181,7 +183,7 @@ CREATE POLICY "revenue_client_services_write" ON revenue_client_services FOR ALL
 - [ ] **Step 2: Run the migration**
 
 ```bash
-npx supabase db push
+task db:migrate
 ```
 
 ---
@@ -302,7 +304,7 @@ CREATE POLICY "pipeline_entries_delete" ON pipeline_entries FOR DELETE TO authen
 - [ ] **Step 2: Run migration and regenerate types**
 
 ```bash
-npx supabase db push && task types:generate
+task db:migrate && task types:generate
 ```
 
 ---
@@ -543,6 +545,7 @@ export const getAccountRevenue = cache(
 import { createServerClient } from '@/lib/supabase/server';
 import { requirePermission } from '@/lib/require-permission';
 import { logAction } from '@/features/audit/actions/log-action';
+import { revalidatePath } from 'next/cache';
 
 export async function upsertRevenueEntry(
   revenueClientId: string,
@@ -574,6 +577,7 @@ export async function upsertRevenueEntry(
     return { error: error.message };
   }
 
+  revalidatePath('/admin/revenue');
   return { success: true };
 }
 ```
@@ -586,6 +590,7 @@ export async function upsertRevenueEntry(
 import { createServerClient } from '@/lib/supabase/server';
 import { requirePermission } from '@/lib/require-permission';
 import { logAction } from '@/features/audit/actions/log-action';
+import { revalidatePath } from 'next/cache';
 import { accountRevenueFormSchema, type AccountRevenueFormValues } from '../types';
 
 export async function createAccountRevenue(accountId: string, values: AccountRevenueFormValues) {
@@ -614,6 +619,7 @@ export async function createAccountRevenue(accountId: string, values: AccountRev
     metadata: { account_id: accountId, category: parsed.data.category, year: parsed.data.year },
   });
 
+  revalidatePath('/admin/accounts');
   return { data };
 }
 
@@ -641,6 +647,7 @@ export async function updateAccountRevenue(id: string, values: AccountRevenueFor
     entityId: id,
   });
 
+  revalidatePath('/admin/accounts');
   return { success: true };
 }
 
@@ -663,6 +670,7 @@ export async function deleteAccountRevenue(id: string) {
     entityId: id,
   });
 
+  revalidatePath('/admin/accounts');
   return { success: true };
 }
 ```
@@ -675,6 +683,7 @@ export async function deleteAccountRevenue(id: string) {
 import { createServerClient } from '@/lib/supabase/server';
 import { requirePermission } from '@/lib/require-permission';
 import { logAction } from '@/features/audit/actions/log-action';
+import { revalidatePath } from 'next/cache';
 
 type PrognoseEntry = {
   revenue_client_id: string;
@@ -741,6 +750,7 @@ export async function savePrognose(year: number, entries: PrognoseEntry[]) {
     metadata: { year, entry_count: entries.length },
   });
 
+  revalidatePath('/admin/prognose');
   return { success: true };
 }
 ```
@@ -821,6 +831,7 @@ export const getPipelineEntries = cache(
 import { createServerClient } from '@/lib/supabase/server';
 import { requirePermission } from '@/lib/require-permission';
 import { logAction } from '@/features/audit/actions/log-action';
+import { revalidatePath } from 'next/cache';
 import { pipelineEntryFormSchema, type PipelineEntryFormValues } from '../types';
 
 export async function createPipelineEntry(values: PipelineEntryFormValues) {
@@ -849,6 +860,7 @@ export async function createPipelineEntry(values: PipelineEntryFormValues) {
     metadata: { client: parsed.data.client },
   });
 
+  revalidatePath('/admin/pipeline');
   return { data };
 }
 
@@ -876,6 +888,7 @@ export async function updatePipelineEntry(id: string, values: PipelineEntryFormV
     entityId: id,
   });
 
+  revalidatePath('/admin/pipeline');
   return { success: true };
 }
 
@@ -898,6 +911,7 @@ export async function deletePipelineEntry(id: string) {
     entityId: id,
   });
 
+  revalidatePath('/admin/pipeline');
   return { success: true };
 }
 ```
@@ -1659,7 +1673,7 @@ INSERT INTO account_revenue (account_id, year, category, amount, notes) VALUES
 - [ ] **Step 2: Run the seed migration**
 
 ```bash
-npx supabase db push
+task db:migrate
 ```
 
 ---
@@ -1677,7 +1691,7 @@ task types:generate
 - [ ] **Step 2: Verify the app compiles**
 
 ```bash
-npx next build
+task build
 ```
 
 - [ ] **Step 3: Verify pages load in dev**

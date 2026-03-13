@@ -10,6 +10,8 @@
 
 **Spec:** `docs/superpowers/specs/2026-03-13-crm-port-design.md`
 
+**IMPORTANT — Cross-cutting pattern:** Every server action that performs a write (create/update/delete) MUST call `revalidatePath('/admin/<entity>')` before returning. Import: `import { revalidatePath } from 'next/cache';`
+
 **Depends on:** Layer 1 (Foundation), Layer 2 (Core CRM — accounts, contacts)
 
 ---
@@ -92,7 +94,7 @@ CREATE INDEX idx_communications_deal ON communications(deal_id);
 - [ ] **Step 2: Run the migration**
 
 ```bash
-npx supabase db push
+task db:migrate
 ```
 
 ---
@@ -190,7 +192,7 @@ ALTER PUBLICATION supabase_realtime ADD TABLE tasks;
 - [ ] **Step 2: Run migration and regenerate types**
 
 ```bash
-npx supabase db push && task types:generate
+task db:migrate && task types:generate
 ```
 
 ---
@@ -448,6 +450,7 @@ export const getDealsByPipeline = cache(
 import { createServerClient } from '@/lib/supabase/server';
 import { requirePermission } from '@/lib/require-permission';
 import { logAction } from '@/features/audit/actions/log-action';
+import { revalidatePath } from 'next/cache';
 import { dealFormSchema, type DealFormValues } from '../types';
 
 export async function createDeal(values: DealFormValues) {
@@ -476,6 +479,7 @@ export async function createDeal(values: DealFormValues) {
     metadata: { title: parsed.data.title },
   });
 
+  revalidatePath('/admin/deals');
   return { data };
 }
 ```
@@ -488,6 +492,7 @@ export async function createDeal(values: DealFormValues) {
 import { createServerClient } from '@/lib/supabase/server';
 import { requirePermission } from '@/lib/require-permission';
 import { logAction } from '@/features/audit/actions/log-action';
+import { revalidatePath } from 'next/cache';
 import { dealFormSchema, type DealFormValues } from '../types';
 
 export async function updateDeal(id: string, values: DealFormValues) {
@@ -514,6 +519,7 @@ export async function updateDeal(id: string, values: DealFormValues) {
     entityId: id,
   });
 
+  revalidatePath('/admin/deals');
   return { success: true };
 }
 ```
@@ -526,6 +532,7 @@ export async function updateDeal(id: string, values: DealFormValues) {
 import { createServerClient } from '@/lib/supabase/server';
 import { requirePermission } from '@/lib/require-permission';
 import { logAction } from '@/features/audit/actions/log-action';
+import { revalidatePath } from 'next/cache';
 
 export async function deleteDeal(id: string) {
   await requirePermission('deals.delete');
@@ -546,6 +553,7 @@ export async function deleteDeal(id: string) {
     entityId: id,
   });
 
+  revalidatePath('/admin/deals');
   return { success: true };
 }
 ```
@@ -558,6 +566,7 @@ export async function deleteDeal(id: string) {
 import { createServerClient } from '@/lib/supabase/server';
 import { requirePermission } from '@/lib/require-permission';
 import { logAction } from '@/features/audit/actions/log-action';
+import { revalidatePath } from 'next/cache';
 import { closeDealSchema, type CloseDealValues } from '../types';
 
 export async function closeDeal(dealId: string, values: CloseDealValues) {
@@ -627,6 +636,7 @@ export async function closeDeal(dealId: string, values: CloseDealValues) {
     metadata: { closed_type: parsed.data.closed_type, reason: parsed.data.closed_reason },
   });
 
+  revalidatePath('/admin/deals');
   return { success: true };
 }
 ```
@@ -802,6 +812,7 @@ export const getActivities = cache(
 import { createServerClient } from '@/lib/supabase/server';
 import { requirePermission } from '@/lib/require-permission';
 import { logAction } from '@/features/audit/actions/log-action';
+import { revalidatePath } from 'next/cache';
 import { activityFormSchema, type ActivityFormValues } from '../types';
 
 export async function createActivity(values: ActivityFormValues) {
@@ -830,6 +841,7 @@ export async function createActivity(values: ActivityFormValues) {
     metadata: { subject: parsed.data.subject, type: parsed.data.type },
   });
 
+  revalidatePath('/admin/activities');
   return { data };
 }
 ```
@@ -842,6 +854,7 @@ export async function createActivity(values: ActivityFormValues) {
 import { createServerClient } from '@/lib/supabase/server';
 import { requirePermission } from '@/lib/require-permission';
 import { logAction } from '@/features/audit/actions/log-action';
+import { revalidatePath } from 'next/cache';
 import { activityFormSchema, type ActivityFormValues } from '../types';
 
 export async function updateActivity(id: string, values: ActivityFormValues) {
@@ -868,6 +881,7 @@ export async function updateActivity(id: string, values: ActivityFormValues) {
     entityId: id,
   });
 
+  revalidatePath('/admin/activities');
   return { success: true };
 }
 ```
@@ -880,6 +894,7 @@ export async function updateActivity(id: string, values: ActivityFormValues) {
 import { createServerClient } from '@/lib/supabase/server';
 import { requirePermission } from '@/lib/require-permission';
 import { logAction } from '@/features/audit/actions/log-action';
+import { revalidatePath } from 'next/cache';
 
 export async function deleteActivity(id: string) {
   await requirePermission('activities.write');
@@ -900,6 +915,7 @@ export async function deleteActivity(id: string) {
     entityId: id,
   });
 
+  revalidatePath('/admin/activities');
   return { success: true };
 }
 ```
@@ -1066,6 +1082,7 @@ export const getTasks = cache(
 import { createServerClient } from '@/lib/supabase/server';
 import { requirePermission } from '@/lib/require-permission';
 import { logAction } from '@/features/audit/actions/log-action';
+import { revalidatePath } from 'next/cache';
 import { taskFormSchema, type TaskFormValues } from '../types';
 
 export async function createTask(values: TaskFormValues) {
@@ -1094,6 +1111,7 @@ export async function createTask(values: TaskFormValues) {
     metadata: { title: parsed.data.title },
   });
 
+  revalidatePath('/admin/tasks');
   return { data };
 }
 ```
@@ -1106,6 +1124,7 @@ export async function createTask(values: TaskFormValues) {
 import { createServerClient } from '@/lib/supabase/server';
 import { requirePermission } from '@/lib/require-permission';
 import { logAction } from '@/features/audit/actions/log-action';
+import { revalidatePath } from 'next/cache';
 import { taskFormSchema, type TaskFormValues } from '../types';
 
 export async function updateTask(id: string, values: TaskFormValues) {
@@ -1132,6 +1151,7 @@ export async function updateTask(id: string, values: TaskFormValues) {
     entityId: id,
   });
 
+  revalidatePath('/admin/tasks');
   return { success: true };
 }
 ```
@@ -1144,6 +1164,7 @@ export async function updateTask(id: string, values: TaskFormValues) {
 import { createServerClient } from '@/lib/supabase/server';
 import { requirePermission } from '@/lib/require-permission';
 import { logAction } from '@/features/audit/actions/log-action';
+import { revalidatePath } from 'next/cache';
 
 export async function deleteTask(id: string) {
   await requirePermission('tasks.write');
@@ -1164,6 +1185,7 @@ export async function deleteTask(id: string) {
     entityId: id,
   });
 
+  revalidatePath('/admin/tasks');
   return { success: true };
 }
 ```
@@ -2505,7 +2527,7 @@ ON CONFLICT DO NOTHING;
 - [ ] **Step 2: Run the seed migration**
 
 ```bash
-npx supabase db push
+task db:migrate
 ```
 
 ---
@@ -2523,7 +2545,7 @@ task types:generate
 - [ ] **Step 2: Verify the app compiles**
 
 ```bash
-npx next build
+task build
 ```
 
 - [ ] **Step 3: Verify all pages load in dev**

@@ -10,6 +10,8 @@
 
 **Spec:** `docs/superpowers/specs/2026-03-13-crm-port-design.md`
 
+**IMPORTANT — Cross-cutting pattern:** Every server action that performs a write (create/update/delete) MUST call `revalidatePath('/admin/<entity>')` before returning. Import: `import { revalidatePath } from 'next/cache';`
+
 ---
 
 ## Chunk 1: Cleanup & Dependencies
@@ -74,7 +76,7 @@ Remove unused imports: `Contact`, `Shield`, `Radio`, `LayoutGrid`.
 
 - [ ] **Step 6: Verify the app compiles**
 
-Run: `npx next build` or `npx next dev` and check no import errors. Note: `src/middleware.ts` is currently deleted — auth guard is absent until Task 4 restores it. This is expected.
+Run: `task typecheck` or `npx next dev` and check no import errors. Note: `src/middleware.ts` is currently deleted — auth guard is absent until Task 4 restores it. This is expected.
 
 - [ ] **Step 7: Commit**
 
@@ -411,7 +413,7 @@ This removes the deleted `/admin/contacts` (old) and `/admin/demo` entries and a
 - [ ] **Step 5: Verify compilation**
 
 ```bash
-npx next build
+task typecheck
 ```
 
 - [ ] **Step 6: Commit**
@@ -633,29 +635,47 @@ export default withNextIntl(nextConfig);
 
 - [ ] **Step 5: Wrap root layout with `NextIntlClientProvider`**
 
-In `src/app/layout.tsx`, add:
+Replace the entire `src/app/layout.tsx` with the merged version below (preserves ThemeProvider, Toaster, Geist font, metadata):
 
 ```tsx
+import type { Metadata } from 'next';
+import './globals.css';
+import { Geist } from 'next/font/google';
+import { cn } from '@/lib/utils';
+import { Toaster } from '@/components/ui/sonner';
+import { ThemeProvider } from 'next-themes';
 import { NextIntlClientProvider } from 'next-intl';
 import { getLocale, getMessages } from 'next-intl/server';
 
-export default async function RootLayout({ children }) {
+const geist = Geist({ subsets: ['latin'], variable: '--font-sans' });
+
+export const metadata: Metadata = {
+  title: 'PHPro CRM',
+  description: 'PHPro CRM application',
+};
+
+export default async function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   const locale = await getLocale();
   const messages = await getMessages();
 
   return (
-    <html lang={locale}>
+    <html lang={locale} className={cn('font-sans', geist.variable)} suppressHydrationWarning>
       <body>
-        <NextIntlClientProvider messages={messages}>
-          {children}
-        </NextIntlClientProvider>
+        <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
+          <NextIntlClientProvider messages={messages}>
+            {children}
+            <Toaster />
+          </NextIntlClientProvider>
+        </ThemeProvider>
       </body>
     </html>
   );
 }
 ```
-
-Preserve any existing wrapping (ThemeProvider etc.) — just add `NextIntlClientProvider` around the children.
 
 - [ ] **Step 6: Re-create `src/middleware.ts`**
 
@@ -815,10 +835,10 @@ INSERT INTO pipeline_stages (pipeline_id, name, sort_order, probability, color, 
 - [ ] **Step 2: Apply migration locally**
 
 ```bash
-npx supabase migration up
+task db:migrate
 ```
 
-If you need a clean slate (will wipe all local data): `npx supabase db reset`
+If you need a clean slate (will wipe all local data): `task db:reset`
 
 - [ ] **Step 3: Commit**
 
@@ -1622,7 +1642,7 @@ export function KanbanBoard<T extends { id: string }>({
 - [ ] **Step 10: Verify all components compile**
 
 ```bash
-npx next build
+task typecheck
 ```
 
 - [ ] **Step 11: Commit**
@@ -1644,8 +1664,8 @@ git commit -m "feat: add shared CRM components (modal, kanban, chip-select, etc.
 - [ ] **Step 1: Reset and regenerate**
 
 ```bash
-npx supabase db reset
-npx supabase gen types typescript --local > src/types/database.ts
+task db:reset
+task types:generate
 ```
 
 - [ ] **Step 2: Verify the generated types include new tables**
@@ -1666,7 +1686,7 @@ git commit -m "chore: regenerate Supabase types with new tables"
 - [ ] **Step 1: Run full build**
 
 ```bash
-npx next build
+task build
 ```
 
 Expected: Build succeeds with no errors.
