@@ -39,53 +39,6 @@ export type Database = {
         };
         Relationships: [];
       };
-      contacts: {
-        Row: {
-          id: string;
-          name: string;
-          email: string | null;
-          phone: string | null;
-          company: string | null;
-          notes: string | null;
-          avatar_url: string | null;
-          created_by: string | null;
-          created_at: string;
-          updated_at: string;
-        };
-        Insert: {
-          id?: string;
-          name: string;
-          email?: string | null;
-          phone?: string | null;
-          company?: string | null;
-          notes?: string | null;
-          avatar_url?: string | null;
-          created_by?: string | null;
-          created_at?: string;
-          updated_at?: string;
-        };
-        Update: {
-          id?: string;
-          name?: string;
-          email?: string | null;
-          phone?: string | null;
-          company?: string | null;
-          notes?: string | null;
-          avatar_url?: string | null;
-          created_by?: string | null;
-          created_at?: string;
-          updated_at?: string;
-        };
-        Relationships: [
-          {
-            foreignKeyName: 'contacts_created_by_fkey';
-            columns: ['created_by'];
-            isOneToOne: false;
-            referencedRelation: 'user_profiles';
-            referencedColumns: ['id'];
-          },
-        ];
-      };
       audit_logs: {
         Row: {
           id: string;
@@ -179,6 +132,107 @@ export type Database = {
         Update: {
           key?: string;
           value?: Json;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      pipelines: {
+        Row: {
+          id: string;
+          name: string;
+          type: 'projecten' | 'rfp' | 'consultancy';
+          sort_order: number;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          name: string;
+          type: 'projecten' | 'rfp' | 'consultancy';
+          sort_order?: number;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          name?: string;
+          type?: 'projecten' | 'rfp' | 'consultancy';
+          sort_order?: number;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      pipeline_stages: {
+        Row: {
+          id: string;
+          pipeline_id: string;
+          name: string;
+          sort_order: number;
+          probability: number;
+          color: string;
+          is_closed: boolean;
+          is_won: boolean;
+          is_longterm: boolean;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          pipeline_id: string;
+          name: string;
+          sort_order?: number;
+          probability?: number;
+          color?: string;
+          is_closed?: boolean;
+          is_won?: boolean;
+          is_longterm?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          pipeline_id?: string;
+          name?: string;
+          sort_order?: number;
+          probability?: number;
+          color?: string;
+          is_closed?: boolean;
+          is_won?: boolean;
+          is_longterm?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'pipeline_stages_pipeline_id_fkey';
+            columns: ['pipeline_id'];
+            isOneToOne: false;
+            referencedRelation: 'pipelines';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      indexation_indices: {
+        Row: {
+          id: string;
+          name: string;
+          value: number;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          name: string;
+          value: number;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          name?: string;
+          value?: number;
+          created_at?: string;
           updated_at?: string;
         };
         Relationships: [];
