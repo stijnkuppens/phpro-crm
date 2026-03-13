@@ -17,12 +17,8 @@ import {
 import {
   LayoutDashboard,
   Users,
-  Contact,
   FileText,
   Settings,
-  Shield,
-  Radio,
-  LayoutGrid,
   Bell,
   ScrollText,
 } from 'lucide-react';
@@ -32,20 +28,11 @@ const navSections = [
     section: 'Main',
     items: [
       { label: 'Dashboard', href: '/admin', icon: LayoutDashboard },
-      { label: 'Contacts', href: '/admin/contacts', icon: Contact },
       { label: 'Users', href: '/admin/users', icon: Users },
       { label: 'Files', href: '/admin/files', icon: FileText },
       { label: 'Settings', href: '/admin/settings', icon: Settings },
       { label: 'Notifications', href: '/admin/notifications', icon: Bell },
       { label: 'Audit Log', href: '/admin/audit', icon: ScrollText },
-    ],
-  },
-  {
-    section: 'Demo',
-    items: [
-      { label: 'Role Demo', href: '/admin/demo/roles', icon: Shield },
-      { label: 'Realtime', href: '/admin/demo/realtime', icon: Radio },
-      { label: 'Components', href: '/admin/demo/components', icon: LayoutGrid },
     ],
   },
 ];
