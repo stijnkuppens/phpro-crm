@@ -17,7 +17,7 @@ export type Database = {
           id: string;
           full_name: string | null;
           avatar_url: string | null;
-          role: 'admin' | 'editor' | 'viewer';
+          role: 'admin' | 'sales_manager' | 'sales_rep' | 'customer_success' | 'marketing';
           created_at: string;
           updated_at: string;
         };
@@ -25,7 +25,7 @@ export type Database = {
           id: string;
           full_name?: string | null;
           avatar_url?: string | null;
-          role?: 'admin' | 'editor' | 'viewer';
+          role?: 'admin' | 'sales_manager' | 'sales_rep' | 'customer_success' | 'marketing';
           created_at?: string;
           updated_at?: string;
         };
@@ -33,7 +33,7 @@ export type Database = {
           id?: string;
           full_name?: string | null;
           avatar_url?: string | null;
-          role?: 'admin' | 'editor' | 'viewer';
+          role?: 'admin' | 'sales_manager' | 'sales_rep' | 'customer_success' | 'marketing';
           created_at?: string;
           updated_at?: string;
         };
