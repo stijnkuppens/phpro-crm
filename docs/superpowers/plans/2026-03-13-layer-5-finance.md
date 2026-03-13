@@ -75,7 +75,8 @@ CREATE POLICY "division_services_write" ON division_services FOR ALL TO authenti
 -- Seed divisions
 INSERT INTO divisions (id, name, color, sort_order) VALUES
   ('div00000-0000-0000-0000-000000000001', '25Carat', '#3b82f6', 1),
-  ('div00000-0000-0000-0000-000000000002', 'PHPro', '#10b981', 2);
+  ('div00000-0000-0000-0000-000000000002', 'PHPro', '#10b981', 2)
+ON CONFLICT (id) DO NOTHING;
 
 INSERT INTO division_services (division_id, service_name, sort_order) VALUES
   ('div00000-0000-0000-0000-000000000001', 'OroCommerce', 1),
@@ -85,7 +86,8 @@ INSERT INTO division_services (division_id, service_name, sort_order) VALUES
   ('div00000-0000-0000-0000-000000000002', 'Adobe Commerce', 2),
   ('div00000-0000-0000-0000-000000000002', 'Sulu CMS', 3),
   ('div00000-0000-0000-0000-000000000002', 'Custom Dev', 4),
-  ('div00000-0000-0000-0000-000000000002', 'Consultancy', 5);
+  ('div00000-0000-0000-0000-000000000002', 'Consultancy', 5)
+ON CONFLICT DO NOTHING;
 ```
 
 - [ ] **Step 2: Run the migration**
@@ -1142,6 +1144,8 @@ export default async function RevenuePage() {
 }
 ```
 
+> **Note:** Replace hardcoded years with dynamic derivation. Add a query `getRevenueYears()` that runs `SELECT DISTINCT year FROM revenue_entries ORDER BY year`. Derive `FORECAST_YEAR` from `new Date().getFullYear()`.
+
 ---
 
 ## Task 9: Prognose Page
@@ -1411,6 +1415,8 @@ export default async function PrognosePage() {
 }
 ```
 
+> **Note:** Replace hardcoded years with dynamic derivation. Add a query `getRevenueYears()` that runs `SELECT DISTINCT year FROM revenue_entries ORDER BY year`. Derive `FORECAST_YEAR` from `new Date().getFullYear()`.
+
 ---
 
 ## Task 10: Pipeline Analytics Page
@@ -1608,7 +1614,8 @@ INSERT INTO revenue_clients (id, name) VALUES
   ('rc000000-0000-0000-0000-000000000007', 'Medifurn'),
   ('rc000000-0000-0000-0000-000000000008', 'Triskelion'),
   ('rc000000-0000-0000-0000-000000000009', 'Cronova'),
-  ('rc000000-0000-0000-0000-000000000010', 'Veldora');
+  ('rc000000-0000-0000-0000-000000000010', 'Veldora')
+ON CONFLICT (id) DO NOTHING;
 
 -- ── Revenue Client Divisions ────────────────────────────────────────────────
 INSERT INTO revenue_client_divisions (revenue_client_id, division_id) VALUES
@@ -1624,7 +1631,8 @@ INSERT INTO revenue_client_divisions (revenue_client_id, division_id) VALUES
   ('rc000000-0000-0000-0000-000000000008', 'div00000-0000-0000-0000-000000000001'),
   ('rc000000-0000-0000-0000-000000000009', 'div00000-0000-0000-0000-000000000002'),
   ('rc000000-0000-0000-0000-000000000010', 'div00000-0000-0000-0000-000000000001'),
-  ('rc000000-0000-0000-0000-000000000010', 'div00000-0000-0000-0000-000000000002');
+  ('rc000000-0000-0000-0000-000000000010', 'div00000-0000-0000-0000-000000000002')
+ON CONFLICT DO NOTHING;
 
 -- ── Revenue Client Services ────────────────────────────────────────────────
 INSERT INTO revenue_client_services (revenue_client_id, division_id, service_name) VALUES
@@ -1653,7 +1661,8 @@ INSERT INTO revenue_client_services (revenue_client_id, division_id, service_nam
   ('rc000000-0000-0000-0000-000000000009', 'div00000-0000-0000-0000-000000000002', 'Custom Dev'),
   ('rc000000-0000-0000-0000-000000000010', 'div00000-0000-0000-0000-000000000001', 'Marello B2B'),
   ('rc000000-0000-0000-0000-000000000010', 'div00000-0000-0000-0000-000000000002', 'Magento'),
-  ('rc000000-0000-0000-0000-000000000010', 'div00000-0000-0000-0000-000000000002', 'Consultancy');
+  ('rc000000-0000-0000-0000-000000000010', 'div00000-0000-0000-0000-000000000002', 'Consultancy')
+ON CONFLICT DO NOTHING;
 
 -- ── Account Revenue (Omzet tab) ────────────────────────────────────────────
 INSERT INTO account_revenue (account_id, year, category, amount, notes) VALUES
@@ -1668,7 +1677,8 @@ INSERT INTO account_revenue (account_id, year, category, amount, notes) VALUES
   ('a0000000-0000-0000-0000-000000000003', 2023, 'Magento', 35000, 'Portaal implementatie'),
   ('a0000000-0000-0000-0000-000000000003', 2024, 'Consultancy', 89000, 'Yasmine El Amrani'),
   ('a0000000-0000-0000-0000-000000000003', 2024, 'Hyva', 42000, 'Hyva integratie zorgplatform'),
-  ('a0000000-0000-0000-0000-000000000003', 2025, 'Consultancy', 55000, 'Lopend');
+  ('a0000000-0000-0000-0000-000000000003', 2025, 'Consultancy', 55000, 'Lopend')
+ON CONFLICT DO NOTHING;
 
 -- Note: Revenue entries (monthly granularity) are generated programmatically
 -- in the demo. For the seed, we skip generating 4 years * 12 months * ~25

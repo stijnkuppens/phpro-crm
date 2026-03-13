@@ -264,7 +264,10 @@ export const closeDealSchema = z.object({
   closed_reason: z.string().optional(),
   closed_notes: z.string().optional(),
   longterm_date: z.string().optional().nullable(),
-});
+}).refine(
+  (data) => data.closed_type !== 'longterm' || !!data.longterm_date,
+  { message: 'Follow-up datum is verplicht voor longterm deals', path: ['longterm_date'] }
+);
 
 export type CloseDealValues = z.infer<typeof closeDealSchema>;
 
@@ -593,7 +596,7 @@ export async function closeDeal(dealId: string, values: CloseDealValues) {
   // Find the correct closed stage based on closed_type
   let stageQuery = supabase
     .from('pipeline_stages')
-    .select('id')
+    .select('id, probability')
     .eq('pipeline_id', deal.pipeline_id)
     .eq('is_closed', true);
 
@@ -621,7 +624,7 @@ export async function closeDeal(dealId: string, values: CloseDealValues) {
       closed_reason: parsed.data.closed_reason,
       closed_notes: parsed.data.closed_notes,
       longterm_date: parsed.data.longterm_date,
-      probability: parsed.data.closed_type === 'won' ? 100 : 0,
+      probability: parsed.data.closed_type === 'won' ? 100 : parsed.data.closed_type === 'longterm' ? stage.probability : 0,
     })
     .eq('id', dealId);
 
@@ -2429,7 +2432,7 @@ SELECT
   9800, '2026-04-15', 25,
   (SELECT id FROM user_profiles WHERE full_name = 'Pieter Claes'),
   '',
-  'c0000000-0000-0000-0000-000000000005'::uuid,
+  'c0000000-0000-0000-0000-000000000004'::uuid,
   '', 'cronos', 'Induxx', 'Peter Maes', 'peter@induxx.be'
 FROM pipelines p
 JOIN pipeline_stages ps ON ps.pipeline_id = p.id AND ps.name = 'CV/Info'

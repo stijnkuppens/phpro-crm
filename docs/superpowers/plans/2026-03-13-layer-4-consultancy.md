@@ -703,7 +703,6 @@ export const getBenchConsultants = cache(
         *,
         languages:bench_consultant_languages(*)
       `)
-      .order('priority', { ascending: true })
       .order('available_date', { ascending: true });
 
     if (!includeArchived) {
@@ -717,7 +716,9 @@ export const getBenchConsultants = cache(
       return [];
     }
 
-    return (data as unknown as BenchConsultantWithLanguages[]) ?? [];
+    const priorityOrder: Record<string, number> = { High: 1, Medium: 2, Low: 3 };
+    const sorted = data?.sort((a, b) => (priorityOrder[a.priority] ?? 99) - (priorityOrder[b.priority] ?? 99)) ?? [];
+    return sorted;
   },
 );
 ```
@@ -2368,20 +2369,23 @@ export function ConsultantListView({ consultants }: Props) {
 INSERT INTO bench_consultants (id, first_name, last_name, city, priority, available_date, min_hourly_rate, max_hourly_rate, roles, technologies, description, is_archived) VALUES
   ('b0000000-0000-0000-0000-000000000001', 'Sander', 'Vermeersch', 'Gent', 'High', '2026-03-01', 85, 110, ARRAY['Dev Senior', 'Tech Lead'], ARRAY['PHP', 'Magento', 'React', 'Docker'], 'Fullstack developer met 8 jaar ervaring.', false),
   ('b0000000-0000-0000-0000-000000000002', 'Nathalie', 'Claeys', 'Antwerpen', 'High', '2026-02-20', 75, 95, ARRAY['Analist', 'PO'], ARRAY['Jira', 'Confluence', 'Akeneo'], 'Ervaren business analist.', false),
-  ('b0000000-0000-0000-0000-000000000003', 'Robin', 'Janssens', 'Brussel', 'Low', '2026-04-15', 65, 80, ARRAY['Dev Medior'], ARRAY['Vue.js', 'Node.js', 'MySQL'], 'Frontend developer.', false);
+  ('b0000000-0000-0000-0000-000000000003', 'Robin', 'Janssens', 'Brussel', 'Low', '2026-04-15', 65, 80, ARRAY['Dev Medior'], ARRAY['Vue.js', 'Node.js', 'MySQL'], 'Frontend developer.', false)
+ON CONFLICT (id) DO NOTHING;
 
 INSERT INTO bench_consultant_languages (bench_consultant_id, language, level) VALUES
   ('b0000000-0000-0000-0000-000000000001', 'Nederlands', 'Moedertaal'),
   ('b0000000-0000-0000-0000-000000000001', 'Engels', 'Vloeiend'),
   ('b0000000-0000-0000-0000-000000000002', 'Nederlands', 'Moedertaal'),
   ('b0000000-0000-0000-0000-000000000002', 'Engels', 'Vloeiend'),
-  ('b0000000-0000-0000-0000-000000000003', 'Nederlands', 'Moedertaal');
+  ('b0000000-0000-0000-0000-000000000003', 'Nederlands', 'Moedertaal')
+ON CONFLICT DO NOTHING;
 
 -- ── Active Consultants ──────────────────────────────────────────────────────
 INSERT INTO active_consultants (id, account_id, first_name, last_name, role, city, is_active, start_date, end_date, is_indefinite, hourly_rate, notice_period_days, notes, is_stopped) VALUES
   ('cs000000-0000-0000-0000-000000000001', 'a0000000-0000-0000-0000-000000000001', 'Kevin', 'Martens', 'Dev Senior', 'Brussel', true, '2023-06-01', '2026-05-31', false, 122, 30, 'Kevin is een sterke developer.', false),
   ('cs000000-0000-0000-0000-000000000002', 'a0000000-0000-0000-0000-000000000001', 'Elien', 'De Wolf', 'Analist', 'Antwerpen', true, '2024-09-01', null, true, 108, 14, '', false),
-  ('cs000000-0000-0000-0000-000000000003', 'a0000000-0000-0000-0000-000000000003', 'Yasmine', 'El Amrani', 'Dev Medior', 'Antwerpen', true, '2024-03-01', '2025-12-31', false, 98, 30, '', false);
+  ('cs000000-0000-0000-0000-000000000003', 'a0000000-0000-0000-0000-000000000003', 'Yasmine', 'El Amrani', 'Dev Medior', 'Antwerpen', true, '2024-03-01', '2025-12-31', false, 98, 30, '', false)
+ON CONFLICT (id) DO NOTHING;
 
 -- ── Rate History ────────────────────────────────────────────────────────────
 INSERT INTO consultant_rate_history (active_consultant_id, date, rate, reason) VALUES
@@ -2389,30 +2393,35 @@ INSERT INTO consultant_rate_history (active_consultant_id, date, rate, reason) V
   ('cs000000-0000-0000-0000-000000000001', '2024-01-01', 115, 'Jaarlijkse indexering'),
   ('cs000000-0000-0000-0000-000000000001', '2025-01-01', 122, 'Jaarlijkse indexering'),
   ('cs000000-0000-0000-0000-000000000002', '2024-09-01', 108, 'Startdatum'),
-  ('cs000000-0000-0000-0000-000000000003', '2024-03-01', 98, 'Startdatum');
+  ('cs000000-0000-0000-0000-000000000003', '2024-03-01', 98, 'Startdatum')
+ON CONFLICT DO NOTHING;
 
 -- ── Contracts ───────────────────────────────────────────────────────────────
 INSERT INTO contracts (account_id, has_framework_contract, framework_pdf_url, framework_start, framework_end, framework_indefinite, has_service_contract, service_pdf_url, service_start, service_end, service_indefinite, purchase_orders_url) VALUES
   ('a0000000-0000-0000-0000-000000000001', true, 'raamcontract_techvision_2024.pdf', '2024-01-01', '2026-12-31', false, true, 'sla_techvision_2024.pdf', '2024-03-01', null, true, 'https://confluence.phpro.be/display/TV/Bestelbonnen'),
-  ('a0000000-0000-0000-0000-000000000003', true, 'raamcontract_medicare_2025.pdf', '2025-01-01', null, true, false, null, null, null, false, 'https://confluence.phpro.be/display/MC/Bestelbonnen');
+  ('a0000000-0000-0000-0000-000000000003', true, 'raamcontract_medicare_2025.pdf', '2025-01-01', null, true, false, null, null, null, false, 'https://confluence.phpro.be/display/MC/Bestelbonnen')
+ON CONFLICT DO NOTHING;
 
 -- ── Hourly Rates (TechVision) ───────────────────────────────────────────────
 INSERT INTO hourly_rates (account_id, year, role, rate) VALUES
   ('a0000000-0000-0000-0000-000000000001', 2025, 'PM', 145), ('a0000000-0000-0000-0000-000000000001', 2025, 'PO', 138), ('a0000000-0000-0000-0000-000000000001', 2025, 'Architect', 155), ('a0000000-0000-0000-0000-000000000001', 2025, 'Tech Lead', 148), ('a0000000-0000-0000-0000-000000000001', 2025, 'Dev Senior', 128), ('a0000000-0000-0000-0000-000000000001', 2025, 'Dev Medior', 108), ('a0000000-0000-0000-0000-000000000001', 2025, 'Dev Junior', 88), ('a0000000-0000-0000-0000-000000000001', 2025, 'Analist', 118), ('a0000000-0000-0000-0000-000000000001', 2025, 'UX Designer', 112), ('a0000000-0000-0000-0000-000000000001', 2025, 'QA Engineer', 98), ('a0000000-0000-0000-0000-000000000001', 2025, 'DevOps', 118), ('a0000000-0000-0000-0000-000000000001', 2025, 'Scrum Master', 125),
   ('a0000000-0000-0000-0000-000000000001', 2024, 'PM', 138), ('a0000000-0000-0000-0000-000000000001', 2024, 'PO', 130), ('a0000000-0000-0000-0000-000000000001', 2024, 'Architect', 148), ('a0000000-0000-0000-0000-000000000001', 2024, 'Tech Lead', 140), ('a0000000-0000-0000-0000-000000000001', 2024, 'Dev Senior', 122), ('a0000000-0000-0000-0000-000000000001', 2024, 'Dev Medior', 102), ('a0000000-0000-0000-0000-000000000001', 2024, 'Dev Junior', 82), ('a0000000-0000-0000-0000-000000000001', 2024, 'Analist', 112), ('a0000000-0000-0000-0000-000000000001', 2024, 'UX Designer', 105), ('a0000000-0000-0000-0000-000000000001', 2024, 'QA Engineer', 92), ('a0000000-0000-0000-0000-000000000001', 2024, 'DevOps', 112), ('a0000000-0000-0000-0000-000000000001', 2024, 'Scrum Master', 118),
-  ('a0000000-0000-0000-0000-000000000001', 2023, 'PM', 130), ('a0000000-0000-0000-0000-000000000001', 2023, 'PO', 122), ('a0000000-0000-0000-0000-000000000001', 2023, 'Architect', 140), ('a0000000-0000-0000-0000-000000000001', 2023, 'Tech Lead', 132), ('a0000000-0000-0000-0000-000000000001', 2023, 'Dev Senior', 115), ('a0000000-0000-0000-0000-000000000001', 2023, 'Dev Medior', 96), ('a0000000-0000-0000-0000-000000000001', 2023, 'Dev Junior', 76), ('a0000000-0000-0000-0000-000000000001', 2023, 'Analist', 105), ('a0000000-0000-0000-0000-000000000001', 2023, 'UX Designer', 98), ('a0000000-0000-0000-0000-000000000001', 2023, 'QA Engineer', 86), ('a0000000-0000-0000-0000-000000000001', 2023, 'DevOps', 105), ('a0000000-0000-0000-0000-000000000001', 2023, 'Scrum Master', 110);
+  ('a0000000-0000-0000-0000-000000000001', 2023, 'PM', 130), ('a0000000-0000-0000-0000-000000000001', 2023, 'PO', 122), ('a0000000-0000-0000-0000-000000000001', 2023, 'Architect', 140), ('a0000000-0000-0000-0000-000000000001', 2023, 'Tech Lead', 132), ('a0000000-0000-0000-0000-000000000001', 2023, 'Dev Senior', 115), ('a0000000-0000-0000-0000-000000000001', 2023, 'Dev Medior', 96), ('a0000000-0000-0000-0000-000000000001', 2023, 'Dev Junior', 76), ('a0000000-0000-0000-0000-000000000001', 2023, 'Analist', 105), ('a0000000-0000-0000-0000-000000000001', 2023, 'UX Designer', 98), ('a0000000-0000-0000-0000-000000000001', 2023, 'QA Engineer', 86), ('a0000000-0000-0000-0000-000000000001', 2023, 'DevOps', 105), ('a0000000-0000-0000-0000-000000000001', 2023, 'Scrum Master', 110)
+ON CONFLICT DO NOTHING;
 
 -- ── Hourly Rates (MediCare Plus) ────────────────────────────────────────────
 INSERT INTO hourly_rates (account_id, year, role, rate) VALUES
   ('a0000000-0000-0000-0000-000000000003', 2025, 'PM', 132), ('a0000000-0000-0000-0000-000000000003', 2025, 'PO', 125), ('a0000000-0000-0000-0000-000000000003', 2025, 'Architect', 142), ('a0000000-0000-0000-0000-000000000003', 2025, 'Tech Lead', 135), ('a0000000-0000-0000-0000-000000000003', 2025, 'Dev Senior', 115), ('a0000000-0000-0000-0000-000000000003', 2025, 'Dev Medior', 98), ('a0000000-0000-0000-0000-000000000003', 2025, 'Dev Junior', 78), ('a0000000-0000-0000-0000-000000000003', 2025, 'Analist', 108), ('a0000000-0000-0000-0000-000000000003', 2025, 'UX Designer', 102), ('a0000000-0000-0000-0000-000000000003', 2025, 'QA Engineer', 88), ('a0000000-0000-0000-0000-000000000003', 2025, 'DevOps', 108), ('a0000000-0000-0000-0000-000000000003', 2025, 'Scrum Master', 115),
   ('a0000000-0000-0000-0000-000000000003', 2024, 'PM', 125), ('a0000000-0000-0000-0000-000000000003', 2024, 'PO', 118), ('a0000000-0000-0000-0000-000000000003', 2024, 'Architect', 135), ('a0000000-0000-0000-0000-000000000003', 2024, 'Tech Lead', 128), ('a0000000-0000-0000-0000-000000000003', 2024, 'Dev Senior', 108), ('a0000000-0000-0000-0000-000000000003', 2024, 'Dev Medior', 92), ('a0000000-0000-0000-0000-000000000003', 2024, 'Dev Junior', 72), ('a0000000-0000-0000-0000-000000000003', 2024, 'Analist', 102), ('a0000000-0000-0000-0000-000000000003', 2024, 'UX Designer', 95), ('a0000000-0000-0000-0000-000000000003', 2024, 'QA Engineer', 82), ('a0000000-0000-0000-0000-000000000003', 2024, 'DevOps', 102), ('a0000000-0000-0000-0000-000000000003', 2024, 'Scrum Master', 108),
-  ('a0000000-0000-0000-0000-000000000003', 2023, 'PM', 118), ('a0000000-0000-0000-0000-000000000003', 2023, 'PO', 110), ('a0000000-0000-0000-0000-000000000003', 2023, 'Architect', 126), ('a0000000-0000-0000-0000-000000000003', 2023, 'Tech Lead', 120), ('a0000000-0000-0000-0000-000000000003', 2023, 'Dev Senior', 100), ('a0000000-0000-0000-0000-000000000003', 2023, 'Dev Medior', 85), ('a0000000-0000-0000-0000-000000000003', 2023, 'Dev Junior', 65), ('a0000000-0000-0000-0000-000000000003', 2023, 'Analist', 95), ('a0000000-0000-0000-0000-000000000003', 2023, 'UX Designer', 88), ('a0000000-0000-0000-0000-000000000003', 2023, 'QA Engineer', 76), ('a0000000-0000-0000-0000-000000000003', 2023, 'DevOps', 95), ('a0000000-0000-0000-0000-000000000003', 2023, 'Scrum Master', 100);
+  ('a0000000-0000-0000-0000-000000000003', 2023, 'PM', 118), ('a0000000-0000-0000-0000-000000000003', 2023, 'PO', 110), ('a0000000-0000-0000-0000-000000000003', 2023, 'Architect', 126), ('a0000000-0000-0000-0000-000000000003', 2023, 'Tech Lead', 120), ('a0000000-0000-0000-0000-000000000003', 2023, 'Dev Senior', 100), ('a0000000-0000-0000-0000-000000000003', 2023, 'Dev Medior', 85), ('a0000000-0000-0000-0000-000000000003', 2023, 'Dev Junior', 65), ('a0000000-0000-0000-0000-000000000003', 2023, 'Analist', 95), ('a0000000-0000-0000-0000-000000000003', 2023, 'UX Designer', 88), ('a0000000-0000-0000-0000-000000000003', 2023, 'QA Engineer', 76), ('a0000000-0000-0000-0000-000000000003', 2023, 'DevOps', 95), ('a0000000-0000-0000-0000-000000000003', 2023, 'Scrum Master', 100)
+ON CONFLICT DO NOTHING;
 
 -- ── SLA Rates (TechVision) ──────────────────────────────────────────────────
 INSERT INTO sla_rates (id, account_id, year, fixed_monthly_rate, support_hourly_rate) VALUES
   ('sla00000-0000-0000-0000-000000000001', 'a0000000-0000-0000-0000-000000000001', 2025, 3200, 145),
   ('sla00000-0000-0000-0000-000000000002', 'a0000000-0000-0000-0000-000000000001', 2024, 2900, 135),
-  ('sla00000-0000-0000-0000-000000000003', 'a0000000-0000-0000-0000-000000000001', 2023, 2600, 125);
+  ('sla00000-0000-0000-0000-000000000003', 'a0000000-0000-0000-0000-000000000001', 2023, 2600, 125)
+ON CONFLICT (id) DO NOTHING;
 
 INSERT INTO sla_tools (sla_rate_id, tool_name, monthly_price) VALUES
   ('sla00000-0000-0000-0000-000000000001', 'New Relic', 450),
@@ -2420,7 +2429,8 @@ INSERT INTO sla_tools (sla_rate_id, tool_name, monthly_price) VALUES
   ('sla00000-0000-0000-0000-000000000001', 'Pagerduty', 120),
   ('sla00000-0000-0000-0000-000000000002', 'New Relic', 420),
   ('sla00000-0000-0000-0000-000000000002', 'Graylog', 160),
-  ('sla00000-0000-0000-0000-000000000003', 'New Relic', 390);
+  ('sla00000-0000-0000-0000-000000000003', 'New Relic', 390)
+ON CONFLICT DO NOTHING;
 ```
 
 - [ ] **Step 2: Run the seed migration**
@@ -2514,6 +2524,22 @@ In the same file, replace the "Consultants" tab stub with `<AccountConsultantsTa
 git add src/features/accounts/components/account-detail.tsx
 git commit -m "feat(accounts): replace consultancy tab stubs with ContractsTab and AccountConsultantsTab"
 ```
+
+---
+
+## Task 10d: Business logic utilities
+
+**Files:**
+- Create: `src/lib/business-logic.ts`
+
+Port these functions from `demo_crm/src/utils.ts`:
+
+- `werkdagenTussen(start, end)` — count working days between two dates
+- `calcContactDatum(einddatum, opzegtermijn)` — end_date minus notice minus 30 days
+- `getEffectiveServices(manualServices, hasActiveConsultants)` — manual services + auto "Consultancy" if consultants active
+- `calcSlaTotal(slaRates)` — sum of (rate * quantity) for SLA items
+- `calcTarief(rate, startDate, endDate)` — rate * working days
+- `eindVanJaar(date)` — December 31 of the given date's year
 
 ---
 
