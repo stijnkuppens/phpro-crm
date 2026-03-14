@@ -1,0 +1,42 @@
+'use server';
+
+import { createServerClient } from '@/lib/supabase/server';
+import { requirePermission } from '@/lib/require-permission';
+import { logAction } from '@/features/audit/actions/log-action';
+import { revalidatePath } from 'next/cache';
+import { contactFormSchema, type ContactFormValues } from '../types';
+
+export async function createContact(values: ContactFormValues) {
+  await requirePermission('contacts.write');
+
+  const parsed = contactFormSchema.safeParse(values);
+  if (!parsed.success) {
+    return { error: parsed.error.flatten().fieldErrors };
+  }
+
+  const supabase = await createServerClient();
+  const { data, error } = await supabase
+    .from('contacts')
+    .insert(parsed.data)
+    .select('id')
+    .single();
+
+  if (error) {
+    return { error: error.message };
+  }
+
+  // Create empty personal info record
+  await supabase
+    .from('contact_personal_info')
+    .insert({ contact_id: data.id });
+
+  await logAction({
+    action: 'contact.created',
+    entityType: 'contact',
+    entityId: data.id,
+    metadata: { name: `${parsed.data.first_name} ${parsed.data.last_name}` },
+  });
+
+  revalidatePath('/admin/contacts');
+  return { data };
+}
