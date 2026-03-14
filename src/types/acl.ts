@@ -19,9 +19,11 @@ export type Permission =
   // Activities
   | 'activities.read'
   | 'activities.write'
+  | 'activities.delete'
   // Tasks
   | 'tasks.read'
   | 'tasks.write'
+  | 'tasks.delete'
   // Communications
   | 'communications.read'
   | 'communications.write'

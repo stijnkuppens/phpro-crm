@@ -727,6 +727,257 @@ export type Database = {
           },
         ];
       };
+      deals: {
+        Row: {
+          id: string;
+          title: string;
+          account_id: string;
+          pipeline_id: string;
+          stage_id: string;
+          amount: number | null;
+          close_date: string | null;
+          probability: number | null;
+          owner_id: string | null;
+          description: string | null;
+          contact_id: string | null;
+          lead_source: string | null;
+          origin: 'rechtstreeks' | 'cronos' | null;
+          cronos_cc: string | null;
+          cronos_contact: string | null;
+          cronos_email: string | null;
+          bench_consultant_id: string | null;
+          consultant_role: string | null;
+          forecast_category: 'Commit' | 'Best Case' | 'Pipeline' | 'Omit' | null;
+          closed_at: string | null;
+          closed_type: 'won' | 'lost' | 'longterm' | null;
+          closed_reason: string | null;
+          closed_notes: string | null;
+          longterm_date: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          title: string;
+          account_id: string;
+          pipeline_id: string;
+          stage_id: string;
+          amount?: number | null;
+          close_date?: string | null;
+          probability?: number | null;
+          owner_id?: string | null;
+          description?: string | null;
+          contact_id?: string | null;
+          lead_source?: string | null;
+          origin?: 'rechtstreeks' | 'cronos' | null;
+          cronos_cc?: string | null;
+          cronos_contact?: string | null;
+          cronos_email?: string | null;
+          bench_consultant_id?: string | null;
+          consultant_role?: string | null;
+          forecast_category?: 'Commit' | 'Best Case' | 'Pipeline' | 'Omit' | null;
+          closed_at?: string | null;
+          closed_type?: 'won' | 'lost' | 'longterm' | null;
+          closed_reason?: string | null;
+          closed_notes?: string | null;
+          longterm_date?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          title?: string;
+          account_id?: string;
+          pipeline_id?: string;
+          stage_id?: string;
+          amount?: number | null;
+          close_date?: string | null;
+          probability?: number | null;
+          owner_id?: string | null;
+          description?: string | null;
+          contact_id?: string | null;
+          lead_source?: string | null;
+          origin?: 'rechtstreeks' | 'cronos' | null;
+          cronos_cc?: string | null;
+          cronos_contact?: string | null;
+          cronos_email?: string | null;
+          bench_consultant_id?: string | null;
+          consultant_role?: string | null;
+          forecast_category?: 'Commit' | 'Best Case' | 'Pipeline' | 'Omit' | null;
+          closed_at?: string | null;
+          closed_type?: 'won' | 'lost' | 'longterm' | null;
+          closed_reason?: string | null;
+          closed_notes?: string | null;
+          longterm_date?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'deals_account_id_fkey';
+            columns: ['account_id'];
+            isOneToOne: false;
+            referencedRelation: 'accounts';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'deals_pipeline_id_fkey';
+            columns: ['pipeline_id'];
+            isOneToOne: false;
+            referencedRelation: 'pipelines';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'deals_stage_id_fkey';
+            columns: ['stage_id'];
+            isOneToOne: false;
+            referencedRelation: 'pipeline_stages';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'deals_owner_id_fkey';
+            columns: ['owner_id'];
+            isOneToOne: false;
+            referencedRelation: 'user_profiles';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'deals_contact_id_fkey';
+            columns: ['contact_id'];
+            isOneToOne: false;
+            referencedRelation: 'contacts';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      activities: {
+        Row: {
+          id: string;
+          type: 'Meeting' | 'Demo' | 'Call' | 'E-mail' | 'Lunch' | 'Event';
+          subject: string;
+          date: string;
+          duration_minutes: number | null;
+          account_id: string;
+          deal_id: string | null;
+          owner_id: string | null;
+          notes: Json | null;
+          is_done: boolean;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          type: 'Meeting' | 'Demo' | 'Call' | 'E-mail' | 'Lunch' | 'Event';
+          subject: string;
+          date: string;
+          duration_minutes?: number | null;
+          account_id: string;
+          deal_id?: string | null;
+          owner_id?: string | null;
+          notes?: Json | null;
+          is_done?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          type?: 'Meeting' | 'Demo' | 'Call' | 'E-mail' | 'Lunch' | 'Event';
+          subject?: string;
+          date?: string;
+          duration_minutes?: number | null;
+          account_id?: string;
+          deal_id?: string | null;
+          owner_id?: string | null;
+          notes?: Json | null;
+          is_done?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'activities_account_id_fkey';
+            columns: ['account_id'];
+            isOneToOne: false;
+            referencedRelation: 'accounts';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'activities_deal_id_fkey';
+            columns: ['deal_id'];
+            isOneToOne: false;
+            referencedRelation: 'deals';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'activities_owner_id_fkey';
+            columns: ['owner_id'];
+            isOneToOne: false;
+            referencedRelation: 'user_profiles';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      tasks: {
+        Row: {
+          id: string;
+          title: string;
+          due_date: string | null;
+          priority: 'High' | 'Medium' | 'Low';
+          status: 'Open' | 'In Progress' | 'Done';
+          account_id: string | null;
+          deal_id: string | null;
+          assigned_to: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          title: string;
+          due_date?: string | null;
+          priority?: 'High' | 'Medium' | 'Low';
+          status?: 'Open' | 'In Progress' | 'Done';
+          account_id?: string | null;
+          deal_id?: string | null;
+          assigned_to?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          title?: string;
+          due_date?: string | null;
+          priority?: 'High' | 'Medium' | 'Low';
+          status?: 'Open' | 'In Progress' | 'Done';
+          account_id?: string | null;
+          deal_id?: string | null;
+          assigned_to?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'tasks_account_id_fkey';
+            columns: ['account_id'];
+            isOneToOne: false;
+            referencedRelation: 'accounts';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'tasks_deal_id_fkey';
+            columns: ['deal_id'];
+            isOneToOne: false;
+            referencedRelation: 'deals';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'tasks_assigned_to_fkey';
+            columns: ['assigned_to'];
+            isOneToOne: false;
+            referencedRelation: 'user_profiles';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
     };
     Views: Record<string, never>;
     Functions: {
