@@ -9,32 +9,34 @@ import type { Contact } from '../types';
 
 const PAGE_SIZE = 25;
 
-export function ContactList() {
+type ContactListProps = {
+  initialData?: Contact[];
+  initialCount?: number;
+};
+
+export function ContactList({ initialData, initialCount }: ContactListProps) {
   const { data, total, loading, fetchList } = useEntity<Contact>({
     table: 'contacts',
     pageSize: PAGE_SIZE,
+    initialData,
+    initialCount,
   });
 
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
 
   const load = useCallback(() => {
-    fetchList({ page });
-  }, [fetchList, page]);
+    const orFilter = search
+      ? `first_name.ilike.%${search}%,last_name.ilike.%${search}%,email.ilike.%${search}%`
+      : undefined;
+
+    fetchList({ page, orFilter });
+  }, [fetchList, page, search]);
 
   useEffect(() => {
+    if (initialData && page === 1 && !search) return;
     load();
-  }, [load]);
-
-  const filtered = data.filter((c) => {
-    if (!search) return true;
-    const s = search.toLowerCase();
-    return (
-      c.first_name.toLowerCase().includes(s) ||
-      c.last_name.toLowerCase().includes(s) ||
-      (c.email ?? '').toLowerCase().includes(s)
-    );
-  });
+  }, [load, initialData, page, search]);
 
   return (
     <div className="space-y-4">
@@ -46,7 +48,7 @@ export function ContactList() {
       />
       <DataTable
         columns={contactColumns as any}
-        data={filtered}
+        data={data}
         pagination={{ page, pageSize: PAGE_SIZE, total }}
         onPageChange={setPage}
         loading={loading}

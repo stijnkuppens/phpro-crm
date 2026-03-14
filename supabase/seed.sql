@@ -20,3 +20,4 @@
 \ir fixtures/001_users.sql
 \ir fixtures/002_crm_data.sql
 \ir fixtures/003_sales.sql
+\ir fixtures/004_consultancy.sql

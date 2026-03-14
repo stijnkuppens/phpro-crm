@@ -1,8 +1,11 @@
 import Link from 'next/link';
 import { PageHeader } from '@/components/admin/page-header';
 import { AccountList } from '@/features/accounts/components/account-list';
+import { getAccounts } from '@/features/accounts/queries/get-accounts';
 
-export default function AccountsPage() {
+export default async function AccountsPage() {
+  const { data, count } = await getAccounts();
+
   return (
     <div className="space-y-6">
       <PageHeader
@@ -20,7 +23,7 @@ export default function AccountsPage() {
           </Link>
         }
       />
-      <AccountList />
+      <AccountList initialData={data} initialCount={count} />
     </div>
   );
 }

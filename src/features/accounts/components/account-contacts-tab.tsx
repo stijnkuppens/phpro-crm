@@ -19,14 +19,12 @@ export function AccountContactsTab({ accountId }: Props) {
   const [modalOpen, setModalOpen] = useState(false);
 
   const load = useCallback(() => {
-    fetchList({ page: 1 });
-  }, [fetchList]);
+    fetchList({ page: 1, eqFilters: { account_id: accountId } });
+  }, [fetchList, accountId]);
 
   useEffect(() => {
     load();
   }, [load]);
-
-  const contacts = data.filter((c) => c.account_id === accountId);
 
   return (
     <div className="space-y-4">
@@ -36,11 +34,11 @@ export function AccountContactsTab({ accountId }: Props) {
 
       {loading ? (
         <div className="py-8 text-center text-muted-foreground">Laden...</div>
-      ) : contacts.length === 0 ? (
+      ) : data.length === 0 ? (
         <div className="py-8 text-center text-muted-foreground">Geen contacten gevonden.</div>
       ) : (
         <div className="mt-4 space-y-3">
-          {contacts.map((contact) => (
+          {data.map((contact) => (
             <div key={contact.id} className="flex items-center gap-4 p-3 border rounded-lg">
               <div className="flex-1">
                 <div className="font-medium text-sm">

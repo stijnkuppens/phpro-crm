@@ -21,7 +21,4 @@ CREATE POLICY "Admins can manage indexation indices"
   USING (get_user_role() = 'admin')
   WITH CHECK (get_user_role() = 'admin');
 
--- Seed
-INSERT INTO indexation_indices (name, value) VALUES
-  ('Agoria', 3.1),
-  ('Agoria Digital', 2.8);
+-- Production data (indices) moved to supabase/data/003_indexation_indices.sql

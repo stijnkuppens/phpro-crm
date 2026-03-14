@@ -51,17 +51,22 @@ export function FileListView({
       setThumbnails({});
       return;
     }
+
+    let cancelled = false;
     const paths = imageFiles.map((f) => (currentPath ? `${currentPath}/${f.name}` : f.name));
     supabase.storage
       .from('documents')
       .createSignedUrls(paths, 3600)
       .then(({ data }) => {
+        if (cancelled) return;
         const map: Record<string, string> = {};
         data?.forEach((item, i) => {
           if (item.signedUrl) map[imageFiles[i].name] = withApiKey(item.signedUrl);
         });
         setThumbnails(map);
       });
+
+    return () => { cancelled = true; };
   }, [files, currentPath]);
 
   if (folders.length === 0 && files.length === 0) {

@@ -2,7 +2,9 @@
   "permissions": {
     "allow": [
       "Bash(git add:*)",
-      "Read(//Users/stijnkuppens/phpro/ai-projects/**)"
+      "Read(//Users/stijnkuppens/phpro/ai-projects/**)",
+      "Bash(docker compose:*)",
+      "WebSearch"
     ]
   }
 }

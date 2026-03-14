@@ -1,0 +1,70 @@
+'use server';
+
+import { z } from 'zod';
+import { createServerClient } from '@/lib/supabase/server';
+import { requirePermission } from '@/lib/require-permission';
+import { logAction } from '@/features/audit/actions/log-action';
+import { revalidatePath } from 'next/cache';
+import { ok, err, type ActionResult } from '@/lib/action-result';
+
+const rateChangeSchema = z.object({
+  date: z.string().min(1, 'Datum is verplicht'),
+  rate: z.coerce.number().min(0, 'Tarief is verplicht'),
+  reason: z.string().optional(),
+  notes: z.string().optional(),
+});
+
+export async function addRateChange(
+  id: string,
+  values: z.infer<typeof rateChangeSchema>,
+): Promise<ActionResult> {
+  if (!z.string().uuid().safeParse(id).success) return err('Ongeldig ID');
+  await requirePermission('consultants.write');
+
+  const parsed = rateChangeSchema.safeParse(values);
+  if (!parsed.success) {
+    return err(parsed.error.flatten().fieldErrors);
+  }
+
+  const supabase = await createServerClient();
+
+  const { error: historyError } = await supabase
+    .from('consultant_rate_history')
+    .insert({
+      active_consultant_id: id,
+      date: parsed.data.date,
+      rate: parsed.data.rate,
+      reason: parsed.data.reason ?? null,
+      notes: parsed.data.notes ?? null,
+    });
+
+  if (historyError) {
+    return err(historyError.message);
+  }
+
+  // Only update the current hourly_rate if the rate change is effective today or earlier
+  const rateDate = new Date(parsed.data.date);
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  if (rateDate <= today) {
+    const { error: updateError } = await supabase
+      .from('active_consultants')
+      .update({ hourly_rate: parsed.data.rate })
+      .eq('id', id);
+
+    if (updateError) {
+      return err(updateError.message);
+    }
+  }
+
+  await logAction({
+    action: 'active_consultant.rate_changed',
+    entityType: 'active_consultant',
+    entityId: id,
+    metadata: { date: parsed.data.date, rate: parsed.data.rate, reason: parsed.data.reason ?? null },
+  });
+
+  revalidatePath('/admin/consultants');
+  return ok();
+}

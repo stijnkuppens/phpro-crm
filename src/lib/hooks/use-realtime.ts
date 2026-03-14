@@ -11,20 +11,38 @@ type RealtimeEvent = {
   timestamp: string;
 };
 
+type UseRealtimeOptions = {
+  /** Row-level filter to scope events, e.g. "user_id=eq.abc-123" */
+  filter?: string;
+};
+
 export function useRealtime<T extends Record<string, unknown>>(
   table: string,
   initialData: T[],
+  options?: UseRealtimeOptions,
 ) {
   const [data, setData] = useState<T[]>(initialData);
   const [events, setEvents] = useState<RealtimeEvent[]>([]);
 
   useEffect(() => {
     const supabase = createBrowserClient();
+
+    const channelConfig: {
+      event: '*';
+      schema: 'public';
+      table: string;
+      filter?: string;
+    } = { event: '*', schema: 'public', table };
+
+    if (options?.filter) {
+      channelConfig.filter = options.filter;
+    }
+
     const channel = supabase
-      .channel(`${table}-changes`)
+      .channel(`${table}-changes${options?.filter ? `-${options.filter}` : ''}`)
       .on(
         'postgres_changes',
-        { event: '*', schema: 'public', table },
+        channelConfig,
         (payload: RealtimePostgresChangesPayload<T>) => {
           // startTransition marks these updates as non-urgent, keeping UI responsive
           // during rapid Realtime event bursts
@@ -68,7 +86,7 @@ export function useRealtime<T extends Record<string, unknown>>(
       supabase.removeChannel(channel);
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [table]);
+  }, [table, options?.filter]);
 
   return { data, events };
 }

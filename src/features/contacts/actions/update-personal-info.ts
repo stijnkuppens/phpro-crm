@@ -4,13 +4,14 @@ import { createServerClient } from '@/lib/supabase/server';
 import { requirePermission } from '@/lib/require-permission';
 import { logAction } from '@/features/audit/actions/log-action';
 import { personalInfoFormSchema, type PersonalInfoFormValues } from '../types';
+import { ok, err, type ActionResult } from '@/lib/action-result';
 
-export async function updatePersonalInfo(contactId: string, values: PersonalInfoFormValues) {
+export async function updatePersonalInfo(contactId: string, values: PersonalInfoFormValues): Promise<ActionResult> {
   await requirePermission('contacts.write');
 
   const parsed = personalInfoFormSchema.safeParse(values);
   if (!parsed.success) {
-    return { error: parsed.error.flatten().fieldErrors };
+    return err(parsed.error.flatten().fieldErrors);
   }
 
   const supabase = await createServerClient();
@@ -24,7 +25,7 @@ export async function updatePersonalInfo(contactId: string, values: PersonalInfo
     );
 
   if (error) {
-    return { error: error.message };
+    return err(error.message);
   }
 
   await logAction({
@@ -33,5 +34,5 @@ export async function updatePersonalInfo(contactId: string, values: PersonalInfo
     entityId: contactId,
   });
 
-  return { success: true };
+  return ok();
 }

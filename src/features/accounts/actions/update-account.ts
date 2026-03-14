@@ -5,13 +5,14 @@ import { requirePermission } from '@/lib/require-permission';
 import { logAction } from '@/features/audit/actions/log-action';
 import { revalidatePath } from 'next/cache';
 import { accountFormSchema, type AccountFormValues } from '../types';
+import { ok, err, type ActionResult } from '@/lib/action-result';
 
-export async function updateAccount(id: string, values: AccountFormValues) {
+export async function updateAccount(id: string, values: AccountFormValues): Promise<ActionResult> {
   await requirePermission('accounts.write');
 
   const parsed = accountFormSchema.safeParse(values);
   if (!parsed.success) {
-    return { error: parsed.error.flatten().fieldErrors };
+    return err(parsed.error.flatten().fieldErrors);
   }
 
   const supabase = await createServerClient();
@@ -21,7 +22,7 @@ export async function updateAccount(id: string, values: AccountFormValues) {
     .eq('id', id);
 
   if (error) {
-    return { error: error.message };
+    return err(error.message);
   }
 
   await logAction({
@@ -32,5 +33,5 @@ export async function updateAccount(id: string, values: AccountFormValues) {
   });
 
   revalidatePath('/admin/accounts');
-  return { success: true };
+  return ok();
 }
