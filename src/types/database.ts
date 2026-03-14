@@ -237,6 +237,496 @@ export type Database = {
         };
         Relationships: [];
       };
+      accounts: {
+        Row: {
+          id: string;
+          name: string;
+          domain: string | null;
+          type: 'Klant' | 'Prospect' | 'Partner';
+          status: 'Actief' | 'Inactief';
+          industry: string | null;
+          size: string | null;
+          revenue: number | null;
+          phone: string | null;
+          website: string | null;
+          address: string | null;
+          country: string | null;
+          vat_number: string | null;
+          owner_id: string | null;
+          health: number | null;
+          managing_partner: string | null;
+          account_director: string | null;
+          team: string | null;
+          about: string | null;
+          phpro_contract: 'Geen' | 'Actief' | 'Inactief' | 'In onderhandeling';
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          name: string;
+          domain?: string | null;
+          type?: 'Klant' | 'Prospect' | 'Partner';
+          status?: 'Actief' | 'Inactief';
+          industry?: string | null;
+          size?: string | null;
+          revenue?: number | null;
+          phone?: string | null;
+          website?: string | null;
+          address?: string | null;
+          country?: string | null;
+          vat_number?: string | null;
+          owner_id?: string | null;
+          health?: number | null;
+          managing_partner?: string | null;
+          account_director?: string | null;
+          team?: string | null;
+          about?: string | null;
+          phpro_contract?: 'Geen' | 'Actief' | 'Inactief' | 'In onderhandeling';
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          name?: string;
+          domain?: string | null;
+          type?: 'Klant' | 'Prospect' | 'Partner';
+          status?: 'Actief' | 'Inactief';
+          industry?: string | null;
+          size?: string | null;
+          revenue?: number | null;
+          phone?: string | null;
+          website?: string | null;
+          address?: string | null;
+          country?: string | null;
+          vat_number?: string | null;
+          owner_id?: string | null;
+          health?: number | null;
+          managing_partner?: string | null;
+          account_director?: string | null;
+          team?: string | null;
+          about?: string | null;
+          phpro_contract?: 'Geen' | 'Actief' | 'Inactief' | 'In onderhandeling';
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'accounts_owner_id_fkey';
+            columns: ['owner_id'];
+            isOneToOne: false;
+            referencedRelation: 'user_profiles';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      account_manual_services: {
+        Row: {
+          id: string;
+          account_id: string;
+          service_name: string;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          account_id: string;
+          service_name: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          account_id?: string;
+          service_name?: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'account_manual_services_account_id_fkey';
+            columns: ['account_id'];
+            isOneToOne: false;
+            referencedRelation: 'accounts';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      account_tech_stacks: {
+        Row: {
+          id: string;
+          account_id: string;
+          technology: string;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          account_id: string;
+          technology: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          account_id?: string;
+          technology?: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'account_tech_stacks_account_id_fkey';
+            columns: ['account_id'];
+            isOneToOne: false;
+            referencedRelation: 'accounts';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      account_samenwerkingsvormen: {
+        Row: {
+          id: string;
+          account_id: string;
+          type: 'Project' | 'Continuous Dev.' | 'Ad Hoc' | 'Support' | 'Consultancy';
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          account_id: string;
+          type: 'Project' | 'Continuous Dev.' | 'Ad Hoc' | 'Support' | 'Consultancy';
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          account_id?: string;
+          type?: 'Project' | 'Continuous Dev.' | 'Ad Hoc' | 'Support' | 'Consultancy';
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'account_samenwerkingsvormen_account_id_fkey';
+            columns: ['account_id'];
+            isOneToOne: false;
+            referencedRelation: 'accounts';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      account_hosting: {
+        Row: {
+          id: string;
+          account_id: string;
+          provider: string;
+          environment: string | null;
+          url: string | null;
+          notes: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          account_id: string;
+          provider: string;
+          environment?: string | null;
+          url?: string | null;
+          notes?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          account_id?: string;
+          provider?: string;
+          environment?: string | null;
+          url?: string | null;
+          notes?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'account_hosting_account_id_fkey';
+            columns: ['account_id'];
+            isOneToOne: false;
+            referencedRelation: 'accounts';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      account_competence_centers: {
+        Row: {
+          id: string;
+          account_id: string;
+          cc_name: string;
+          contact_person: string | null;
+          email: string | null;
+          phone: string | null;
+          distribution: '4%' | '50/50' | null;
+          services: string[];
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          account_id: string;
+          cc_name: string;
+          contact_person?: string | null;
+          email?: string | null;
+          phone?: string | null;
+          distribution?: '4%' | '50/50' | null;
+          services?: string[];
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          account_id?: string;
+          cc_name?: string;
+          contact_person?: string | null;
+          email?: string | null;
+          phone?: string | null;
+          distribution?: '4%' | '50/50' | null;
+          services?: string[];
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'account_competence_centers_account_id_fkey';
+            columns: ['account_id'];
+            isOneToOne: false;
+            referencedRelation: 'accounts';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      account_services: {
+        Row: {
+          id: string;
+          account_id: string;
+          service_name: string;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          account_id: string;
+          service_name: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          account_id?: string;
+          service_name?: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'account_services_account_id_fkey';
+            columns: ['account_id'];
+            isOneToOne: false;
+            referencedRelation: 'accounts';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      contacts: {
+        Row: {
+          id: string;
+          account_id: string;
+          first_name: string;
+          last_name: string;
+          email: string | null;
+          phone: string | null;
+          title: string | null;
+          role: 'Decision Maker' | 'Influencer' | 'Champion' | 'Sponsor' | 'Technisch' | 'Financieel' | 'Operationeel' | 'Contact' | null;
+          is_steerco: boolean;
+          is_pinned: boolean;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          account_id: string;
+          first_name: string;
+          last_name: string;
+          email?: string | null;
+          phone?: string | null;
+          title?: string | null;
+          role?: 'Decision Maker' | 'Influencer' | 'Champion' | 'Sponsor' | 'Technisch' | 'Financieel' | 'Operationeel' | 'Contact' | null;
+          is_steerco?: boolean;
+          is_pinned?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          account_id?: string;
+          first_name?: string;
+          last_name?: string;
+          email?: string | null;
+          phone?: string | null;
+          title?: string | null;
+          role?: 'Decision Maker' | 'Influencer' | 'Champion' | 'Sponsor' | 'Technisch' | 'Financieel' | 'Operationeel' | 'Contact' | null;
+          is_steerco?: boolean;
+          is_pinned?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'contacts_account_id_fkey';
+            columns: ['account_id'];
+            isOneToOne: false;
+            referencedRelation: 'accounts';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      contact_personal_info: {
+        Row: {
+          id: string;
+          contact_id: string;
+          hobbies: string[];
+          marital_status: string | null;
+          has_children: boolean | null;
+          children_count: number | null;
+          children_names: string | null;
+          birthday: string | null;
+          partner_name: string | null;
+          partner_profession: string | null;
+          notes: string | null;
+          invite_dinner: boolean | null;
+          invite_event: boolean | null;
+          invite_gift: boolean | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          contact_id: string;
+          hobbies?: string[];
+          marital_status?: string | null;
+          has_children?: boolean | null;
+          children_count?: number | null;
+          children_names?: string | null;
+          birthday?: string | null;
+          partner_name?: string | null;
+          partner_profession?: string | null;
+          notes?: string | null;
+          invite_dinner?: boolean | null;
+          invite_event?: boolean | null;
+          invite_gift?: boolean | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          contact_id?: string;
+          hobbies?: string[];
+          marital_status?: string | null;
+          has_children?: boolean | null;
+          children_count?: number | null;
+          children_names?: string | null;
+          birthday?: string | null;
+          partner_name?: string | null;
+          partner_profession?: string | null;
+          notes?: string | null;
+          invite_dinner?: boolean | null;
+          invite_event?: boolean | null;
+          invite_gift?: boolean | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'contact_personal_info_contact_id_fkey';
+            columns: ['contact_id'];
+            isOneToOne: true;
+            referencedRelation: 'contacts';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      communications: {
+        Row: {
+          id: string;
+          account_id: string;
+          contact_id: string | null;
+          deal_id: string | null;
+          type: 'email' | 'note' | 'meeting' | 'call';
+          subject: string;
+          to: string | null;
+          date: string;
+          duration_minutes: number | null;
+          content: Json | null;
+          is_done: boolean;
+          owner_id: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          account_id: string;
+          contact_id?: string | null;
+          deal_id?: string | null;
+          type: 'email' | 'note' | 'meeting' | 'call';
+          subject: string;
+          to?: string | null;
+          date?: string;
+          duration_minutes?: number | null;
+          content?: Json | null;
+          is_done?: boolean;
+          owner_id?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          account_id?: string;
+          contact_id?: string | null;
+          deal_id?: string | null;
+          type?: 'email' | 'note' | 'meeting' | 'call';
+          subject?: string;
+          to?: string | null;
+          date?: string;
+          duration_minutes?: number | null;
+          content?: Json | null;
+          is_done?: boolean;
+          owner_id?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'communications_account_id_fkey';
+            columns: ['account_id'];
+            isOneToOne: false;
+            referencedRelation: 'accounts';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'communications_contact_id_fkey';
+            columns: ['contact_id'];
+            isOneToOne: false;
+            referencedRelation: 'contacts';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'communications_owner_id_fkey';
+            columns: ['owner_id'];
+            isOneToOne: false;
+            referencedRelation: 'user_profiles';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
     };
     Views: Record<string, never>;
     Functions: {
