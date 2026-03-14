@@ -5,13 +5,14 @@ import { requirePermission } from '@/lib/require-permission';
 import { logAction } from '@/features/audit/actions/log-action';
 import { revalidatePath } from 'next/cache';
 import { contactFormSchema, type ContactFormValues } from '../types';
+import { ok, err, type ActionResult } from '@/lib/action-result';
 
-export async function createContact(values: ContactFormValues) {
+export async function createContact(values: ContactFormValues): Promise<ActionResult<{ id: string }>> {
   await requirePermission('contacts.write');
 
   const parsed = contactFormSchema.safeParse(values);
   if (!parsed.success) {
-    return { error: parsed.error.flatten().fieldErrors };
+    return err(parsed.error.flatten().fieldErrors);
   }
 
   const supabase = await createServerClient();
@@ -22,7 +23,7 @@ export async function createContact(values: ContactFormValues) {
     .single();
 
   if (error) {
-    return { error: error.message };
+    return err(error.message);
   }
 
   // Create empty personal info record
@@ -38,5 +39,5 @@ export async function createContact(values: ContactFormValues) {
   });
 
   revalidatePath('/admin/contacts');
-  return { data };
+  return ok(data);
 }

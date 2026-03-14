@@ -5,13 +5,14 @@ import { requirePermission } from '@/lib/require-permission';
 import { logAction } from '@/features/audit/actions/log-action';
 import { revalidatePath } from 'next/cache';
 import { communicationFormSchema, type CommunicationFormValues } from '../types';
+import { ok, err, type ActionResult } from '@/lib/action-result';
 
-export async function createCommunication(values: CommunicationFormValues) {
+export async function createCommunication(values: CommunicationFormValues): Promise<ActionResult<{ id: string }>> {
   const { userId } = await requirePermission('communications.write');
 
   const parsed = communicationFormSchema.safeParse(values);
   if (!parsed.success) {
-    return { error: parsed.error.flatten().fieldErrors };
+    return err(parsed.error.flatten().fieldErrors);
   }
 
   const supabase = await createServerClient();
@@ -22,7 +23,7 @@ export async function createCommunication(values: CommunicationFormValues) {
     .single();
 
   if (error) {
-    return { error: error.message };
+    return err(error.message);
   }
 
   await logAction({
@@ -33,5 +34,5 @@ export async function createCommunication(values: CommunicationFormValues) {
   });
 
   revalidatePath('/admin/accounts');
-  return { data };
+  return ok(data);
 }

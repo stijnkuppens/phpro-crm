@@ -3,6 +3,7 @@
 import { createServerClient } from '@/lib/supabase/server';
 import { requirePermission } from '@/lib/require-permission';
 import { logAction } from '@/features/audit/actions/log-action';
+import { ok, err, type ActionResult } from '@/lib/action-result';
 
 type SubTable =
   | 'account_tech_stacks'
@@ -16,7 +17,7 @@ export async function addAccountRelation(
   accountId: string,
   table: SubTable,
   values: Record<string, unknown>,
-) {
+): Promise<ActionResult<{ id: string }>> {
   await requirePermission('accounts.write');
 
   const supabase = await createServerClient();
@@ -27,7 +28,7 @@ export async function addAccountRelation(
     .single();
 
   if (error) {
-    return { error: error.message };
+    return err(error.message);
   }
 
   await logAction({
@@ -37,14 +38,14 @@ export async function addAccountRelation(
     metadata: { account_id: accountId },
   });
 
-  return { data };
+  return ok(data);
 }
 
 export async function updateAccountRelation(
   table: SubTable,
   id: string,
   values: Record<string, unknown>,
-) {
+): Promise<ActionResult> {
   await requirePermission('accounts.write');
 
   const supabase = await createServerClient();
@@ -54,7 +55,7 @@ export async function updateAccountRelation(
     .eq('id', id);
 
   if (error) {
-    return { error: error.message };
+    return err(error.message);
   }
 
   await logAction({
@@ -63,13 +64,13 @@ export async function updateAccountRelation(
     entityId: id,
   });
 
-  return { success: true };
+  return ok();
 }
 
 export async function deleteAccountRelation(
   table: SubTable,
   id: string,
-) {
+): Promise<ActionResult> {
   await requirePermission('accounts.write');
 
   const supabase = await createServerClient();
@@ -79,7 +80,7 @@ export async function deleteAccountRelation(
     .eq('id', id);
 
   if (error) {
-    return { error: error.message };
+    return err(error.message);
   }
 
   await logAction({
@@ -88,7 +89,7 @@ export async function deleteAccountRelation(
     entityId: id,
   });
 
-  return { success: true };
+  return ok();
 }
 
 /**
@@ -101,7 +102,7 @@ export async function syncAccountStringRelation(
   table: 'account_tech_stacks' | 'account_samenwerkingsvormen' | 'account_manual_services' | 'account_services',
   field: string,
   values: string[],
-) {
+): Promise<ActionResult> {
   await requirePermission('accounts.write');
 
   const supabase = await createServerClient();
@@ -114,7 +115,7 @@ export async function syncAccountStringRelation(
     .eq('account_id', accountId);
 
   if (deleteError) {
-    return { error: deleteError.message };
+    return err(deleteError.message);
   }
 
   // Insert new
@@ -124,7 +125,7 @@ export async function syncAccountStringRelation(
       .insert(rows);
 
     if (insertError) {
-      return { error: insertError.message };
+      return err(insertError.message);
     }
   }
 
@@ -134,5 +135,5 @@ export async function syncAccountStringRelation(
     metadata: { account_id: accountId, count: values.length },
   });
 
-  return { success: true };
+  return ok();
 }

@@ -1,5 +1,6 @@
 'use server';
 
+import { z } from 'zod';
 import { createServerClient } from '@/lib/supabase/server';
 import { requirePermission } from '@/lib/require-permission';
 import { logAction } from '@/features/audit/actions/log-action';
@@ -10,6 +11,8 @@ export async function approveIndexation(
   accountId: string,
   draftId: string,
 ): Promise<ActionResult<void>> {
+  if (!z.string().uuid().safeParse(accountId).success) return err('Ongeldig account ID');
+  if (!z.string().uuid().safeParse(draftId).success) return err('Ongeldig draft ID');
   const { userId } = await requirePermission('indexation.approve');
 
   const supabase = await createServerClient();
@@ -33,6 +36,17 @@ export async function approveIndexation(
 
   if (draft.status !== 'draft') {
     return err('Draft is not in draft status');
+  }
+
+  // Mark as approved first to prevent double-apply on retry
+  const { error: markError } = await supabase
+    .from('indexation_drafts')
+    .update({ status: 'approved', approved_by: userId })
+    .eq('id', draftId)
+    .eq('status', 'draft');
+
+  if (markError) {
+    return err(markError.message);
   }
 
   const { target_year } = draft;

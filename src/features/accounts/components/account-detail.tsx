@@ -5,15 +5,23 @@ import { AccountOverviewTab } from './account-overview-tab';
 import { AccountContactsTab } from './account-contacts-tab';
 import { AccountCommunicationsTab } from './account-communications-tab';
 import { AccountDealsTab } from '@/features/deals/components/account-deals-tab';
+import { ContractsTab } from '@/features/contracts/components/contracts-tab';
+import { AccountConsultantsTab } from '@/features/consultants/components/account-consultants-tab';
 import type { AccountWithRelations } from '../types';
 import type { DealWithRelations } from '@/features/deals/types';
+import type { Contract, HourlyRate, SlaRateWithTools } from '@/features/contracts/types';
+import type { ActiveConsultantWithDetails } from '@/features/consultants/types';
 
 type Props = {
   account: AccountWithRelations;
   deals: DealWithRelations[];
+  contract: Contract | null;
+  hourlyRates: HourlyRate[];
+  slaRates: SlaRateWithTools[];
+  consultants: ActiveConsultantWithDetails[];
 };
 
-export function AccountDetail({ account, deals }: Props) {
+export function AccountDetail({ account, deals, contract, hourlyRates, slaRates, consultants }: Props) {
   return (
     <Tabs defaultValue="overview">
       <TabsList>
@@ -31,14 +39,10 @@ export function AccountDetail({ account, deals }: Props) {
         <AccountCommunicationsTab accountId={account.id} />
       </TabsContent>
       <TabsContent value="contracten">
-        <div className="py-8 text-center text-muted-foreground">
-          Contracten & Tarieven — beschikbaar na Layer 4
-        </div>
+        <ContractsTab contract={contract} hourlyRates={hourlyRates} slaRates={slaRates} />
       </TabsContent>
       <TabsContent value="consultants">
-        <div className="py-8 text-center text-muted-foreground">
-          Consultants — beschikbaar na Layer 4
-        </div>
+        <AccountConsultantsTab consultants={consultants} />
       </TabsContent>
       <TabsContent value="contacts">
         <AccountContactsTab accountId={account.id} />

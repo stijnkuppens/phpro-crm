@@ -15,6 +15,7 @@ export function NotificationList() {
 
   useEffect(() => {
     if (!user) return;
+    let cancelled = false;
     const supabase = createBrowserClient();
     supabase
       .from('notifications')
@@ -23,8 +24,10 @@ export function NotificationList() {
       .order('created_at', { ascending: false })
       .limit(50)
       .then(({ data }) => {
+        if (cancelled) return;
         if (data) setNotifications(data as Notification[]);
       });
+    return () => { cancelled = true; };
   }, [user]);
 
   const handleClick = useCallback(

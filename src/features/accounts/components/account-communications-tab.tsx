@@ -26,14 +26,12 @@ export function AccountCommunicationsTab({ accountId }: Props) {
   const [modalOpen, setModalOpen] = useState(false);
 
   const load = useCallback(() => {
-    fetchList({ page: 1 });
-  }, [fetchList]);
+    fetchList({ page: 1, eqFilters: { account_id: accountId } });
+  }, [fetchList, accountId]);
 
   useEffect(() => {
     load();
   }, [load]);
-
-  const comms = data.filter((c) => c.account_id === accountId);
 
   return (
     <div className="space-y-4">
@@ -43,11 +41,11 @@ export function AccountCommunicationsTab({ accountId }: Props) {
 
       {loading ? (
         <div className="py-8 text-center text-muted-foreground">Laden...</div>
-      ) : comms.length === 0 ? (
+      ) : data.length === 0 ? (
         <div className="py-8 text-center text-muted-foreground">Geen communicatie gevonden.</div>
       ) : (
         <div className="mt-4 space-y-3">
-          {comms.map((comm) => (
+          {data.map((comm) => (
             <div key={comm.id} className="p-3 border rounded-lg">
               <div className="flex items-center gap-3 mb-1">
                 <Badge variant="outline">{TYPE_LABELS[comm.type] ?? comm.type}</Badge>

@@ -8,6 +8,7 @@ const clientSchema = z.object({
 const serverSchema = z.object({
   SUPABASE_URL: z.string().min(1),
   SUPABASE_SERVICE_ROLE_KEY: z.string().min(1),
+  WEBHOOK_SECRET: z.string().min(1).optional(),
 });
 
 function validateEnv<T extends z.ZodType>(schema: T, env: Record<string, unknown>, label: string): z.infer<T> {
@@ -39,6 +40,7 @@ export function getServerEnv() {
     _serverEnv = validateEnv(serverSchema, {
       SUPABASE_URL: process.env.SUPABASE_URL,
       SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY,
+      WEBHOOK_SECRET: process.env.WEBHOOK_SECRET,
     }, 'server');
   }
   return _serverEnv;

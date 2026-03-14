@@ -5,7 +5,9 @@ import { requirePermission } from '@/lib/require-permission';
 import { logAction } from '@/features/audit/actions/log-action';
 import { revalidatePath } from 'next/cache';
 
-export async function deleteAccount(id: string) {
+import { ok, err, type ActionResult } from '@/lib/action-result';
+
+export async function deleteAccount(id: string): Promise<ActionResult> {
   await requirePermission('accounts.delete');
 
   const supabase = await createServerClient();
@@ -15,7 +17,7 @@ export async function deleteAccount(id: string) {
     .eq('id', id);
 
   if (error) {
-    return { error: error.message };
+    return err(error.message);
   }
 
   await logAction({
@@ -25,5 +27,5 @@ export async function deleteAccount(id: string) {
   });
 
   revalidatePath('/admin/accounts');
-  return { success: true };
+  return ok();
 }

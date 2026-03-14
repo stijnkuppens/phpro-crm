@@ -10,7 +10,10 @@ import { getLocale, getMessages } from 'next-intl/server';
 const geist = Geist({ subsets: ['latin'], variable: '--font-sans' });
 
 export const metadata: Metadata = {
-  title: 'PHPro CRM',
+  title: {
+    default: 'PHPro CRM',
+    template: '%s — PHPro CRM',
+  },
   description: 'PHPro CRM application',
 };
 

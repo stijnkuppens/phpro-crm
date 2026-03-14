@@ -17,6 +17,7 @@ export const getIndexationDraft = cache(
       .eq('account_id', accountId)
       .eq('status', 'draft')
       .order('created_at', { ascending: false })
+      .limit(1)
       .maybeSingle();
 
     if (error) {

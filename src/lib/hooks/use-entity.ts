@@ -7,33 +7,39 @@ import type { Database } from '@/types/database';
 
 type TableName = keyof Database['public']['Tables'];
 
-type UseEntityOptions = {
+type UseEntityOptions<T> = {
   table: TableName;
   pageSize?: number;
+  initialData?: T[];
+  initialCount?: number;
 };
 
 export function useEntity<T extends Record<string, unknown>>({
   table,
   pageSize = 10,
-}: UseEntityOptions) {
+  initialData,
+  initialCount,
+}: UseEntityOptions<T>) {
   const supabase = createBrowserClient();
   // Targeted cast: .from() with a dynamic table name returns a union type that TS
   // can't narrow. We cast the query builder, not the entire client.
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const queryTable = (t: TableName) => supabase.from(t) as any;
-  const [data, setData] = useState<T[]>([]);
-  const [total, setTotal] = useState(0);
-  const [loading, setLoading] = useState(true);
+  const [data, setData] = useState<T[]>(initialData ?? []);
+  const [total, setTotal] = useState(initialCount ?? 0);
+  const [loading, setLoading] = useState(!initialData);
 
   const fetchList = useCallback(
     async (params: {
       page?: number;
       sort?: { column: string; direction: 'asc' | 'desc' };
       search?: { column: string; query: string };
+      orFilter?: string;
+      eqFilters?: Record<string, string>;
     } = {}) => {
       setLoading(true);
-      const { page = 1, sort, search } = params;
+      const { page = 1, sort, search, orFilter, eqFilters } = params;
       const from = (page - 1) * pageSize;
       const to = from + pageSize - 1;
 
@@ -49,6 +55,16 @@ export function useEntity<T extends Record<string, unknown>>({
 
       if (search?.query) {
         query = query.ilike(search.column, `%${search.query}%`);
+      }
+
+      if (orFilter) {
+        query = query.or(orFilter);
+      }
+
+      if (eqFilters) {
+        for (const [col, val] of Object.entries(eqFilters)) {
+          query = query.eq(col, val);
+        }
       }
 
       const { data: rows, count, error } = await query;

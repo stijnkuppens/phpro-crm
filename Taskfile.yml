@@ -35,7 +35,7 @@ tasks:
   db:migrate:
     desc: "Run all migration files against the database"
     cmds:
-      - for f in supabase/migrations/*.sql; do echo "Applying $(basename $f)..." && docker compose exec -T db psql -U postgres -d postgres < "$f"; done
+      - for f in supabase/migrations/*.sql; do echo "Applying $(basename $f)..." && docker compose exec -T db psql -U supabase_admin -h 127.0.0.1 -d postgres < "$f"; done
 
   db:new-migration:
     desc: "Create a new migration file (usage: task db:new-migration -- <name>)"
@@ -48,16 +48,28 @@ tasks:
         echo "Created $FILE"
 
   db:reset:
-    desc: "Drop and recreate the public schema, re-run migrations and seed"
+    desc: "Drop and recreate the public schema, re-run migrations, data, and fixtures"
     cmds:
-      - docker compose exec -T db psql -U postgres -d postgres -c "DROP SCHEMA public CASCADE; CREATE SCHEMA public; GRANT ALL ON SCHEMA public TO postgres; GRANT ALL ON SCHEMA public TO public;"
+      - docker compose exec -T db psql -U supabase_admin -h 127.0.0.1 -d postgres -c "DROP SCHEMA public CASCADE; CREATE SCHEMA public; GRANT ALL ON SCHEMA public TO postgres; GRANT USAGE ON SCHEMA public TO anon; GRANT USAGE ON SCHEMA public TO authenticated; GRANT USAGE ON SCHEMA public TO service_role; DELETE FROM auth.users;"
       - task: db:migrate
-      - task: db:seed
+      - task: db:data
+      - task: db:fixtures
 
   db:seed:
-    desc: "Seed the database"
+    desc: "Run both production data and demo fixtures"
     cmds:
-      - docker compose exec -T db psql -U postgres -d postgres < supabase/seed.sql
+      - task: db:data
+      - task: db:fixtures
+
+  db:data:
+    desc: "Apply production data migrations (safe for all environments)"
+    cmds:
+      - for f in supabase/data/*.sql; do echo "  $(basename $f)" && docker compose exec -T db psql -U supabase_admin -h 127.0.0.1 -d postgres -q < "$f"; done
+
+  db:fixtures:
+    desc: "Load demo fixtures (dev/staging only, never production)"
+    cmds:
+      - for f in supabase/fixtures/*.sql; do echo "  $(basename $f)" && docker compose exec -T db psql -U supabase_admin -h 127.0.0.1 -d postgres -q < "$f"; done
 
   db:studio:
     desc: "Open Supabase Studio in the browser"

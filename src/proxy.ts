@@ -68,7 +68,7 @@ export async function proxy(request: NextRequest) {
       .single();
     const role = data?.role as Role | undefined;
     if (!role) {
-      return NextResponse.redirect(new URL('/login', request.url));
+      return NextResponse.redirect(new URL('/no-access', request.url));
     }
 
     const match = routePermissions.find(([prefix]) =>

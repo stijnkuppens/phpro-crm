@@ -3,6 +3,10 @@ import { notFound } from 'next/navigation';
 import { PageHeader } from '@/components/admin/page-header';
 import { getAccount } from '@/features/accounts/queries/get-account';
 import { getDealsByAccount } from '@/features/deals/queries/get-deals-by-account';
+import { getContract } from '@/features/contracts/queries/get-contract';
+import { getHourlyRates } from '@/features/contracts/queries/get-hourly-rates';
+import { getSlaRates } from '@/features/contracts/queries/get-sla-rates';
+import { getConsultantsByAccount } from '@/features/consultants/queries/get-consultants-by-account';
 import { AccountDetail } from '@/features/accounts/components/account-detail';
 
 type Props = {
@@ -23,7 +27,13 @@ export default async function AccountDetailPage({ params }: Props) {
     notFound();
   }
 
-  const deals = await getDealsByAccount(id);
+  const [deals, contract, hourlyRates, slaRates, consultants] = await Promise.all([
+    getDealsByAccount(id),
+    getContract(id),
+    getHourlyRates(id),
+    getSlaRates(id),
+    getConsultantsByAccount(id),
+  ]);
 
   return (
     <div className="space-y-6">
@@ -35,7 +45,14 @@ export default async function AccountDetailPage({ params }: Props) {
           { label: account.name },
         ]}
       />
-      <AccountDetail account={account} deals={deals} />
+      <AccountDetail
+        account={account}
+        deals={deals}
+        contract={contract}
+        hourlyRates={hourlyRates}
+        slaRates={slaRates}
+        consultants={consultants}
+      />
     </div>
   );
 }

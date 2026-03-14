@@ -3,16 +3,20 @@
 import { requirePermission } from '@/lib/require-permission';
 import { createServiceRoleClient } from '@/lib/supabase/admin';
 import { logAction } from '@/features/audit/actions/log-action';
+import { ok, err, type ActionResult } from '@/lib/action-result';
 import type { Role } from '@/types/acl';
 
-export async function updateUserRole(userId: string, newRole: Role) {
+export async function updateUserRole(userId: string, newRole: Role): Promise<ActionResult> {
   await requirePermission('users.write');
   const admin = createServiceRoleClient();
   const { error } = await admin
     .from('user_profiles')
     .update({ role: newRole })
     .eq('id', userId);
-  if (error) throw new Error(error.message);
+
+  if (error) {
+    return err(error.message);
+  }
 
   await logAction({
     action: 'user.role_changed',
@@ -20,4 +24,6 @@ export async function updateUserRole(userId: string, newRole: Role) {
     entityId: userId,
     metadata: { newRole },
   });
+
+  return ok();
 }

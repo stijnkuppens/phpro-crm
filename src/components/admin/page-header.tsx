@@ -27,7 +27,7 @@ export function PageHeader({ title, breadcrumbs, actions }: PageHeaderProps) {
           <Breadcrumb>
             <BreadcrumbList>
               {breadcrumbs.map((item, i) => (
-                <Fragment key={item.label}>
+                <Fragment key={i}>
                   {i > 0 && <BreadcrumbSeparator />}
                   <BreadcrumbItem>
                     {item.href ? (

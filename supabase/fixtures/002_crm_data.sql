@@ -1,6 +1,6 @@
 -- ============================================================================
--- Seed: Core CRM data (accounts, contacts, communications)
--- Owner IDs are NULL — assign to real users after signup
+-- Demo Fixture: Sample CRM data (accounts, contacts, communications)
+-- DO NOT run in production.
 -- ============================================================================
 
 -- ── Accounts ────────────────────────────────────────────────────────────────
@@ -43,11 +43,13 @@ INSERT INTO contacts (id, account_id, first_name, last_name, email, phone, title
   ('c0000000-0000-0000-0000-000000000001', 'a0000000-0000-0000-0000-000000000001', 'Marc', 'Vanderberg', 'marc@techvision.be', '+32 475 123', 'CTO', 'Decision Maker', true, true),
   ('c0000000-0000-0000-0000-000000000002', 'a0000000-0000-0000-0000-000000000001', 'Lotte', 'Pieters', 'lotte@techvision.be', '+32 476 456', 'Project Manager', 'Operationeel', false, false),
   ('c0000000-0000-0000-0000-000000000003', 'a0000000-0000-0000-0000-000000000002', 'Dirk', 'Van Damme', 'dirk@greenlogistics.nl', '+31 6 123', 'CEO', 'Decision Maker', true, true),
-  ('c0000000-0000-0000-0000-000000000005', 'a0000000-0000-0000-0000-000000000003', 'Sarah', 'Leclercq', 'sarah@medicareplus.be', '+32 477 345', 'Managing Director', 'Decision Maker', true, true);
+  ('c0000000-0000-0000-0000-000000000005', 'a0000000-0000-0000-0000-000000000003', 'Sarah', 'Leclercq', 'sarah@medicareplus.be', '+32 477 345', 'Managing Director', 'Decision Maker', true, true)
+ON CONFLICT DO NOTHING;
 
 -- ── Contact Personal Info ───────────────────────────────────────────────────
 INSERT INTO contact_personal_info (contact_id, hobbies, marital_status, has_children, children_count, children_names, birthday, partner_name, partner_profession, notes, invite_dinner, invite_event, invite_gift) VALUES
   ('c0000000-0000-0000-0000-000000000001', ARRAY['Fietsen', 'Lopen'], 'Getrouwd', true, 2, 'Lena, Thomas', '15/03', 'Sophie', 'Advocate', 'Houdt van technologie en is een sterke beslisser. Prefers directe communicatie.', true, true, true),
   ('c0000000-0000-0000-0000-000000000002', '{}', '', false, 0, '', '', '', '', '', false, false, false),
   ('c0000000-0000-0000-0000-000000000003', ARRAY['Golf', 'Zeilen'], 'Getrouwd', true, 3, 'Emma, Jonas, Nina', '22/07', '', '', '', true, false, true),
-  ('c0000000-0000-0000-0000-000000000005', '{}', 'Single', false, 0, '', '04/11', '', '', '', false, true, false);
+  ('c0000000-0000-0000-0000-000000000005', '{}', 'Single', false, 0, '', '04/11', '', '', '', false, true, false)
+ON CONFLICT DO NOTHING;

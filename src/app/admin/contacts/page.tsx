@@ -1,7 +1,10 @@
 import { PageHeader } from '@/components/admin/page-header';
 import { ContactList } from '@/features/contacts/components/contact-list';
+import { getContacts } from '@/features/contacts/queries/get-contacts';
 
-export default function ContactsPage() {
+export default async function ContactsPage() {
+  const { data, count } = await getContacts();
+
   return (
     <div className="space-y-6">
       <PageHeader
@@ -11,7 +14,7 @@ export default function ContactsPage() {
           { label: 'Contacts' },
         ]}
       />
-      <ContactList />
+      <ContactList initialData={data} initialCount={count} />
     </div>
   );
 }

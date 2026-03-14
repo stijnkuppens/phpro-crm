@@ -93,7 +93,7 @@ CREATE TABLE consultant_contract_attributions (
   updated_at            timestamptz NOT NULL DEFAULT now()
 );
 CREATE TRIGGER set_updated_at BEFORE UPDATE ON consultant_contract_attributions FOR EACH ROW EXECUTE FUNCTION set_updated_at();
-CREATE INDEX idx_consultant_contract_attributions_consultant ON consultant_contract_attributions(active_consultant_id);
+CREATE UNIQUE INDEX idx_consultant_contract_attributions_consultant ON consultant_contract_attributions(active_consultant_id);
 ALTER TABLE consultant_contract_attributions ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "consultant_contract_attributions_select" ON consultant_contract_attributions FOR SELECT TO authenticated USING (true);
 CREATE POLICY "consultant_contract_attributions_write" ON consultant_contract_attributions FOR ALL TO authenticated USING (get_user_role() IN ('admin', 'sales_manager')) WITH CHECK (get_user_role() IN ('admin', 'sales_manager'));

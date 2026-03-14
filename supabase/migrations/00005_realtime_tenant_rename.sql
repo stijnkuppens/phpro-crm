@@ -1,6 +1,5 @@
 -- Rename the self-hosted realtime tenant from "realtime-dev" to "realtime"
 -- to match what the Supabase JS client sends as the tenant identifier.
--- Runs as supabase_admin (superuser) after migrations.
 DO $$
 BEGIN
   IF EXISTS (SELECT 1 FROM _realtime.tenants WHERE external_id = 'realtime-dev') THEN
