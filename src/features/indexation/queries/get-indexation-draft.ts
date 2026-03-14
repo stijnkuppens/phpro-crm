@@ -1,0 +1,29 @@
+import { cache } from 'react';
+import { createServerClient } from '@/lib/supabase/server';
+import type { IndexationDraftFull } from '../types';
+
+export const getIndexationDraft = cache(
+  async (accountId: string): Promise<IndexationDraftFull | null> => {
+    const supabase = await createServerClient();
+
+    const { data, error } = await supabase
+      .from('indexation_drafts')
+      .select(`
+        *,
+        rates:indexation_draft_rates(*),
+        sla:indexation_draft_sla(*),
+        sla_tools:indexation_draft_sla_tools(*)
+      `)
+      .eq('account_id', accountId)
+      .eq('status', 'draft')
+      .order('created_at', { ascending: false })
+      .maybeSingle();
+
+    if (error) {
+      console.error('Failed to fetch indexation draft:', error.message);
+      return null;
+    }
+
+    return data as unknown as IndexationDraftFull | null;
+  },
+);
