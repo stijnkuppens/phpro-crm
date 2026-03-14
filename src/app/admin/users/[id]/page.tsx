@@ -45,14 +45,14 @@ export default function UserDetailPage() {
   }, [id]);
 
   const handleRoleChange = (newRole: string | null) => {
-    if (!newRole || !['admin', 'editor', 'viewer'].includes(newRole)) return;
+    if (!newRole || !(roles as readonly string[]).includes(newRole)) return;
     const role = newRole as Role;
     startTransition(async () => {
       try {
         await updateUserRole(id, role);
         toast.success('Role updated');
         setProfile((prev) =>
-          prev ? { ...prev, role: newRole as 'admin' | 'editor' | 'viewer' } : prev,
+          prev ? { ...prev, role: role } : prev,
         );
       } catch (err) {
         toast.error(err instanceof Error ? err.message : 'Failed to update role');

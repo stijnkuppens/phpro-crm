@@ -1,4 +1,4 @@
-project_id = "phpro-vibe-starter"
+project_id = "phpro-crm"
 
 [db]
 port = 5432

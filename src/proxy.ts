@@ -5,15 +5,25 @@ import type { Permission, Role } from '@/types/acl';
 
 const routePermissions: [string, Permission][] = [
   ['/admin/notifications', 'notifications.read'],
-  ['/admin/contacts', 'contacts.read'],
   ['/admin/settings', 'settings.read'],
   ['/admin/users', 'users.read'],
   ['/admin/audit', 'audit.read'],
   ['/admin/files', 'files.read'],
-  ['/admin/demo', 'demo.read'],
+  ['/admin/accounts', 'accounts.read'],
+  ['/admin/contacts', 'contacts.read'],
+  ['/admin/deals', 'deals.read'],
+  ['/admin/activities', 'activities.read'],
+  ['/admin/tasks', 'tasks.read'],
+  ['/admin/bench', 'bench.read'],
+  ['/admin/consultants', 'consultants.read'],
+  ['/admin/people', 'hr.read'],
+  ['/admin/materials', 'equipment.read'],
+  ['/admin/revenue', 'revenue.read'],
+  ['/admin/prognose', 'prognose.read'],
+  ['/admin/pipeline', 'pipeline.read'],
 ];
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   let response = NextResponse.next({ request });
 
   const supabase = createServerClient(
