@@ -29,17 +29,18 @@ type Props = {
   pipelines: Pipeline[];
   initialDeals: DealWithRelations[];
   initialCount: number;
+  initialPipelineId: string;
 };
 
-export function DealsPageClient({ pipelines, initialDeals, initialCount }: Props) {
-  const [activePipeline, setActivePipeline] = useState(pipelines[0]?.id ?? '');
+export function DealsPageClient({ pipelines, initialDeals, initialCount, initialPipelineId }: Props) {
+  const [activePipeline, setActivePipeline] = useState(initialPipelineId);
   const [viewMode, setViewMode] = useState<'kanban' | 'list'>('kanban');
   const [deals, setDeals] = useState(initialDeals);
   const [total, setTotal] = useState(initialCount);
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(false);
 
-  const fetchDeals = useCallback(async () => {
+  const fetchDeals = useCallback(async (signal?: { cancelled: boolean }) => {
     setLoading(true);
     const supabase = createBrowserClient();
     const from = (page - 1) * 50;
@@ -55,26 +56,32 @@ export function DealsPageClient({ pipelines, initialDeals, initialCount }: Props
         stage:pipeline_stages!stage_id(id, name, color, probability, is_closed, is_won, is_longterm),
         pipeline:pipelines!pipeline_id(id, name, type)
       `, { count: 'exact' })
+      .eq('pipeline_id', activePipeline)
       .order('created_at', { ascending: false })
       .range(from, to);
 
+    if (signal?.cancelled) return;
     setDeals((data as unknown as DealWithRelations[]) ?? []);
     setTotal(count ?? 0);
     setLoading(false);
-  }, [page]);
+  }, [page, activePipeline]);
 
   useEffect(() => {
-    // Skip initial fetch — server provided data
-    if (page === 1) return;
-    let cancelled = false;
-    fetchDeals().then(() => { if (cancelled) return; });
-    return () => { cancelled = true; };
-  }, [fetchDeals, page]);
+    // Skip initial fetch — server provided data for the first pipeline + page 1
+    if (page === 1 && activePipeline === initialPipelineId) return;
+    const signal = { cancelled: false };
+    fetchDeals(signal);
+    return () => { signal.cancelled = true; };
+  }, [fetchDeals, page, activePipeline, initialPipelineId]);
+
+  // Reset to page 1 when switching pipelines
+  useEffect(() => {
+    setPage(1);
+  }, [activePipeline]);
 
   const pipeline = pipelines.find((p) => p.id === activePipeline);
-  const pipelineDeals = deals.filter((d) => d.pipeline_id === activePipeline);
 
-  const dealCards: DealCard[] = pipelineDeals
+  const dealCards: DealCard[] = deals
     .filter((d) => !d.closed_at)
     .map((d) => ({
       id: d.id,
@@ -82,8 +89,8 @@ export function DealsPageClient({ pipelines, initialDeals, initialCount }: Props
       amount: Number(d.amount ?? 0),
       probability: d.probability ?? 0,
       close_date: d.close_date,
-      account_name: (d as unknown as DealWithRelations).account?.name ?? '',
-      owner_name: (d as unknown as DealWithRelations).owner?.full_name ?? null,
+      account_name: d.account?.name ?? '',
+      owner_name: d.owner?.full_name ?? null,
       stage_id: d.stage_id,
       forecast_category: d.forecast_category,
     }));
@@ -120,11 +127,11 @@ export function DealsPageClient({ pipelines, initialDeals, initialCount }: Props
         <DealKanban
           stages={pipeline.stages}
           deals={dealCards}
-          onRefresh={fetchDeals}
+          onRefresh={() => fetchDeals()}
         />
       ) : (
         <DealList
-          deals={pipelineDeals as DealWithRelations[]}
+          deals={deals}
           page={page}
           total={total}
           onPageChange={setPage}

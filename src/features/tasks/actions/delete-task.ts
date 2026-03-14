@@ -7,7 +7,7 @@ import { revalidatePath } from 'next/cache';
 import { ok, err, type ActionResult } from '@/lib/action-result';
 
 export async function deleteTask(id: string): Promise<ActionResult> {
-  await requirePermission('tasks.write');
+  await requirePermission('tasks.delete');
 
   const supabase = await createServerClient();
   const { error } = await supabase

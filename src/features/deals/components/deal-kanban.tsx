@@ -10,6 +10,7 @@ import {
 } from '@dnd-kit/core';
 import { useDroppable } from '@dnd-kit/core';
 import { useDraggable } from '@dnd-kit/core';
+import { toast } from 'sonner';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { moveDealStage } from '../actions/move-deal-stage';
@@ -93,7 +94,10 @@ export function DealKanban({ stages, deals, onRefresh }: Props) {
     const dealId = active.id as string;
     const newStageId = over.id as string;
 
-    await moveDealStage(dealId, newStageId);
+    const result = await moveDealStage(dealId, newStageId);
+    if ('error' in result && result.error) {
+      toast.error(typeof result.error === 'string' ? result.error : 'Verplaatsen mislukt');
+    }
     onRefresh();
   }
 

@@ -6,16 +6,19 @@ import { DealsPageClient } from '@/features/deals/components/deals-page-client';
 export default async function DealsPage() {
   const supabase = await createServerClient();
 
-  const [{ data: pipelines }, { data: initialDeals, count: initialCount }] = await Promise.all([
-    supabase
-      .from('pipelines')
-      .select(`
-        id, name, type,
-        stages:pipeline_stages(id, name, color, sort_order, is_closed, is_won, is_longterm, probability)
-      `)
-      .order('sort_order', { ascending: true }),
-    getDeals(),
-  ]);
+  const { data: pipelines } = await supabase
+    .from('pipelines')
+    .select(`
+      id, name, type,
+      stages:pipeline_stages(id, name, color, sort_order, is_closed, is_won, is_longterm, probability)
+    `)
+    .order('sort_order', { ascending: true });
+
+  const firstPipelineId = pipelines?.[0]?.id ?? '';
+
+  const { data: initialDeals, count: initialCount } = await getDeals({
+    filters: firstPipelineId ? { pipeline_id: firstPipelineId } : undefined,
+  });
 
   return (
     <div className="space-y-6">
@@ -30,6 +33,7 @@ export default async function DealsPage() {
         pipelines={(pipelines as unknown as Parameters<typeof DealsPageClient>[0]['pipelines']) ?? []}
         initialDeals={initialDeals}
         initialCount={initialCount}
+        initialPipelineId={firstPipelineId}
       />
     </div>
   );

@@ -6,9 +6,15 @@ import { logAction } from '@/features/audit/actions/log-action';
 import { revalidatePath } from 'next/cache';
 import { closeDealSchema, type CloseDealValues } from '../types';
 import { ok, err, type ActionResult } from '@/lib/action-result';
+import { z } from 'zod';
 
 export async function closeDeal(dealId: string, values: CloseDealValues): Promise<ActionResult> {
   await requirePermission('deals.write');
+
+  const idResult = z.string().uuid().safeParse(dealId);
+  if (!idResult.success) {
+    return err('Invalid deal ID');
+  }
 
   const parsed = closeDealSchema.safeParse(values);
   if (!parsed.success) {
