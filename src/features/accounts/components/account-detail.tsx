@@ -4,6 +4,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { AccountOverviewTab } from './account-overview-tab';
 import { AccountContactsTab } from './account-contacts-tab';
 import { AccountCommunicationsTab } from './account-communications-tab';
+import { AccountDealsTab } from '@/features/deals/components/account-deals-tab';
 import type { AccountWithRelations } from '../types';
 
 type Props = {
@@ -41,9 +42,7 @@ export function AccountDetail({ account }: Props) {
         <AccountContactsTab accountId={account.id} />
       </TabsContent>
       <TabsContent value="deals">
-        <div className="py-8 text-center text-muted-foreground">
-          Deals — beschikbaar na Layer 3
-        </div>
+        <AccountDealsTab accountId={account.id} />
       </TabsContent>
     </Tabs>
   );
