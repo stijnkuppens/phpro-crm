@@ -1,6 +1,6 @@
 import { cache } from 'react';
 import { createServerClient } from '@/lib/supabase/server';
-import type { CommunicationWithDetails, CommunicationFilters } from '../types';
+import type { Communication, CommunicationWithDetails, CommunicationFilters } from '../types';
 
 type GetCommunicationsParams = {
   filters?: CommunicationFilters;
@@ -32,7 +32,7 @@ export const getCommunications = cache(
       query = query.eq('account_id', filters.account_id);
     }
     if (filters?.type) {
-      query = query.eq('type', filters.type);
+      query = query.eq('type', filters.type as Communication['type']);
     }
     if (filters?.contact_id) {
       query = query.eq('contact_id', filters.contact_id);

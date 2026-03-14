@@ -20,8 +20,8 @@ export async function addAccountRelation(
   await requirePermission('accounts.write');
 
   const supabase = await createServerClient();
-  const { data, error } = await supabase
-    .from(table)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { data, error } = await (supabase.from(table) as any)
     .insert({ ...values, account_id: accountId })
     .select('id')
     .single();
@@ -48,8 +48,8 @@ export async function updateAccountRelation(
   await requirePermission('accounts.write');
 
   const supabase = await createServerClient();
-  const { error } = await supabase
-    .from(table)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { error } = await (supabase.from(table) as any)
     .update(values)
     .eq('id', id);
 
@@ -73,8 +73,8 @@ export async function deleteAccountRelation(
   await requirePermission('accounts.write');
 
   const supabase = await createServerClient();
-  const { error } = await supabase
-    .from(table)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { error } = await (supabase.from(table) as any)
     .delete()
     .eq('id', id);
 
@@ -105,10 +105,11 @@ export async function syncAccountStringRelation(
   await requirePermission('accounts.write');
 
   const supabase = await createServerClient();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const queryTable = (t: string) => supabase.from(t) as any;
 
   // Delete existing
-  const { error: deleteError } = await supabase
-    .from(table)
+  const { error: deleteError } = await queryTable(table)
     .delete()
     .eq('account_id', accountId);
 
@@ -119,8 +120,7 @@ export async function syncAccountStringRelation(
   // Insert new
   if (values.length > 0) {
     const rows = values.map((v) => ({ account_id: accountId, [field]: v }));
-    const { error: insertError } = await supabase
-      .from(table)
+    const { error: insertError } = await queryTable(table)
       .insert(rows);
 
     if (insertError) {

@@ -1,6 +1,6 @@
 import { cache } from 'react';
 import { createServerClient } from '@/lib/supabase/server';
-import type { ContactWithDetails, ContactFilters } from '../types';
+import type { Contact, ContactWithDetails, ContactFilters } from '../types';
 
 type GetContactsParams = {
   filters?: ContactFilters;
@@ -35,7 +35,7 @@ export const getContacts = cache(
       query = query.eq('account_id', filters.account_id);
     }
     if (filters?.role) {
-      query = query.eq('role', filters.role);
+      query = query.eq('role', filters.role as NonNullable<Contact['role']>);
     }
     if (filters?.is_steerco !== undefined) {
       query = query.eq('is_steerco', filters.is_steerco);

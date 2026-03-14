@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useEffect } from 'react';
 import { useEntity } from '@/lib/hooks/use-entity';
-import { DataTable } from '@/components/admin/data-table';
+import DataTable from '@/components/admin/data-table';
 import { Input } from '@/components/ui/input';
 import { contactColumns } from '../columns';
 import type { Contact } from '../types';

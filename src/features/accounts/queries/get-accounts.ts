@@ -28,10 +28,10 @@ export const getAccounts = cache(
       query = query.or(`name.ilike.%${filters.search}%,domain.ilike.%${filters.search}%`);
     }
     if (filters?.type) {
-      query = query.eq('type', filters.type);
+      query = query.eq('type', filters.type as Account['type']);
     }
     if (filters?.status) {
-      query = query.eq('status', filters.status);
+      query = query.eq('status', filters.status as Account['status']);
     }
     if (filters?.owner_id) {
       query = query.eq('owner_id', filters.owner_id);

@@ -1,7 +1,6 @@
 import Link from 'next/link';
 import { PageHeader } from '@/components/admin/page-header';
 import { AccountList } from '@/features/accounts/components/account-list';
-import { Button } from '@/components/ui/button';
 
 export default function AccountsPage() {
   return (
@@ -13,9 +12,12 @@ export default function AccountsPage() {
           { label: 'Accounts' },
         ]}
         actions={
-          <Button asChild>
-            <Link href="/admin/accounts/new">Nieuw Account</Link>
-          </Button>
+          <Link
+            href="/admin/accounts/new"
+            className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
+          >
+            Nieuw Account
+          </Link>
         }
       />
       <AccountList />

@@ -26,7 +26,7 @@ export function AccountFiltersBar({ filters, onFilterChange }: Props) {
       />
       <Select
         value={filters.type ?? 'all'}
-        onValueChange={(v) => onFilterChange({ ...filters, type: v === 'all' ? undefined : v })}
+        onValueChange={(v) => onFilterChange({ ...filters, type: !v || v === 'all' ? undefined : v })}
       >
         <SelectTrigger className="w-32">
           <SelectValue placeholder="Type" />
@@ -40,7 +40,7 @@ export function AccountFiltersBar({ filters, onFilterChange }: Props) {
       </Select>
       <Select
         value={filters.status ?? 'all'}
-        onValueChange={(v) => onFilterChange({ ...filters, status: v === 'all' ? undefined : v })}
+        onValueChange={(v) => onFilterChange({ ...filters, status: !v || v === 'all' ? undefined : v })}
       >
         <SelectTrigger className="w-32">
           <SelectValue placeholder="Status" />
