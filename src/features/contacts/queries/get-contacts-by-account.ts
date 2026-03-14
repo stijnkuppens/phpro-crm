@@ -1,0 +1,26 @@
+import { cache } from 'react';
+import { createServerClient } from '@/lib/supabase/server';
+import type { ContactWithDetails } from '../types';
+
+export const getContactsByAccount = cache(
+  async (accountId: string): Promise<ContactWithDetails[]> => {
+    const supabase = await createServerClient();
+
+    const { data, error } = await supabase
+      .from('contacts')
+      .select(`
+        *,
+        personal_info:contact_personal_info(*)
+      `)
+      .eq('account_id', accountId)
+      .order('is_pinned', { ascending: false })
+      .order('last_name', { ascending: true });
+
+    if (error) {
+      console.error('Failed to fetch contacts by account:', error.message);
+      return [];
+    }
+
+    return (data as unknown as ContactWithDetails[]) ?? [];
+  },
+);
