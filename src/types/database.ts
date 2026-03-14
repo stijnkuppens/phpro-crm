@@ -978,6 +978,855 @@ export type Database = {
           },
         ];
       };
+      bench_consultants: {
+        Row: {
+          id: string;
+          first_name: string;
+          last_name: string;
+          city: string | null;
+          priority: 'High' | 'Medium' | 'Low';
+          available_date: string | null;
+          min_hourly_rate: number | null;
+          max_hourly_rate: number | null;
+          roles: string[];
+          technologies: string[];
+          description: string | null;
+          cv_pdf_url: string | null;
+          is_archived: boolean;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          first_name: string;
+          last_name: string;
+          city?: string | null;
+          priority?: 'High' | 'Medium' | 'Low';
+          available_date?: string | null;
+          min_hourly_rate?: number | null;
+          max_hourly_rate?: number | null;
+          roles?: string[];
+          technologies?: string[];
+          description?: string | null;
+          cv_pdf_url?: string | null;
+          is_archived?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          first_name?: string;
+          last_name?: string;
+          city?: string | null;
+          priority?: 'High' | 'Medium' | 'Low';
+          available_date?: string | null;
+          min_hourly_rate?: number | null;
+          max_hourly_rate?: number | null;
+          roles?: string[];
+          technologies?: string[];
+          description?: string | null;
+          cv_pdf_url?: string | null;
+          is_archived?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      bench_consultant_languages: {
+        Row: {
+          id: string;
+          bench_consultant_id: string;
+          language: string;
+          level: 'Basis' | 'Gevorderd' | 'Vloeiend' | 'Moedertaal';
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          bench_consultant_id: string;
+          language: string;
+          level: 'Basis' | 'Gevorderd' | 'Vloeiend' | 'Moedertaal';
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          bench_consultant_id?: string;
+          language?: string;
+          level?: 'Basis' | 'Gevorderd' | 'Vloeiend' | 'Moedertaal';
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'bench_consultant_languages_bench_consultant_id_fkey';
+            columns: ['bench_consultant_id'];
+            isOneToOne: false;
+            referencedRelation: 'bench_consultants';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      active_consultants: {
+        Row: {
+          id: string;
+          account_id: string | null;
+          first_name: string;
+          last_name: string;
+          role: string | null;
+          city: string | null;
+          cv_pdf_url: string | null;
+          is_active: boolean;
+          client_name: string | null;
+          client_city: string | null;
+          start_date: string;
+          end_date: string | null;
+          is_indefinite: boolean;
+          hourly_rate: number;
+          sow_url: string | null;
+          notice_period_days: number | null;
+          notes: string | null;
+          is_stopped: boolean;
+          stop_date: string | null;
+          stop_reason: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          account_id?: string | null;
+          first_name: string;
+          last_name: string;
+          role?: string | null;
+          city?: string | null;
+          cv_pdf_url?: string | null;
+          is_active?: boolean;
+          client_name?: string | null;
+          client_city?: string | null;
+          start_date: string;
+          end_date?: string | null;
+          is_indefinite?: boolean;
+          hourly_rate: number;
+          sow_url?: string | null;
+          notice_period_days?: number | null;
+          notes?: string | null;
+          is_stopped?: boolean;
+          stop_date?: string | null;
+          stop_reason?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          account_id?: string | null;
+          first_name?: string;
+          last_name?: string;
+          role?: string | null;
+          city?: string | null;
+          cv_pdf_url?: string | null;
+          is_active?: boolean;
+          client_name?: string | null;
+          client_city?: string | null;
+          start_date?: string;
+          end_date?: string | null;
+          is_indefinite?: boolean;
+          hourly_rate?: number;
+          sow_url?: string | null;
+          notice_period_days?: number | null;
+          notes?: string | null;
+          is_stopped?: boolean;
+          stop_date?: string | null;
+          stop_reason?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'active_consultants_account_id_fkey';
+            columns: ['account_id'];
+            isOneToOne: false;
+            referencedRelation: 'accounts';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      consultant_rate_history: {
+        Row: {
+          id: string;
+          active_consultant_id: string;
+          date: string;
+          rate: number;
+          reason: string | null;
+          notes: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          active_consultant_id: string;
+          date: string;
+          rate: number;
+          reason?: string | null;
+          notes?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          active_consultant_id?: string;
+          date?: string;
+          rate?: number;
+          reason?: string | null;
+          notes?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'consultant_rate_history_active_consultant_id_fkey';
+            columns: ['active_consultant_id'];
+            isOneToOne: false;
+            referencedRelation: 'active_consultants';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      consultant_extensions: {
+        Row: {
+          id: string;
+          active_consultant_id: string;
+          new_end_date: string;
+          notes: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          active_consultant_id: string;
+          new_end_date: string;
+          notes?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          active_consultant_id?: string;
+          new_end_date?: string;
+          notes?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'consultant_extensions_active_consultant_id_fkey';
+            columns: ['active_consultant_id'];
+            isOneToOne: false;
+            referencedRelation: 'active_consultants';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      consultant_contract_attributions: {
+        Row: {
+          id: string;
+          active_consultant_id: string;
+          type: 'rechtstreeks' | 'cronos';
+          contact_id: string | null;
+          cc_name: string | null;
+          cc_contact_person: string | null;
+          cc_email: string | null;
+          cc_phone: string | null;
+          cc_distribution: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          active_consultant_id: string;
+          type: 'rechtstreeks' | 'cronos';
+          contact_id?: string | null;
+          cc_name?: string | null;
+          cc_contact_person?: string | null;
+          cc_email?: string | null;
+          cc_phone?: string | null;
+          cc_distribution?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          active_consultant_id?: string;
+          type?: 'rechtstreeks' | 'cronos';
+          contact_id?: string | null;
+          cc_name?: string | null;
+          cc_contact_person?: string | null;
+          cc_email?: string | null;
+          cc_phone?: string | null;
+          cc_distribution?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'consultant_contract_attributions_active_consultant_id_fkey';
+            columns: ['active_consultant_id'];
+            isOneToOne: false;
+            referencedRelation: 'active_consultants';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'consultant_contract_attributions_contact_id_fkey';
+            columns: ['contact_id'];
+            isOneToOne: false;
+            referencedRelation: 'contacts';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      contracts: {
+        Row: {
+          id: string;
+          account_id: string;
+          has_framework_contract: boolean;
+          framework_pdf_url: string | null;
+          framework_start: string | null;
+          framework_end: string | null;
+          framework_indefinite: boolean;
+          has_service_contract: boolean;
+          service_pdf_url: string | null;
+          service_start: string | null;
+          service_end: string | null;
+          service_indefinite: boolean;
+          purchase_orders_url: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          account_id: string;
+          has_framework_contract?: boolean;
+          framework_pdf_url?: string | null;
+          framework_start?: string | null;
+          framework_end?: string | null;
+          framework_indefinite?: boolean;
+          has_service_contract?: boolean;
+          service_pdf_url?: string | null;
+          service_start?: string | null;
+          service_end?: string | null;
+          service_indefinite?: boolean;
+          purchase_orders_url?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          account_id?: string;
+          has_framework_contract?: boolean;
+          framework_pdf_url?: string | null;
+          framework_start?: string | null;
+          framework_end?: string | null;
+          framework_indefinite?: boolean;
+          has_service_contract?: boolean;
+          service_pdf_url?: string | null;
+          service_start?: string | null;
+          service_end?: string | null;
+          service_indefinite?: boolean;
+          purchase_orders_url?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'contracts_account_id_fkey';
+            columns: ['account_id'];
+            isOneToOne: true;
+            referencedRelation: 'accounts';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      hourly_rates: {
+        Row: {
+          id: string;
+          account_id: string;
+          year: number;
+          role: string;
+          rate: number;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          account_id: string;
+          year: number;
+          role: string;
+          rate: number;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          account_id?: string;
+          year?: number;
+          role?: string;
+          rate?: number;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'hourly_rates_account_id_fkey';
+            columns: ['account_id'];
+            isOneToOne: false;
+            referencedRelation: 'accounts';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      sla_rates: {
+        Row: {
+          id: string;
+          account_id: string;
+          year: number;
+          fixed_monthly_rate: number;
+          support_hourly_rate: number;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          account_id: string;
+          year: number;
+          fixed_monthly_rate?: number;
+          support_hourly_rate?: number;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          account_id?: string;
+          year?: number;
+          fixed_monthly_rate?: number;
+          support_hourly_rate?: number;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'sla_rates_account_id_fkey';
+            columns: ['account_id'];
+            isOneToOne: false;
+            referencedRelation: 'accounts';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      sla_tools: {
+        Row: {
+          id: string;
+          sla_rate_id: string;
+          tool_name: string;
+          monthly_price: number;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          sla_rate_id: string;
+          tool_name: string;
+          monthly_price?: number;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          sla_rate_id?: string;
+          tool_name?: string;
+          monthly_price?: number;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'sla_tools_sla_rate_id_fkey';
+            columns: ['sla_rate_id'];
+            isOneToOne: false;
+            referencedRelation: 'sla_rates';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      indexation_config: {
+        Row: {
+          id: string;
+          account_id: string;
+          indexation_type: string | null;
+          start_month: number | null;
+          start_year: number | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          account_id: string;
+          indexation_type?: string | null;
+          start_month?: number | null;
+          start_year?: number | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          account_id?: string;
+          indexation_type?: string | null;
+          start_month?: number | null;
+          start_year?: number | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'indexation_config_account_id_fkey';
+            columns: ['account_id'];
+            isOneToOne: true;
+            referencedRelation: 'accounts';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      indexation_drafts: {
+        Row: {
+          id: string;
+          account_id: string;
+          target_year: number;
+          base_year: number;
+          percentage: number;
+          status: 'draft' | 'approved' | 'rejected';
+          info: string | null;
+          adjustment_pct_hourly: number | null;
+          adjustment_pct_sla: number | null;
+          created_by: string | null;
+          approved_by: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          account_id: string;
+          target_year: number;
+          base_year: number;
+          percentage: number;
+          status?: 'draft' | 'approved' | 'rejected';
+          info?: string | null;
+          adjustment_pct_hourly?: number | null;
+          adjustment_pct_sla?: number | null;
+          created_by?: string | null;
+          approved_by?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          account_id?: string;
+          target_year?: number;
+          base_year?: number;
+          percentage?: number;
+          status?: 'draft' | 'approved' | 'rejected';
+          info?: string | null;
+          adjustment_pct_hourly?: number | null;
+          adjustment_pct_sla?: number | null;
+          created_by?: string | null;
+          approved_by?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'indexation_drafts_account_id_fkey';
+            columns: ['account_id'];
+            isOneToOne: false;
+            referencedRelation: 'accounts';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'indexation_drafts_created_by_fkey';
+            columns: ['created_by'];
+            isOneToOne: false;
+            referencedRelation: 'user_profiles';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'indexation_drafts_approved_by_fkey';
+            columns: ['approved_by'];
+            isOneToOne: false;
+            referencedRelation: 'user_profiles';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      indexation_draft_rates: {
+        Row: {
+          id: string;
+          draft_id: string;
+          role: string;
+          current_rate: number;
+          proposed_rate: number;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          draft_id: string;
+          role: string;
+          current_rate: number;
+          proposed_rate: number;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          draft_id?: string;
+          role?: string;
+          current_rate?: number;
+          proposed_rate?: number;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'indexation_draft_rates_draft_id_fkey';
+            columns: ['draft_id'];
+            isOneToOne: false;
+            referencedRelation: 'indexation_drafts';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      indexation_draft_sla: {
+        Row: {
+          id: string;
+          draft_id: string;
+          fixed_monthly_rate: number;
+          support_hourly_rate: number;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          draft_id: string;
+          fixed_monthly_rate?: number;
+          support_hourly_rate?: number;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          draft_id?: string;
+          fixed_monthly_rate?: number;
+          support_hourly_rate?: number;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'indexation_draft_sla_draft_id_fkey';
+            columns: ['draft_id'];
+            isOneToOne: true;
+            referencedRelation: 'indexation_drafts';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      indexation_draft_sla_tools: {
+        Row: {
+          id: string;
+          draft_id: string;
+          tool_name: string;
+          proposed_price: number;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          draft_id: string;
+          tool_name: string;
+          proposed_price?: number;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          draft_id?: string;
+          tool_name?: string;
+          proposed_price?: number;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'indexation_draft_sla_tools_draft_id_fkey';
+            columns: ['draft_id'];
+            isOneToOne: false;
+            referencedRelation: 'indexation_drafts';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      indexation_history: {
+        Row: {
+          id: string;
+          account_id: string;
+          date: string;
+          target_year: number;
+          percentage: number;
+          scenario: string | null;
+          info: string | null;
+          adjustment_pct_hourly: number | null;
+          adjustment_pct_sla: number | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          account_id: string;
+          date?: string;
+          target_year: number;
+          percentage: number;
+          scenario?: string | null;
+          info?: string | null;
+          adjustment_pct_hourly?: number | null;
+          adjustment_pct_sla?: number | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          account_id?: string;
+          date?: string;
+          target_year?: number;
+          percentage?: number;
+          scenario?: string | null;
+          info?: string | null;
+          adjustment_pct_hourly?: number | null;
+          adjustment_pct_sla?: number | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'indexation_history_account_id_fkey';
+            columns: ['account_id'];
+            isOneToOne: false;
+            referencedRelation: 'accounts';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      indexation_history_rates: {
+        Row: {
+          id: string;
+          history_id: string;
+          role: string;
+          rate: number;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          history_id: string;
+          role: string;
+          rate: number;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          history_id?: string;
+          role?: string;
+          rate?: number;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'indexation_history_rates_history_id_fkey';
+            columns: ['history_id'];
+            isOneToOne: false;
+            referencedRelation: 'indexation_history';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      indexation_history_sla: {
+        Row: {
+          id: string;
+          history_id: string;
+          fixed_monthly_rate: number;
+          support_hourly_rate: number;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          history_id: string;
+          fixed_monthly_rate?: number;
+          support_hourly_rate?: number;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          history_id?: string;
+          fixed_monthly_rate?: number;
+          support_hourly_rate?: number;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'indexation_history_sla_history_id_fkey';
+            columns: ['history_id'];
+            isOneToOne: true;
+            referencedRelation: 'indexation_history';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      indexation_history_sla_tools: {
+        Row: {
+          id: string;
+          history_id: string;
+          tool_name: string;
+          price: number;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          history_id: string;
+          tool_name: string;
+          price?: number;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          history_id?: string;
+          tool_name?: string;
+          price?: number;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'indexation_history_sla_tools_history_id_fkey';
+            columns: ['history_id'];
+            isOneToOne: false;
+            referencedRelation: 'indexation_history';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
     };
     Views: Record<string, never>;
     Functions: {
