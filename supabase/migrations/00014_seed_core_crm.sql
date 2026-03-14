@@ -1,40 +1,13 @@
 -- ============================================================================
 -- Seed: Core CRM data (accounts, contacts, communications)
--- Must run after user profile seed from Layer 1
+-- Owner IDs are NULL — assign to real users after signup
 -- ============================================================================
 
 -- ── Accounts ────────────────────────────────────────────────────────────────
-INSERT INTO accounts (id, name, domain, type, status, industry, size, revenue, phone, website, address, country, vat_number, owner_id, health, managing_partner, account_director, team, about, phpro_contract)
-SELECT
-  'a0000000-0000-0000-0000-000000000001'::uuid,
-  'TechVision NV', 'techvision.be', 'Klant', 'Actief', 'Technology', '51-200', 2500000,
-  '+32 2 123 45 67', 'www.techvision.be', 'Kunstlaan 56, 1000 Brussel', 'BE', 'BE0123.456.789',
-  up.id, 85, 'Jeroen', 'Bert', 'Team 1',
-  'TechVision is een Belgische enterprise software company gespecialiseerd in e-commerce en ERP-integraties.',
-  'Actief'
-FROM user_profiles up WHERE up.full_name = 'Sophie Willems'
-ON CONFLICT DO NOTHING;
-
-INSERT INTO accounts (id, name, domain, type, status, industry, size, revenue, phone, website, address, country, vat_number, owner_id, health, managing_partner, account_director, team, about, phpro_contract)
-SELECT
-  'a0000000-0000-0000-0000-000000000002'::uuid,
-  'GreenLogistics BV', 'greenlogistics.nl', 'Prospect', 'Actief', 'Logistics', '201-1000', 8000000,
-  '+31 20 987 65 43', 'www.greenlogistics.nl', 'Keizersgracht 112, 1017 Amsterdam', 'NL', 'NL123456789B01',
-  up.id, 45, 'Nathalie', 'Jeroen', 'Team 2',
-  '',
-  'Geen'
-FROM user_profiles up WHERE up.full_name = 'Pieter Claes'
-ON CONFLICT DO NOTHING;
-
-INSERT INTO accounts (id, name, domain, type, status, industry, size, revenue, phone, website, address, country, vat_number, owner_id, health, managing_partner, account_director, team, about, phpro_contract)
-SELECT
-  'a0000000-0000-0000-0000-000000000003'::uuid,
-  'MediCare Plus', 'medicareplus.be', 'Klant', 'Actief', 'Healthcare', '11-50', 750000,
-  '+32 3 456 78 90', 'www.medicareplus.be', 'Mechelsesteenweg 271, 2018 Antwerpen', 'BE', 'BE0987.654.321',
-  up.id, 72, 'Wim', 'Nathalie', 'Team 1',
-  'MediCare Plus is een toonaangevende zorginstelling in de Antwerpse regio.',
-  'Actief'
-FROM user_profiles up WHERE up.full_name = 'Pieter Claes'
+INSERT INTO accounts (id, name, domain, type, status, industry, size, revenue, phone, website, address, country, vat_number, owner_id, health, managing_partner, account_director, team, about, phpro_contract) VALUES
+  ('a0000000-0000-0000-0000-000000000001', 'TechVision NV', 'techvision.be', 'Klant', 'Actief', 'Technology', '51-200', 2500000, '+32 2 123 45 67', 'www.techvision.be', 'Kunstlaan 56, 1000 Brussel', 'BE', 'BE0123.456.789', NULL, 85, 'Jeroen', 'Bert', 'Team 1', 'TechVision is een Belgische enterprise software company gespecialiseerd in e-commerce en ERP-integraties.', 'Actief'),
+  ('a0000000-0000-0000-0000-000000000002', 'GreenLogistics BV', 'greenlogistics.nl', 'Prospect', 'Actief', 'Logistics', '201-1000', 8000000, '+31 20 987 65 43', 'www.greenlogistics.nl', 'Keizersgracht 112, 1017 Amsterdam', 'NL', 'NL123456789B01', NULL, 45, 'Nathalie', 'Jeroen', 'Team 2', '', 'Geen'),
+  ('a0000000-0000-0000-0000-000000000003', 'MediCare Plus', 'medicareplus.be', 'Klant', 'Actief', 'Healthcare', '11-50', 750000, '+32 3 456 78 90', 'www.medicareplus.be', 'Mechelsesteenweg 271, 2018 Antwerpen', 'BE', 'BE0987.654.321', NULL, 72, 'Wim', 'Nathalie', 'Team 1', 'MediCare Plus is een toonaangevende zorginstelling in de Antwerpse regio.', 'Actief')
 ON CONFLICT DO NOTHING;
 
 -- ── Account Tech Stacks ────────────────────────────────────────────────────
