@@ -1827,6 +1827,344 @@ export type Database = {
           },
         ];
       };
+      employees: {
+        Row: {
+          id: string;
+          first_name: string;
+          last_name: string;
+          date_of_birth: string | null;
+          city: string | null;
+          nationality: string | null;
+          education: string | null;
+          school: string | null;
+          marital_status: string | null;
+          emergency_contact_name: string | null;
+          emergency_contact_phone: string | null;
+          emergency_contact_relation: string | null;
+          hire_date: string;
+          termination_date: string | null;
+          job_title: string | null;
+          department: string | null;
+          status: 'actief' | 'inactief';
+          gross_salary: number | null;
+          email: string | null;
+          phone: string | null;
+          notes: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          first_name: string;
+          last_name: string;
+          date_of_birth?: string | null;
+          city?: string | null;
+          nationality?: string | null;
+          education?: string | null;
+          school?: string | null;
+          marital_status?: string | null;
+          emergency_contact_name?: string | null;
+          emergency_contact_phone?: string | null;
+          emergency_contact_relation?: string | null;
+          hire_date: string;
+          termination_date?: string | null;
+          job_title?: string | null;
+          department?: string | null;
+          status?: 'actief' | 'inactief';
+          gross_salary?: number | null;
+          email?: string | null;
+          phone?: string | null;
+          notes?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          first_name?: string;
+          last_name?: string;
+          date_of_birth?: string | null;
+          city?: string | null;
+          nationality?: string | null;
+          education?: string | null;
+          school?: string | null;
+          marital_status?: string | null;
+          emergency_contact_name?: string | null;
+          emergency_contact_phone?: string | null;
+          emergency_contact_relation?: string | null;
+          hire_date?: string;
+          termination_date?: string | null;
+          job_title?: string | null;
+          department?: string | null;
+          status?: 'actief' | 'inactief';
+          gross_salary?: number | null;
+          email?: string | null;
+          phone?: string | null;
+          notes?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      employee_children: {
+        Row: {
+          id: string;
+          employee_id: string;
+          name: string;
+          birth_year: number | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          employee_id: string;
+          name: string;
+          birth_year?: number | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          employee_id?: string;
+          name?: string;
+          birth_year?: number | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'employee_children_employee_id_fkey';
+            columns: ['employee_id'];
+            isOneToOne: false;
+            referencedRelation: 'employees';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      salary_history: {
+        Row: {
+          id: string;
+          employee_id: string;
+          date: string;
+          gross_salary: number;
+          reason: string | null;
+          recorded_by: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          employee_id: string;
+          date: string;
+          gross_salary: number;
+          reason?: string | null;
+          recorded_by?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          employee_id?: string;
+          date?: string;
+          gross_salary?: number;
+          reason?: string | null;
+          recorded_by?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'salary_history_employee_id_fkey';
+            columns: ['employee_id'];
+            isOneToOne: false;
+            referencedRelation: 'employees';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'salary_history_recorded_by_fkey';
+            columns: ['recorded_by'];
+            isOneToOne: false;
+            referencedRelation: 'user_profiles';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      equipment: {
+        Row: {
+          id: string;
+          employee_id: string;
+          type: string;
+          name: string;
+          serial_number: string | null;
+          date_issued: string;
+          date_returned: string | null;
+          notes: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          employee_id: string;
+          type: string;
+          name: string;
+          serial_number?: string | null;
+          date_issued: string;
+          date_returned?: string | null;
+          notes?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          employee_id?: string;
+          type?: string;
+          name?: string;
+          serial_number?: string | null;
+          date_issued?: string;
+          date_returned?: string | null;
+          notes?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'equipment_employee_id_fkey';
+            columns: ['employee_id'];
+            isOneToOne: false;
+            referencedRelation: 'employees';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      hr_documents: {
+        Row: {
+          id: string;
+          employee_id: string;
+          type: string;
+          name: string;
+          url: string | null;
+          date: string;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          employee_id: string;
+          type: string;
+          name: string;
+          url?: string | null;
+          date: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          employee_id?: string;
+          type?: string;
+          name?: string;
+          url?: string | null;
+          date?: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'hr_documents_employee_id_fkey';
+            columns: ['employee_id'];
+            isOneToOne: false;
+            referencedRelation: 'employees';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      leave_balances: {
+        Row: {
+          id: string;
+          employee_id: string;
+          year: number;
+          allowance: number;
+          taken: number;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          employee_id: string;
+          year: number;
+          allowance?: number;
+          taken?: number;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          employee_id?: string;
+          year?: number;
+          allowance?: number;
+          taken?: number;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'leave_balances_employee_id_fkey';
+            columns: ['employee_id'];
+            isOneToOne: false;
+            referencedRelation: 'employees';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      evaluations: {
+        Row: {
+          id: string;
+          employee_id: string;
+          date: string;
+          type: string;
+          score: string | null;
+          notes: string | null;
+          recorded_by: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          employee_id: string;
+          date: string;
+          type: string;
+          score?: string | null;
+          notes?: string | null;
+          recorded_by?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          employee_id?: string;
+          date?: string;
+          type?: string;
+          score?: string | null;
+          notes?: string | null;
+          recorded_by?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'evaluations_employee_id_fkey';
+            columns: ['employee_id'];
+            isOneToOne: false;
+            referencedRelation: 'employees';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'evaluations_recorded_by_fkey';
+            columns: ['recorded_by'];
+            isOneToOne: false;
+            referencedRelation: 'user_profiles';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
     };
     Views: Record<string, never>;
     Functions: {
