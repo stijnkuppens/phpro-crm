@@ -19,7 +19,9 @@ export async function createHrRecord(
   if (table === 'salary_history' || table === 'evaluations') {
     insertData.recorded_by = userId;
   }
-  const { data, error } = await supabase.from(table).insert(insertData).select('id').single();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const queryTable = supabase.from(table) as any;
+  const { data, error } = await queryTable.insert(insertData).select('id').single();
   if (error) return err(error.message);
 
   if (table === 'salary_history' && values.gross_salary) {
@@ -39,7 +41,8 @@ export async function updateHrRecord(
 ): Promise<ActionResult> {
   await requirePermission('hr.write');
   const supabase = await createServerClient();
-  const { error } = await supabase.from(table).update(values).eq('id', id);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { error } = await (supabase.from(table) as any).update(values).eq('id', id);
   if (error) return err(error.message);
   await logAction({ action: `${table}.updated`, entityType: table, entityId: id });
   revalidatePath('/admin/people');
@@ -50,7 +53,8 @@ export async function updateHrRecord(
 export async function deleteHrRecord(table: HrTable, id: string): Promise<ActionResult> {
   await requirePermission('hr.write');
   const supabase = await createServerClient();
-  const { error } = await supabase.from(table).delete().eq('id', id);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { error } = await (supabase.from(table) as any).delete().eq('id', id);
   if (error) return err(error.message);
   await logAction({ action: `${table}.deleted`, entityType: table, entityId: id });
   revalidatePath('/admin/people');

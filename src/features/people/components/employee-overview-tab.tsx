@@ -39,7 +39,7 @@ export function EmployeeOverviewTab({ employee }: Props) {
               <div className="mt-1 flex flex-wrap gap-1">
                 {employee.children.map((child) => (
                   <Badge key={child.id} variant="secondary">
-                    {child.first_name} {child.last_name}
+                    {child.name}{child.birth_year ? ` (${child.birth_year})` : ''}
                   </Badge>
                 ))}
               </div>

@@ -69,7 +69,7 @@ export function EmployeeList({ initialData, initialCount }: Props) {
           onChange={(e) => { setSearch(e.target.value); setPage(1); }}
           className="w-64"
         />
-        <Select value={status} onValueChange={(v) => { setStatus(v); setPage(1); }}>
+        <Select value={status} onValueChange={(v) => { if (v) { setStatus(v); setPage(1); } }}>
           <SelectTrigger className="w-32">
             <SelectValue placeholder="Status" />
           </SelectTrigger>
