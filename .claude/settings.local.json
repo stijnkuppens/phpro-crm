@@ -4,7 +4,9 @@
       "Bash(git add:*)",
       "Read(//Users/stijnkuppens/phpro/ai-projects/**)",
       "Bash(docker compose:*)",
-      "WebSearch"
+      "WebSearch",
+      "Bash(ls -la /Users/stijnkuppens/phpro/ai-projects/phpro_crm/src/app/\\\\\\(auth\\\\\\)/)",
+      "Bash(cat /Users/stijnkuppens/phpro/ai-projects/phpro_crm/src/app/\\\\\\(auth\\\\\\)/layout.tsx)"
     ]
   }
 }

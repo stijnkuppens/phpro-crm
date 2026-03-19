@@ -1827,6 +1827,333 @@ export type Database = {
           },
         ];
       };
+      divisions: {
+        Row: {
+          id: string;
+          name: string;
+          color: string | null;
+          sort_order: number;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          name: string;
+          color?: string | null;
+          sort_order?: number;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          name?: string;
+          color?: string | null;
+          sort_order?: number;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      division_services: {
+        Row: {
+          id: string;
+          division_id: string;
+          service_name: string;
+          sort_order: number;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          division_id: string;
+          service_name: string;
+          sort_order?: number;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          division_id?: string;
+          service_name?: string;
+          sort_order?: number;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'division_services_division_id_fkey';
+            columns: ['division_id'];
+            isOneToOne: false;
+            referencedRelation: 'divisions';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      revenue_clients: {
+        Row: {
+          id: string;
+          name: string;
+          account_id: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          name: string;
+          account_id?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          name?: string;
+          account_id?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'revenue_clients_account_id_fkey';
+            columns: ['account_id'];
+            isOneToOne: false;
+            referencedRelation: 'accounts';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      revenue_client_divisions: {
+        Row: {
+          id: string;
+          revenue_client_id: string;
+          division_id: string;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          revenue_client_id: string;
+          division_id: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          revenue_client_id?: string;
+          division_id?: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'revenue_client_divisions_revenue_client_id_fkey';
+            columns: ['revenue_client_id'];
+            isOneToOne: false;
+            referencedRelation: 'revenue_clients';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'revenue_client_divisions_division_id_fkey';
+            columns: ['division_id'];
+            isOneToOne: false;
+            referencedRelation: 'divisions';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      revenue_client_services: {
+        Row: {
+          id: string;
+          revenue_client_id: string;
+          division_id: string;
+          service_name: string;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          revenue_client_id: string;
+          division_id: string;
+          service_name: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          revenue_client_id?: string;
+          division_id?: string;
+          service_name?: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'revenue_client_services_revenue_client_id_fkey';
+            columns: ['revenue_client_id'];
+            isOneToOne: false;
+            referencedRelation: 'revenue_clients';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'revenue_client_services_division_id_fkey';
+            columns: ['division_id'];
+            isOneToOne: false;
+            referencedRelation: 'divisions';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      revenue_entries: {
+        Row: {
+          id: string;
+          revenue_client_id: string;
+          division_id: string;
+          service_name: string;
+          year: number;
+          month: number;
+          amount: number;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          revenue_client_id: string;
+          division_id: string;
+          service_name: string;
+          year: number;
+          month: number;
+          amount?: number;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          revenue_client_id?: string;
+          division_id?: string;
+          service_name?: string;
+          year?: number;
+          month?: number;
+          amount?: number;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'revenue_entries_revenue_client_id_fkey';
+            columns: ['revenue_client_id'];
+            isOneToOne: false;
+            referencedRelation: 'revenue_clients';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'revenue_entries_division_id_fkey';
+            columns: ['division_id'];
+            isOneToOne: false;
+            referencedRelation: 'divisions';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      account_revenue: {
+        Row: {
+          id: string;
+          account_id: string;
+          year: number;
+          category: string;
+          amount: number;
+          notes: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          account_id: string;
+          year: number;
+          category: string;
+          amount?: number;
+          notes?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          account_id?: string;
+          year?: number;
+          category?: string;
+          amount?: number;
+          notes?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'account_revenue_account_id_fkey';
+            columns: ['account_id'];
+            isOneToOne: false;
+            referencedRelation: 'accounts';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      pipeline_entries: {
+        Row: {
+          id: string;
+          deal_id: string | null;
+          client: string;
+          division_id: string;
+          service_name: string;
+          sold_month: number;
+          start_month: number;
+          duration: number;
+          total: number;
+          year: number;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          deal_id?: string | null;
+          client: string;
+          division_id: string;
+          service_name: string;
+          sold_month: number;
+          start_month: number;
+          duration?: number;
+          total?: number;
+          year: number;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          deal_id?: string | null;
+          client?: string;
+          division_id?: string;
+          service_name?: string;
+          sold_month?: number;
+          start_month?: number;
+          duration?: number;
+          total?: number;
+          year?: number;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'pipeline_entries_deal_id_fkey';
+            columns: ['deal_id'];
+            isOneToOne: false;
+            referencedRelation: 'deals';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'pipeline_entries_division_id_fkey';
+            columns: ['division_id'];
+            isOneToOne: false;
+            referencedRelation: 'divisions';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
     };
     Views: Record<string, never>;
     Functions: {
