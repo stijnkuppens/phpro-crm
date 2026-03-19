@@ -22,3 +22,4 @@
 \ir fixtures/003_sales.sql
 \ir fixtures/004_consultancy.sql
 \ir fixtures/005_finance.sql
+\ir fixtures/006_hr.sql
