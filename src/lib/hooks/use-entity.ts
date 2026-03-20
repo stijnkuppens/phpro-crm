@@ -36,7 +36,7 @@ export function useEntity<T extends Record<string, unknown>>({
       sort?: { column: string; direction: 'asc' | 'desc' };
       search?: { column: string; query: string };
       orFilter?: string;
-      eqFilters?: Record<string, string>;
+      eqFilters?: Record<string, string | boolean>;
     } = {}) => {
       setLoading(true);
       const { page = 1, sort, search, orFilter, eqFilters } = params;
