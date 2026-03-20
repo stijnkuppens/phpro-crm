@@ -38,6 +38,9 @@ export const getCommunications = cache(
     if (filters?.contact_id) {
       query = query.eq('contact_id', filters.contact_id);
     }
+    if (filters?.deal_id) {
+      query = query.eq('deal_id', filters.deal_id);
+    }
 
     const { data, count, error } = await query;
 

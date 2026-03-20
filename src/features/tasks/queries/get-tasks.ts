@@ -38,6 +38,9 @@ export const getTasks = cache(
     if (filters?.assigned_to) {
       query = query.eq('assigned_to', filters.assigned_to);
     }
+    if (filters?.deal_id) {
+      query = query.eq('deal_id', filters.deal_id);
+    }
 
     const { data, count, error } = await query;
 

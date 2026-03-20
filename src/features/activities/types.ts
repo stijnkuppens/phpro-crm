@@ -27,4 +27,5 @@ export type ActivityFilters = {
   type?: string;
   account_id?: string;
   is_done?: boolean;
+  deal_id?: string;
 };

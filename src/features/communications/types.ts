@@ -32,4 +32,5 @@ export type CommunicationFilters = {
   account_id?: string;
   type?: string;
   contact_id?: string;
+  deal_id?: string;
 };

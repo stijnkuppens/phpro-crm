@@ -25,4 +25,5 @@ export type TaskFilters = {
   status?: string;
   priority?: string;
   assigned_to?: string;
+  deal_id?: string;
 };

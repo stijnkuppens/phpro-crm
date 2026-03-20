@@ -41,6 +41,9 @@ export const getActivities = cache(
     if (filters?.is_done !== undefined) {
       query = query.eq('is_done', filters.is_done);
     }
+    if (filters?.deal_id) {
+      query = query.eq('deal_id', filters.deal_id);
+    }
 
     const { data, count, error } = await query;
 
