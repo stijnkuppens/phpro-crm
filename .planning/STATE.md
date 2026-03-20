@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 01-04-PLAN.md
-last_updated: "2026-03-20T13:39:23.648Z"
-last_activity: 2026-03-20 — Completed 01-03-PLAN.md (frontend dependencies)
+stopped_at: Completed 01-02-PLAN.md
+last_updated: "2026-03-20T13:47:01.001Z"
+last_activity: 2026-03-20 — Completed 01-02-PLAN.md (FK app code + expanded fixtures)
 progress:
   total_phases: 10
-  completed_phases: 0
+  completed_phases: 1
   total_plans: 4
-  completed_plans: 3
-  percent: 25
+  completed_plans: 4
+  percent: 75
 ---
 
 # Project State
@@ -26,11 +26,11 @@ See: .planning/PROJECT.md (updated 2026-03-20)
 ## Current Position
 
 Phase: 1 of 10 (Foundation & Reference Data)
-Plan: 1 of 4 in current phase
+Plan: 3 of 4 in current phase
 Status: Executing
-Last activity: 2026-03-20 — Completed 01-03-PLAN.md (frontend dependencies)
+Last activity: 2026-03-20 — Completed 01-02-PLAN.md (FK app code + expanded fixtures)
 
-Progress: [███░░░░░░░] 25%
+Progress: [████████░░] 75%
 
 ## Performance Metrics
 
@@ -52,6 +52,7 @@ Progress: [███░░░░░░░] 25%
 *Updated after each plan completion*
 | Phase 01 P01 | 4min | 2 tasks | 5 files |
 | Phase 01 P04 | 4min | 2 tasks | 7 files |
+| Phase 01 P02 | 10min | 2 tasks | 9 files |
 
 ## Accumulated Context
 
@@ -69,6 +70,8 @@ Recent decisions affecting current work:
 - [Phase 01]: Merged CONSULTANT_ROLES and TARIEF_ROLLEN into single ref_consultant_roles table (identical 12 roles)
 - [Phase 01]: FK migration seeds ref data inline before constraints for self-containment
 - [Phase 01]: Used browser Supabase client for ref table switch re-fetch to avoid full page reload
+- [Phase 01]: Replaced hardcoded constant arrays in account-form with referenceData prop pattern
+- [Phase 01]: Added WithRef type variants for FK-joined relations, keeping base Row types separate
 
 ### Pending Todos
 
@@ -82,6 +85,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-20T13:39:23.640Z
-Stopped at: Completed 01-04-PLAN.md
+Last session: 2026-03-20T13:47:00.992Z
+Stopped at: Completed 01-02-PLAN.md
 Resume file: None

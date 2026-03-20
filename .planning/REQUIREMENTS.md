@@ -10,7 +10,7 @@ Requirements for full feature parity with demo_crm. Each maps to roadmap phases.
 ### Foundation
 
 - [x] **FOUND-01**: All reference data tables populated in `supabase/data/` — competence centers (CC_NAMEN), CC services, consultant roles (TARIEF_ROLLEN), tech stack options, hosting providers, hosting environments, Agoria indices, language levels, hobby suggestions, SLA tool suggestions, contact roles, deal lead sources, verdeling opties
-- [ ] **FOUND-02**: All demo entity fixtures updated in `supabase/fixtures/` — sample accounts, contacts, deals, activities, tasks, bench consultants, active consultants, contracts, revenue entries, employees, equipment, HR documents, leave balances, evaluations
+- [x] **FOUND-02**: All demo entity fixtures updated in `supabase/fixtures/` — sample accounts, contacts, deals, activities, tasks, bench consultants, active consultants, contracts, revenue entries, employees, equipment, HR documents, leave balances, evaluations
 - [x] **FOUND-03**: Install recharts + shadcn chart component for analytics pages
 - [x] **FOUND-04**: Install react-number-format for currency input fields in tariff/revenue editors
 - [x] **FOUND-05**: Install nuqs for URL-based filter state on analytics pages
@@ -125,7 +125,7 @@ Deferred to future release. Not in demo or incremental improvement.
 | Requirement | Phase | Status |
 |-------------|-------|--------|
 | FOUND-01 | Phase 1 | Complete |
-| FOUND-02 | Phase 1 | Pending |
+| FOUND-02 | Phase 1 | Complete |
 | FOUND-03 | Phase 1 | Complete |
 | FOUND-04 | Phase 1 | Complete |
 | FOUND-05 | Phase 1 | Complete |
