@@ -38,11 +38,12 @@ created: 2026-03-20
 
 | Task ID | Plan | Wave | Requirement | Test Type | Automated Command | File Exists | Status |
 |---------|------|------|-------------|-----------|-------------------|-------------|--------|
-| 02-01-01 | 01 | 1 | ACCT-01 | type-check | `npx tsc --noEmit` | ✅ | ⬜ pending |
-| 02-02-01 | 02 | 1 | ACCT-03 | type-check | `npx tsc --noEmit` | ✅ | ⬜ pending |
-| 02-03-01 | 03 | 1 | ACCT-02, ACCT-06 | type-check | `npx tsc --noEmit` | ✅ | ⬜ pending |
-| 02-04-01 | 04 | 2 | ACCT-05 | type-check | `npx tsc --noEmit` | ✅ | ⬜ pending |
-| 02-05-01 | 05 | 2 | ACCT-04 | type-check | `npx tsc --noEmit` | ✅ | ⬜ pending |
+| 02-01-T1 | 01 | 1 | ACCT-01 | type-check | `npx tsc --noEmit` | ✅ | ⬜ pending |
+| 02-01-T2 | 01 | 1 | ACCT-01 | type-check | `npx tsc --noEmit` | ✅ | ⬜ pending |
+| 02-02-T1 | 02 | 1 | ACCT-03, ACCT-06 | type-check | `npx tsc --noEmit` | ✅ | ⬜ pending |
+| 02-02-T2 | 02 | 1 | ACCT-03, ACCT-06 | type-check | `npx tsc --noEmit` | ✅ | ⬜ pending |
+| 02-03-T1 | 03 | 2 | ACCT-01, ACCT-05 | type-check | `npx tsc --noEmit` | ✅ | ⬜ pending |
+| 02-03-T2 | 03 | 2 | ACCT-01, ACCT-05 | type-check | `npx tsc --noEmit` | ✅ | ⬜ pending |
 
 *Status: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky*
 
@@ -58,9 +59,8 @@ Existing infrastructure covers all phase requirements. No new test framework nee
 
 | Behavior | Requirement | Why Manual | Test Instructions |
 |----------|-------------|------------|-------------------|
-| All 7 tabs render with data | ACCT-01 | Visual UI verification | Navigate to account detail, click each tab |
+| All 8 tabs render with data | ACCT-01 | Visual UI verification | Navigate to account detail, click each tab |
 | Hosting CRUD persists | ACCT-03 | DB persistence check | Create/edit/delete hosting, refresh, verify |
-| Revenue CRUD grouped by year | ACCT-04 | Visual grouping check | Add revenue entries, verify year grouping |
 | Communication timeline with linked names | ACCT-05 | Visual + data check | Create communication, verify contact/deal badges |
 | Multi-select editors on edit page | ACCT-06 | Interactive UI check | Edit account, add/remove tech stacks, verify persist |
 
