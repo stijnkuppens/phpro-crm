@@ -2,10 +2,13 @@
 
 import { useState, useCallback, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { toast } from 'sonner';
+import { Eye, Pencil, Trash2 } from 'lucide-react';
 import { useEntity } from '@/lib/hooks/use-entity';
 import DataTable from '@/components/admin/data-table';
 import { AccountFiltersBar } from './account-filters';
 import { accountColumns } from '../columns';
+import { deleteAccount } from '../actions/delete-account';
 import type { Account, AccountFilters } from '../types';
 
 const PAGE_SIZE = 25;
@@ -50,6 +53,16 @@ export function AccountList({ initialData, initialCount }: AccountListProps) {
     load();
   }, [load, initialData, page, filters]);
 
+  const handleDelete = async (id: string) => {
+    const result = await deleteAccount(id);
+    if (result.success) {
+      toast.success('Account verwijderd');
+      load();
+    } else {
+      toast.error(typeof result.error === 'string' ? result.error : 'Verwijderen mislukt');
+    }
+  };
+
   return (
     <div className="space-y-4">
       <AccountFiltersBar filters={filters} onFilterChange={setFilters} />
@@ -59,6 +72,14 @@ export function AccountList({ initialData, initialCount }: AccountListProps) {
         pagination={{ page, pageSize: PAGE_SIZE, total }}
         onPageChange={setPage}
         loading={loading}
+        rowActions={(row) => [
+          { icon: Eye, label: 'Bekijken', onClick: () => router.push(`/admin/accounts/${row.id}`) },
+          { icon: Pencil, label: 'Bewerken', onClick: () => router.push(`/admin/accounts/${row.id}`) },
+          { icon: Trash2, label: 'Verwijderen', variant: 'destructive' as const, confirm: { title: 'Account verwijderen?', description: 'Dit verwijdert het account en alle gekoppelde gegevens.' }, onClick: () => handleDelete(row.id) },
+        ]}
+        bulkActions={[
+          { label: 'Verwijderen', variant: 'destructive' as const, confirm: { title: 'Accounts verwijderen?', description: 'Dit verwijdert de geselecteerde accounts permanent.' }, action: (ids) => ids.forEach((id) => handleDelete(id)) },
+        ]}
       />
     </div>
   );
