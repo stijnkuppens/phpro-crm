@@ -23,6 +23,7 @@ export const getCommunications = cache(
       .select(`
         *,
         contact:contacts!contact_id(id, first_name, last_name),
+        deal:deals!deal_id(id, title),
         owner:user_profiles!owner_id(id, full_name)
       `, { count: 'exact' })
       .order('date', { ascending: false })

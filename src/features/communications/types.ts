@@ -7,6 +7,7 @@ export type Communication = Database['public']['Tables']['communications']['Row'
 // ── Extended type ───────────────────────────────────────────────────────────
 export type CommunicationWithDetails = Communication & {
   contact: { id: string; first_name: string; last_name: string } | null;
+  deal: { id: string; title: string } | null;
   owner: { id: string; full_name: string | null } | null;
 };
 
