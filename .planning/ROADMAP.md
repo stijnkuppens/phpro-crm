@@ -73,14 +73,14 @@ Plans:
   5. Clicking "quick deal" from a bench consultant opens a pre-filled deal creation modal with consultant info populated
   6. All three pipelines (Projecten, RFP, Consultancy Profielen) display with their correct stages; kanban and list views both work
   7. Deal detail page shows activities, tasks, and communication linked to that specific deal
-**Plans**: TBD
+**Plans**: 5 plans
 
 Plans:
-- [ ] 03-01: Contact steerco flag and role tracking (migration for is_steerco + role field, types update, contact list/detail display, edit form)
-- [ ] 03-02: Contact personal info completeness audit and form completion (hobbies, marital status, children, birthday, partner info, invite preferences)
-- [ ] 03-03: Deal origin tracking (migration for origin type + CC metadata fields, types, form fields, list/detail display)
-- [ ] 03-04: Quick deal from bench (bench page UI button, pre-filled deal modal integration)
-- [ ] 03-05: Pipeline types and stages — ensure all 3 pipelines are seeded with correct stages, kanban and list views honour pipeline type
+- [ ] 03-01-PLAN.md — Contact steerco badge in list name column, role dropdown filter, steerco toggle filter, add missing "Steerco Lid" role
+- [ ] 03-02-PLAN.md — Contact personal info inline edit card on detail page (all 12 fields with edit/save toggle)
+- [ ] 03-03-PLAN.md — Deal origin badges in list and kanban, origin filter, 3 sub-views (Deals/Pipeline/Archief), server-side closed filtering
+- [ ] 03-04-PLAN.md — QuickDealModal with RFP/Consultancy toggle, bench pre-fill, deals page integration
+- [ ] 03-05-PLAN.md — Deal detail linked data tabs (activities, tasks, communications with deal_id filter)
 
 ### Phase 4: Contract Domain
 **Goal**: The contract tab on an account shows all 7 sections with DB persistence; the indexation wizard writes approved rates to the database; consultant attribution with split % is enforced
