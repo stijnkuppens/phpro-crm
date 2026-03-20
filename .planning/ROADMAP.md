@@ -34,12 +34,12 @@ Decimal phases appear between their surrounding integers in numeric order.
   2. Demo fixture data (sample accounts, contacts, deals, activities, bench consultants, active consultants, contracts, revenue entries, employees, equipment, HR documents, leave balances, evaluations) loads without FK constraint errors after `task db:fixtures`
   3. `recharts`, `react-number-format`, and `nuqs` are importable in the codebase without TypeScript or build errors
   4. Running `task db:reset` produces a fully seeded local DB where all reference selects return data
-**Plans**: TBD
+**Plans**: 3 plans
 
 Plans:
-- [ ] 01-01: Reference data SQL files in `supabase/data/` (CC_NAMEN, TARIEF_ROLLEN, SLA_TOOL_SUGGESTIONS, HOSTING_PROVIDERS, AGORIA_INDICES, CC_SERVICES, VERDELING_OPTIES, language levels, hobby suggestions, contact roles, deal lead sources)
-- [ ] 01-02: Demo fixtures completion in `supabase/fixtures/` (accounts, contacts, deals, activities, tasks, bench, active consultants, contracts, revenue entries, employees, equipment, HR documents, leave balances, evaluations)
-- [ ] 01-03: Install recharts + shadcn chart component, react-number-format, nuqs with correct versions and React 19 compatibility workarounds
+- [ ] 01-01-PLAN.md — Create 13 reference tables, seed production data, migrate junction tables to FK references
+- [ ] 01-02-PLAN.md — Update fixture files for FK references, expand demo data (10+ accounts, 20+ contacts), update application code (types, queries, actions, components)
+- [ ] 01-03-PLAN.md — Install recharts (shadcn chart), react-number-format, nuqs; add NuqsAdapter to root layout
 
 ### Phase 2: Account Detail Completion
 **Goal**: The account detail page is fully functional with all 7 tabs working against DB-persisted data, including hosting CRUD and per-account revenue entry
@@ -189,30 +189,30 @@ Plans:
 
 ### Phase 10: System Completeness
 **Goal**: All new routes have loading/error coverage, all new UI strings are in the i18n system, proxy.ts is accurate for all routes, all migrations have GRANT statements and RLS policies, and pipeline configuration is admin-manageable
-**Depends on**: Phases 1–9
+**Depends on**: Phases 1-9
 **Requirements**: ADMN-01, ADMN-02, ADMN-03, ADMN-04, ADMN-05
 **Success Criteria** (what must be TRUE):
   1. Admin can create, reorder, and delete pipeline stages for all three pipeline types from the admin panel — changes are reflected immediately in the deal creation form and kanban board
-  2. Every new route added in Phases 1–9 has a `loading.tsx` with a matching skeleton and an `error.tsx` with a contextual error message — no route shows a blank page or unhandled error during load
-  3. Switching the application language (Dutch ↔ English) shows correctly translated labels for every UI string introduced in Phases 1–9 — no hardcoded Dutch strings remain
-  4. All Supabase tables introduced in Phases 1–9 appear in `proxy.ts` with correct role mappings — navigating to any new route as an authenticated user does not produce a 403 or proxy error
-  5. All migrations introduced in Phases 1–9 have explicit `GRANT` statements and `CREATE POLICY` rules — RLS is enabled on every new table and the authenticated role can perform the operations the UI requires
+  2. Every new route added in Phases 1-9 has a `loading.tsx` with a matching skeleton and an `error.tsx` with a contextual error message — no route shows a blank page or unhandled error during load
+  3. Switching the application language (Dutch / English) shows correctly translated labels for every UI string introduced in Phases 1-9 — no hardcoded Dutch strings remain
+  4. All Supabase tables introduced in Phases 1-9 appear in `proxy.ts` with correct role mappings — navigating to any new route as an authenticated user does not produce a 403 or proxy error
+  5. All migrations introduced in Phases 1-9 have explicit `GRANT` statements and `CREATE POLICY` rules — RLS is enabled on every new table and the authenticated role can perform the operations the UI requires
 **Plans**: TBD
 
 Plans:
 - [ ] 10-01: Pipeline configuration admin page (CRUD for pipeline definitions and stage order for all 3 pipeline types)
-- [ ] 10-02: Loading/error coverage audit (create missing `loading.tsx` skeletons and `error.tsx` boundaries for all routes from Phases 1–9)
+- [ ] 10-02: Loading/error coverage audit (create missing `loading.tsx` skeletons and `error.tsx` boundaries for all routes from Phases 1-9)
 - [ ] 10-03: i18n completeness audit (scan all new components for hardcoded strings, add to `messages/nl.json` and `messages/en.json`)
 - [ ] 10-04: proxy.ts and RLS/grants audit (verify all new tables in proxy.ts, verify all migrations have GRANT + RLS + policies)
 
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 → 9 → 10
+Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9 -> 10
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Foundation & Reference Data | 0/3 | Not started | - |
+| 1. Foundation & Reference Data | 0/3 | Planning complete | - |
 | 2. Account Detail Completion | 0/5 | Not started | - |
 | 3. Contacts & Deals | 0/5 | Not started | - |
 | 4. Contract Domain | 0/6 | Not started | - |
