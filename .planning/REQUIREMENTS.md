@@ -21,7 +21,7 @@ Requirements for full feature parity with demo_crm. Each maps to roadmap phases.
 - [ ] **ACCT-02**: Account overview tab shows contract status, health score, tech stack, services, competence centers, samenwerkingsvormen
 - [x] **ACCT-03**: Account hosting environment CRUD — create/edit/delete hosting entries (provider, environment type, URL, notes) per account
 - [ ] **ACCT-04**: Account revenue tab (OmzetTab) — per-account revenue by category/year with create/edit/delete entries
-- [ ] **ACCT-05**: Account communication tab shows full interaction history (emails, notes, meetings, calls) with create modal
+- [x] **ACCT-05**: Account communication tab shows full interaction history (emails, notes, meetings, calls) with create modal
 - [x] **ACCT-06**: All account relation management working — tech stacks, manual services, hosting, competence centers as multi-select with CRUD
 
 ### Contacts
@@ -133,7 +133,7 @@ Deferred to future release. Not in demo or incremental improvement.
 | ACCT-02 | Phase 2 | Pending |
 | ACCT-03 | Phase 2 | Complete |
 | ACCT-04 | Phase 2 | Pending |
-| ACCT-05 | Phase 2 | Pending |
+| ACCT-05 | Phase 2 | Complete |
 | ACCT-06 | Phase 2 | Complete |
 | CONT-01 | Phase 3 | Pending |
 | CONT-02 | Phase 3 | Pending |
