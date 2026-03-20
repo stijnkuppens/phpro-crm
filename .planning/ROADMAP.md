@@ -34,13 +34,14 @@ Decimal phases appear between their surrounding integers in numeric order.
   2. Demo fixture data (sample accounts, contacts, deals, activities, bench consultants, active consultants, contracts, revenue entries, employees, equipment, HR documents, leave balances, evaluations) loads without FK constraint errors after `task db:fixtures`
   3. `recharts`, `react-number-format`, and `nuqs` are importable in the codebase without TypeScript or build errors
   4. Running `task db:reset` produces a fully seeded local DB where all reference selects return data
-**Plans**: 4 plans
+**Plans**: 5 plans
 
 Plans:
 - [ ] 01-01-PLAN.md — Create 13 reference tables, seed production data, migrate junction tables to FK references
 - [ ] 01-02-PLAN.md — Update fixture files for FK references, expand demo data (10+ accounts, 20+ contacts), update application code (types, queries, actions, components)
 - [ ] 01-03-PLAN.md — Install recharts (shadcn chart), react-number-format, nuqs; add NuqsAdapter to root layout
 - [ ] 01-04-PLAN.md — Admin UI for managing reference tables (CRUD for all 13 lookup tables)
+- [ ] 01-05-PLAN.md — Gap closure: create ref_lead_sources and ref_distribution_types tables + seed data + admin UI registration
 
 ### Phase 2: Account Detail Completion
 **Goal**: The account detail page is fully functional with all 7 tabs working against DB-persisted data, including hosting CRUD and per-account revenue entry
@@ -213,7 +214,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9 -> 10
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Foundation & Reference Data | 0/3 | Planning complete | - |
+| 1. Foundation & Reference Data | 0/5 | Planning complete | - |
 | 2. Account Detail Completion | 0/5 | Not started | - |
 | 3. Contacts & Deals | 0/5 | Not started | - |
 | 4. Contract Domain | 0/6 | Not started | - |
