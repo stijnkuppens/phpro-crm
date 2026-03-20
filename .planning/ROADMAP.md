@@ -34,12 +34,13 @@ Decimal phases appear between their surrounding integers in numeric order.
   2. Demo fixture data (sample accounts, contacts, deals, activities, bench consultants, active consultants, contracts, revenue entries, employees, equipment, HR documents, leave balances, evaluations) loads without FK constraint errors after `task db:fixtures`
   3. `recharts`, `react-number-format`, and `nuqs` are importable in the codebase without TypeScript or build errors
   4. Running `task db:reset` produces a fully seeded local DB where all reference selects return data
-**Plans**: 3 plans
+**Plans**: 4 plans
 
 Plans:
 - [ ] 01-01-PLAN.md — Create 13 reference tables, seed production data, migrate junction tables to FK references
 - [ ] 01-02-PLAN.md — Update fixture files for FK references, expand demo data (10+ accounts, 20+ contacts), update application code (types, queries, actions, components)
 - [ ] 01-03-PLAN.md — Install recharts (shadcn chart), react-number-format, nuqs; add NuqsAdapter to root layout
+- [ ] 01-04-PLAN.md — Admin UI for managing reference tables (CRUD for all 13 lookup tables)
 
 ### Phase 2: Account Detail Completion
 **Goal**: The account detail page is fully functional with all 7 tabs working against DB-persisted data, including hosting CRUD and per-account revenue entry
