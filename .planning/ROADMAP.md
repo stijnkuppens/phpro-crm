@@ -12,7 +12,7 @@ This roadmap ports every feature from the demo_crm Vue prototype into the produc
 
 Decimal phases appear between their surrounding integers in numeric order.
 
-- [ ] **Phase 1: Foundation & Reference Data** - Seed all reference data, complete fixtures, install additive libraries
+- [x] **Phase 1: Foundation & Reference Data** - Seed all reference data, complete fixtures, install additive libraries (completed 2026-03-20)
 - [ ] **Phase 2: Account Detail Completion** - All 7 account tabs fully functional with DB-backed CRUD
 - [ ] **Phase 3: Contacts & Deals** - Contact steerco/role/personal info complete; deal origin, bench shortcut, and pipelines working
 - [ ] **Phase 4: Contract Domain** - Full 7-section contract tab, hourly/SLA tariffs, indexation wizard persistence, attribution
@@ -214,7 +214,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9 -> 10
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Foundation & Reference Data | 0/5 | Planning complete | - |
+| 1. Foundation & Reference Data | 5/5 | Complete   | 2026-03-20 |
 | 2. Account Detail Completion | 0/5 | Not started | - |
 | 3. Contacts & Deals | 0/5 | Not started | - |
 | 4. Contract Domain | 0/6 | Not started | - |
