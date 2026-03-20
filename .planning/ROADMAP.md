@@ -213,7 +213,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9 -> 10
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Foundation & Reference Data | 5/5 | Complete   | 2026-03-20 |
-| 2. Account Detail Completion | 0/3 | Not started | - |
+| 2. Account Detail Completion | 2/3 | In Progress|  |
 | 3. Contacts & Deals | 0/5 | Not started | - |
 | 4. Contract Domain | 0/6 | Not started | - |
 | 5. Consultant Detail | 0/4 | Not started | - |
