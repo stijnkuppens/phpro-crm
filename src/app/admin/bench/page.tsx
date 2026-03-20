@@ -1,9 +1,18 @@
 import { PageHeader } from '@/components/admin/page-header';
 import { getBenchConsultants } from '@/features/bench/queries/get-bench-consultants';
 import { BenchGrid } from '@/features/bench/components/bench-grid';
+import { createServerClient } from '@/lib/supabase/server';
 
 export default async function BenchPage() {
-  const consultants = await getBenchConsultants();
+  const supabase = await createServerClient();
+
+  const [consultants, { data: pipelines }] = await Promise.all([
+    getBenchConsultants(),
+    supabase
+      .from('pipelines')
+      .select('id, name, type, stages:pipeline_stages(id, name, sort_order, is_closed)')
+      .order('sort_order', { ascending: true }),
+  ]);
 
   return (
     <div className="space-y-6">
@@ -14,7 +23,7 @@ export default async function BenchPage() {
           { label: 'Bench' },
         ]}
       />
-      <BenchGrid consultants={consultants} />
+      <BenchGrid consultants={consultants} pipelines={pipelines ?? []} />
     </div>
   );
 }

@@ -6,8 +6,16 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { BenchDetailModal } from './bench-detail-modal';
 import type { BenchConsultantWithLanguages } from '../types';
 
+type Pipeline = {
+  id: string;
+  name: string;
+  type: string;
+  stages: { id: string; name: string; sort_order: number; is_closed: boolean }[];
+};
+
 type Props = {
   consultants: BenchConsultantWithLanguages[];
+  pipelines: Pipeline[];
 };
 
 const priorityColors: Record<string, string> = {
@@ -16,7 +24,7 @@ const priorityColors: Record<string, string> = {
   Low: 'bg-gray-100 text-gray-800',
 };
 
-export function BenchGrid({ consultants }: Props) {
+export function BenchGrid({ consultants, pipelines }: Props) {
   const [selected, setSelected] = useState<BenchConsultantWithLanguages | null>(null);
 
   if (consultants.length === 0) {
@@ -76,6 +84,7 @@ export function BenchGrid({ consultants }: Props) {
         consultant={selected}
         open={!!selected}
         onClose={() => setSelected(null)}
+        pipelines={pipelines}
       />
     )}
     </>

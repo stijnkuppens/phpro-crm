@@ -5,16 +5,19 @@ import { Modal } from '@/components/admin/modal';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { BenchForm } from './bench-form';
+import { QuickDealModal } from '@/features/deals/components/quick-deal-modal';
 import type { BenchConsultantWithLanguages } from '../types';
 
 type Props = {
   consultant: BenchConsultantWithLanguages;
   open: boolean;
   onClose: () => void;
+  pipelines: { id: string; name: string; type: string; stages: { id: string; name: string; sort_order: number; is_closed: boolean }[] }[];
 };
 
-export function BenchDetailModal({ consultant, open, onClose }: Props) {
+export function BenchDetailModal({ consultant, open, onClose, pipelines }: Props) {
   const [editing, setEditing] = useState(false);
+  const [showQuickDeal, setShowQuickDeal] = useState(false);
 
   if (editing) {
     return (
@@ -101,10 +104,25 @@ export function BenchDetailModal({ consultant, open, onClose }: Props) {
             <p className="text-sm mt-1">{consultant.description}</p>
           </div>
         )}
-        <div className="flex justify-end">
+        <div className="flex justify-end gap-2">
+          <Button variant="outline" onClick={() => setShowQuickDeal(true)}>Maak deal aan</Button>
           <Button onClick={() => setEditing(true)}>Bewerken</Button>
         </div>
       </div>
+
+      <QuickDealModal
+        open={showQuickDeal}
+        onClose={() => setShowQuickDeal(false)}
+        pipelines={pipelines}
+        prefill={{
+          bench_consultant_id: consultant.id,
+          consultant_name: `${consultant.first_name} ${consultant.last_name}`,
+          consultant_role: consultant.roles?.[0],
+          min_hourly_rate: consultant.min_hourly_rate,
+          max_hourly_rate: consultant.max_hourly_rate,
+        }}
+        onSuccess={onClose}
+      />
     </Modal>
   );
 }

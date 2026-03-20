@@ -8,6 +8,7 @@ import { LayoutGrid, List, Archive } from 'lucide-react';
 import { createBrowserClient } from '@/lib/supabase/client';
 import { DealKanban } from './deal-kanban';
 import { DealList } from './deal-list';
+import { QuickDealModal } from './quick-deal-modal';
 import type { DealCard, DealWithRelations } from '../types';
 
 type Pipeline = {
@@ -41,6 +42,7 @@ export function DealsPageClient({ pipelines, initialDeals, initialCount, initial
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(false);
   const [originFilter, setOriginFilter] = useState<string>('all');
+  const [showQuickDeal, setShowQuickDeal] = useState(false);
 
   const fetchDeals = useCallback(async (signal?: { cancelled: boolean }) => {
     setLoading(true);
@@ -132,6 +134,11 @@ export function DealsPageClient({ pipelines, initialDeals, initialCount, initial
             </SelectContent>
           </Select>
         </div>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" size="sm" onClick={() => setShowQuickDeal(true)}>
+            RFP / Profiel
+          </Button>
+        </div>
         <div className="flex gap-1 rounded-lg border p-1">
           {([
             { value: 'list' as const, label: 'Deals', icon: List },
@@ -173,6 +180,13 @@ export function DealsPageClient({ pipelines, initialDeals, initialCount, initial
           loading={loading}
         />
       )}
+
+      <QuickDealModal
+        open={showQuickDeal}
+        onClose={() => setShowQuickDeal(false)}
+        pipelines={pipelines}
+        onSuccess={() => fetchDeals()}
+      />
     </div>
   );
 }
