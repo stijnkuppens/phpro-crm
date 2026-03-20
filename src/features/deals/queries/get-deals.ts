@@ -43,6 +43,14 @@ export const getDeals = cache(
     if (filters?.forecast_category) {
       query = query.eq('forecast_category', filters.forecast_category as 'Commit' | 'Best Case' | 'Pipeline' | 'Omit');
     }
+    if (filters?.origin) {
+      query = query.eq('origin', filters.origin as 'rechtstreeks' | 'cronos');
+    }
+    if (filters?.is_closed === true) {
+      query = query.not('closed_at', 'is', null);
+    } else if (filters?.is_closed === false) {
+      query = query.is('closed_at', null);
+    }
 
     const { data, count, error } = await query;
 

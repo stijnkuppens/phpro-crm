@@ -16,8 +16,9 @@ export default async function DealsPage() {
 
   const firstPipelineId = pipelines?.[0]?.id ?? '';
 
+  // Initial fetch for kanban view: active deals only (closed_at IS NULL)
   const { data: initialDeals, count: initialCount } = await getDeals({
-    filters: firstPipelineId ? { pipeline_id: firstPipelineId } : undefined,
+    filters: firstPipelineId ? { pipeline_id: firstPipelineId, is_closed: false } : undefined,
   });
 
   return (

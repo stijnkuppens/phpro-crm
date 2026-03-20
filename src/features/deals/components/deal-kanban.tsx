@@ -75,6 +75,13 @@ function DraggableDealCard({ deal }: { deal: DealCard }) {
         {deal.forecast_category && (
           <Badge variant="outline" className="mt-1 text-[10px]">{deal.forecast_category}</Badge>
         )}
+        {deal.origin && (
+          <Badge variant="outline" className={`text-[10px] mt-1 ${
+            deal.origin === 'rechtstreeks' ? 'bg-green-100 text-green-800 border-green-200' : 'bg-blue-100 text-blue-800 border-blue-200'
+          }`}>
+            {deal.origin === 'rechtstreeks' ? 'Direct' : 'Cronos'}
+          </Badge>
+        )}
       </CardContent>
     </Card>
   );
