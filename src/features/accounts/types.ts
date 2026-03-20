@@ -31,6 +31,7 @@ export type AccountCompetenceCenterWithRef = {
   email: string | null;
   phone: string | null;
   distribution: string | null;
+  cc_services: { service_id: string }[];
 };
 
 export type AccountServiceWithRef = {
