@@ -11,7 +11,8 @@ type SubTable =
   | 'account_competence_centers'
   | 'account_samenwerkingsvormen'
   | 'account_manual_services'
-  | 'account_services';
+  | 'account_services'
+  | 'account_cc_services';
 
 export async function addAccountRelation(
   accountId: string,
@@ -21,9 +22,13 @@ export async function addAccountRelation(
   await requirePermission('accounts.write');
 
   const supabase = await createServerClient();
+  // account_cc_services has no account_id column; other tables do
+  const insertValues = table === 'account_cc_services'
+    ? values
+    : { ...values, account_id: accountId };
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { data, error } = await (supabase.from(table) as any)
-    .insert({ ...values, account_id: accountId })
+    .insert(insertValues)
     .select('id')
     .single();
 
@@ -93,13 +98,14 @@ export async function deleteAccountRelation(
 }
 
 /**
- * Sync a list of simple string values for a sub-table.
- * Used for tech_stacks, samenwerkingsvormen, manual_services, account_services.
+ * Sync a list of FK IDs for a sub-table.
+ * Used for tech_stacks (technology_id), samenwerkingsvormen (collaboration_type_id),
+ * account_services (service_id), manual_services (service_name).
  * Deletes all existing rows and inserts new ones.
  */
-export async function syncAccountStringRelation(
+export async function syncAccountFKRelation(
   accountId: string,
-  table: 'account_tech_stacks' | 'account_samenwerkingsvormen' | 'account_manual_services' | 'account_services',
+  table: 'account_tech_stacks' | 'account_samenwerkingsvormen' | 'account_services' | 'account_manual_services',
   field: string,
   values: string[],
 ): Promise<ActionResult> {

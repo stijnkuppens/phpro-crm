@@ -256,6 +256,7 @@ export type Database = {
           health: number | null;
           managing_partner: string | null;
           account_director: string | null;
+          project_manager: string | null;
           team: string | null;
           about: string | null;
           phpro_contract: 'Geen' | 'Actief' | 'Inactief' | 'In onderhandeling';
@@ -280,6 +281,7 @@ export type Database = {
           health?: number | null;
           managing_partner?: string | null;
           account_director?: string | null;
+          project_manager?: string | null;
           team?: string | null;
           about?: string | null;
           phpro_contract?: 'Geen' | 'Actief' | 'Inactief' | 'In onderhandeling';
@@ -304,6 +306,7 @@ export type Database = {
           health?: number | null;
           managing_partner?: string | null;
           account_director?: string | null;
+          project_manager?: string | null;
           team?: string | null;
           about?: string | null;
           phpro_contract?: 'Geen' | 'Actief' | 'Inactief' | 'In onderhandeling';
@@ -356,21 +359,21 @@ export type Database = {
         Row: {
           id: string;
           account_id: string;
-          technology: string;
+          technology_id: string;
           created_at: string;
           updated_at: string;
         };
         Insert: {
           id?: string;
           account_id: string;
-          technology: string;
+          technology_id: string;
           created_at?: string;
           updated_at?: string;
         };
         Update: {
           id?: string;
           account_id?: string;
-          technology?: string;
+          technology_id?: string;
           created_at?: string;
           updated_at?: string;
         };
@@ -382,27 +385,34 @@ export type Database = {
             referencedRelation: 'accounts';
             referencedColumns: ['id'];
           },
+          {
+            foreignKeyName: 'account_tech_stacks_technology_id_fkey';
+            columns: ['technology_id'];
+            isOneToOne: false;
+            referencedRelation: 'ref_technologies';
+            referencedColumns: ['id'];
+          },
         ];
       };
       account_samenwerkingsvormen: {
         Row: {
           id: string;
           account_id: string;
-          type: 'Project' | 'Continuous Dev.' | 'Ad Hoc' | 'Support' | 'Consultancy';
+          collaboration_type_id: string;
           created_at: string;
           updated_at: string;
         };
         Insert: {
           id?: string;
           account_id: string;
-          type: 'Project' | 'Continuous Dev.' | 'Ad Hoc' | 'Support' | 'Consultancy';
+          collaboration_type_id: string;
           created_at?: string;
           updated_at?: string;
         };
         Update: {
           id?: string;
           account_id?: string;
-          type?: 'Project' | 'Continuous Dev.' | 'Ad Hoc' | 'Support' | 'Consultancy';
+          collaboration_type_id?: string;
           created_at?: string;
           updated_at?: string;
         };
@@ -414,14 +424,21 @@ export type Database = {
             referencedRelation: 'accounts';
             referencedColumns: ['id'];
           },
+          {
+            foreignKeyName: 'account_samenwerkingsvormen_collaboration_type_id_fkey';
+            columns: ['collaboration_type_id'];
+            isOneToOne: false;
+            referencedRelation: 'ref_collaboration_types';
+            referencedColumns: ['id'];
+          },
         ];
       };
       account_hosting: {
         Row: {
           id: string;
           account_id: string;
-          provider: string;
-          environment: string | null;
+          provider_id: string;
+          environment_id: string | null;
           url: string | null;
           notes: string | null;
           created_at: string;
@@ -430,8 +447,8 @@ export type Database = {
         Insert: {
           id?: string;
           account_id: string;
-          provider: string;
-          environment?: string | null;
+          provider_id: string;
+          environment_id?: string | null;
           url?: string | null;
           notes?: string | null;
           created_at?: string;
@@ -440,8 +457,8 @@ export type Database = {
         Update: {
           id?: string;
           account_id?: string;
-          provider?: string;
-          environment?: string | null;
+          provider_id?: string;
+          environment_id?: string | null;
           url?: string | null;
           notes?: string | null;
           created_at?: string;
@@ -455,42 +472,53 @@ export type Database = {
             referencedRelation: 'accounts';
             referencedColumns: ['id'];
           },
+          {
+            foreignKeyName: 'account_hosting_provider_id_fkey';
+            columns: ['provider_id'];
+            isOneToOne: false;
+            referencedRelation: 'ref_hosting_providers';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'account_hosting_environment_id_fkey';
+            columns: ['environment_id'];
+            isOneToOne: false;
+            referencedRelation: 'ref_hosting_environments';
+            referencedColumns: ['id'];
+          },
         ];
       };
       account_competence_centers: {
         Row: {
           id: string;
           account_id: string;
-          cc_name: string;
+          competence_center_id: string;
           contact_person: string | null;
           email: string | null;
           phone: string | null;
           distribution: '4%' | '50/50' | null;
-          services: string[];
           created_at: string;
           updated_at: string;
         };
         Insert: {
           id?: string;
           account_id: string;
-          cc_name: string;
+          competence_center_id: string;
           contact_person?: string | null;
           email?: string | null;
           phone?: string | null;
           distribution?: '4%' | '50/50' | null;
-          services?: string[];
           created_at?: string;
           updated_at?: string;
         };
         Update: {
           id?: string;
           account_id?: string;
-          cc_name?: string;
+          competence_center_id?: string;
           contact_person?: string | null;
           email?: string | null;
           phone?: string | null;
           distribution?: '4%' | '50/50' | null;
-          services?: string[];
           created_at?: string;
           updated_at?: string;
         };
@@ -502,27 +530,34 @@ export type Database = {
             referencedRelation: 'accounts';
             referencedColumns: ['id'];
           },
+          {
+            foreignKeyName: 'account_competence_centers_competence_center_id_fkey';
+            columns: ['competence_center_id'];
+            isOneToOne: false;
+            referencedRelation: 'ref_competence_centers';
+            referencedColumns: ['id'];
+          },
         ];
       };
       account_services: {
         Row: {
           id: string;
           account_id: string;
-          service_name: string;
+          service_id: string;
           created_at: string;
           updated_at: string;
         };
         Insert: {
           id?: string;
           account_id: string;
-          service_name: string;
+          service_id: string;
           created_at?: string;
           updated_at?: string;
         };
         Update: {
           id?: string;
           account_id?: string;
-          service_name?: string;
+          service_id?: string;
           created_at?: string;
           updated_at?: string;
         };
@@ -532,6 +567,49 @@ export type Database = {
             columns: ['account_id'];
             isOneToOne: false;
             referencedRelation: 'accounts';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'account_services_service_id_fkey';
+            columns: ['service_id'];
+            isOneToOne: false;
+            referencedRelation: 'ref_cc_services';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      account_cc_services: {
+        Row: {
+          id: string;
+          account_competence_center_id: string;
+          service_id: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          account_competence_center_id: string;
+          service_id: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          account_competence_center_id?: string;
+          service_id?: string;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'account_cc_services_account_competence_center_id_fkey';
+            columns: ['account_competence_center_id'];
+            isOneToOne: false;
+            referencedRelation: 'account_competence_centers';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'account_cc_services_service_id_fkey';
+            columns: ['service_id'];
+            isOneToOne: false;
+            referencedRelation: 'ref_cc_services';
             referencedColumns: ['id'];
           },
         ];
@@ -2491,6 +2569,84 @@ export type Database = {
             referencedColumns: ['id'];
           },
         ];
+      };
+      ref_technologies: {
+        Row: { id: string; name: string; sort_order: number; is_active: boolean; created_at: string; updated_at: string };
+        Insert: { id?: string; name: string; sort_order?: number; is_active?: boolean; created_at?: string; updated_at?: string };
+        Update: { id?: string; name?: string; sort_order?: number; is_active?: boolean; created_at?: string; updated_at?: string };
+        Relationships: [];
+      };
+      ref_collaboration_types: {
+        Row: { id: string; name: string; sort_order: number; is_active: boolean; created_at: string; updated_at: string };
+        Insert: { id?: string; name: string; sort_order?: number; is_active?: boolean; created_at?: string; updated_at?: string };
+        Update: { id?: string; name?: string; sort_order?: number; is_active?: boolean; created_at?: string; updated_at?: string };
+        Relationships: [];
+      };
+      ref_hosting_providers: {
+        Row: { id: string; name: string; sort_order: number; is_active: boolean; created_at: string; updated_at: string };
+        Insert: { id?: string; name: string; sort_order?: number; is_active?: boolean; created_at?: string; updated_at?: string };
+        Update: { id?: string; name?: string; sort_order?: number; is_active?: boolean; created_at?: string; updated_at?: string };
+        Relationships: [];
+      };
+      ref_hosting_environments: {
+        Row: { id: string; name: string; sort_order: number; is_active: boolean; created_at: string; updated_at: string };
+        Insert: { id?: string; name: string; sort_order?: number; is_active?: boolean; created_at?: string; updated_at?: string };
+        Update: { id?: string; name?: string; sort_order?: number; is_active?: boolean; created_at?: string; updated_at?: string };
+        Relationships: [];
+      };
+      ref_competence_centers: {
+        Row: { id: string; name: string; sort_order: number; is_active: boolean; created_at: string; updated_at: string };
+        Insert: { id?: string; name: string; sort_order?: number; is_active?: boolean; created_at?: string; updated_at?: string };
+        Update: { id?: string; name?: string; sort_order?: number; is_active?: boolean; created_at?: string; updated_at?: string };
+        Relationships: [];
+      };
+      ref_cc_services: {
+        Row: { id: string; name: string; sort_order: number; is_active: boolean; created_at: string; updated_at: string };
+        Insert: { id?: string; name: string; sort_order?: number; is_active?: boolean; created_at?: string; updated_at?: string };
+        Update: { id?: string; name?: string; sort_order?: number; is_active?: boolean; created_at?: string; updated_at?: string };
+        Relationships: [];
+      };
+      ref_consultant_roles: {
+        Row: { id: string; name: string; sort_order: number; is_active: boolean; created_at: string; updated_at: string };
+        Insert: { id?: string; name: string; sort_order?: number; is_active?: boolean; created_at?: string; updated_at?: string };
+        Update: { id?: string; name?: string; sort_order?: number; is_active?: boolean; created_at?: string; updated_at?: string };
+        Relationships: [];
+      };
+      ref_languages: {
+        Row: { id: string; name: string; sort_order: number; is_active: boolean; created_at: string; updated_at: string };
+        Insert: { id?: string; name: string; sort_order?: number; is_active?: boolean; created_at?: string; updated_at?: string };
+        Update: { id?: string; name?: string; sort_order?: number; is_active?: boolean; created_at?: string; updated_at?: string };
+        Relationships: [];
+      };
+      ref_language_levels: {
+        Row: { id: string; name: string; sort_order: number; is_active: boolean; created_at: string; updated_at: string };
+        Insert: { id?: string; name: string; sort_order?: number; is_active?: boolean; created_at?: string; updated_at?: string };
+        Update: { id?: string; name?: string; sort_order?: number; is_active?: boolean; created_at?: string; updated_at?: string };
+        Relationships: [];
+      };
+      ref_contact_roles: {
+        Row: { id: string; name: string; sort_order: number; is_active: boolean; created_at: string; updated_at: string };
+        Insert: { id?: string; name: string; sort_order?: number; is_active?: boolean; created_at?: string; updated_at?: string };
+        Update: { id?: string; name?: string; sort_order?: number; is_active?: boolean; created_at?: string; updated_at?: string };
+        Relationships: [];
+      };
+      ref_hobbies: {
+        Row: { id: string; name: string; sort_order: number; is_active: boolean; created_at: string; updated_at: string };
+        Insert: { id?: string; name: string; sort_order?: number; is_active?: boolean; created_at?: string; updated_at?: string };
+        Update: { id?: string; name?: string; sort_order?: number; is_active?: boolean; created_at?: string; updated_at?: string };
+        Relationships: [];
+      };
+      ref_sla_tools: {
+        Row: { id: string; name: string; sort_order: number; is_active: boolean; created_at: string; updated_at: string };
+        Insert: { id?: string; name: string; sort_order?: number; is_active?: boolean; created_at?: string; updated_at?: string };
+        Update: { id?: string; name?: string; sort_order?: number; is_active?: boolean; created_at?: string; updated_at?: string };
+        Relationships: [];
+      };
+      ref_stop_reasons: {
+        Row: { id: string; name: string; sort_order: number; is_active: boolean; created_at: string; updated_at: string };
+        Insert: { id?: string; name: string; sort_order?: number; is_active?: boolean; created_at?: string; updated_at?: string };
+        Update: { id?: string; name?: string; sort_order?: number; is_active?: boolean; created_at?: string; updated_at?: string };
+        Relationships: [];
       };
     };
     Views: Record<string, never>;

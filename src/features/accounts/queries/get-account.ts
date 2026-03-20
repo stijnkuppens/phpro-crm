@@ -12,11 +12,11 @@ export const getAccount = cache(
         *,
         owner:user_profiles!owner_id(id, full_name),
         manual_services:account_manual_services(*),
-        tech_stacks:account_tech_stacks(*),
-        samenwerkingsvormen:account_samenwerkingsvormen(*),
-        hosting:account_hosting(*),
-        competence_centers:account_competence_centers(*),
-        services:account_services(*)
+        tech_stacks:account_tech_stacks(id, technology:ref_technologies(id, name)),
+        samenwerkingsvormen:account_samenwerkingsvormen(id, collaboration_type:ref_collaboration_types(id, name)),
+        hosting:account_hosting(id, provider:ref_hosting_providers(id, name), environment:ref_hosting_environments(id, name), url, notes),
+        competence_centers:account_competence_centers(id, cc:ref_competence_centers(id, name), contact_person, email, phone, distribution),
+        services:account_services(id, service:ref_cc_services(id, name))
       `)
       .eq('id', id)
       .single();
