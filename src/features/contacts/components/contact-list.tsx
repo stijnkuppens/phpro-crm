@@ -1,6 +1,9 @@
 'use client';
 
 import { useState, useCallback, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { Eye, Pencil, Trash2 } from 'lucide-react';
+import { toast } from 'sonner';
 import { useEntity } from '@/lib/hooks/use-entity';
 import DataTable from '@/components/admin/data-table';
 import { Input } from '@/components/ui/input';
@@ -14,6 +17,7 @@ import {
 } from '@/components/ui/select';
 import { contactColumns } from '../columns';
 import type { Contact } from '../types';
+import { deleteContact } from '../actions/delete-contact';
 
 const PAGE_SIZE = 25;
 
@@ -28,6 +32,7 @@ type ContactListProps = {
 };
 
 export function ContactList({ initialData, initialCount }: ContactListProps) {
+  const router = useRouter();
   const { data, total, loading, fetchList } = useEntity<Contact>({
     table: 'contacts',
     pageSize: PAGE_SIZE,
@@ -61,6 +66,16 @@ export function ContactList({ initialData, initialCount }: ContactListProps) {
     setPage(1);
   }, [roleFilter, steercoOnly, search]);
 
+  const handleDelete = async (id: string) => {
+    const result = await deleteContact(id);
+    if (result.success) {
+      toast.success('Contact verwijderd');
+      load();
+    } else {
+      toast.error(result.error as string);
+    }
+  };
+
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-3 flex-wrap">
@@ -93,6 +108,14 @@ export function ContactList({ initialData, initialCount }: ContactListProps) {
         pagination={{ page, pageSize: PAGE_SIZE, total }}
         onPageChange={setPage}
         loading={loading}
+        rowActions={(row) => [
+          { icon: Eye, label: 'Bekijken', onClick: () => router.push(`/admin/accounts/${row.account_id}`) },
+          { icon: Pencil, label: 'Bewerken', onClick: () => router.push(`/admin/accounts/${row.account_id}`) },
+          { icon: Trash2, label: 'Verwijderen', variant: 'destructive' as const, confirm: { title: 'Contact verwijderen?', description: 'Dit verwijdert het contact permanent.' }, onClick: () => handleDelete(row.id) },
+        ]}
+        bulkActions={[
+          { label: 'Verwijderen', variant: 'destructive' as const, confirm: { title: 'Contacten verwijderen?', description: 'Dit verwijdert de geselecteerde contacten permanent.' }, action: (ids) => ids.forEach((id) => handleDelete(id)) },
+        ]}
       />
     </div>
   );
