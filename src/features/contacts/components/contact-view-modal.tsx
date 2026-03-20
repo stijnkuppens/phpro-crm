@@ -1,0 +1,152 @@
+'use client';
+
+import { useEffect, useState } from 'react';
+import { Modal } from '@/components/admin/modal';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Separator } from '@/components/ui/separator';
+import { Mail, Phone } from 'lucide-react';
+import Link from 'next/link';
+import { createBrowserClient } from '@/lib/supabase/client';
+import type { ContactWithDetails } from '../types';
+
+type Props = {
+  contactId: string | null;
+  onClose: () => void;
+  onEdit: (id: string) => void;
+};
+
+export function ContactViewModal({ contactId, onClose, onEdit }: Props) {
+  const [contact, setContact] = useState<ContactWithDetails | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (!contactId) { setContact(null); return; }
+    let cancelled = false;
+    setLoading(true);
+    const supabase = createBrowserClient();
+    supabase
+      .from('contacts')
+      .select('*, personal_info:contact_personal_info(*), account:accounts!account_id(id, name)')
+      .eq('id', contactId)
+      .single()
+      .then(({ data }) => {
+        if (cancelled) return;
+        setContact(data as ContactWithDetails | null);
+        setLoading(false);
+      });
+    return () => { cancelled = true; };
+  }, [contactId]);
+
+  const pi = contact?.personal_info;
+  const initials = contact
+    ? `${contact.first_name[0] ?? ''}${contact.last_name[0] ?? ''}`.toUpperCase()
+    : '';
+
+  return (
+    <Modal open={!!contactId} onClose={onClose} title="" size="wide">
+      {loading || !contact ? (
+        <div className="py-12 text-center text-muted-foreground">Laden...</div>
+      ) : (
+        <div className="space-y-6">
+          {/* Header */}
+          <div className="flex items-start justify-between">
+            <div className="flex items-center gap-4">
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-muted text-lg font-medium">
+                {initials}
+              </div>
+              <div>
+                <h2 className="text-lg font-semibold">{contact.first_name} {contact.last_name}</h2>
+                {contact.title && <p className="text-sm text-muted-foreground">{contact.title}</p>}
+                <div className="mt-1 flex items-center gap-2">
+                  {contact.role && <Badge variant="outline">{contact.role}</Badge>}
+                  {contact.is_steerco && <Badge variant="secondary">Steerco</Badge>}
+                  {contact.is_pinned && <Badge>Overview</Badge>}
+                </div>
+              </div>
+            </div>
+            {contact.account && (
+              <Link
+                href={`/admin/accounts/${contact.account.id}`}
+                className="text-sm font-medium text-primary hover:underline"
+              >
+                {contact.account.name}
+              </Link>
+            )}
+          </div>
+
+          {/* Contact info */}
+          <div className="flex items-center gap-6 text-sm">
+            {contact.email && (
+              <span className="flex items-center gap-1.5 text-muted-foreground">
+                <Mail className="h-4 w-4" /> {contact.email}
+              </span>
+            )}
+            {contact.phone && (
+              <span className="flex items-center gap-1.5 text-muted-foreground">
+                <Phone className="h-4 w-4" /> {contact.phone}
+              </span>
+            )}
+          </div>
+
+          {/* Relationship badges */}
+          {(pi?.invite_dinner || pi?.invite_event || pi?.invite_gift) && (
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-muted-foreground">Relatiebeheer:</span>
+              {pi?.invite_dinner && <Badge variant="outline">Diner</Badge>}
+              {pi?.invite_event && <Badge variant="outline">Event</Badge>}
+              {pi?.invite_gift && <Badge variant="outline">Gift</Badge>}
+            </div>
+          )}
+
+          <Separator />
+
+          {/* Personal info */}
+          <div>
+            <h3 className="mb-3 text-sm font-semibold">Persoonlijke info</h3>
+            <div className="grid gap-3 sm:grid-cols-2 text-sm">
+              <InfoRow label="Hobby's">
+                {pi?.hobbies && pi.hobbies.length > 0 ? (
+                  <div className="flex flex-wrap gap-1">
+                    {pi.hobbies.map((h) => <Badge key={h} variant="outline">{h}</Badge>)}
+                  </div>
+                ) : '—'}
+              </InfoRow>
+              <InfoRow label="Burgerlijke staat">{pi?.marital_status || '—'}</InfoRow>
+              <InfoRow label="Verjaardag">{pi?.birthday || '—'}</InfoRow>
+              <InfoRow label="Kinderen">
+                {pi?.has_children
+                  ? `Ja${pi.children_count ? ` (${pi.children_count})` : ''}`
+                  : 'Nee'}
+              </InfoRow>
+              {pi?.children_names && <InfoRow label="Namen kinderen">{pi.children_names}</InfoRow>}
+              <InfoRow label="Partner">{pi?.partner_name || '—'}</InfoRow>
+              <InfoRow label="Beroep partner">{pi?.partner_profession || '—'}</InfoRow>
+            </div>
+            {pi?.notes && (
+              <div className="mt-3">
+                <p className="text-sm font-medium text-muted-foreground">Notities</p>
+                <p className="mt-0.5 text-sm">{pi.notes}</p>
+              </div>
+            )}
+          </div>
+
+          {/* Footer */}
+          <div className="flex justify-end gap-2">
+            <Button variant="outline" onClick={onClose}>Sluiten</Button>
+            <Button onClick={() => onEdit(contact.id)}>Bewerken</Button>
+          </div>
+        </div>
+      )}
+    </Modal>
+  );
+}
+
+function InfoRow({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div>
+      <p className="font-medium text-muted-foreground">{label}</p>
+      <div className="mt-0.5">{children}</div>
+    </div>
+  );
+}
