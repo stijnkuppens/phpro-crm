@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 01-03-PLAN.md
-last_updated: "2026-03-20T13:31:16.877Z"
+stopped_at: Completed 01-01-PLAN.md
+last_updated: "2026-03-20T13:33:33.771Z"
 last_activity: 2026-03-20 — Completed 01-03-PLAN.md (frontend dependencies)
 progress:
   total_phases: 10
   completed_phases: 0
   total_plans: 4
-  completed_plans: 1
+  completed_plans: 2
   percent: 25
 ---
 
@@ -50,6 +50,7 @@ Progress: [███░░░░░░░] 25%
 - Trend: --
 
 *Updated after each plan completion*
+| Phase 01 P01 | 4min | 2 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -64,6 +65,8 @@ Recent decisions affecting current work:
 - Research: recharts must stay on v2.x (shadcn not yet ported to v3); requires `react-is` override for React 19
 - Research: Prognose has zero DB schema — migration must be created before any UI work in Phase 7
 - [Phase 01]: recharts v2.15.4 confirmed via shadcn chart; react-is override applied for React 19
+- [Phase 01]: Merged CONSULTANT_ROLES and TARIEF_ROLLEN into single ref_consultant_roles table (identical 12 roles)
+- [Phase 01]: FK migration seeds ref data inline before constraints for self-containment
 
 ### Pending Todos
 
@@ -77,6 +80,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-20T13:31:16.870Z
-Stopped at: Completed 01-03-PLAN.md
+Last session: 2026-03-20T13:33:33.765Z
+Stopped at: Completed 01-01-PLAN.md
 Resume file: None
