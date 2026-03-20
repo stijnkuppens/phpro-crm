@@ -1,14 +1,16 @@
 'use client';
 
-import { useEffect, useCallback, useState } from 'react';
+import { useCallback, useState } from 'react';
 import { useEntity } from '@/lib/hooks/use-entity';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { CommunicationModal } from '@/features/communications/components/communication-modal';
-import type { Communication } from '@/features/communications/types';
+import type { Communication, CommunicationWithDetails } from '@/features/communications/types';
 
 type Props = {
   accountId: string;
+  initialData: CommunicationWithDetails[];
+  initialCount: number;
 };
 
 const TYPE_LABELS: Record<string, string> = {
@@ -18,20 +20,18 @@ const TYPE_LABELS: Record<string, string> = {
   call: 'Telefoongesprek',
 };
 
-export function AccountCommunicationsTab({ accountId }: Props) {
+export function AccountCommunicationsTab({ accountId, initialData, initialCount }: Props) {
   const { data, loading, fetchList } = useEntity<Communication>({
     table: 'communications',
     pageSize: 100,
+    initialData: initialData as unknown as Communication[],
+    initialCount,
   });
   const [modalOpen, setModalOpen] = useState(false);
 
   const load = useCallback(() => {
     fetchList({ page: 1, eqFilters: { account_id: accountId } });
   }, [fetchList, accountId]);
-
-  useEffect(() => {
-    load();
-  }, [load]);
 
   return (
     <div className="space-y-4">
