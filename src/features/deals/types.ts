@@ -21,6 +21,7 @@ export type DealCard = {
   owner_name: string | null;
   stage_id: string;
   forecast_category: string | null;
+  origin: string | null;
 };
 
 export const dealFormSchema = z.object({
@@ -63,4 +64,6 @@ export type DealFilters = {
   search?: string;
   owner_id?: string;
   forecast_category?: string;
+  origin?: string;
+  is_closed?: boolean;
 };
