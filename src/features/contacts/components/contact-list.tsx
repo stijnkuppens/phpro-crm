@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useCallback, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
 import { Eye, Pencil, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useEntity } from '@/lib/hooks/use-entity';
@@ -18,6 +17,8 @@ import {
 import { contactColumns } from '../columns';
 import type { Contact } from '../types';
 import { deleteContact } from '../actions/delete-contact';
+import { ContactViewModal } from './contact-view-modal';
+import { ContactFormModal } from './contact-form-modal';
 
 const PAGE_SIZE = 25;
 
@@ -32,7 +33,8 @@ type ContactListProps = {
 };
 
 export function ContactList({ initialData, initialCount }: ContactListProps) {
-  const router = useRouter();
+  const [viewId, setViewId] = useState<string | null>(null);
+  const [editId, setEditId] = useState<string | null>(null);
   const { data, total, loading, fetchList } = useEntity<Contact>({
     table: 'contacts',
     pageSize: PAGE_SIZE,
@@ -109,13 +111,25 @@ export function ContactList({ initialData, initialCount }: ContactListProps) {
         onPageChange={setPage}
         loading={loading}
         rowActions={(row) => [
-          { icon: Eye, label: 'Bekijken', onClick: () => router.push(`/admin/accounts/${row.account_id}`) },
-          { icon: Pencil, label: 'Bewerken', onClick: () => router.push(`/admin/accounts/${row.account_id}`) },
+          { icon: Eye, label: 'Bekijken', onClick: () => setViewId(row.id) },
+          { icon: Pencil, label: 'Bewerken', onClick: () => setEditId(row.id) },
           { icon: Trash2, label: 'Verwijderen', variant: 'destructive' as const, confirm: { title: 'Contact verwijderen?', description: 'Dit verwijdert het contact permanent.' }, onClick: () => handleDelete(row.id) },
         ]}
         bulkActions={[
           { label: 'Verwijderen', variant: 'destructive' as const, confirm: { title: 'Contacten verwijderen?', description: 'Dit verwijdert de geselecteerde contacten permanent.' }, action: (ids) => ids.forEach((id) => handleDelete(id)) },
         ]}
+      />
+      <ContactViewModal
+        contactId={viewId}
+        onClose={() => setViewId(null)}
+        onEdit={(id) => { setViewId(null); setEditId(id); }}
+      />
+      <ContactFormModal
+        contactId={editId}
+        accountId={data.find((r) => r.id === editId)?.account_id ?? ''}
+        open={editId !== null}
+        onClose={() => setEditId(null)}
+        onSaved={() => { setEditId(null); load(); }}
       />
     </div>
   );
