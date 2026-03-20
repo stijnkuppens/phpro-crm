@@ -14,6 +14,8 @@ export const REF_TABLES = [
   { key: 'ref_sla_tools', label: 'SLA Tools' },
   { key: 'ref_collaboration_types', label: 'Collaboration Types' },
   { key: 'ref_stop_reasons', label: 'Stop Reasons' },
+  { key: 'ref_lead_sources', label: 'Lead Sources' },
+  { key: 'ref_distribution_types', label: 'Distribution Types' },
 ] as const;
 
 export type RefTableKey = (typeof REF_TABLES)[number]['key'];
