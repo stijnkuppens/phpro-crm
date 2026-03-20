@@ -32,11 +32,11 @@ Requirements for full feature parity with demo_crm. Each maps to roadmap phases.
 
 ### Deals
 
-- [ ] **DEAL-01**: Deal origin tracking — rechtstreeks vs. Cronos with CC metadata (competence center name, attribution type)
+- [x] **DEAL-01**: Deal origin tracking — rechtstreeks vs. Cronos with CC metadata (competence center name, attribution type)
 - [ ] **DEAL-02**: Quick deal creation from bench consultant — opens pre-filled deal modal from bench page with consultant info
-- [ ] **DEAL-03**: Close deal modal with reason selection (won/lost/longterm) and close date
+- [x] **DEAL-03**: Close deal modal with reason selection (won/lost/longterm) and close date
 - [x] **DEAL-04**: Deal detail page shows activities, tasks, and communication linked to that deal
-- [ ] **DEAL-05**: All three pipeline types functional — Projecten, RFP, Consultancy Profielen with correct stages per pipeline
+- [x] **DEAL-05**: All three pipeline types functional — Projecten, RFP, Consultancy Profielen with correct stages per pipeline
 
 ### Contracts
 
@@ -138,11 +138,11 @@ Deferred to future release. Not in demo or incremental improvement.
 | CONT-01 | Phase 3 | Complete |
 | CONT-02 | Phase 3 | Complete |
 | CONT-03 | Phase 3 | Complete |
-| DEAL-01 | Phase 3 | Pending |
+| DEAL-01 | Phase 3 | Complete |
 | DEAL-02 | Phase 3 | Pending |
-| DEAL-03 | Phase 3 | Pending |
+| DEAL-03 | Phase 3 | Complete |
 | DEAL-04 | Phase 3 | Complete |
-| DEAL-05 | Phase 3 | Pending |
+| DEAL-05 | Phase 3 | Complete |
 | CNTR-01 | Phase 4 | Pending |
 | CNTR-02 | Phase 4 | Pending |
 | CNTR-03 | Phase 4 | Pending |
