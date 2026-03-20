@@ -230,3 +230,23 @@ INSERT INTO ref_stop_reasons (name, sort_order) VALUES
   ('Wederzijds akkoord', 5),
   ('Andere', 6)
 ON CONFLICT (name) DO NOTHING;
+
+-- ── ref_lead_sources (deal lead sources from demo_crm/src/App.tsx) ───────
+INSERT INTO ref_lead_sources (name, sort_order) VALUES
+  ('E-mail', 1),
+  ('Webformulier', 2),
+  ('Partner', 3),
+  ('Campagne', 4),
+  ('Social Media', 5),
+  ('Telefonisch', 6),
+  ('Evenement', 7),
+  ('Referral', 8),
+  ('Cold outreach', 9),
+  ('Andere', 10)
+ON CONFLICT (name) DO NOTHING;
+
+-- ── ref_distribution_types (VERDELING_OPTIES from demo_crm/src/constants.ts)
+INSERT INTO ref_distribution_types (name, sort_order) VALUES
+  ('4%', 1),
+  ('50/50', 2)
+ON CONFLICT (name) DO NOTHING;
