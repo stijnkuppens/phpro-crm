@@ -6,6 +6,8 @@ import { Toaster } from '@/components/ui/sonner';
 import { ThemeProvider } from 'next-themes';
 import { NextIntlClientProvider } from 'next-intl';
 import { getLocale, getMessages } from 'next-intl/server';
+import { NuqsAdapter } from 'nuqs/adapters/next/app';
+import { cookies } from 'next/headers';
 
 const geist = Geist({ subsets: ['latin'], variable: '--font-sans' });
 
@@ -24,13 +26,17 @@ export default async function RootLayout({
 }) {
   const locale = await getLocale();
   const messages = await getMessages();
+  const cookieStore = await cookies();
+  const brandTheme = cookieStore.get('brand-theme')?.value ?? 'phpro';
 
   return (
-    <html lang={locale} className={cn('font-sans', geist.variable)} suppressHydrationWarning>
+    <html lang={locale} className={cn('font-sans', geist.variable)} data-brand={brandTheme} suppressHydrationWarning>
       <body>
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
           <NextIntlClientProvider messages={messages}>
-            {children}
+            <NuqsAdapter>
+              {children}
+            </NuqsAdapter>
             <Toaster />
           </NextIntlClientProvider>
         </ThemeProvider>
