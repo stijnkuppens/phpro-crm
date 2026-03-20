@@ -1,6 +1,8 @@
 'use client';
 
 import { useState, useCallback, useEffect } from 'react';
+import { Pencil, Trash2 } from 'lucide-react';
+import { toast } from 'sonner';
 import { useEntity } from '@/lib/hooks/use-entity';
 import DataTable from '@/components/admin/data-table';
 import {
@@ -12,6 +14,7 @@ import {
 } from '@/components/ui/select';
 import { taskColumns } from '../columns';
 import type { Task, TaskFilters } from '../types';
+import { deleteTask } from '../actions/delete-task';
 
 const PAGE_SIZE = 25;
 
@@ -41,6 +44,16 @@ export function TaskList({ initialData, initialCount }: Props) {
       eqFilters: Object.keys(eqFilters).length > 0 ? eqFilters : undefined,
     });
   }, [fetchList, page, filters]);
+
+  const handleDelete = async (id: string) => {
+    const result = await deleteTask(id);
+    if (result.success) {
+      toast.success('Taak verwijderd');
+      load();
+    } else {
+      toast.error('Verwijderen mislukt');
+    }
+  };
 
   useEffect(() => {
     if (initialData && page === 1 && !filters.status && !filters.priority) return;
@@ -85,6 +98,13 @@ export function TaskList({ initialData, initialCount }: Props) {
         pagination={{ page, pageSize: PAGE_SIZE, total }}
         onPageChange={setPage}
         loading={loading}
+        rowActions={(row) => [
+          { icon: Pencil, label: 'Bewerken', onClick: () => { /* TODO: open edit modal when available */ } },
+          { icon: Trash2, label: 'Verwijderen', variant: 'destructive' as const, confirm: { title: 'Taak verwijderen?', description: 'Dit verwijdert de taak permanent.' }, onClick: () => handleDelete(row.id) },
+        ]}
+        bulkActions={[
+          { label: 'Verwijderen', variant: 'destructive' as const, confirm: { title: 'Taken verwijderen?', description: 'Dit verwijdert de geselecteerde taken permanent.' }, action: (ids) => ids.forEach((id) => handleDelete(id)) },
+        ]}
       />
     </div>
   );
