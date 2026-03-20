@@ -1,10 +1,12 @@
 'use client';
 
 import { useEffect, useCallback, useState } from 'react';
+import { Eye, Pencil } from 'lucide-react';
 import { useEntity } from '@/lib/hooks/use-entity';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { ContactForm } from '@/features/contacts/components/contact-form';
+import { ContactFormModal } from '@/features/contacts/components/contact-form-modal';
+import { ContactViewModal } from '@/features/contacts/components/contact-view-modal';
 import type { Contact } from '@/features/contacts/types';
 
 type Props = {
@@ -16,7 +18,9 @@ export function AccountContactsTab({ accountId }: Props) {
     table: 'contacts',
     pageSize: 100,
   });
-  const [modalOpen, setModalOpen] = useState(false);
+  const [createOpen, setCreateOpen] = useState(false);
+  const [viewId, setViewId] = useState<string | null>(null);
+  const [editId, setEditId] = useState<string | null>(null);
 
   const load = useCallback(() => {
     fetchList({ page: 1, eqFilters: { account_id: accountId } });
@@ -29,7 +33,7 @@ export function AccountContactsTab({ accountId }: Props) {
   return (
     <div className="space-y-4">
       <div className="flex justify-end">
-        <Button onClick={() => setModalOpen(true)}>Nieuw Contact</Button>
+        <Button onClick={() => setCreateOpen(true)}>Nieuw Contact</Button>
       </div>
 
       {loading ? (
@@ -52,15 +56,39 @@ export function AccountContactsTab({ accountId }: Props) {
                 {contact.is_steerco && <Badge variant="secondary">Steerco</Badge>}
               </div>
               <div className="text-xs text-muted-foreground">{contact.email}</div>
+              <div className="flex items-center gap-1">
+                <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground" onClick={() => setViewId(contact.id)}>
+                  <Eye className="h-4 w-4" />
+                </Button>
+                <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground" onClick={() => setEditId(contact.id)}>
+                  <Pencil className="h-4 w-4" />
+                </Button>
+              </div>
             </div>
           ))}
         </div>
       )}
 
-      <ContactForm
-        open={modalOpen}
-        onClose={() => { setModalOpen(false); load(); }}
+      <ContactFormModal
+        contactId={null}
         accountId={accountId}
+        open={createOpen}
+        onClose={() => setCreateOpen(false)}
+        onSaved={() => { setCreateOpen(false); load(); }}
+      />
+
+      <ContactViewModal
+        contactId={viewId}
+        onClose={() => setViewId(null)}
+        onEdit={(id) => { setViewId(null); setEditId(id); }}
+      />
+
+      <ContactFormModal
+        contactId={editId}
+        accountId={accountId}
+        open={editId !== null}
+        onClose={() => setEditId(null)}
+        onSaved={() => { setEditId(null); load(); }}
       />
     </div>
   );
