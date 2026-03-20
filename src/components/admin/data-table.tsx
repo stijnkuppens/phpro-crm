@@ -59,6 +59,48 @@ type DataTableProps<T> = {
 };
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
+function RowActionButton<T extends Record<string, any>>({ action, row }: { action: RowAction<T>; row: T }) {
+  const [confirmOpen, setConfirmOpen] = useState(false);
+
+  return (
+    <>
+      <Tooltip>
+        <TooltipTrigger
+          render={
+            <Button
+              variant="ghost"
+              size="icon"
+              className={`h-8 w-8 ${action.variant === 'destructive' ? 'text-muted-foreground hover:text-destructive hover:bg-destructive/10' : 'text-muted-foreground'}`}
+              onClick={(e) => {
+                e.stopPropagation();
+                if (action.confirm) {
+                  setConfirmOpen(true);
+                } else {
+                  action.onClick(row);
+                }
+              }}
+            >
+              <action.icon className="h-4 w-4" />
+              <span className="sr-only">{action.label}</span>
+            </Button>
+          }
+        />
+        <TooltipContent>{action.label}</TooltipContent>
+      </Tooltip>
+      {action.confirm && (
+        <ConfirmDialog
+          title={action.confirm.title}
+          description={action.confirm.description}
+          onConfirm={() => action.onClick(row)}
+          open={confirmOpen}
+          onOpenChange={setConfirmOpen}
+        />
+      )}
+    </>
+  );
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export default function DataTable<T extends Record<string, any>>({
   columns,
   data,
@@ -197,42 +239,9 @@ export default function DataTable<T extends Record<string, any>>({
                     <TableCell className="w-0 text-right">
                       <div className="flex items-center justify-end gap-1">
                         <TooltipProvider>
-                          {rowActions(row.original).map((action) => {
-                            const iconButton = (
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className={`h-8 w-8 ${action.variant === 'destructive' ? 'text-muted-foreground hover:text-destructive' : 'text-muted-foreground'}`}
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  if (!action.confirm) action.onClick(row.original);
-                                }}
-                              >
-                                <action.icon className="h-4 w-4" />
-                                <span className="sr-only">{action.label}</span>
-                              </Button>
-                            );
-
-                            return action.confirm ? (
-                              <ConfirmDialog
-                                key={action.label}
-                                title={action.confirm.title}
-                                description={action.confirm.description}
-                                onConfirm={() => action.onClick(row.original)}
-                                trigger={
-                                  <Tooltip>
-                                    <TooltipTrigger render={iconButton} />
-                                    <TooltipContent>{action.label}</TooltipContent>
-                                  </Tooltip>
-                                }
-                              />
-                            ) : (
-                              <Tooltip key={action.label}>
-                                <TooltipTrigger render={iconButton} />
-                                <TooltipContent>{action.label}</TooltipContent>
-                              </Tooltip>
-                            );
-                          })}
+                          {rowActions(row.original).map((action) => (
+                            <RowActionButton key={action.label} action={action} row={row.original} />
+                          ))}
                         </TooltipProvider>
                       </div>
                     </TableCell>

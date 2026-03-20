@@ -6,7 +6,7 @@ import { toast } from 'sonner';
 import { Eye, Pencil, Trash2 } from 'lucide-react';
 import { useEntity } from '@/lib/hooks/use-entity';
 import DataTable from '@/components/admin/data-table';
-import { AccountFiltersBar } from './account-filters';
+import { AccountFiltersBar, type OwnerOption } from './account-filters';
 import { accountColumns } from '../columns';
 import { deleteAccount } from '../actions/delete-account';
 import type { Account, AccountFilters } from '../types';
@@ -16,9 +16,11 @@ const PAGE_SIZE = 25;
 type AccountListProps = {
   initialData?: Account[];
   initialCount?: number;
+  owners?: OwnerOption[];
+  countries?: string[];
 };
 
-export function AccountList({ initialData, initialCount }: AccountListProps) {
+export function AccountList({ initialData, initialCount, owners, countries }: AccountListProps) {
   const router = useRouter();
   const { data, total, loading, fetchList } = useEntity<Account>({
     table: 'accounts',
@@ -65,7 +67,7 @@ export function AccountList({ initialData, initialCount }: AccountListProps) {
 
   return (
     <div className="space-y-4">
-      <AccountFiltersBar filters={filters} onFilterChange={setFilters} />
+      <AccountFiltersBar filters={filters} onFilterChange={setFilters} owners={owners} countries={countries} />
       <DataTable
         columns={accountColumns}
         data={data}

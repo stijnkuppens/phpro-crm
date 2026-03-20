@@ -2,9 +2,13 @@ import Link from 'next/link';
 import { PageHeader } from '@/components/admin/page-header';
 import { AccountList } from '@/features/accounts/components/account-list';
 import { getAccounts } from '@/features/accounts/queries/get-accounts';
+import { getAccountFilterOptions } from '@/features/accounts/queries/get-account-filter-options';
 
 export default async function AccountsPage() {
-  const { data, count } = await getAccounts();
+  const [{ data, count }, { owners, countries }] = await Promise.all([
+    getAccounts(),
+    getAccountFilterOptions(),
+  ]);
 
   return (
     <div className="space-y-6">
@@ -23,7 +27,7 @@ export default async function AccountsPage() {
           </Link>
         }
       />
-      <AccountList initialData={data} initialCount={count} />
+      <AccountList initialData={data} initialCount={count} owners={owners} countries={countries} />
     </div>
   );
 }
