@@ -214,7 +214,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9 -> 10
 |-------|----------------|--------|-----------|
 | 1. Foundation & Reference Data | 5/5 | Complete   | 2026-03-20 |
 | 2. Account Detail Completion | 2/3 | In Progress|  |
-| 3. Contacts & Deals | 2/5 | In Progress|  |
+| 3. Contacts & Deals | 4/5 | In Progress|  |
 | 4. Contract Domain | 0/6 | Not started | - |
 | 5. Consultant Detail | 0/4 | Not started | - |
 | 6. Revenue Analytics | 0/4 | Not started | - |

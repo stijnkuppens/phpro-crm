@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 03-05-PLAN.md
-last_updated: "2026-03-20T16:56:37.234Z"
-last_activity: 2026-03-20 — Completed 02-02-PLAN.md (account edit page with relation data transformation)
+stopped_at: Completed 03-03-PLAN.md
+last_updated: "2026-03-20T16:59:10.712Z"
+last_activity: 2026-03-20 — Completed 03-01-PLAN.md (contact list steerco badge and filters)
 progress:
   total_phases: 10
   completed_phases: 2
   total_plans: 13
-  completed_plans: 10
-  percent: 75
+  completed_plans: 12
+  percent: 85
 ---
 
 # Project State
@@ -21,16 +21,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-20)
 
 **Core value:** Every feature from the demo CRM must exist with full backend persistence, server-first data flow, and multi-language support
-**Current focus:** Phase 2 — Account Detail Completion
+**Current focus:** Phase 3 — Contacts & Deals
 
 ## Current Position
 
-Phase: 2 of 10 (Account Detail Completion)
-Plan: 2 of 3 in current phase
+Phase: 3 of 10 (Contacts & Deals)
+Plan: 1 of 5 in current phase
 Status: In Progress
-Last activity: 2026-03-20 — Completed 02-02-PLAN.md (account edit page with relation data transformation)
+Last activity: 2026-03-20 — Completed 03-01-PLAN.md (contact list steerco badge and filters)
 
-Progress: [████████░░] 75%
+Progress: [█████████░] 85%
 
 ## Performance Metrics
 
@@ -59,6 +59,8 @@ Progress: [████████░░] 75%
 | Phase 02 P03 | 10min | 2 tasks | 2 files |
 | Phase 03 P02 | 2min | 1 tasks | 1 files |
 | Phase 03 P05 | 3min | 2 tasks | 9 files |
+| Phase 03 P01 | 4min | 2 tasks | 3 files |
+| Phase 03 P03 | 4min | 2 tasks | 7 files |
 
 ## Accumulated Context
 
@@ -83,6 +85,9 @@ Recent decisions affecting current work:
 - [Phase 02]: Used window.location.reload() after create actions for simplicity in account detail tabs
 - [Phase 03]: Extracted personal info from Account card into dedicated full-width Persoonlijke Info card with inline edit
 - [Phase 03]: Extracted DealLinkedTabs as separate client component to keep deal-detail.tsx as server component
+- [Phase 03]: Did not add 'Steerco Lid' to Zod schema — DB role enum lacks it; is_steerco boolean tracks membership
+- [Phase 03]: Widened useEntity eqFilters from Record<string, string> to Record<string, string | boolean>
+- [Phase 03]: Cast origin filter to enum type for Supabase typed query compatibility
 
 ### Pending Todos
 
@@ -96,6 +101,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-20T16:56:37.227Z
-Stopped at: Completed 03-05-PLAN.md
+Last session: 2026-03-20T16:59:10.704Z
+Stopped at: Completed 03-03-PLAN.md
 Resume file: None
