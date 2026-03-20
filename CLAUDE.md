@@ -324,3 +324,14 @@ The `useRealtime` hook applies INSERT/UPDATE/DELETE events to local state. Be aw
 ### Dynamic table queries
 
 `useEntity` uses `supabase.from(tableName)` with a dynamic table name, which returns a union type that TypeScript can't narrow. The `queryTable` cast is intentional and documented — don't remove the `eslint-disable` comments.
+
+### Zod: Never use `z.string().uuid()` for ID validation
+
+Fixture data uses non-RFC-compliant UUIDs (e.g. `a0000000-0000-0000-0000-000000000001` — version digit is `0`, not `1-8`). Zod's `z.string().uuid()` enforces strict RFC 4122 and **rejects** these.
+
+**Use instead:**
+- Required FK fields: `z.string().min(1, 'Field is verplicht')`
+- Optional FK fields: `z.string().optional().nullable()`
+- Action param guards: `z.string().min(1).safeParse(id).success`
+
+The database FK constraint enforces referential integrity — Zod doesn't need to validate UUID format.

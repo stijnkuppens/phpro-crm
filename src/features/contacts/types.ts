@@ -13,14 +13,14 @@ export type ContactWithDetails = Contact & {
 
 // ── Zod schemas ─────────────────────────────────────────────────────────────
 export const contactFormSchema = z.object({
-  account_id: z.string().uuid('Account is verplicht'),
+  account_id: z.string().min(1, 'Account is verplicht'),
   first_name: z.string().min(1, 'Voornaam is verplicht'),
   last_name: z.string().min(1, 'Achternaam is verplicht'),
   email: z.string().email().optional().or(z.literal('')),
   phone: z.string().optional(),
   title: z.string().optional(),
   role: z.enum([
-    'Decision Maker', 'Influencer', 'Champion', 'Sponsor',
+    'Decision Maker', 'Influencer', 'Champion', 'Sponsor', 'Steerco Lid',
     'Technisch', 'Financieel', 'Operationeel', 'Contact',
   ]).optional(),
   is_steerco: z.boolean().optional(),

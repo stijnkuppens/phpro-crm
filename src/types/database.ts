@@ -623,7 +623,7 @@ export type Database = {
           email: string | null;
           phone: string | null;
           title: string | null;
-          role: 'Decision Maker' | 'Influencer' | 'Champion' | 'Sponsor' | 'Technisch' | 'Financieel' | 'Operationeel' | 'Contact' | null;
+          role: 'Decision Maker' | 'Influencer' | 'Champion' | 'Sponsor' | 'Steerco Lid' | 'Technisch' | 'Financieel' | 'Operationeel' | 'Contact' | null;
           is_steerco: boolean;
           is_pinned: boolean;
           created_at: string;
@@ -637,7 +637,7 @@ export type Database = {
           email?: string | null;
           phone?: string | null;
           title?: string | null;
-          role?: 'Decision Maker' | 'Influencer' | 'Champion' | 'Sponsor' | 'Technisch' | 'Financieel' | 'Operationeel' | 'Contact' | null;
+          role?: 'Decision Maker' | 'Influencer' | 'Champion' | 'Sponsor' | 'Steerco Lid' | 'Technisch' | 'Financieel' | 'Operationeel' | 'Contact' | null;
           is_steerco?: boolean;
           is_pinned?: boolean;
           created_at?: string;
@@ -651,7 +651,7 @@ export type Database = {
           email?: string | null;
           phone?: string | null;
           title?: string | null;
-          role?: 'Decision Maker' | 'Influencer' | 'Champion' | 'Sponsor' | 'Technisch' | 'Financieel' | 'Operationeel' | 'Contact' | null;
+          role?: 'Decision Maker' | 'Influencer' | 'Champion' | 'Sponsor' | 'Steerco Lid' | 'Technisch' | 'Financieel' | 'Operationeel' | 'Contact' | null;
           is_steerco?: boolean;
           is_pinned?: boolean;
           created_at?: string;

@@ -14,6 +14,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { ComboboxFilter } from '@/components/admin/combobox-filter';
 import { contactColumns } from '../columns';
 import type { Contact } from '../types';
 import { deleteContact } from '../actions/delete-contact';
@@ -27,16 +28,20 @@ const ROLES = [
   'Technisch', 'Financieel', 'Operationeel', 'Contact',
 ] as const;
 
+export type AccountOption = { id: string; name: string };
+
 type ContactListProps = {
   initialData?: Contact[];
   initialCount?: number;
+  accounts?: AccountOption[];
 };
 
-export function ContactList({ initialData, initialCount }: ContactListProps) {
+export function ContactList({ initialData, initialCount, accounts = [] }: ContactListProps) {
   const [viewId, setViewId] = useState<string | null>(null);
   const [editId, setEditId] = useState<string | null>(null);
-  const { data, total, loading, fetchList } = useEntity<Contact>({
+  const { data, total, loading, refreshing, fetchList } = useEntity<Contact>({
     table: 'contacts',
+    select: '*, account:accounts!account_id(id, name)',
     pageSize: PAGE_SIZE,
     initialData,
     initialCount,
@@ -44,29 +49,36 @@ export function ContactList({ initialData, initialCount }: ContactListProps) {
 
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
+  const [accountFilter, setAccountFilter] = useState<string>('all');
   const [roleFilter, setRoleFilter] = useState<string>('all');
   const [steercoOnly, setSteercoOnly] = useState(false);
 
   const load = useCallback(() => {
-    const orFilter = search
-      ? `first_name.ilike.%${search}%,last_name.ilike.%${search}%,email.ilike.%${search}%`
-      : undefined;
-
     const eqFilters: Record<string, string | boolean> = {};
+    if (accountFilter !== 'all') eqFilters.account_id = accountFilter;
     if (roleFilter !== 'all' && roleFilter !== 'Steerco Lid') eqFilters.role = roleFilter;
     if (steercoOnly || roleFilter === 'Steerco Lid') eqFilters.is_steerco = true;
 
-    fetchList({ page, orFilter, eqFilters });
-  }, [fetchList, page, search, roleFilter, steercoOnly]);
+    // Multi-word search: each word must match at least one of first_name, last_name, or email
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const applyFilters = search ? (query: any) => {
+      const words = search.trim().split(/\s+/).filter(Boolean);
+      for (const word of words) {
+        query = query.or(`first_name.ilike.%${word}%,last_name.ilike.%${word}%,email.ilike.%${word}%`);
+      }
+      return query;
+    } : undefined;
+
+    fetchList({ page, eqFilters, applyFilters });
+  }, [fetchList, page, search, accountFilter, roleFilter, steercoOnly]);
 
   useEffect(() => {
-    if (initialData && page === 1 && !search && roleFilter === 'all' && !steercoOnly) return;
     load();
-  }, [load, initialData, page, search, roleFilter, steercoOnly]);
+  }, [load]);
 
   useEffect(() => {
     setPage(1);
-  }, [roleFilter, steercoOnly, search]);
+  }, [accountFilter, roleFilter, steercoOnly, search]);
 
   const handleDelete = async (id: string) => {
     const result = await deleteContact(id);
@@ -87,6 +99,16 @@ export function ContactList({ initialData, initialCount }: ContactListProps) {
           onChange={(e) => setSearch(e.target.value)}
           className="w-64"
         />
+        {accounts.length > 0 && (
+          <ComboboxFilter
+            options={accounts.map((a) => ({ value: a.id, label: a.name }))}
+            value={accountFilter}
+            onValueChange={setAccountFilter}
+            placeholder="Alle accounts"
+            searchPlaceholder="Zoek account..."
+            className="w-48"
+          />
+        )}
         <Select value={roleFilter} onValueChange={(v) => setRoleFilter(v ?? 'all')}>
           <SelectTrigger className="w-48"><SelectValue /></SelectTrigger>
           <SelectContent>
@@ -110,6 +132,7 @@ export function ContactList({ initialData, initialCount }: ContactListProps) {
         pagination={{ page, pageSize: PAGE_SIZE, total }}
         onPageChange={setPage}
         loading={loading}
+        refreshing={refreshing}
         rowActions={(row) => [
           { icon: Eye, label: 'Bekijken', onClick: () => setViewId(row.id) },
           { icon: Pencil, label: 'Bewerken', onClick: () => setEditId(row.id) },

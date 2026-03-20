@@ -25,7 +25,7 @@ type Props = {
 };
 
 export function ActivityList({ initialData, initialCount }: Props) {
-  const { data, total, loading, fetchList } = useEntity<Activity>({
+  const { data, total, loading, refreshing, fetchList } = useEntity<Activity>({
     table: 'activities',
     pageSize: PAGE_SIZE,
     initialData,
@@ -97,6 +97,7 @@ export function ActivityList({ initialData, initialCount }: Props) {
         pagination={{ page, pageSize: PAGE_SIZE, total }}
         onPageChange={setPage}
         loading={loading}
+        refreshing={refreshing}
         rowActions={(row) => [
           { icon: Pencil, label: 'Bewerken', onClick: () => { /* TODO: open edit modal when available */ } },
           { icon: Trash2, label: 'Verwijderen', variant: 'destructive' as const, confirm: { title: 'Activiteit verwijderen?', description: 'Dit verwijdert de activiteit permanent.' }, onClick: () => handleDelete(row.id) },

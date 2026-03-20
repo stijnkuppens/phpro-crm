@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import { createBrowserClient } from '@/lib/supabase/client';
 import { toast } from 'sonner';
 import type { Database } from '@/types/database';
@@ -9,6 +9,7 @@ type TableName = keyof Database['public']['Tables'];
 
 type UseEntityOptions<T> = {
   table: TableName;
+  select?: string;
   pageSize?: number;
   initialData?: T[];
   initialCount?: number;
@@ -16,6 +17,7 @@ type UseEntityOptions<T> = {
 
 export function useEntity<T extends Record<string, unknown>>({
   table,
+  select = '*',
   pageSize = 10,
   initialData,
   initialCount,
@@ -29,6 +31,8 @@ export function useEntity<T extends Record<string, unknown>>({
   const [data, setData] = useState<T[]>(initialData ?? []);
   const [total, setTotal] = useState(initialCount ?? 0);
   const [loading, setLoading] = useState(!initialData);
+  const [refreshing, setRefreshing] = useState(false);
+  const hasDataRef = useRef(!!initialData?.length);
 
   const fetchList = useCallback(
     async (params: {
@@ -37,14 +41,20 @@ export function useEntity<T extends Record<string, unknown>>({
       search?: { column: string; query: string };
       orFilter?: string;
       eqFilters?: Record<string, string | boolean>;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      applyFilters?: (query: any) => any;
     } = {}) => {
-      setLoading(true);
-      const { page = 1, sort, search, orFilter, eqFilters } = params;
+      if (hasDataRef.current) {
+        setRefreshing(true);
+      } else {
+        setLoading(true);
+      }
+      const { page = 1, sort, search, orFilter, eqFilters, applyFilters } = params;
       const from = (page - 1) * pageSize;
       const to = from + pageSize - 1;
 
       let query = queryTable(table)
-        .select('*', { count: 'exact' })
+        .select(select, { count: 'exact' })
         .range(from, to);
 
       if (sort) {
@@ -67,16 +77,23 @@ export function useEntity<T extends Record<string, unknown>>({
         }
       }
 
+      if (applyFilters) {
+        query = applyFilters(query);
+      }
+
       const { data: rows, count, error } = await query;
       if (error) {
         toast.error(`Failed to load ${table}`);
       } else {
-        setData((rows ?? []) as T[]);
+        const newData = (rows ?? []) as T[];
+        setData(newData);
         setTotal(count ?? 0);
+        hasDataRef.current = newData.length > 0;
       }
       setLoading(false);
+      setRefreshing(false);
     },
-    [table, pageSize],
+    [table, select, pageSize],
   );
 
   const getById = useCallback(
@@ -146,5 +163,5 @@ export function useEntity<T extends Record<string, unknown>>({
     [table],
   );
 
-  return { data, total, loading, fetchList, getById, create, update, remove, bulkDelete };
+  return { data, total, loading, refreshing, fetchList, getById, create, update, remove, bulkDelete };
 }

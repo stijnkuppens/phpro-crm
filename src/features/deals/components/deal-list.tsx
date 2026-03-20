@@ -15,9 +15,10 @@ type Props = {
   onPageChange: (page: number) => void;
   onRefresh?: () => void;
   loading: boolean;
+  refreshing?: boolean;
 };
 
-export function DealList({ deals, page, total, onPageChange, onRefresh, loading }: Props) {
+export function DealList({ deals, page, total, onPageChange, onRefresh, loading, refreshing }: Props) {
   const router = useRouter();
 
   const handleDelete = async (id: string) => {
@@ -45,6 +46,7 @@ export function DealList({ deals, page, total, onPageChange, onRefresh, loading 
         { label: 'Verwijderen', variant: 'destructive' as const, confirm: { title: 'Deals verwijderen?', description: 'Dit verwijdert de geselecteerde deals permanent.' }, action: (ids) => ids.forEach((id) => handleDelete(id)) },
       ]}
       loading={loading}
+      refreshing={refreshing}
     />
   );
 }

@@ -24,7 +24,7 @@ type Props = {
 };
 
 export function TaskList({ initialData, initialCount }: Props) {
-  const { data, total, loading, fetchList } = useEntity<Task>({
+  const { data, total, loading, refreshing, fetchList } = useEntity<Task>({
     table: 'tasks',
     pageSize: PAGE_SIZE,
     initialData,
@@ -98,6 +98,7 @@ export function TaskList({ initialData, initialCount }: Props) {
         pagination={{ page, pageSize: PAGE_SIZE, total }}
         onPageChange={setPage}
         loading={loading}
+        refreshing={refreshing}
         rowActions={(row) => [
           { icon: Pencil, label: 'Bewerken', onClick: () => { /* TODO: open edit modal when available */ } },
           { icon: Trash2, label: 'Verwijderen', variant: 'destructive' as const, confirm: { title: 'Taak verwijderen?', description: 'Dit verwijdert de taak permanent.' }, onClick: () => handleDelete(row.id) },

@@ -14,7 +14,7 @@ type AuditListProps = {
 };
 
 export function AuditList({ initialData, initialCount }: AuditListProps) {
-  const { data, total, loading, fetchList } = useEntity<AuditLog>({
+  const { data, total, loading, refreshing, fetchList } = useEntity<AuditLog>({
     table: 'audit_logs',
     pageSize: PAGE_SIZE,
     initialData,
@@ -48,6 +48,7 @@ export function AuditList({ initialData, initialCount }: AuditListProps) {
         pagination={{ page, pageSize: PAGE_SIZE, total }}
         onPageChange={setPage}
         loading={loading}
+        refreshing={refreshing}
       />
     </>
   );

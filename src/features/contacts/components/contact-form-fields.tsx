@@ -2,8 +2,9 @@
 
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Checkbox } from '@/components/ui/checkbox';
 import { Textarea } from '@/components/ui/textarea';
+import { TogglePill } from '@/components/admin/toggle-pill';
+import { Star, Pin, UtensilsCrossed, CalendarDays, Gift, Baby } from 'lucide-react';
 import {
   Select,
   SelectContent,
@@ -12,6 +13,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { fieldErrorClass } from '@/lib/form-errors';
 import type { ContactFormValues, PersonalInfoFormValues } from '../types';
 
 const ROLES = [
@@ -22,9 +24,10 @@ const ROLES = [
 type Props = {
   defaultValues?: Partial<ContactFormValues>;
   defaultPersonalInfo?: Partial<PersonalInfoFormValues>;
+  errors?: Record<string, boolean>;
 };
 
-export function ContactFormFields({ defaultValues, defaultPersonalInfo }: Props) {
+export function ContactFormFields({ defaultValues, defaultPersonalInfo, errors }: Props) {
   return (
     <Tabs defaultValue="zakelijk" className="w-full">
       <TabsList className="grid w-full grid-cols-2">
@@ -32,15 +35,15 @@ export function ContactFormFields({ defaultValues, defaultPersonalInfo }: Props)
         <TabsTrigger value="persoonlijk">Persoonlijk</TabsTrigger>
       </TabsList>
 
-      <TabsContent value="zakelijk" className="space-y-4 mt-4">
+      <TabsContent value="zakelijk" className="space-y-4 mt-4" keepMounted>
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-2">
             <Label htmlFor="first_name">Voornaam *</Label>
-            <Input id="first_name" name="first_name" defaultValue={defaultValues?.first_name ?? ''} required />
+            <Input id="first_name" name="first_name" defaultValue={defaultValues?.first_name ?? ''} required className={errors?.first_name ? fieldErrorClass : ''} />
           </div>
           <div className="space-y-2">
             <Label htmlFor="last_name">Achternaam *</Label>
-            <Input id="last_name" name="last_name" defaultValue={defaultValues?.last_name ?? ''} required />
+            <Input id="last_name" name="last_name" defaultValue={defaultValues?.last_name ?? ''} required className={errors?.last_name ? fieldErrorClass : ''} />
           </div>
         </div>
         <div className="space-y-2">
@@ -68,33 +71,21 @@ export function ContactFormFields({ defaultValues, defaultPersonalInfo }: Props)
             </SelectContent>
           </Select>
         </div>
-        <div className="flex items-center gap-6">
-          <div className="flex items-center gap-2">
-            <Checkbox id="is_steerco" name="is_steerco" defaultChecked={defaultValues?.is_steerco ?? false} />
-            <Label htmlFor="is_steerco">Steerco</Label>
-          </div>
-          <div className="flex items-center gap-2">
-            <Checkbox id="is_pinned" name="is_pinned" defaultChecked={defaultValues?.is_pinned ?? false} />
-            <Label htmlFor="is_pinned">Toon in overview</Label>
-          </div>
+        <div className="flex items-center gap-2">
+          <TogglePill name="is_steerco" label="Steerco" icon={Star} defaultActive={defaultValues?.is_steerco ?? false} />
+          <TogglePill name="is_pinned" label="Toon in overview" icon={Pin} defaultActive={defaultValues?.is_pinned ?? false} />
         </div>
-        <div className="flex items-center gap-6">
+        <div className="space-y-2">
+          <Label className="text-sm font-medium">Relatiebeheer</Label>
           <div className="flex items-center gap-2">
-            <Checkbox id="invite_dinner" name="invite_dinner" defaultChecked={defaultPersonalInfo?.invite_dinner ?? false} />
-            <Label htmlFor="invite_dinner">Diner</Label>
-          </div>
-          <div className="flex items-center gap-2">
-            <Checkbox id="invite_event" name="invite_event" defaultChecked={defaultPersonalInfo?.invite_event ?? false} />
-            <Label htmlFor="invite_event">Event</Label>
-          </div>
-          <div className="flex items-center gap-2">
-            <Checkbox id="invite_gift" name="invite_gift" defaultChecked={defaultPersonalInfo?.invite_gift ?? false} />
-            <Label htmlFor="invite_gift">Gift</Label>
+            <TogglePill name="invite_dinner" label="Diner" icon={UtensilsCrossed} defaultActive={defaultPersonalInfo?.invite_dinner ?? false} />
+            <TogglePill name="invite_event" label="Event" icon={CalendarDays} defaultActive={defaultPersonalInfo?.invite_event ?? false} />
+            <TogglePill name="invite_gift" label="Gift" icon={Gift} defaultActive={defaultPersonalInfo?.invite_gift ?? false} />
           </div>
         </div>
       </TabsContent>
 
-      <TabsContent value="persoonlijk" className="space-y-4 mt-4">
+      <TabsContent value="persoonlijk" className="space-y-4 mt-4" keepMounted>
         <div className="space-y-2">
           <Label htmlFor="hobbies">Hobby&apos;s (kommagescheiden)</Label>
           <Input id="hobbies" name="hobbies" defaultValue={defaultPersonalInfo?.hobbies?.join(', ') ?? ''} />
@@ -110,13 +101,8 @@ export function ContactFormFields({ defaultValues, defaultPersonalInfo }: Props)
           </div>
         </div>
         <div className="flex items-center gap-4">
-          <div className="flex items-center gap-2">
-            <Checkbox id="has_children" name="has_children" defaultChecked={defaultPersonalInfo?.has_children ?? false} />
-            <Label htmlFor="has_children">Kinderen</Label>
-          </div>
-          <div className="space-y-2">
-            <Input id="children_count" name="children_count" type="number" min={0} className="w-20" defaultValue={defaultPersonalInfo?.children_count ?? ''} placeholder="#" />
-          </div>
+          <TogglePill name="has_children" label="Kinderen" icon={Baby} defaultActive={defaultPersonalInfo?.has_children ?? false} />
+          <Input id="children_count" name="children_count" type="number" min={0} className="w-20" defaultValue={defaultPersonalInfo?.children_count ?? ''} placeholder="#" />
         </div>
         <div className="space-y-2">
           <Label htmlFor="children_names">Namen kinderen</Label>

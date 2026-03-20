@@ -658,7 +658,7 @@ export function AccountForm({ referenceData, defaultValues, onSuccess }: Props) 
                       });
                     }}
                   >
-                    <SelectTrigger><SelectValue placeholder="Selecteer CC..." /></SelectTrigger>
+                    <SelectTrigger>{cc.competence_center_name || <span className="text-muted-foreground">Selecteer CC...</span>}</SelectTrigger>
                     <SelectContent>
                       {ref.competenceCenters.map((o) => (
                         <SelectItem key={o.id} value={o.id}>{o.name}</SelectItem>
@@ -715,7 +715,7 @@ export function AccountForm({ referenceData, defaultValues, onSuccess }: Props) 
                         updateHosting(index, { provider_id: v, provider_name: found?.name ?? '' });
                       }}
                     >
-                      <SelectTrigger><SelectValue placeholder="Provider..." /></SelectTrigger>
+                      <SelectTrigger>{entry.provider_name || <span className="text-muted-foreground">Provider...</span>}</SelectTrigger>
                       <SelectContent>
                         {ref.hostingProviders.map((o) => (
                           <SelectItem key={o.id} value={o.id}>{o.name}</SelectItem>
@@ -731,7 +731,7 @@ export function AccountForm({ referenceData, defaultValues, onSuccess }: Props) 
                         updateHosting(index, { environment_id: v ?? '', environment_name: found?.name ?? '' });
                       }}
                     >
-                      <SelectTrigger><SelectValue placeholder="Omgeving" /></SelectTrigger>
+                      <SelectTrigger>{entry.environment_name || <span className="text-muted-foreground">Omgeving</span>}</SelectTrigger>
                       <SelectContent>
                         {ref.hostingEnvironments.map((env) => (
                           <SelectItem key={env.id} value={env.id}>{env.name}</SelectItem>

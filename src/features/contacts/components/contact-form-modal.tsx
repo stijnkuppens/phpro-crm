@@ -9,6 +9,7 @@ import { createContact } from '../actions/create-contact';
 import { updateContact } from '../actions/update-contact';
 import { updatePersonalInfo } from '../actions/update-personal-info';
 import { createBrowserClient } from '@/lib/supabase/client';
+import { zodFieldErrors } from '@/lib/form-errors';
 import { contactFormSchema } from '../types';
 import type { ContactFormValues, PersonalInfoFormValues, ContactWithDetails } from '../types';
 
@@ -23,6 +24,7 @@ type Props = {
 export function ContactFormModal({ contactId, accountId, open, onClose, onSaved }: Props) {
   const [loading, setLoading] = useState(false);
   const [contact, setContact] = useState<ContactWithDetails | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, boolean>>({});
   const isEdit = !!contactId;
 
   useEffect(() => {
@@ -60,10 +62,12 @@ export function ContactFormModal({ contactId, accountId, open, onClose, onSaved 
 
     const parsedContact = contactFormSchema.safeParse(contactValues);
     if (!parsedContact.success) {
+      setFieldErrors(zodFieldErrors(parsedContact.error));
       toast.error('Controleer de verplichte velden');
       setLoading(false);
       return;
     }
+    setFieldErrors({});
 
     const hobbiesRaw = fd.get('hobbies') as string;
     const personalValues: PersonalInfoFormValues = {
@@ -128,6 +132,7 @@ export function ContactFormModal({ contactId, accountId, open, onClose, onSaved 
           key={contactId ?? 'new'}
           defaultValues={contact as Partial<ContactFormValues> | undefined ?? undefined}
           defaultPersonalInfo={contact?.personal_info as Partial<PersonalInfoFormValues> | undefined ?? undefined}
+          errors={fieldErrors}
         />
         <div className="flex justify-end gap-2 pt-2">
           <Button type="button" variant="outline" onClick={onClose} disabled={loading}>Annuleren</Button>

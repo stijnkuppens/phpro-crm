@@ -21,6 +21,7 @@ type AuditLogTableProps = {
   pagination: { page: number; pageSize: number; total: number };
   onPageChange: (page: number) => void;
   loading?: boolean;
+  refreshing?: boolean;
 };
 
 export function AuditLogTable({
@@ -28,6 +29,7 @@ export function AuditLogTable({
   pagination,
   onPageChange,
   loading,
+  refreshing,
 }: AuditLogTableProps) {
   const [selectedLog, setSelectedLog] = useState<AuditLog | null>(null);
 
@@ -96,6 +98,7 @@ export function AuditLogTable({
         pagination={pagination}
         onPageChange={onPageChange}
         loading={loading}
+        refreshing={refreshing}
       />
       <AuditDetail
         log={selectedLog}

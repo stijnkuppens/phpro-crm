@@ -26,6 +26,7 @@ import {
   Settings,
   Bell,
   ScrollText,
+  Database,
   UserPlus,
   Wrench,
   DollarSign,
@@ -81,6 +82,7 @@ export function AdminSidebar() {
         { label: t('audit'), href: '/admin/audit', icon: ScrollText },
         { label: t('users'), href: '/admin/users', icon: Users },
         { label: t('settings'), href: '/admin/settings', icon: Settings },
+        { label: 'Referentiedata', href: '/admin/reference-data', icon: Database },
       ],
     },
   ];

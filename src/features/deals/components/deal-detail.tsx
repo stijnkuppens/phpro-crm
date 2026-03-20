@@ -1,9 +1,15 @@
+'use client';
+
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import type { ActivityWithRelations } from '@/features/activities/types';
 import type { TaskWithRelations } from '@/features/tasks/types';
 import type { CommunicationWithDetails } from '@/features/communications/types';
 import { DealLinkedTabs } from './deal-linked-tabs';
+import { CloseDealModal } from './close-deal-modal';
 import type { DealWithRelations } from '../types';
 
 type Props = {
@@ -34,8 +40,24 @@ function InfoRow({ label, value }: { label: string; value?: string | null }) {
 }
 
 export function DealDetail({ deal, activities, tasks, communications }: Props) {
+  const [showClose, setShowClose] = useState(false);
+  const router = useRouter();
+
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      {!deal.closed_at && (
+        <div className="lg:col-span-2 flex justify-end">
+          <Button variant="outline" size="sm" onClick={() => setShowClose(true)}>
+            Deal sluiten
+          </Button>
+          <CloseDealModal
+            dealId={deal.id}
+            open={showClose}
+            onOpenChange={setShowClose}
+            onSuccess={() => router.refresh()}
+          />
+        </div>
+      )}
       <Card>
         <CardHeader>
           <CardTitle className="text-sm font-semibold">Deal Info</CardTitle>

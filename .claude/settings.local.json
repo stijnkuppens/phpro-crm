@@ -6,7 +6,8 @@
       "Bash(docker compose:*)",
       "WebSearch",
       "Bash(ls -la /Users/stijnkuppens/phpro/ai-projects/phpro_crm/src/app/\\\\\\(auth\\\\\\)/)",
-      "Bash(cat /Users/stijnkuppens/phpro/ai-projects/phpro_crm/src/app/\\\\\\(auth\\\\\\)/layout.tsx)"
+      "Bash(cat /Users/stijnkuppens/phpro/ai-projects/phpro_crm/src/app/\\\\\\(auth\\\\\\)/layout.tsx)",
+      "Bash(task db:seed)"
     ]
   }
 }

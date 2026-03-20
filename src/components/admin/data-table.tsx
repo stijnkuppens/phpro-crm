@@ -56,6 +56,7 @@ type DataTableProps<T> = {
   rowActions?: (row: T) => RowAction<T>[];
   bulkActions?: BulkAction[];
   loading?: boolean;
+  refreshing?: boolean;
 };
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -109,6 +110,7 @@ export default function DataTable<T extends Record<string, any>>({
   rowActions,
   bulkActions,
   loading,
+  refreshing,
 }: DataTableProps<T>) {
   const [rowSelection, setRowSelection] = useState<Record<string, boolean>>({});
   const [sorting, setSorting] = useState<SortingState>([]);
@@ -213,7 +215,7 @@ export default function DataTable<T extends Record<string, any>>({
               </TableRow>
             ))}
           </TableHeader>
-          <TableBody>
+          <TableBody className={`transition-opacity duration-200 ${refreshing ? 'opacity-40' : 'opacity-100'}`}>
             {loading ? (
               Array.from({ length: 5 }).map((_, i) => (
                 <TableRow key={i}>

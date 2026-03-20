@@ -22,7 +22,7 @@ type AccountListProps = {
 
 export function AccountList({ initialData, initialCount, owners, countries }: AccountListProps) {
   const router = useRouter();
-  const { data, total, loading, fetchList } = useEntity<Account>({
+  const { data, total, loading, refreshing, fetchList } = useEntity<Account>({
     table: 'accounts',
     pageSize: PAGE_SIZE,
     initialData,
@@ -74,9 +74,10 @@ export function AccountList({ initialData, initialCount, owners, countries }: Ac
         pagination={{ page, pageSize: PAGE_SIZE, total }}
         onPageChange={setPage}
         loading={loading}
+        refreshing={refreshing}
         rowActions={(row) => [
           { icon: Eye, label: 'Bekijken', onClick: () => router.push(`/admin/accounts/${row.id}`) },
-          { icon: Pencil, label: 'Bewerken', onClick: () => router.push(`/admin/accounts/${row.id}`) },
+          { icon: Pencil, label: 'Bewerken', onClick: () => router.push(`/admin/accounts/${row.id}/edit`) },
           { icon: Trash2, label: 'Verwijderen', variant: 'destructive' as const, confirm: { title: 'Account verwijderen?', description: 'Dit verwijdert het account en alle gekoppelde gegevens.' }, onClick: () => handleDelete(row.id) },
         ]}
         bulkActions={[

@@ -23,7 +23,7 @@ type Props = {
 
 export function EmployeeList({ initialData, initialCount }: Props) {
   const router = useRouter();
-  const { data, total, loading, fetchList } = useEntity<Employee>({
+  const { data, total, loading, refreshing, fetchList } = useEntity<Employee>({
     table: 'employees',
     pageSize: PAGE_SIZE,
     initialData,
@@ -92,6 +92,7 @@ export function EmployeeList({ initialData, initialCount }: Props) {
           { label: 'Verwijderen', variant: 'destructive' as const, confirm: { title: 'Medewerkers verwijderen?', description: 'Dit verwijdert de geselecteerde medewerkers permanent.' }, action: (ids) => ids.forEach((id) => handleDelete(id)) },
         ]}
         loading={loading}
+        refreshing={refreshing}
       />
     </div>
   );
