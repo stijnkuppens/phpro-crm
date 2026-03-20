@@ -13,7 +13,7 @@ This roadmap ports every feature from the demo_crm Vue prototype into the produc
 Decimal phases appear between their surrounding integers in numeric order.
 
 - [x] **Phase 1: Foundation & Reference Data** - Seed all reference data, complete fixtures, install additive libraries (completed 2026-03-20)
-- [ ] **Phase 2: Account Detail Completion** - All 7 account tabs fully functional with DB-backed CRUD
+- [ ] **Phase 2: Account Detail Completion** - All 8 account tabs fully functional with DB-backed CRUD
 - [ ] **Phase 3: Contacts & Deals** - Contact steerco/role/personal info complete; deal origin, bench shortcut, and pipelines working
 - [ ] **Phase 4: Contract Domain** - Full 7-section contract tab, hourly/SLA tariffs, indexation wizard persistence, attribution
 - [ ] **Phase 5: Consultant Detail** - Attribution modal, rate history timeline, full detail modal, list indicators
@@ -44,24 +44,22 @@ Plans:
 - [ ] 01-05-PLAN.md — Gap closure: create ref_lead_sources and ref_distribution_types tables + seed data + admin UI registration
 
 ### Phase 2: Account Detail Completion
-**Goal**: The account detail page is fully functional with all 7 tabs working against DB-persisted data, including hosting CRUD and per-account revenue entry
+**Goal**: The account detail page is fully functional with all 8 tabs (including Activities) working against DB-persisted data, with edit page for hosting CRUD and relation management, and upgraded communication timeline
 **Depends on**: Phase 1
 **Requirements**: ACCT-01, ACCT-02, ACCT-03, ACCT-04, ACCT-05, ACCT-06
 **Success Criteria** (what must be TRUE):
-  1. Navigating to any account detail page shows all 7 tabs (overview, contacts, deals, activities, contracts, communication, revenue) with data loaded — no blank or broken tabs
-  2. User can create, edit, and delete hosting environments (provider, environment type, URL, notes) on the account hosting tab, and changes persist after page refresh
+  1. Navigating to any account detail page shows all 8 tabs (overview, communicatie, contracten, consultants, contacts, deals, activiteiten, omzet) with data loaded — no blank or broken tabs
+  2. User can create, edit, and delete hosting environments (provider, environment type, URL, notes) on the account edit page, and changes persist after page refresh
   3. User can view per-account revenue entries on the revenue tab grouped by category and year, and can create, edit, and delete entries — data survives refresh
-  4. The communication tab displays the full interaction history and allows creating new entries (emails, notes, meetings, calls) via a modal
-  5. Account overview tab shows contract status, health score, tech stack, services, competence centers, and samenwerkingsvormen with working multi-select editors
-  6. All relation management (tech stacks, services, hosting, competence centers) allows add and remove operations that persist to the database
-**Plans**: TBD
+  4. The communication tab displays an expandable timeline with color-coded type icons, type filter chips, and linked contact/deal badges
+  5. Account overview tab shows contract status, health score, tech stack, services, competence centers, and samenwerkingsvormen as read-only display
+  6. All relation management (tech stacks, services, hosting, competence centers) is available on the edit page and persists to the database
+**Plans**: 3 plans
 
 Plans:
-- [ ] 02-01: Account detail page server wiring — parallel fetch for all 7 tab data sources, `generateMetadata`, `loading.tsx`/`error.tsx`
-- [ ] 02-02: Hosting environment feature module (migration, types, queries, actions, HostingTab component)
-- [ ] 02-03: Account overview tab — contract status, health score display, relation multi-selects (tech stack, services, competence centers, samenwerkingsvormen)
-- [ ] 02-04: Account communication tab — interaction history list, create modal, server-filtered by account_id
-- [ ] 02-05: Account revenue tab (OmzetTab) — revenue entries CRUD filtered by account_id, wired to Phase 6 data model
+- [ ] 02-01-PLAN.md — Server wiring: add activities/communications to parallel fetch, add Activities tab to AccountDetail, fix communications query deal join, create error.tsx
+- [ ] 02-02-PLAN.md — Account edit page route with reference data fetch and relation data transformation for AccountForm
+- [ ] 02-03-PLAN.md — Activities tab inline CRUD and Communications tab upgrade to expandable timeline with type filters
 
 ### Phase 3: Contacts & Deals
 **Goal**: Contacts have full personal info, steerco flag, and role tracking; deals have origin tracking, bench shortcut, and all three pipelines functioning with correct stages
@@ -215,7 +213,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9 -> 10
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Foundation & Reference Data | 5/5 | Complete   | 2026-03-20 |
-| 2. Account Detail Completion | 0/5 | Not started | - |
+| 2. Account Detail Completion | 0/3 | Not started | - |
 | 3. Contacts & Deals | 0/5 | Not started | - |
 | 4. Contract Domain | 0/6 | Not started | - |
 | 5. Consultant Detail | 0/4 | Not started | - |
