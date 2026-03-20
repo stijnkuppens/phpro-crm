@@ -7,6 +7,7 @@ import { getContract } from '@/features/contracts/queries/get-contract';
 import { getHourlyRates } from '@/features/contracts/queries/get-hourly-rates';
 import { getSlaRates } from '@/features/contracts/queries/get-sla-rates';
 import { getConsultantsByAccount } from '@/features/consultants/queries/get-consultants-by-account';
+import { getAccountRevenue } from '@/features/revenue/queries/get-account-revenue';
 import { AccountDetail } from '@/features/accounts/components/account-detail';
 
 type Props = {
@@ -27,12 +28,13 @@ export default async function AccountDetailPage({ params }: Props) {
     notFound();
   }
 
-  const [deals, contract, hourlyRates, slaRates, consultants] = await Promise.all([
+  const [deals, contract, hourlyRates, slaRates, consultants, accountRevenue] = await Promise.all([
     getDealsByAccount(id),
     getContract(id),
     getHourlyRates(id),
     getSlaRates(id),
     getConsultantsByAccount(id),
+    getAccountRevenue(id),
   ]);
 
   return (
@@ -52,6 +54,7 @@ export default async function AccountDetailPage({ params }: Props) {
         hourlyRates={hourlyRates}
         slaRates={slaRates}
         consultants={consultants}
+        accountRevenue={accountRevenue}
       />
     </div>
   );

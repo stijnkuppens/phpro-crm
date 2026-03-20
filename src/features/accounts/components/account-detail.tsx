@@ -7,10 +7,12 @@ import { AccountCommunicationsTab } from './account-communications-tab';
 import { AccountDealsTab } from '@/features/deals/components/account-deals-tab';
 import { ContractsTab } from '@/features/contracts/components/contracts-tab';
 import { AccountConsultantsTab } from '@/features/consultants/components/account-consultants-tab';
+import { OmzetTab } from '@/features/revenue/components/omzet-tab';
 import type { AccountWithRelations } from '../types';
 import type { DealWithRelations } from '@/features/deals/types';
 import type { Contract, HourlyRate, SlaRateWithTools } from '@/features/contracts/types';
 import type { ActiveConsultantWithDetails } from '@/features/consultants/types';
+import type { AccountRevenue } from '@/features/revenue/types';
 
 type Props = {
   account: AccountWithRelations;
@@ -19,9 +21,10 @@ type Props = {
   hourlyRates: HourlyRate[];
   slaRates: SlaRateWithTools[];
   consultants: ActiveConsultantWithDetails[];
+  accountRevenue: AccountRevenue[];
 };
 
-export function AccountDetail({ account, deals, contract, hourlyRates, slaRates, consultants }: Props) {
+export function AccountDetail({ account, deals, contract, hourlyRates, slaRates, consultants, accountRevenue }: Props) {
   return (
     <Tabs defaultValue="overview">
       <TabsList>
@@ -31,6 +34,7 @@ export function AccountDetail({ account, deals, contract, hourlyRates, slaRates,
         <TabsTrigger value="consultants">Consultants</TabsTrigger>
         <TabsTrigger value="contacts">Contacts</TabsTrigger>
         <TabsTrigger value="deals">Deals</TabsTrigger>
+        <TabsTrigger value="omzet">Omzet</TabsTrigger>
       </TabsList>
       <TabsContent value="overview">
         <AccountOverviewTab account={account} />
@@ -49,6 +53,9 @@ export function AccountDetail({ account, deals, contract, hourlyRates, slaRates,
       </TabsContent>
       <TabsContent value="deals">
         <AccountDealsTab deals={deals} />
+      </TabsContent>
+      <TabsContent value="omzet">
+        <OmzetTab accountId={account.id} initialData={accountRevenue} />
       </TabsContent>
     </Tabs>
   );
