@@ -1,9 +1,16 @@
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import type { ActivityWithRelations } from '@/features/activities/types';
+import type { TaskWithRelations } from '@/features/tasks/types';
+import type { CommunicationWithDetails } from '@/features/communications/types';
+import { DealLinkedTabs } from './deal-linked-tabs';
 import type { DealWithRelations } from '../types';
 
 type Props = {
   deal: DealWithRelations;
+  activities: ActivityWithRelations[];
+  tasks: TaskWithRelations[];
+  communications: CommunicationWithDetails[];
 };
 
 const fmt = (n: number) =>
@@ -26,7 +33,7 @@ function InfoRow({ label, value }: { label: string; value?: string | null }) {
   );
 }
 
-export function DealDetail({ deal }: Props) {
+export function DealDetail({ deal, activities, tasks, communications }: Props) {
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
       <Card>
@@ -105,6 +112,14 @@ export function DealDetail({ deal }: Props) {
           </CardContent>
         </Card>
       )}
+
+      <div className="lg:col-span-2">
+        <DealLinkedTabs
+          activities={activities}
+          tasks={tasks}
+          communications={communications}
+        />
+      </div>
     </div>
   );
 }

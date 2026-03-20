@@ -2,6 +2,9 @@ import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
 import { PageHeader } from '@/components/admin/page-header';
 import { getDeal } from '@/features/deals/queries/get-deal';
+import { getActivities } from '@/features/activities/queries/get-activities';
+import { getTasks } from '@/features/tasks/queries/get-tasks';
+import { getCommunications } from '@/features/communications/queries/get-communications';
 import { DealDetail } from '@/features/deals/components/deal-detail';
 
 type Props = {
@@ -16,7 +19,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function DealDetailPage({ params }: Props) {
   const { id } = await params;
-  const deal = await getDeal(id);
+
+  const [deal, activitiesResult, tasksResult, communicationsResult] = await Promise.all([
+    getDeal(id),
+    getActivities({ filters: { deal_id: id }, pageSize: 50 }),
+    getTasks({ filters: { deal_id: id }, pageSize: 50 }),
+    getCommunications({ filters: { deal_id: id }, pageSize: 50 }),
+  ]);
 
   if (!deal) {
     notFound();
@@ -32,7 +41,12 @@ export default async function DealDetailPage({ params }: Props) {
           { label: deal.title },
         ]}
       />
-      <DealDetail deal={deal} />
+      <DealDetail
+        deal={deal}
+        activities={activitiesResult.data}
+        tasks={tasksResult.data}
+        communications={communicationsResult.data}
+      />
     </div>
   );
 }
