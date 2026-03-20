@@ -10,33 +10,48 @@ INSERT INTO accounts (id, name, domain, type, status, industry, size, revenue, p
   ('a0000000-0000-0000-0000-000000000003', 'MediCare Plus', 'medicareplus.be', 'Klant', 'Actief', 'Healthcare', '11-50', 750000, '+32 3 456 78 90', 'www.medicareplus.be', 'Mechelsesteenweg 271, 2018 Antwerpen', 'BE', 'BE0987.654.321', NULL, 72, 'Wim', 'Nathalie', 'Team 1', 'MediCare Plus is een toonaangevende zorginstelling in de Antwerpse regio.', 'Actief')
 ON CONFLICT DO NOTHING;
 
--- ── Account Tech Stacks ────────────────────────────────────────────────────
-INSERT INTO account_tech_stacks (account_id, technology) VALUES
-  ('a0000000-0000-0000-0000-000000000001', 'SAP'),
-  ('a0000000-0000-0000-0000-000000000001', 'PIMCore'),
-  ('a0000000-0000-0000-0000-000000000001', 'Magento'),
-  ('a0000000-0000-0000-0000-000000000002', 'SAP'),
-  ('a0000000-0000-0000-0000-000000000002', 'Microsoft Dynamics'),
-  ('a0000000-0000-0000-0000-000000000003', 'Akeneo'),
-  ('a0000000-0000-0000-0000-000000000003', 'Shopware');
+-- ── Set account owners (lookup by email) ──────────────────────────────────
+UPDATE accounts SET owner_id = (SELECT id FROM auth.users WHERE email = 'manager@example.com')
+WHERE id = 'a0000000-0000-0000-0000-000000000001' AND owner_id IS NULL;
+UPDATE accounts SET owner_id = (SELECT id FROM auth.users WHERE email = 'admin@example.com')
+WHERE id = 'a0000000-0000-0000-0000-000000000002' AND owner_id IS NULL;
+UPDATE accounts SET owner_id = (SELECT id FROM auth.users WHERE email = 'manager@example.com')
+WHERE id = 'a0000000-0000-0000-0000-000000000003' AND owner_id IS NULL;
 
--- ── Account Manual Services ────────────────────────────────────────────────
+-- ── Account Tech Stacks (idempotent: clear + re-insert) ──────────────────
+-- Ensure orphan tech values exist in ref table before FK insert
+INSERT INTO ref_technologies (name) VALUES ('PIMCore'), ('Microsoft Dynamics') ON CONFLICT (name) DO NOTHING;
+
+DELETE FROM account_tech_stacks WHERE account_id IN ('a0000000-0000-0000-0000-000000000001','a0000000-0000-0000-0000-000000000002','a0000000-0000-0000-0000-000000000003');
+INSERT INTO account_tech_stacks (account_id, technology_id) VALUES
+  ('a0000000-0000-0000-0000-000000000001', (SELECT id FROM ref_technologies WHERE name = 'SAP')),
+  ('a0000000-0000-0000-0000-000000000001', (SELECT id FROM ref_technologies WHERE name = 'PIMCore')),
+  ('a0000000-0000-0000-0000-000000000001', (SELECT id FROM ref_technologies WHERE name = 'Magento')),
+  ('a0000000-0000-0000-0000-000000000002', (SELECT id FROM ref_technologies WHERE name = 'SAP')),
+  ('a0000000-0000-0000-0000-000000000002', (SELECT id FROM ref_technologies WHERE name = 'Microsoft Dynamics')),
+  ('a0000000-0000-0000-0000-000000000003', (SELECT id FROM ref_technologies WHERE name = 'Akeneo')),
+  ('a0000000-0000-0000-0000-000000000003', (SELECT id FROM ref_technologies WHERE name = 'Shopware'));
+
+-- ── Account Manual Services (idempotent) ──────────────────────────────────
+DELETE FROM account_manual_services WHERE account_id IN ('a0000000-0000-0000-0000-000000000001','a0000000-0000-0000-0000-000000000002','a0000000-0000-0000-0000-000000000003');
 INSERT INTO account_manual_services (account_id, service_name) VALUES
   ('a0000000-0000-0000-0000-000000000001', 'Adobe Commerce'),
   ('a0000000-0000-0000-0000-000000000003', 'Magento Open Source');
 
--- ── Account Samenwerkingsvormen ────────────────────────────────────────────
-INSERT INTO account_samenwerkingsvormen (account_id, type) VALUES
-  ('a0000000-0000-0000-0000-000000000001', 'Continuous Dev.'),
-  ('a0000000-0000-0000-0000-000000000001', 'Support'),
-  ('a0000000-0000-0000-0000-000000000003', 'Project'),
-  ('a0000000-0000-0000-0000-000000000003', 'Ad Hoc');
+-- ── Account Samenwerkingsvormen (idempotent) ──────────────────────────────
+DELETE FROM account_samenwerkingsvormen WHERE account_id IN ('a0000000-0000-0000-0000-000000000001','a0000000-0000-0000-0000-000000000002','a0000000-0000-0000-0000-000000000003');
+INSERT INTO account_samenwerkingsvormen (account_id, collaboration_type_id) VALUES
+  ('a0000000-0000-0000-0000-000000000001', (SELECT id FROM ref_collaboration_types WHERE name = 'Continuous Dev.')),
+  ('a0000000-0000-0000-0000-000000000001', (SELECT id FROM ref_collaboration_types WHERE name = 'Support')),
+  ('a0000000-0000-0000-0000-000000000003', (SELECT id FROM ref_collaboration_types WHERE name = 'Project')),
+  ('a0000000-0000-0000-0000-000000000003', (SELECT id FROM ref_collaboration_types WHERE name = 'Ad Hoc'));
 
--- ── Account Hosting ────────────────────────────────────────────────────────
-INSERT INTO account_hosting (account_id, provider, environment, url, notes) VALUES
-  ('a0000000-0000-0000-0000-000000000001', 'AWS', 'Productie', 'https://console.aws.amazon.com', ''),
-  ('a0000000-0000-0000-0000-000000000001', 'Hosted Power', 'Staging', '', 'Managed hosting staging omgeving'),
-  ('a0000000-0000-0000-0000-000000000003', 'Combell', 'Productie', '', 'Shared hosting pakket');
+-- ── Account Hosting (idempotent) ──────────────────────────────────────────
+DELETE FROM account_hosting WHERE account_id IN ('a0000000-0000-0000-0000-000000000001','a0000000-0000-0000-0000-000000000002','a0000000-0000-0000-0000-000000000003');
+INSERT INTO account_hosting (account_id, provider_id, environment_id, url, notes) VALUES
+  ('a0000000-0000-0000-0000-000000000001', (SELECT id FROM ref_hosting_providers WHERE name = 'AWS'), (SELECT id FROM ref_hosting_environments WHERE name = 'Productie'), 'https://console.aws.amazon.com', ''),
+  ('a0000000-0000-0000-0000-000000000001', (SELECT id FROM ref_hosting_providers WHERE name = 'Hosted Power'), (SELECT id FROM ref_hosting_environments WHERE name = 'Staging'), '', 'Managed hosting staging omgeving'),
+  ('a0000000-0000-0000-0000-000000000003', (SELECT id FROM ref_hosting_providers WHERE name = 'Combell'), (SELECT id FROM ref_hosting_environments WHERE name = 'Productie'), '', 'Shared hosting pakket');
 
 -- ── Contacts ────────────────────────────────────────────────────────────────
 INSERT INTO contacts (id, account_id, first_name, last_name, email, phone, title, role, is_steerco, is_pinned) VALUES
