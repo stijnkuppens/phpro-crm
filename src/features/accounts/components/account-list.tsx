@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useCallback, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { useEntity } from '@/lib/hooks/use-entity';
 import DataTable from '@/components/admin/data-table';
 import { AccountFiltersBar } from './account-filters';
@@ -15,6 +16,7 @@ type AccountListProps = {
 };
 
 export function AccountList({ initialData, initialCount }: AccountListProps) {
+  const router = useRouter();
   const { data, total, loading, fetchList } = useEntity<Account>({
     table: 'accounts',
     pageSize: PAGE_SIZE,

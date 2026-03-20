@@ -17,7 +17,6 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -29,8 +28,18 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from '@/components/ui/pagination';
+import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from '@/components/ui/tooltip';
 import { ArrowUpDown } from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
 import { ConfirmDialog } from '@/components/admin/confirm-dialog';
+
+type RowAction<T> = {
+  icon: LucideIcon;
+  label: string;
+  onClick: (row: T) => void;
+  variant?: 'ghost' | 'destructive';
+  confirm?: { title: string; description: string };
+};
 
 type BulkAction = {
   label: string;
@@ -42,12 +51,9 @@ type BulkAction = {
 type DataTableProps<T> = {
   columns: ColumnDef<T>[];
   data: T[];
-  searchColumn?: string;
-  searchPlaceholder?: string;
   pagination?: { page: number; pageSize: number; total: number };
   onPageChange?: (page: number) => void;
-  onSort?: (column: string, direction: 'asc' | 'desc') => void;
-  onSearch?: (query: string) => void;
+  rowActions?: (row: T) => RowAction<T>[];
   bulkActions?: BulkAction[];
   loading?: boolean;
 };
@@ -56,18 +62,14 @@ type DataTableProps<T> = {
 export default function DataTable<T extends Record<string, any>>({
   columns,
   data,
-  searchColumn,
-  searchPlaceholder,
   pagination,
   onPageChange,
-  onSort,
-  onSearch,
+  rowActions,
   bulkActions,
   loading,
 }: DataTableProps<T>) {
   const [rowSelection, setRowSelection] = useState<Record<string, boolean>>({});
   const [sorting, setSorting] = useState<SortingState>([]);
-  const [searchQuery, setSearchQuery] = useState('');
 
   const allColumns: ColumnDef<T>[] = bulkActions
     ? [
@@ -108,17 +110,6 @@ export default function DataTable<T extends Record<string, any>>({
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        {searchColumn && (
-          <Input
-            placeholder={searchPlaceholder ?? `Search by ${searchColumn}...`}
-            value={searchQuery}
-            onChange={(e) => {
-              setSearchQuery(e.target.value);
-              onSearch?.(e.target.value);
-            }}
-            className="max-w-sm"
-          />
-        )}
         {bulkActions && selectedIds.length > 0 && (
           <div className="flex items-center gap-2">
             <span className="text-sm text-muted-foreground">
@@ -176,6 +167,7 @@ export default function DataTable<T extends Record<string, any>>({
                     )}
                   </TableHead>
                 ))}
+                {rowActions && <TableHead className="w-0" />}
               </TableRow>
             ))}
           </TableHeader>
@@ -183,7 +175,7 @@ export default function DataTable<T extends Record<string, any>>({
             {loading ? (
               Array.from({ length: 5 }).map((_, i) => (
                 <TableRow key={i}>
-                  {allColumns.map((_, j) => (
+                  {Array.from({ length: allColumns.length + (rowActions ? 1 : 0) }).map((_, j) => (
                     <TableCell key={j}>
                       <Skeleton className="h-4 w-full" />
                     </TableCell>
@@ -192,17 +184,64 @@ export default function DataTable<T extends Record<string, any>>({
               ))
             ) : table.getRowModel().rows.length ? (
               table.getRowModel().rows.map((row) => (
-                <TableRow key={row.id} data-state={row.getIsSelected() && 'selected'}>
+                <TableRow
+                  key={row.id}
+                  data-state={row.getIsSelected() && 'selected'}
+                >
                   {row.getVisibleCells().map((cell) => (
                     <TableCell key={cell.id}>
                       {flexRender(cell.column.columnDef.cell, cell.getContext())}
                     </TableCell>
                   ))}
+                  {rowActions && (
+                    <TableCell className="w-0 text-right">
+                      <div className="flex items-center justify-end gap-1">
+                        <TooltipProvider>
+                          {rowActions(row.original).map((action) => {
+                            const iconButton = (
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className={`h-8 w-8 ${action.variant === 'destructive' ? 'text-muted-foreground hover:text-destructive' : 'text-muted-foreground'}`}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  if (!action.confirm) action.onClick(row.original);
+                                }}
+                              >
+                                <action.icon className="h-4 w-4" />
+                                <span className="sr-only">{action.label}</span>
+                              </Button>
+                            );
+
+                            return action.confirm ? (
+                              <ConfirmDialog
+                                key={action.label}
+                                title={action.confirm.title}
+                                description={action.confirm.description}
+                                onConfirm={() => action.onClick(row.original)}
+                                trigger={
+                                  <Tooltip>
+                                    <TooltipTrigger render={iconButton} />
+                                    <TooltipContent>{action.label}</TooltipContent>
+                                  </Tooltip>
+                                }
+                              />
+                            ) : (
+                              <Tooltip key={action.label}>
+                                <TooltipTrigger render={iconButton} />
+                                <TooltipContent>{action.label}</TooltipContent>
+                              </Tooltip>
+                            );
+                          })}
+                        </TooltipProvider>
+                      </div>
+                    </TableCell>
+                  )}
                 </TableRow>
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={allColumns.length} className="h-24 text-center">
+                <TableCell colSpan={allColumns.length + (rowActions ? 1 : 0)} className="h-24 text-center">
                   No results.
                 </TableCell>
               </TableRow>
@@ -246,3 +285,5 @@ export default function DataTable<T extends Record<string, any>>({
     </div>
   );
 }
+
+export type { RowAction, BulkAction };
