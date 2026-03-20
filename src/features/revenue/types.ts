@@ -32,8 +32,8 @@ export const accountRevenueFormSchema = z.object({
 export type AccountRevenueFormValues = z.infer<typeof accountRevenueFormSchema>;
 
 export const revenueEntryFormSchema = z.object({
-  revenue_client_id: z.string().uuid(),
-  division_id: z.string().uuid(),
+  revenue_client_id: z.string().min(1),
+  division_id: z.string().min(1),
   service_name: z.string().min(1),
   year: z.coerce.number(),
   month: z.coerce.number().min(0).max(11),

@@ -13,9 +13,9 @@ export type CommunicationWithDetails = Communication & {
 
 // ── Zod schema ──────────────────────────────────────────────────────────────
 export const communicationFormSchema = z.object({
-  account_id: z.string().uuid(),
-  contact_id: z.string().uuid().optional().nullable(),
-  deal_id: z.string().uuid().optional().nullable(),
+  account_id: z.string().min(1),
+  contact_id: z.string().optional().nullable(),
+  deal_id: z.string().optional().nullable(),
   type: z.enum(['email', 'note', 'meeting', 'call']),
   subject: z.string().min(1, 'Onderwerp is verplicht'),
   to: z.string().optional().nullable(),

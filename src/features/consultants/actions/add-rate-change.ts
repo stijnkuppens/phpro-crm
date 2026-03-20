@@ -18,7 +18,7 @@ export async function addRateChange(
   id: string,
   values: z.infer<typeof rateChangeSchema>,
 ): Promise<ActionResult> {
-  if (!z.string().uuid().safeParse(id).success) return err('Ongeldig ID');
+  if (!z.string().min(1).safeParse(id).success) return err('Ongeldig ID');
   await requirePermission('consultants.write');
 
   const parsed = rateChangeSchema.safeParse(values);

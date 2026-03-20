@@ -43,7 +43,7 @@ export function getCurrentRate(consultant: ActiveConsultantWithDetails): number 
 }
 
 export const activeConsultantFormSchema = z.object({
-  account_id: z.string().uuid().optional().nullable(),
+  account_id: z.string().optional().nullable(),
   first_name: z.string().min(1, 'Voornaam is verplicht'),
   last_name: z.string().min(1, 'Achternaam is verplicht'),
   role: z.string().optional(),

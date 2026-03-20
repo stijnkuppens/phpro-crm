@@ -55,7 +55,7 @@ export const indexationDraftSchema = z.object({
 export type IndexationDraftValues = z.infer<typeof indexationDraftSchema>;
 
 export const indexationConfigFormSchema = z.object({
-  account_id: z.string().uuid(),
+  account_id: z.string().min(1),
   indexation_type: z.string().optional().nullable(),
   start_month: z.coerce.number().optional().nullable(),
   start_year: z.coerce.number().optional().nullable(),

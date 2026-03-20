@@ -11,7 +11,7 @@ export async function archiveBenchConsultant(
   id: string,
   archive = true,
 ): Promise<ActionResult> {
-  if (!z.string().uuid().safeParse(id).success) return err('Ongeldig ID');
+  if (!z.string().min(1).safeParse(id).success) return err('Ongeldig ID');
   await requirePermission('bench.write');
 
   const supabase = await createServerClient();

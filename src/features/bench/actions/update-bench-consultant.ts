@@ -18,7 +18,7 @@ export async function updateBenchConsultant(
   values: BenchConsultantFormValues,
   languages?: LanguageFormValues[],
 ): Promise<ActionResult> {
-  if (!z.string().uuid().safeParse(id).success) return err('Ongeldig ID');
+  if (!z.string().min(1).safeParse(id).success) return err('Ongeldig ID');
   await requirePermission('bench.write');
 
   const parsed = benchConsultantFormSchema.safeParse(values);

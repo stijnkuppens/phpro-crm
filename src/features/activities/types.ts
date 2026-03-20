@@ -14,8 +14,8 @@ export const activityFormSchema = z.object({
   subject: z.string().min(1, 'Onderwerp is verplicht'),
   date: z.string().min(1, 'Datum is verplicht'),
   duration_minutes: z.coerce.number().optional().nullable(),
-  account_id: z.string().uuid('Account is verplicht'),
-  deal_id: z.string().uuid().optional().nullable(),
+  account_id: z.string().min(1, 'Account is verplicht'),
+  deal_id: z.string().optional().nullable(),
   notes: z.any().optional().nullable(),
   is_done: z.boolean().optional(),
 });

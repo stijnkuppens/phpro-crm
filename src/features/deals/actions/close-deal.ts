@@ -11,7 +11,7 @@ import { z } from 'zod';
 export async function closeDeal(dealId: string, values: CloseDealValues): Promise<ActionResult> {
   await requirePermission('deals.write');
 
-  const idResult = z.string().uuid().safeParse(dealId);
+  const idResult = z.string().min(1).safeParse(dealId);
   if (!idResult.success) {
     return err('Invalid deal ID');
   }

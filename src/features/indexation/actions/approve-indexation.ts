@@ -11,8 +11,8 @@ export async function approveIndexation(
   accountId: string,
   draftId: string,
 ): Promise<ActionResult<void>> {
-  if (!z.string().uuid().safeParse(accountId).success) return err('Ongeldig account ID');
-  if (!z.string().uuid().safeParse(draftId).success) return err('Ongeldig draft ID');
+  if (!z.string().min(1).safeParse(accountId).success) return err('Ongeldig account ID');
+  if (!z.string().min(1).safeParse(draftId).success) return err('Ongeldig draft ID');
   const { userId } = await requirePermission('indexation.approve');
 
   const supabase = await createServerClient();

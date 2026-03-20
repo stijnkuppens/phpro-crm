@@ -14,9 +14,9 @@ export const taskFormSchema = z.object({
   due_date: z.string().optional().nullable(),
   priority: z.enum(['High', 'Medium', 'Low']),
   status: z.enum(['Open', 'In Progress', 'Done']),
-  account_id: z.string().uuid().optional().nullable(),
-  deal_id: z.string().uuid().optional().nullable(),
-  assigned_to: z.string().uuid().optional().nullable(),
+  account_id: z.string().optional().nullable(),
+  deal_id: z.string().optional().nullable(),
+  assigned_to: z.string().optional().nullable(),
 });
 
 export type TaskFormValues = z.infer<typeof taskFormSchema>;

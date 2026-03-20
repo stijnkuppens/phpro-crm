@@ -76,7 +76,7 @@ export const accountFormSchema = z.object({
   address: z.string().optional(),
   country: z.string().optional(),
   vat_number: z.string().optional(),
-  owner_id: z.string().uuid().optional().nullable(),
+  owner_id: z.string().optional().nullable(),
   managing_partner: z.string().optional(),
   account_director: z.string().optional(),
   project_manager: z.string().optional(),
@@ -88,8 +88,8 @@ export const accountFormSchema = z.object({
 export type AccountFormValues = z.infer<typeof accountFormSchema>;
 
 export const hostingFormSchema = z.object({
-  provider_id: z.string().uuid('Provider is verplicht'),
-  environment_id: z.string().uuid().optional().nullable(),
+  provider_id: z.string().min(1, 'Provider is verplicht'),
+  environment_id: z.string().optional().nullable(),
   url: z.string().optional(),
   notes: z.string().optional(),
 });
@@ -97,12 +97,12 @@ export const hostingFormSchema = z.object({
 export type HostingFormValues = z.infer<typeof hostingFormSchema>;
 
 export const competenceCenterFormSchema = z.object({
-  competence_center_id: z.string().uuid('Naam is verplicht'),
+  competence_center_id: z.string().min(1, 'Naam is verplicht'),
   contact_person: z.string().optional(),
   email: z.string().email().optional().or(z.literal('')),
   phone: z.string().optional(),
   distribution: z.enum(['4%', '50/50']).optional(),
-  service_ids: z.array(z.string().uuid()).optional(),
+  service_ids: z.array(z.string()).optional(),
 });
 
 export type CompetenceCenterFormValues = z.infer<typeof competenceCenterFormSchema>;

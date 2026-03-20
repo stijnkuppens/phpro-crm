@@ -16,7 +16,7 @@ export async function stopConsultant(
   id: string,
   values: z.infer<typeof stopSchema>,
 ): Promise<ActionResult> {
-  if (!z.string().uuid().safeParse(id).success) return err('Ongeldig ID');
+  if (!z.string().min(1).safeParse(id).success) return err('Ongeldig ID');
   await requirePermission('consultants.write');
 
   const parsed = stopSchema.safeParse(values);

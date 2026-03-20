@@ -9,14 +9,14 @@ export type PipelineEntryWithDivision = PipelineEntry & {
 
 export const pipelineEntryFormSchema = z.object({
   client: z.string().min(1, 'Client is verplicht'),
-  division_id: z.string().uuid('Division is verplicht'),
+  division_id: z.string().min(1, 'Division is verplicht'),
   service_name: z.string().min(1, 'Service is verplicht'),
   sold_month: z.coerce.number().min(0).max(11),
   start_month: z.coerce.number().min(0).max(11),
   duration: z.coerce.number().min(1),
   total: z.coerce.number().min(0),
   year: z.coerce.number(),
-  deal_id: z.string().uuid().optional().nullable(),
+  deal_id: z.string().optional().nullable(),
 });
 
 export type PipelineEntryFormValues = z.infer<typeof pipelineEntryFormSchema>;
