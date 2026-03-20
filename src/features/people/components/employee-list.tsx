@@ -2,6 +2,8 @@
 
 import { useState, useCallback, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { Eye, Pencil, Trash2 } from 'lucide-react';
+import { toast } from 'sonner';
 import { useEntity } from '@/lib/hooks/use-entity';
 import DataTable from '@/components/admin/data-table';
 import { Input } from '@/components/ui/input';
@@ -9,6 +11,7 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '@/components/ui/select';
 import { employeeColumns } from '../columns';
+import { deleteEmployee } from '../actions/delete-employee';
 import type { Employee } from '../types';
 
 const PAGE_SIZE = 25;
@@ -45,20 +48,15 @@ export function EmployeeList({ initialData, initialCount }: Props) {
     load();
   }, [load, page, search, status]);
 
-  const columns = [
-    ...employeeColumns,
-    {
-      id: 'actions',
-      cell: ({ row }: { row: { original: Employee } }) => (
-        <button
-          className="text-xs text-blue-600 hover:underline"
-          onClick={() => router.push(`/admin/people/${row.original.id}`)}
-        >
-          Bekijk
-        </button>
-      ),
-    },
-  ];
+  const handleDelete = async (id: string) => {
+    const result = await deleteEmployee(id);
+    if (result.success) {
+      toast.success('Medewerker verwijderd');
+      load();
+    } else {
+      toast.error('Verwijderen mislukt');
+    }
+  };
 
   return (
     <div className="space-y-4">
@@ -81,10 +79,18 @@ export function EmployeeList({ initialData, initialCount }: Props) {
         </Select>
       </div>
       <DataTable
-        columns={columns as any}
+        columns={employeeColumns as any}
         data={data}
         pagination={{ page, pageSize: PAGE_SIZE, total }}
         onPageChange={setPage}
+        rowActions={(row) => [
+          { icon: Eye, label: 'Bekijken', onClick: () => router.push(`/admin/people/${row.id}`) },
+          { icon: Pencil, label: 'Bewerken', onClick: () => router.push(`/admin/people/${row.id}`) },
+          { icon: Trash2, label: 'Verwijderen', variant: 'destructive' as const, confirm: { title: 'Medewerker verwijderen?', description: 'Dit verwijdert de medewerker permanent.' }, onClick: () => handleDelete(row.id) },
+        ]}
+        bulkActions={[
+          { label: 'Verwijderen', variant: 'destructive' as const, confirm: { title: 'Medewerkers verwijderen?', description: 'Dit verwijdert de geselecteerde medewerkers permanent.' }, action: (ids) => ids.forEach((id) => handleDelete(id)) },
+        ]}
         loading={loading}
       />
     </div>
