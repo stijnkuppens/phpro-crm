@@ -28,7 +28,7 @@ Requirements for full feature parity with demo_crm. Each maps to roadmap phases.
 
 - [ ] **CONT-01**: Contact steering committee flag (is_steerco boolean) — visible in contact list and detail
 - [ ] **CONT-02**: Contact role tracking with all demo roles (Decision Maker, Influencer, Champion, Sponsor, Steerco Lid, Technisch, Financieel, Operationeel, Contact)
-- [ ] **CONT-03**: Contact personal info fully editable — hobbies, marital status, children, birthday, partner info, gift/dinner/event invite preferences
+- [x] **CONT-03**: Contact personal info fully editable — hobbies, marital status, children, birthday, partner info, gift/dinner/event invite preferences
 
 ### Deals
 
@@ -137,7 +137,7 @@ Deferred to future release. Not in demo or incremental improvement.
 | ACCT-06 | Phase 2 | Complete |
 | CONT-01 | Phase 3 | Pending |
 | CONT-02 | Phase 3 | Pending |
-| CONT-03 | Phase 3 | Pending |
+| CONT-03 | Phase 3 | Complete |
 | DEAL-01 | Phase 3 | Pending |
 | DEAL-02 | Phase 3 | Pending |
 | DEAL-03 | Phase 3 | Pending |
