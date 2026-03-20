@@ -15,6 +15,7 @@
 \ir data/001_app_settings.sql
 \ir data/002_pipelines.sql
 \ir data/003_indexation_indices.sql
+\ir data/004_reference_data.sql
 
 -- ── Layer 2: Demo fixtures (remove for production) ──────────────────────────
 \ir fixtures/001_users.sql
