@@ -385,7 +385,7 @@ export function LinkConsultantWizard({
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label>Rol</Label>
-              <Select value={role} onValueChange={setRole}>
+              <Select value={role} onValueChange={(v) => setRole(v ?? '')}>
                 <SelectTrigger>
                   {roles.find((r) => r.value === role)?.label ?? 'Selecteer...'}
                 </SelectTrigger>

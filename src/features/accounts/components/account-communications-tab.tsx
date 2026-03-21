@@ -125,7 +125,7 @@ export function AccountCommunicationsTab({ accountId, initialData, initialCount,
                 className="pl-9"
               />
             </div>
-            <Select value={ownerFilter} onValueChange={setOwnerFilter}>
+            <Select value={ownerFilter} onValueChange={(v) => setOwnerFilter(v ?? 'all')}>
               <SelectTrigger className="w-44">
                 {ownerFilter === 'all'
                   ? 'Alle gebruikers'

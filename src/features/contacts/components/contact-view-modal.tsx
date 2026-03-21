@@ -59,7 +59,8 @@ export function ContactViewModal({ contactId, onClose, onEdit }: Props) {
                 storagePath={`contacts/${contact.id}`}
                 onUploaded={async (path) => {
                   const supabase = createBrowserClient();
-                  await supabase.from('contacts').update({ avatar_url: path }).eq('id', contact.id);
+                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                  await (supabase.from('contacts') as any).update({ avatar_url: path }).eq('id', contact.id);
                   setContact((prev) => prev ? { ...prev, avatar_url: path } : prev);
                 }}
               />

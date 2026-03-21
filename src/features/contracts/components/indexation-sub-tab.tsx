@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ConfirmDialog } from '@/components/admin/confirm-dialog';
 import { Calendar, CheckCircle, Clock, FileText, TrendingUp } from 'lucide-react';
 import { approveIndexation } from '@/features/indexation/actions/approve-indexation';
-import type { IndexationDraftFull } from '@/features/indexation/queries/get-indexation-draft';
+import type { IndexationDraftFull } from '@/features/indexation/types';
 import type { IndexationHistoryFull } from '@/features/indexation/queries/get-indexation-history';
 
 type Props = {

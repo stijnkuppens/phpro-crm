@@ -20,7 +20,7 @@ import type { ContactWithDetails } from '@/features/contacts/types';
 import type { ActivityWithRelations } from '@/features/activities/types';
 import type { CommunicationWithDetails } from '@/features/communications/types';
 import type { IndexationConfig } from '@/features/indexation/types';
-import type { IndexationDraftFull } from '@/features/indexation/queries/get-indexation-draft';
+import type { IndexationDraftFull } from '@/features/indexation/types';
 import type { IndexationHistoryFull } from '@/features/indexation/queries/get-indexation-history';
 import type { BenchConsultantWithLanguages } from '@/features/bench/types';
 import { AvatarUpload } from '@/components/admin/avatar-upload';
@@ -92,7 +92,8 @@ export function AccountDetail({ account, deals, contract, hourlyRates, slaRates,
             round={false}
             onUploaded={async (path) => {
               const supabase = createBrowserClient();
-              await supabase.from('accounts').update({ logo_url: path }).eq('id', account.id);
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              await (supabase.from('accounts') as any).update({ logo_url: path }).eq('id', account.id);
             }}
           />
 

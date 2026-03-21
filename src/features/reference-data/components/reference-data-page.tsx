@@ -215,7 +215,8 @@ export function ReferenceDataPage({ initialTable, initialData }: Props) {
                           size="sm"
                           onUploaded={async (path) => {
                             const supabase = createBrowserClient();
-                            await supabase.from('ref_internal_people').update({ avatar_url: path }).eq('id', item.id);
+                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                            await (supabase.from('ref_internal_people') as any).update({ avatar_url: path }).eq('id', item.id);
                             setItems((prev) => prev.map((i) => i.id === item.id ? { ...i, avatar_url: path } : i));
                           }}
                         />
@@ -264,7 +265,8 @@ export function ReferenceDataPage({ initialTable, initialData }: Props) {
                           size="sm"
                           onUploaded={async (path) => {
                             const supabase = createBrowserClient();
-                            await supabase.from('ref_internal_people').update({ avatar_url: path }).eq('id', item.id);
+                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                            await (supabase.from('ref_internal_people') as any).update({ avatar_url: path }).eq('id', item.id);
                             setItems((prev) => prev.map((i) => i.id === item.id ? { ...i, avatar_url: path } : i));
                           }}
                         />

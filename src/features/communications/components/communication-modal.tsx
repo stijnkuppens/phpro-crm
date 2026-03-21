@@ -174,7 +174,7 @@ export function CommunicationModal({ open, onClose, accountId, contacts = [], de
           </div>
           <div className="space-y-1.5">
             <Label htmlFor="contact_id">Contact</Label>
-            <Select name="contact_id" value={contactId} onValueChange={setContactId}>
+            <Select name="contact_id" value={contactId} onValueChange={(v) => setContactId(v ?? '')}>
               <SelectTrigger>
                 {(() => { const c = contacts.find((c) => c.id === contactId); return c ? `${c.first_name} ${c.last_name}` : '— geen —'; })()}
               </SelectTrigger>
@@ -192,7 +192,7 @@ export function CommunicationModal({ open, onClose, accountId, contacts = [], de
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-1.5">
             <Label htmlFor="deal_id">Gekoppeld aan deal</Label>
-            <Select name="deal_id" value={dealId} onValueChange={setDealId}>
+            <Select name="deal_id" value={dealId} onValueChange={(v) => setDealId(v ?? '')}>
               <SelectTrigger>
                 {dealId ? deals.find((d) => d.id === dealId)?.title ?? '— geen —' : '— geen —'}
               </SelectTrigger>

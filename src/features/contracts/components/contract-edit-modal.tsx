@@ -95,7 +95,7 @@ export function ContractEditModal({ accountId, contract, indexationConfig, open,
           <div className="grid grid-cols-3 gap-3">
             <div className="space-y-1.5">
               <Label>Type</Label>
-              <Select value={indexType} onValueChange={setIndexType}>
+              <Select value={indexType} onValueChange={(v) => setIndexType(v ?? '')}>
                 <SelectTrigger>
                   {indexType || 'Niet ingesteld'}
                 </SelectTrigger>
@@ -109,7 +109,7 @@ export function ContractEditModal({ accountId, contract, indexationConfig, open,
             </div>
             <div className="space-y-1.5">
               <Label>Vanaf maand</Label>
-              <Select value={indexMonth} onValueChange={setIndexMonth}>
+              <Select value={indexMonth} onValueChange={(v) => setIndexMonth(v ?? '')}>
                 <SelectTrigger>
                   {indexMonth ? MONTHS.find((m) => m.value === indexMonth)?.label : 'Selecteer...'}
                 </SelectTrigger>
