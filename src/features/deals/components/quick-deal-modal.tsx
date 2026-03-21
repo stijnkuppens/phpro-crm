@@ -34,7 +34,7 @@ type QuickDealModalProps = {
   onClose: () => void;
   pipelines: Pipeline[];
   prefill?: {
-    bench_consultant_id: string;
+    consultant_id: string;
     consultant_name: string;
     consultant_role?: string;
     min_hourly_rate?: number | null;
@@ -79,7 +79,7 @@ export function QuickDealModal({ open, onClose, pipelines, prefill, onSuccess }:
       cronos_cc: origin === 'cronos' ? cronosCC : undefined,
       cronos_contact: origin === 'cronos' ? cronosContact : undefined,
       cronos_email: origin === 'cronos' ? cronosEmail : undefined,
-      bench_consultant_id: prefill?.bench_consultant_id ?? undefined,
+      consultant_id: prefill?.consultant_id ?? undefined,
       consultant_role: consultantRole || undefined,
       description: description || undefined,
     });

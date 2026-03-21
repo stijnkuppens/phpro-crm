@@ -40,7 +40,7 @@ export const dealFormSchema = z.object({
   cronos_cc: z.string().optional(),
   cronos_contact: z.string().optional(),
   cronos_email: z.string().optional(),
-  bench_consultant_id: z.string().optional().nullable(),
+  consultant_id: z.string().optional().nullable(),
   consultant_role: z.string().optional(),
   forecast_category: z.enum(['Commit', 'Best Case', 'Pipeline', 'Omit']).optional().nullable(),
 });

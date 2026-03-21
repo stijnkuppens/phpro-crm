@@ -59,11 +59,10 @@ export async function searchAccounts({
       .select('account_id, has_framework_contract, has_service_contract')
       .in('account_id', accountIds),
     supabase
-      .from('active_consultants')
+      .from('consultants')
       .select('account_id')
       .in('account_id', accountIds)
-      .eq('is_active', true)
-      .eq('is_stopped', false),
+      .eq('status', 'actief'),
   ]);
 
   const contractMap = new Map<string, { has_framework_contract: boolean; has_service_contract: boolean }>();

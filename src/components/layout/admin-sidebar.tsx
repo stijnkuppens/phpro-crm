@@ -34,7 +34,6 @@ import {
   DollarSign,
   Target,
   Layers,
-  Briefcase,
   Contact,
 } from 'lucide-react';
 
@@ -63,7 +62,6 @@ export function AdminSidebar() {
     {
       section: t('consultancy'),
       items: [
-        { label: t('bench'), href: '/admin/bench', icon: Briefcase },
         { label: t('consultants'), href: '/admin/consultants', icon: Users },
       ],
     },

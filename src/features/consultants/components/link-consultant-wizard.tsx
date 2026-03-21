@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { Modal } from '@/components/admin/modal';
@@ -17,16 +17,30 @@ import {
   SelectTrigger,
 } from '@/components/ui/select';
 import { ArrowLeft, Check, Save, Search } from 'lucide-react';
-import { linkBenchToAccount } from '../actions/link-bench-to-account';
-import type { BenchConsultantWithLanguages } from '@/features/bench/types';
+import { linkConsultantToAccount } from '../actions/link-consultant-to-account';
+import { createBrowserClient } from '@/lib/supabase/client';
+import type { ConsultantWithDetails } from '../types';
 
 type Account = { id: string; name: string; domain: string | null; type: string | null; city: string | null };
+
+type BenchConsultant = {
+  id: string;
+  first_name: string;
+  last_name: string;
+  city: string | null;
+  priority: string;
+  roles: string[] | null;
+  technologies: string[] | null;
+  min_hourly_rate: number | null;
+  max_hourly_rate: number | null;
+  available_date: string | null;
+  languages: { id: string; language: string; level: string }[];
+};
 
 type Props = {
   open: boolean;
   onClose: () => void;
   accounts: Account[];
-  benchConsultants: BenchConsultantWithLanguages[];
   roles: { value: string; label: string }[];
   /** Pre-select account (from account page) — skips step 1 */
   preselectedAccountId?: string;
@@ -67,13 +81,35 @@ export function LinkConsultantWizard({
   open,
   onClose,
   accounts,
-  benchConsultants,
   roles,
   preselectedAccountId,
   preselectedBenchConsultantId,
 }: Props) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+
+  // Fetch bench consultants internally
+  const [benchConsultants, setBenchConsultants] = useState<BenchConsultant[]>([]);
+  const [benchLoading, setBenchLoading] = useState(false);
+
+  useEffect(() => {
+    if (!open) return;
+    let cancelled = false;
+    setBenchLoading(true);
+    const supabase = createBrowserClient();
+    supabase
+      .from('consultants')
+      .select('id, first_name, last_name, city, priority, roles, technologies, min_hourly_rate, max_hourly_rate, available_date, languages:consultant_languages(id, language, level)')
+      .eq('status', 'bench')
+      .eq('is_archived', false)
+      .order('available_date', { ascending: true })
+      .then(({ data }) => {
+        if (cancelled) return;
+        setBenchConsultants((data as unknown as BenchConsultant[]) ?? []);
+        setBenchLoading(false);
+      });
+    return () => { cancelled = true; };
+  }, [open]);
 
   // Determine initial step based on preselections
   const initialStep = preselectedAccountId ? (preselectedBenchConsultantId ? 3 : 2) : 1;
@@ -166,9 +202,7 @@ export function LinkConsultantWizard({
     : 0;
 
   // Pre-fill role from bench consultant when moving to step 3
-  // NOTE: pass the bench consultant directly — React state is async,
-  // so selectedBench would still reference the OLD benchId.
-  function goToStep3(bench: BenchConsultantWithLanguages) {
+  function goToStep3(bench: BenchConsultant) {
     if (bench && !role) {
       setRole(bench.roles?.[0] ?? '');
     }
@@ -180,8 +214,8 @@ export function LinkConsultantWizard({
 
   async function handleSubmit() {
     setLoading(true);
-    const result = await linkBenchToAccount({
-      bench_consultant_id: benchId,
+    const result = await linkConsultantToAccount({
+      consultant_id: benchId,
       account_id: accountId,
       role: role || undefined,
       start_date: startDate,
@@ -307,46 +341,52 @@ export function LinkConsultantWizard({
             />
           </div>
           <div className="max-h-72 overflow-y-auto space-y-2">
-            {filteredBench.map((c) => (
-              <Card
-                key={c.id}
-                className={`cursor-pointer transition-colors ${
-                  benchId === c.id ? 'ring-2 ring-primary' : 'hover:bg-muted/50'
-                }`}
-                onClick={() => {
-                  setBenchId(c.id);
-                  goToStep3(c);
-                }}
-              >
-                <CardContent className="p-3 flex items-center gap-3">
-                  {/* Avatar initials */}
-                  <div className="h-9 w-9 rounded-full bg-primary/10 text-primary flex items-center justify-center text-sm font-medium shrink-0">
-                    {c.first_name[0]}{c.last_name[0]}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="font-medium text-sm">{c.first_name} {c.last_name}</div>
-                    <div className="text-xs text-muted-foreground">{c.city}</div>
-                    {c.roles && c.roles.length > 0 && (
-                      <div className="flex flex-wrap gap-1 mt-1">
-                        {c.roles.map((r) => (
-                          <Badge key={r} variant="secondary" className="text-[10px]">{r}</Badge>
-                        ))}
+            {benchLoading ? (
+              <p className="text-center text-muted-foreground py-4">Laden...</p>
+            ) : (
+              <>
+                {filteredBench.map((c) => (
+                  <Card
+                    key={c.id}
+                    className={`cursor-pointer transition-colors ${
+                      benchId === c.id ? 'ring-2 ring-primary' : 'hover:bg-muted/50'
+                    }`}
+                    onClick={() => {
+                      setBenchId(c.id);
+                      goToStep3(c);
+                    }}
+                  >
+                    <CardContent className="p-3 flex items-center gap-3">
+                      {/* Avatar initials */}
+                      <div className="h-9 w-9 rounded-full bg-primary/10 text-primary flex items-center justify-center text-sm font-medium shrink-0">
+                        {c.first_name[0]}{c.last_name[0]}
                       </div>
-                    )}
-                  </div>
-                  <div className="text-right shrink-0">
-                    {c.min_hourly_rate && c.max_hourly_rate && (
-                      <div className="text-xs text-muted-foreground">
-                        €{c.min_hourly_rate} - €{c.max_hourly_rate}/u
+                      <div className="flex-1 min-w-0">
+                        <div className="font-medium text-sm">{c.first_name} {c.last_name}</div>
+                        <div className="text-xs text-muted-foreground">{c.city}</div>
+                        {c.roles && c.roles.length > 0 && (
+                          <div className="flex flex-wrap gap-1 mt-1">
+                            {c.roles.map((r) => (
+                              <Badge key={r} variant="secondary" className="text-[10px]">{r}</Badge>
+                            ))}
+                          </div>
+                        )}
                       </div>
-                    )}
-                    <Badge className={priorityColors[c.priority] ?? ''}>{c.priority}</Badge>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-            {filteredBench.length === 0 && (
-              <p className="text-center text-muted-foreground py-4">Geen bench consultants gevonden</p>
+                      <div className="text-right shrink-0">
+                        {c.min_hourly_rate && c.max_hourly_rate && (
+                          <div className="text-xs text-muted-foreground">
+                            €{c.min_hourly_rate} - €{c.max_hourly_rate}/u
+                          </div>
+                        )}
+                        <Badge className={priorityColors[c.priority] ?? ''}>{c.priority}</Badge>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+                {filteredBench.length === 0 && (
+                  <p className="text-center text-muted-foreground py-4">Geen bench consultants gevonden</p>
+                )}
+              </>
             )}
           </div>
         </div>

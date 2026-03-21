@@ -1,47 +1,36 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Plus } from 'lucide-react';
 import { getContractStatus, getCurrentRate, contractStatusColors, type ConsultantWithDetails } from '../types';
 import { ConsultantDetailModal } from './consultant-detail-modal';
-import { AddConsultantModal } from './add-consultant-modal';
 import { LinkConsultantWizard } from './link-consultant-wizard';
-import type { BenchConsultantWithLanguages } from '@/features/bench/types';
 
 type Props = {
   accountId: string;
   accountName: string;
   consultants: ConsultantWithDetails[];
   roles: { value: string; label: string }[];
-  benchConsultants: BenchConsultantWithLanguages[];
 };
 
 const fmt = (n: number) =>
   new Intl.NumberFormat('nl-BE', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(n);
 
-export function AccountConsultantsTab({ accountId, accountName, consultants, roles, benchConsultants }: Props) {
-  const router = useRouter();
+export function AccountConsultantsTab({ accountId, accountName, consultants, roles }: Props) {
   const [selected, setSelected] = useState<ConsultantWithDetails | null>(null);
   const [wizardOpen, setWizardOpen] = useState(false);
-  const [manualOpen, setManualOpen] = useState(false);
 
   return (
     <>
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-lg font-semibold">Consultants</h3>
-        <div className="flex items-center gap-3">
-          <Button variant="ghost" size="sm" onClick={() => setManualOpen(true)}>
-            Manueel toevoegen
-          </Button>
-          <Button size="sm" onClick={() => setWizardOpen(true)}>
-            <Plus className="h-4 w-4 mr-1" />
-            Consultant koppelen
-          </Button>
-        </div>
+        <Button size="sm" onClick={() => setWizardOpen(true)}>
+          <Plus className="h-4 w-4 mr-1" />
+          Consultant koppelen
+        </Button>
       </div>
 
       {consultants.length === 0 ? (
@@ -96,20 +85,8 @@ export function AccountConsultantsTab({ accountId, accountName, consultants, rol
         open={wizardOpen}
         onClose={() => setWizardOpen(false)}
         accounts={[{ id: accountId, name: accountName, domain: null, type: null, city: null }]}
-        benchConsultants={benchConsultants}
         roles={roles}
         preselectedAccountId={accountId}
-      />
-
-      <AddConsultantModal
-        accountId={accountId}
-        roles={roles}
-        open={manualOpen}
-        onClose={() => setManualOpen(false)}
-        onSaved={() => {
-          setManualOpen(false);
-          router.refresh();
-        }}
       />
     </>
   );
