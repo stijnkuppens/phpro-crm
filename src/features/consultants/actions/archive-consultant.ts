@@ -1,42 +1,38 @@
 'use server';
 
+import { z } from 'zod';
 import { createServerClient } from '@/lib/supabase/server';
 import { requirePermission } from '@/lib/require-permission';
 import { logAction } from '@/features/audit/actions/log-action';
 import { revalidatePath } from 'next/cache';
-import { activeConsultantFormSchema, type ActiveConsultantFormValues } from '../types';
 import { ok, err, type ActionResult } from '@/lib/action-result';
 
-export async function updateActiveConsultant(
+export async function archiveConsultant(
   id: string,
-  values: ActiveConsultantFormValues,
+  archive: boolean = true,
 ): Promise<ActionResult> {
   try {
     await requirePermission('consultants.write');
   } catch {
     return err('Onvoldoende rechten');
   }
-
-  const parsed = activeConsultantFormSchema.safeParse(values);
-  if (!parsed.success) {
-    return err(parsed.error.flatten().fieldErrors);
-  }
+  if (!z.string().min(1).safeParse(id).success) return err('Ongeldig ID');
 
   const supabase = await createServerClient();
   const { error } = await supabase
-    .from('active_consultants')
-    .update(parsed.data)
-    .eq('id', id);
+    .from('consultants')
+    .update({ is_archived: archive })
+    .eq('id', id)
+    .eq('status', 'bench');
 
   if (error) {
     return err(error.message);
   }
 
   await logAction({
-    action: 'active_consultant.updated',
-    entityType: 'active_consultant',
+    action: archive ? 'consultant.archived' : 'consultant.unarchived',
+    entityType: 'consultant',
     entityId: id,
-    metadata: { name: `${parsed.data.first_name} ${parsed.data.last_name}` },
   });
 
   revalidatePath('/admin/consultants');

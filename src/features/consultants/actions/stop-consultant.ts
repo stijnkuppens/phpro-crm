@@ -30,10 +30,9 @@ export async function stopConsultant(
 
   const supabase = await createServerClient();
   const { error } = await supabase
-    .from('active_consultants')
+    .from('consultants')
     .update({
-      is_stopped: true,
-      is_active: false,
+      status: 'stopgezet' as const,
       stop_date: parsed.data.stop_date,
       stop_reason: parsed.data.stop_reason ?? null,
     })
@@ -44,8 +43,8 @@ export async function stopConsultant(
   }
 
   await logAction({
-    action: 'active_consultant.stopped',
-    entityType: 'active_consultant',
+    action: 'consultant.stopped',
+    entityType: 'consultant',
     entityId: id,
     metadata: { stop_date: parsed.data.stop_date, stop_reason: parsed.data.stop_reason ?? null },
   });

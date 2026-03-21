@@ -8,7 +8,7 @@ import { revalidatePath } from 'next/cache';
 import { ok, err, type ActionResult } from '@/lib/action-result';
 
 const linkSchema = z.object({
-  bench_consultant_id: z.string().min(1, 'Bench consultant is verplicht'),
+  consultant_id: z.string().min(1, 'Consultant is verplicht'),
   account_id: z.string().min(1, 'Account is verplicht'),
   role: z.string().optional(),
   start_date: z.string().min(1, 'Startdatum is verplicht'),
@@ -20,10 +20,10 @@ const linkSchema = z.object({
   notes: z.string().optional(),
 });
 
-export type LinkBenchToAccountValues = z.infer<typeof linkSchema>;
+export type LinkConsultantToAccountValues = z.infer<typeof linkSchema>;
 
-export async function linkBenchToAccount(
-  values: LinkBenchToAccountValues,
+export async function linkConsultantToAccount(
+  values: LinkConsultantToAccountValues,
 ): Promise<ActionResult<{ id: string }>> {
   try {
     await requirePermission('consultants.write');
@@ -36,10 +36,8 @@ export async function linkBenchToAccount(
 
   const supabase = await createServerClient();
 
-  // Single atomic RPC call — creates active consultant, rate history,
-  // and archives bench consultant in one transaction.
-  const { data, error } = await supabase.rpc('link_bench_to_account', {
-    p_bench_consultant_id: parsed.data.bench_consultant_id,
+  const { data, error } = await supabase.rpc('link_consultant_to_account', {
+    p_consultant_id: parsed.data.consultant_id,
     p_account_id: parsed.data.account_id,
     p_role: parsed.data.role ?? null,
     p_start_date: parsed.data.start_date,
@@ -58,18 +56,17 @@ export async function linkBenchToAccount(
   const consultantId = data as string;
 
   await logAction({
-    action: 'active_consultant.linked_from_bench',
-    entityType: 'active_consultant',
+    action: 'consultant.linked_to_account',
+    entityType: 'consultant',
     entityId: consultantId,
     metadata: {
-      bench_consultant_id: parsed.data.bench_consultant_id,
+      consultant_id: parsed.data.consultant_id,
       account_id: parsed.data.account_id,
     },
   });
 
   revalidatePath('/admin/consultants');
   revalidatePath(`/admin/accounts/${parsed.data.account_id}`);
-  revalidatePath('/admin/bench');
 
   return ok({ id: consultantId });
 }

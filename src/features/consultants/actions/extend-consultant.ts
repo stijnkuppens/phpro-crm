@@ -33,7 +33,7 @@ export async function extendConsultant(
   const { error: extensionError } = await supabase
     .from('consultant_extensions')
     .insert({
-      active_consultant_id: id,
+      consultant_id: id,
       new_end_date: parsed.data.new_end_date,
       notes: parsed.data.notes ?? null,
     });
@@ -43,7 +43,7 @@ export async function extendConsultant(
   }
 
   const { error: updateError } = await supabase
-    .from('active_consultants')
+    .from('consultants')
     .update({ end_date: parsed.data.new_end_date })
     .eq('id', id);
 
@@ -52,8 +52,8 @@ export async function extendConsultant(
   }
 
   await logAction({
-    action: 'active_consultant.extended',
-    entityType: 'active_consultant',
+    action: 'consultant.extended',
+    entityType: 'consultant',
     entityId: id,
     metadata: { new_end_date: parsed.data.new_end_date },
   });

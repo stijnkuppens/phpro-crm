@@ -35,7 +35,7 @@ export async function addRateChange(
   const { error: historyError } = await supabase
     .from('consultant_rate_history')
     .insert({
-      active_consultant_id: id,
+      consultant_id: id,
       date: parsed.data.date,
       rate: parsed.data.rate,
       reason: parsed.data.reason ?? null,
@@ -53,7 +53,7 @@ export async function addRateChange(
 
   if (rateDate <= today) {
     const { error: updateError } = await supabase
-      .from('active_consultants')
+      .from('consultants')
       .update({ hourly_rate: parsed.data.rate })
       .eq('id', id);
 
@@ -63,8 +63,8 @@ export async function addRateChange(
   }
 
   await logAction({
-    action: 'active_consultant.rate_changed',
-    entityType: 'active_consultant',
+    action: 'consultant.rate_changed',
+    entityType: 'consultant',
     entityId: id,
     metadata: { date: parsed.data.date, rate: parsed.data.rate, reason: parsed.data.reason ?? null },
   });

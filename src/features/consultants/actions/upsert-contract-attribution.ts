@@ -8,7 +8,7 @@ import { revalidatePath } from 'next/cache';
 import { ok, err, type ActionResult } from '@/lib/action-result';
 
 const schema = z.object({
-  active_consultant_id: z.string().min(1),
+  consultant_id: z.string().min(1),
   type: z.enum(['rechtstreeks', 'cronos']),
   cc_name: z.string().optional().nullable(),
   cc_contact_person: z.string().optional().nullable(),
@@ -36,7 +36,7 @@ export async function upsertContractAttribution(
   const supabase = await createServerClient();
   const { data, error } = await supabase
     .from('consultant_contract_attributions')
-    .upsert(parsed.data, { onConflict: 'active_consultant_id' })
+    .upsert(parsed.data, { onConflict: 'consultant_id' })
     .select('id')
     .single();
 
@@ -45,10 +45,10 @@ export async function upsertContractAttribution(
   }
 
   await logAction({
-    action: 'consultant_contract_attribution.upserted',
-    entityType: 'consultant_contract_attribution',
+    action: 'consultant.contract_attribution_upserted',
+    entityType: 'consultant',
     entityId: data.id,
-    metadata: { active_consultant_id: parsed.data.active_consultant_id },
+    metadata: { consultant_id: parsed.data.consultant_id },
   });
 
   revalidatePath('/admin/consultants');

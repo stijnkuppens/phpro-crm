@@ -4,11 +4,11 @@ import { createServerClient } from '@/lib/supabase/server';
 import { requirePermission } from '@/lib/require-permission';
 import { logAction } from '@/features/audit/actions/log-action';
 import { revalidatePath } from 'next/cache';
-import { activeConsultantFormSchema, type ActiveConsultantFormValues } from '../types';
+import { benchConsultantFormSchema, type BenchConsultantFormValues } from '../types';
 import { ok, err, type ActionResult } from '@/lib/action-result';
 
-export async function createActiveConsultant(
-  values: ActiveConsultantFormValues,
+export async function createBenchConsultant(
+  values: BenchConsultantFormValues,
 ): Promise<ActionResult<{ id: string }>> {
   try {
     await requirePermission('consultants.write');
@@ -16,15 +16,15 @@ export async function createActiveConsultant(
     return err('Onvoldoende rechten');
   }
 
-  const parsed = activeConsultantFormSchema.safeParse(values);
+  const parsed = benchConsultantFormSchema.safeParse(values);
   if (!parsed.success) {
     return err(parsed.error.flatten().fieldErrors);
   }
 
   const supabase = await createServerClient();
   const { data, error } = await supabase
-    .from('active_consultants')
-    .insert(parsed.data)
+    .from('consultants')
+    .insert({ ...parsed.data, status: 'bench' as const })
     .select('id')
     .single();
 
@@ -32,30 +32,13 @@ export async function createActiveConsultant(
     return err(error.message);
   }
 
-  // Create initial rate history entry
-  const { error: rateError } = await supabase
-    .from('consultant_rate_history')
-    .insert({
-      active_consultant_id: data.id,
-      date: parsed.data.start_date,
-      rate: parsed.data.hourly_rate,
-      reason: 'Initieel tarief',
-    });
-
-  if (rateError) {
-    return err(rateError.message);
-  }
-
   await logAction({
-    action: 'active_consultant.created',
-    entityType: 'active_consultant',
+    action: 'consultant.created',
+    entityType: 'consultant',
     entityId: data.id,
     metadata: { name: `${parsed.data.first_name} ${parsed.data.last_name}` },
   });
 
   revalidatePath('/admin/consultants');
-  if (parsed.data.account_id) {
-    revalidatePath(`/admin/accounts/${parsed.data.account_id}`);
-  }
   return ok(data);
 }
