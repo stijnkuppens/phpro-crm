@@ -40,7 +40,7 @@ export function LoginForm() {
   const brandName = is25Carat ? '25Carat' : 'PHPro';
 
   return (
-    <>
+    <div className="flex min-h-screen w-full">
       {/* ── Left panel: form ──────────────────────────────────────────────── */}
       <div className="flex w-full flex-col justify-between p-8 lg:w-1/2">
         {/* Logo */}
@@ -137,6 +137,6 @@ export function LoginForm() {
           }`}
         />
       </div>
-    </>
+    </div>
   );
 }
