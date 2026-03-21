@@ -16,6 +16,7 @@ import { getReferenceOptions } from '@/features/reference-data/queries/get-refer
 import { getIndexationConfig } from '@/features/indexation/queries/get-indexation-config';
 import { getIndexationDraft } from '@/features/indexation/queries/get-indexation-draft';
 import { getIndexationHistory } from '@/features/indexation/queries/get-indexation-history';
+import { getBenchConsultants } from '@/features/bench/queries/get-bench-consultants';
 import { AccountDetail } from '@/features/accounts/components/account-detail';
 import { Pencil } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -38,7 +39,7 @@ export default async function AccountDetailPage({ params }: Props) {
     notFound();
   }
 
-  const [deals, contract, hourlyRates, slaRates, consultants, accountRevenue, contacts, activities, communications, internalPeople, consultantRolesRaw, indexationConfig, indexationDraft, indexationHistory] = await Promise.all([
+  const [deals, contract, hourlyRates, slaRates, consultants, accountRevenue, contacts, activities, communications, internalPeople, consultantRolesRaw, indexationConfig, indexationDraft, indexationHistory, benchConsultants] = await Promise.all([
     getDealsByAccount(id),
     getContract(id),
     getHourlyRates(id),
@@ -53,6 +54,7 @@ export default async function AccountDetailPage({ params }: Props) {
     getIndexationConfig(id),
     getIndexationDraft(id),
     getIndexationHistory(id),
+    getBenchConsultants(),
   ]);
 
   const consultantRoles = consultantRolesRaw.map((r) => ({ value: r.name, label: r.name }));
@@ -91,6 +93,7 @@ export default async function AccountDetailPage({ params }: Props) {
         indexationConfig={indexationConfig}
         indexationDraft={indexationDraft}
         indexationHistory={indexationHistory}
+        benchConsultants={benchConsultants}
       />
     </div>
   );

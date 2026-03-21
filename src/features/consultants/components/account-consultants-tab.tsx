@@ -9,35 +9,48 @@ import { Plus } from 'lucide-react';
 import { getContractStatus, getCurrentRate, contractStatusColors, type ActiveConsultantWithDetails } from '../types';
 import { ConsultantDetailModal } from './consultant-detail-modal';
 import { AddConsultantModal } from './add-consultant-modal';
+import { LinkConsultantWizard } from './link-consultant-wizard';
+import type { BenchConsultantWithLanguages } from '@/features/bench/types';
 
 type Props = {
   accountId: string;
   consultants: ActiveConsultantWithDetails[];
   roles: { value: string; label: string }[];
+  benchConsultants: BenchConsultantWithLanguages[];
 };
 
 const fmt = (n: number) =>
   new Intl.NumberFormat('nl-BE', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(n);
 
-export function AccountConsultantsTab({ accountId, consultants, roles }: Props) {
+export function AccountConsultantsTab({ accountId, consultants, roles, benchConsultants }: Props) {
   const router = useRouter();
   const [selected, setSelected] = useState<ActiveConsultantWithDetails | null>(null);
-  const [addModalOpen, setAddModalOpen] = useState(false);
+  const [wizardOpen, setWizardOpen] = useState(false);
+  const [manualOpen, setManualOpen] = useState(false);
 
   return (
     <>
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-lg font-semibold">Consultants</h3>
-        <Button size="sm" onClick={() => setAddModalOpen(true)}>
-          <Plus className="h-4 w-4 mr-1" />
-          Consultant koppelen
-        </Button>
+        <div className="flex items-center gap-3">
+          <button
+            type="button"
+            className="text-sm text-muted-foreground hover:text-foreground underline"
+            onClick={() => setManualOpen(true)}
+          >
+            Manueel toevoegen
+          </button>
+          <Button size="sm" onClick={() => setWizardOpen(true)}>
+            <Plus className="h-4 w-4 mr-1" />
+            Consultant koppelen
+          </Button>
+        </div>
       </div>
 
       {consultants.length === 0 ? (
         <div className="text-center py-8">
           <p className="text-muted-foreground mb-4">Geen consultants voor dit account.</p>
-          <Button variant="outline" onClick={() => setAddModalOpen(true)}>
+          <Button variant="outline" onClick={() => setWizardOpen(true)}>
             <Plus className="h-4 w-4 mr-1" />
             Consultant koppelen
           </Button>
@@ -82,13 +95,22 @@ export function AccountConsultantsTab({ accountId, consultants, roles }: Props) 
         />
       )}
 
+      <LinkConsultantWizard
+        open={wizardOpen}
+        onClose={() => setWizardOpen(false)}
+        accounts={[]}
+        benchConsultants={benchConsultants}
+        roles={roles}
+        preselectedAccountId={accountId}
+      />
+
       <AddConsultantModal
         accountId={accountId}
         roles={roles}
-        open={addModalOpen}
-        onClose={() => setAddModalOpen(false)}
+        open={manualOpen}
+        onClose={() => setManualOpen(false)}
         onSaved={() => {
-          setAddModalOpen(false);
+          setManualOpen(false);
           router.refresh();
         }}
       />
