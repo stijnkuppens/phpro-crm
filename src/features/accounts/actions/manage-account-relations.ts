@@ -112,27 +112,15 @@ export async function syncAccountFKRelation(
   await requirePermission('accounts.write');
 
   const supabase = await createServerClient();
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const queryTable = (t: string) => supabase.from(t) as any;
+  const rows = values.map((v) => ({ account_id: accountId, [field]: v }));
+  const { error } = await supabase.rpc('sync_account_fk_relation', {
+    p_account_id: accountId,
+    p_table: table,
+    p_rows: rows,
+  });
 
-  // Delete existing
-  const { error: deleteError } = await queryTable(table)
-    .delete()
-    .eq('account_id', accountId);
-
-  if (deleteError) {
-    return err(deleteError.message);
-  }
-
-  // Insert new
-  if (values.length > 0) {
-    const rows = values.map((v) => ({ account_id: accountId, [field]: v }));
-    const { error: insertError } = await queryTable(table)
-      .insert(rows);
-
-    if (insertError) {
-      return err(insertError.message);
-    }
+  if (error) {
+    return err(error.message);
   }
 
   await logAction({
