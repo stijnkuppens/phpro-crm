@@ -192,7 +192,7 @@ export function AccountDetail({ account, deals, contract, hourlyRates, slaRates,
         <AccountConsultantsTab accountId={account.id} accountName={account.name} consultants={consultants} roles={consultantRoles ?? []} benchConsultants={benchConsultants} />
       )}
       {activeSection === 'contacts' && (
-        <AccountContactsTab accountId={account.id} />
+        <AccountContactsTab accountId={account.id} initialData={contacts} initialCount={contacts.length} />
       )}
       {activeSection === 'deals' && (
         <AccountDealsTab deals={deals} />

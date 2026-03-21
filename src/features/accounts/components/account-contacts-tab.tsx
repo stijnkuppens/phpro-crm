@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useCallback, useState } from 'react';
+import { useCallback, useState } from 'react';
 import { Eye, Pencil, Plus, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useEntity } from '@/lib/hooks/use-entity';
@@ -10,17 +10,21 @@ import { contactColumns } from '@/features/contacts/columns';
 import { deleteContact } from '@/features/contacts/actions/delete-contact';
 import { ContactFormModal } from '@/features/contacts/components/contact-form-modal';
 import { ContactViewModal } from '@/features/contacts/components/contact-view-modal';
-import type { Contact } from '@/features/contacts/types';
+import type { Contact, ContactWithDetails } from '@/features/contacts/types';
 
 type Props = {
   accountId: string;
+  initialData: ContactWithDetails[];
+  initialCount: number;
 };
 
-export function AccountContactsTab({ accountId }: Props) {
+export function AccountContactsTab({ accountId, initialData, initialCount }: Props) {
   const { data, total, loading, refreshing, fetchList } = useEntity<Contact>({
     table: 'contacts',
     select: '*, account:accounts!account_id(id, name)',
     pageSize: 100,
+    initialData: initialData as unknown as Contact[],
+    initialCount,
   });
   const [createOpen, setCreateOpen] = useState(false);
   const [viewId, setViewId] = useState<string | null>(null);
@@ -29,10 +33,6 @@ export function AccountContactsTab({ accountId }: Props) {
   const load = useCallback(() => {
     fetchList({ page: 1, eqFilters: { account_id: accountId } });
   }, [fetchList, accountId]);
-
-  useEffect(() => {
-    load();
-  }, [load]);
 
   const handleDelete = async (id: string) => {
     const result = await deleteContact(id);

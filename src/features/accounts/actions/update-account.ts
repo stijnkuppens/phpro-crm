@@ -33,5 +33,6 @@ export async function updateAccount(id: string, values: AccountFormValues): Prom
   });
 
   revalidatePath('/admin/accounts');
+  revalidatePath(`/admin/accounts/${id}`);
   return ok();
 }
