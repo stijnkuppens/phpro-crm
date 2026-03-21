@@ -2670,6 +2670,21 @@ export type Database = {
         };
         Returns: string;
       };
+      upsert_hourly_rates: {
+        Args: {
+          p_account_id: string;
+          p_year: number;
+          p_rates: Json;
+        };
+        Returns: void;
+      };
+      approve_indexation: {
+        Args: {
+          p_draft_id: string;
+          p_approved_by: string;
+        };
+        Returns: void;
+      };
     };
     Enums: Record<string, never>;
     CompositeTypes: Record<string, never>;

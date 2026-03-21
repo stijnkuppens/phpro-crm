@@ -15,24 +15,14 @@ export async function upsertHourlyRates(
 
   const supabase = await createServerClient();
 
-  const { error: deleteError } = await supabase
-    .from('hourly_rates')
-    .delete()
-    .eq('account_id', accountId)
-    .eq('year', year);
+  const { error: rpcError } = await supabase.rpc('upsert_hourly_rates', {
+    p_account_id: accountId,
+    p_year: year,
+    p_rates: rates,
+  });
 
-  if (deleteError) {
-    return err(deleteError.message);
-  }
-
-  if (rates.length > 0) {
-    const { error: insertError } = await supabase
-      .from('hourly_rates')
-      .insert(rates.map((r) => ({ account_id: accountId, year, role: r.role, rate: r.rate })));
-
-    if (insertError) {
-      return err(insertError.message);
-    }
+  if (rpcError) {
+    return err(rpcError.message);
   }
 
   await logAction({
