@@ -11,11 +11,11 @@ export default async function UsersPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Users"
-        breadcrumbs={[{ label: 'Admin', href: '/admin' }, { label: 'Users' }]}
+        title="Gebruikers"
+        breadcrumbs={[{ label: 'Admin', href: '/admin' }, { label: 'Gebruikers' }]}
         actions={
           <Link href="/admin/users/invite">
-            <Button>Invite User</Button>
+            <Button>Gebruiker uitnodigen</Button>
           </Link>
         }
       />

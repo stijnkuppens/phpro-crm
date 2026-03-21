@@ -55,15 +55,15 @@ export function NotificationList() {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Notifications</h1>
+        <h1 className="text-2xl font-bold">Meldingen</h1>
         {hasUnread && (
           <Button variant="outline" size="sm" onClick={handleMarkAllRead}>
-            Mark all as read
+            Markeer alles als gelezen
           </Button>
         )}
       </div>
       {notifications.length === 0 ? (
-        <p className="text-muted-foreground">No notifications yet.</p>
+        <p className="text-muted-foreground">Nog geen meldingen.</p>
       ) : (
         <ul className="divide-y">
           {notifications.map((n) => (

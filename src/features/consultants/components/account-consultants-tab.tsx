@@ -34,13 +34,9 @@ export function AccountConsultantsTab({ accountId, accountName, consultants, rol
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-lg font-semibold">Consultants</h3>
         <div className="flex items-center gap-3">
-          <button
-            type="button"
-            className="text-sm text-muted-foreground hover:text-foreground underline"
-            onClick={() => setManualOpen(true)}
-          >
+          <Button variant="ghost" size="sm" onClick={() => setManualOpen(true)}>
             Manueel toevoegen
-          </button>
+          </Button>
           <Button size="sm" onClick={() => setWizardOpen(true)}>
             <Plus className="h-4 w-4 mr-1" />
             Consultant koppelen

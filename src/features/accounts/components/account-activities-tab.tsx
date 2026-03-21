@@ -145,14 +145,15 @@ export function AccountActivitiesTab({ accountId, initialData, initialCount }: P
                 {new Date(activity.date).toLocaleDateString('nl-BE')}
               </span>
 
-              <button
-                type="button"
+              <Button
+                variant="ghost"
+                size="icon"
                 onClick={() => handleDelete(activity.id)}
-                className="shrink-0 text-muted-foreground hover:text-red-600 transition-colors"
+                className="shrink-0 h-7 w-7 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
                 title="Verwijderen"
               >
                 <Trash2 className="h-4 w-4" />
-              </button>
+              </Button>
             </div>
           );
         })}

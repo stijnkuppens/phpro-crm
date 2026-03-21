@@ -151,7 +151,7 @@ function TreeNode({ name, path, depth, currentPath, onNavigate, onSelectFile, on
           {onRenameFolder && (
             <ContextMenuItem onClick={() => { setDraft(name); setRenaming(true); }}>
               <Pencil className="mr-2 h-3.5 w-3.5" />
-              Rename
+              Hernoemen
             </ContextMenuItem>
           )}
           {onDeleteFolder && (
@@ -160,7 +160,7 @@ function TreeNode({ name, path, depth, currentPath, onNavigate, onSelectFile, on
               onClick={() => setConfirmDelete(true)}
             >
               <Trash2 className="mr-2 h-3.5 w-3.5" />
-              Delete
+              Verwijderen
             </ContextMenuItem>
           )}
         </ContextMenuContent>
@@ -168,7 +168,7 @@ function TreeNode({ name, path, depth, currentPath, onNavigate, onSelectFile, on
 
       {confirmDelete && (
         <ConfirmDialog
-          title="Delete folder"
+          title="Map verwijderen"
           description={`Delete "${name}" and all its contents? This cannot be undone.`}
           open={confirmDelete}
           onOpenChange={setConfirmDelete}

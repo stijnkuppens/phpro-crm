@@ -110,16 +110,16 @@ export function NotificationBell() {
       />
       <DropdownMenuContent align="end" className="w-80">
         <DropdownMenuLabel className="flex items-center justify-between">
-          Notifications
+          Meldingen
           {unreadCount > 0 && (
             <Button variant="ghost" size="sm" className="h-auto p-0 text-xs" onClick={handleMarkAllRead}>
-              Mark all read
+              Alles gelezen
             </Button>
           )}
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         {notifications.length === 0 ? (
-          <div className="p-4 text-center text-sm text-muted-foreground">No notifications</div>
+          <div className="p-4 text-center text-sm text-muted-foreground">Geen meldingen</div>
         ) : (
           notifications.slice(0, 5).map((n) => (
             <DropdownMenuItem key={n.id} onClick={() => handleClick(n)} className="flex flex-col items-start gap-1 p-3">
