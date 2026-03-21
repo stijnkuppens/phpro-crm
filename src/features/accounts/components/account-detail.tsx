@@ -14,7 +14,7 @@ import { OmzetTab } from '@/features/revenue/components/omzet-tab';
 import type { AccountWithRelations, ReferenceOption } from '../types';
 import type { DealWithRelations } from '@/features/deals/types';
 import type { Contract, HourlyRate, SlaRateWithTools } from '@/features/contracts/types';
-import { getCurrentRate, type ActiveConsultantWithDetails } from '@/features/consultants/types';
+import { getCurrentRate, type ConsultantWithDetails } from '@/features/consultants/types';
 import type { AccountRevenue } from '@/features/revenue/types';
 import type { ContactWithDetails } from '@/features/contacts/types';
 import type { ActivityWithRelations } from '@/features/activities/types';
@@ -32,7 +32,7 @@ type Props = {
   contract: Contract | null;
   hourlyRates: HourlyRate[];
   slaRates: SlaRateWithTools[];
-  consultants: ActiveConsultantWithDetails[];
+  consultants: ConsultantWithDetails[];
   accountRevenue: AccountRevenue[];
   contacts: ContactWithDetails[];
   activities: ActivityWithRelations[];

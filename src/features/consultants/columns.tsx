@@ -2,7 +2,7 @@
 
 import type { ColumnDef } from '@tanstack/react-table';
 import { Avatar } from '@/components/admin/avatar';
-import type { ActiveConsultantWithDetails } from './types';
+import type { ConsultantWithDetails, ConsultantStatus } from './types';
 import { getContractStatus, getCurrentRate, contractStatusColors } from './types';
 
 const rateFmt = new Intl.NumberFormat('nl-BE', {
@@ -13,7 +13,39 @@ const rateFmt = new Intl.NumberFormat('nl-BE', {
 
 const dateFmt = (d: string) => new Date(d).toLocaleDateString('nl-BE');
 
-export const consultantColumns: ColumnDef<ActiveConsultantWithDetails>[] = [
+const statusBadgeStyles: Record<ConsultantStatus, string> = {
+  bench: 'bg-orange-100 text-orange-700 border-0',
+  actief: 'bg-green-100 text-green-700 border-0',
+  stopgezet: 'bg-muted text-muted-foreground border-0',
+};
+
+const statusLabels: Record<ConsultantStatus, string> = {
+  bench: 'Bench',
+  actief: 'Actief',
+  stopgezet: 'Stopgezet',
+};
+
+export const consultantColumns: ColumnDef<ConsultantWithDetails>[] = [
+  {
+    id: 'status',
+    header: 'Status',
+    cell: ({ row }) => {
+      const c = row.original;
+      const status = c.status;
+      return (
+        <div className="flex flex-col gap-1">
+          <span className={`inline-flex w-fit items-center rounded-full px-2 py-0.5 text-xs font-medium ${statusBadgeStyles[status]}`}>
+            {statusLabels[status]}
+          </span>
+          {status === 'actief' && (
+            <span className={`inline-flex w-fit items-center rounded-full px-2 py-0.5 text-xs font-medium ${contractStatusColors[getContractStatus(c)]}`}>
+              {getContractStatus(c)}
+            </span>
+          )}
+        </div>
+      );
+    },
+  },
   {
     accessorKey: 'last_name',
     header: 'Consultant',
@@ -25,7 +57,7 @@ export const consultantColumns: ColumnDef<ActiveConsultantWithDetails>[] = [
         .join('');
       return (
         <div className="flex items-center gap-3">
-          <Avatar fallback={initials} round />
+          <Avatar fallback={initials} path={c.avatar_path} round />
           <div className="min-w-0">
             <div className="truncate font-medium">{name}</div>
             {c.city && (
@@ -37,11 +69,16 @@ export const consultantColumns: ColumnDef<ActiveConsultantWithDetails>[] = [
     },
   },
   {
-    accessorKey: 'role',
+    id: 'role',
     header: 'Rol',
-    cell: ({ row }) => (
-      <span className="text-sm">{row.original.role ?? '-'}</span>
-    ),
+    cell: ({ row }) => {
+      const c = row.original;
+      if (c.status === 'bench') {
+        const firstRole = c.roles?.[0];
+        return <span className="text-sm">{firstRole ?? '-'}</span>;
+      }
+      return <span className="text-sm">{c.role ?? '-'}</span>;
+    },
   },
   {
     id: 'account',
@@ -54,7 +91,22 @@ export const consultantColumns: ColumnDef<ActiveConsultantWithDetails>[] = [
     id: 'rate',
     header: 'Uurtarief',
     cell: ({ row }) => {
-      const rate = getCurrentRate(row.original);
+      const c = row.original;
+      if (c.status === 'bench') {
+        const min = c.min_hourly_rate;
+        const max = c.max_hourly_rate;
+        if (min != null && max != null) {
+          return (
+            <span className="text-sm font-medium">
+              {rateFmt.format(min)}&ndash;{rateFmt.format(max)}/u
+            </span>
+          );
+        }
+        if (min != null) return <span className="text-sm font-medium">vanaf {rateFmt.format(min)}/u</span>;
+        if (max != null) return <span className="text-sm font-medium">tot {rateFmt.format(max)}/u</span>;
+        return <span className="text-sm text-muted-foreground">-</span>;
+      }
+      const rate = getCurrentRate(c);
       return (
         <span className="text-sm font-medium">
           {rateFmt.format(rate)}/u
@@ -67,23 +119,18 @@ export const consultantColumns: ColumnDef<ActiveConsultantWithDetails>[] = [
     header: 'Periode',
     cell: ({ row }) => {
       const c = row.original;
+      if (c.status === 'bench') {
+        return (
+          <span className="text-sm text-muted-foreground">
+            {c.available_date ? `Beschikbaar vanaf ${dateFmt(c.available_date)}` : 'Beschikbaar'}
+          </span>
+        );
+      }
       const start = c.start_date ? dateFmt(c.start_date) : '';
       const end = c.is_indefinite || !c.end_date ? 'onbepaald' : dateFmt(c.end_date);
       return (
         <span className="text-sm text-muted-foreground">
           {start} &rarr; {end}
-        </span>
-      );
-    },
-  },
-  {
-    id: 'status',
-    header: 'Status',
-    cell: ({ row }) => {
-      const status = getContractStatus(row.original);
-      return (
-        <span className={`inline-flex items-center rounded-full border-0 px-2 py-0.5 text-xs font-medium ${contractStatusColors[status]}`}>
-          {status}
         </span>
       );
     },

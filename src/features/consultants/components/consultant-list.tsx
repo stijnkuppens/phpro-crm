@@ -2,60 +2,52 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Eye, Plus } from 'lucide-react';
+import {
+  Eye,
+  Plus,
+  Pencil,
+  Link,
+  Archive,
+  CalendarPlus,
+  DollarSign,
+  Square,
+  RotateCcw,
+} from 'lucide-react';
+import { toast } from 'sonner';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-} from '@/components/ui/select';
 import { FilterBar } from '@/components/admin/filter-bar';
 import DataTable from '@/components/admin/data-table';
 import { useEntity } from '@/lib/hooks/use-entity';
 import { consultantColumns } from '../columns';
 import {
-  getContractStatus,
-  getCurrentRate,
-  type ActiveConsultantWithDetails,
-  type ContractStatus,
+  type ConsultantWithDetails,
+  type ConsultantStatus,
+  CONSULTANT_SELECT,
 } from '../types';
 import { ConsultantDetailModal } from './consultant-detail-modal';
-import { LinkConsultantWizard } from './link-consultant-wizard';
-import type { BenchConsultantWithLanguages } from '@/features/bench/types';
-import { CONSULTANT_SELECT } from '../types';
-
-type Account = { id: string; name: string; domain: string | null; type: string | null; city: string | null };
+import { StopConsultantModal } from './stop-consultant-modal';
+import { ExtendConsultantModal } from './extend-consultant-modal';
+import { RateChangeModal } from './rate-change-modal';
+import { archiveConsultant } from '../actions/archive-consultant';
+import { moveToBench } from '../actions/move-to-bench';
 
 type Stats = {
+  benchCount: number;
   activeCount: number;
   maxRevenue: number;
-  critical: number;
-  stopped: number;
+  stoppedCount: number;
 };
 
 type Props = {
-  initialData: ActiveConsultantWithDetails[];
+  initialData: ConsultantWithDetails[];
   initialCount: number;
   stats: Stats;
-  accounts: Account[];
-  benchConsultants: BenchConsultantWithLanguages[];
   roles: { value: string; label: string }[];
 };
 
 const PAGE_SIZE = 25;
-
-const statusOptions: { value: string; label: string }[] = [
-  { value: '', label: 'Alle' },
-  { value: 'actief', label: 'Actief' },
-  { value: 'waarschuwing', label: 'Waarschuwing' },
-  { value: 'kritiek', label: 'Kritiek' },
-  { value: 'verlopen', label: 'Verlopen' },
-  { value: 'onbepaald', label: 'Onbepaald' },
-  { value: 'stopgezet', label: 'Stopgezet' },
-];
 
 const eurFmt = new Intl.NumberFormat('nl-BE', {
   style: 'currency',
@@ -63,41 +55,24 @@ const eurFmt = new Intl.NumberFormat('nl-BE', {
   maximumFractionDigits: 0,
 });
 
-/** Translate computed status to Supabase filter conditions */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function applyStatusFilter(query: any, status: string) {
-  const today = new Date().toISOString().split('T')[0];
-  const in60 = new Date(Date.now() + 60 * 86400000).toISOString().split('T')[0];
-  const in120 = new Date(Date.now() + 120 * 86400000).toISOString().split('T')[0];
+const statusPills: { value: ConsultantStatus; label: string }[] = [
+  { value: 'bench', label: 'Bench' },
+  { value: 'actief', label: 'Actief' },
+  { value: 'stopgezet', label: 'Stopgezet' },
+];
 
-  switch (status) {
-    case 'stopgezet':
-      return query.eq('is_stopped', true);
-    case 'onbepaald':
-      return query.eq('is_stopped', false).or('is_indefinite.eq.true,end_date.is.null');
-    case 'verlopen':
-      return query.eq('is_stopped', false).eq('is_indefinite', false).lt('end_date', today);
-    case 'kritiek':
-      return query.eq('is_stopped', false).eq('is_indefinite', false).gte('end_date', today).lte('end_date', in60);
-    case 'waarschuwing':
-      return query.eq('is_stopped', false).eq('is_indefinite', false).gt('end_date', in60).lte('end_date', in120);
-    case 'actief':
-      return query.eq('is_stopped', false).eq('is_indefinite', false).gt('end_date', in120);
-    default:
-      return query;
-  }
-}
-
-export function ConsultantListView({ initialData, initialCount, stats, accounts, benchConsultants, roles }: Props) {
+export function ConsultantListView({ initialData, initialCount, stats, roles }: Props) {
   const router = useRouter();
   const [search, setSearch] = useState('');
-  const [statusFilter, setStatusFilter] = useState('');
+  const [selectedStatuses, setSelectedStatuses] = useState<ConsultantStatus[]>(['bench', 'actief']);
   const [page, setPage] = useState(1);
-  const [selected, setSelected] = useState<ActiveConsultantWithDetails | null>(null);
-  const [wizardOpen, setWizardOpen] = useState(false);
+  const [selected, setSelected] = useState<ConsultantWithDetails | null>(null);
+  const [stopTarget, setStopTarget] = useState<ConsultantWithDetails | null>(null);
+  const [extendTarget, setExtendTarget] = useState<ConsultantWithDetails | null>(null);
+  const [rateTarget, setRateTarget] = useState<ConsultantWithDetails | null>(null);
 
-  const { data, total, fetchList } = useEntity<ActiveConsultantWithDetails>({
-    table: 'active_consultants',
+  const { data, total, fetchList } = useEntity<ConsultantWithDetails>({
+    table: 'consultants',
     select: CONSULTANT_SELECT,
     pageSize: PAGE_SIZE,
     initialData,
@@ -111,33 +86,98 @@ export function ConsultantListView({ initialData, initialCount, stats, accounts,
 
     fetchList({
       page,
-      sort: { column: 'is_stopped', direction: 'asc' },
+      sort: { column: 'last_name', direction: 'asc' },
       orFilter,
-      applyFilters: statusFilter
+      applyFilters: selectedStatuses.length > 0
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        ? (q: any) => applyStatusFilter(q, statusFilter)
-        : undefined,
+        ? (q: any) => q.in('status', selectedStatuses).eq('is_archived', false)
+        : // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          (q: any) => q.eq('is_archived', false),
     });
-  }, [fetchList, page, search, statusFilter]);
+  }, [fetchList, page, search, selectedStatuses]);
 
-  // Re-fetch when filters or page change — skip on initial render with no filters
   useEffect(() => {
     let cancelled = false;
-    if (page === 1 && !search && !statusFilter) return;
+    if (page === 1 && !search && selectedStatuses.length === 2 && selectedStatuses.includes('bench') && selectedStatuses.includes('actief')) return;
     if (!cancelled) load();
     return () => { cancelled = true; };
-  }, [load, page, search, statusFilter]);
+  }, [load, page, search, selectedStatuses]);
 
-  // Reset to page 1 when filters change
   useEffect(() => {
     setPage(1);
-  }, [search, statusFilter]);
+  }, [search, selectedStatuses]);
+
+  function toggleStatus(s: ConsultantStatus) {
+    setSelectedStatuses((prev) =>
+      prev.includes(s) ? prev.filter((v) => v !== s) : [...prev, s],
+    );
+  }
+
+  function handleRefresh() {
+    load();
+    router.refresh();
+  }
+
+  async function handleArchive(c: ConsultantWithDetails) {
+    const result = await archiveConsultant(c.id);
+    if ('error' in result && result.error) {
+      toast.error(typeof result.error === 'string' ? result.error : 'Er ging iets mis');
+    } else {
+      toast.success('Consultant gearchiveerd');
+      handleRefresh();
+    }
+  }
+
+  async function handleMoveToBench(c: ConsultantWithDetails) {
+    const result = await moveToBench(c.id);
+    if ('error' in result && result.error) {
+      toast.error(typeof result.error === 'string' ? result.error : 'Er ging iets mis');
+    } else {
+      toast.success('Consultant naar bench verplaatst');
+      handleRefresh();
+    }
+  }
+
+  function getRowActions(row: ConsultantWithDetails) {
+    switch (row.status) {
+      case 'bench':
+        return [
+          { icon: Link, label: 'Koppel', onClick: () => router.push(`/admin/consultants/${row.id}`) },
+          { icon: Pencil, label: 'Bewerk', onClick: () => router.push(`/admin/consultants/${row.id}`) },
+          { icon: Archive, label: 'Archiveer', onClick: () => handleArchive(row), variant: 'destructive' as const, confirm: { title: 'Consultant archiveren?', description: 'Deze consultant wordt gearchiveerd en is niet meer zichtbaar in de lijst.' } },
+        ];
+      case 'actief':
+        return [
+          { icon: Eye, label: 'Bekijken', onClick: () => setSelected(row) },
+          { icon: Pencil, label: 'Bewerk', onClick: () => router.push(`/admin/consultants/${row.id}`) },
+          { icon: CalendarPlus, label: 'Verlengen', onClick: () => setExtendTarget(row) },
+          { icon: DollarSign, label: 'Tariefwijziging', onClick: () => setRateTarget(row) },
+          { icon: Square, label: 'Stopzetten', onClick: () => setStopTarget(row), variant: 'destructive' as const },
+        ];
+      case 'stopgezet':
+        return [
+          { icon: Eye, label: 'Bekijken', onClick: () => setSelected(row) },
+          { icon: RotateCcw, label: 'Naar bench', onClick: () => handleMoveToBench(row) },
+        ];
+      default:
+        return [];
+    }
+  }
 
   return (
     <>
       <div className="space-y-4">
-        {/* Stat cards — computed from full unfiltered dataset (server-side) */}
+        {/* Stat cards */}
         <div className="grid grid-cols-4 gap-4">
+          <Card>
+            <CardContent className="pt-4">
+              <div className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                Bench
+              </div>
+              <div className="text-2xl font-bold mt-1">{stats.benchCount}</div>
+              <div className="text-xs text-muted-foreground">consultants</div>
+            </CardContent>
+          </Card>
           <Card>
             <CardContent className="pt-4">
               <div className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
@@ -159,18 +199,9 @@ export function ConsultantListView({ initialData, initialCount, stats, accounts,
           <Card>
             <CardContent className="pt-4">
               <div className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-                Kritieke contracten
-              </div>
-              <div className="text-2xl font-bold mt-1">{stats.critical}</div>
-              <div className="text-xs text-muted-foreground">binnen 60 dagen</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="pt-4">
-              <div className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
                 Stopgezet
               </div>
-              <div className="text-2xl font-bold mt-1">{stats.stopped}</div>
+              <div className="text-2xl font-bold mt-1">{stats.stoppedCount}</div>
               <div className="text-xs text-muted-foreground">consultants</div>
             </CardContent>
           </Card>
@@ -185,39 +216,40 @@ export function ConsultantListView({ initialData, initialCount, stats, accounts,
               onChange={(e) => setSearch(e.target.value)}
               className="w-64"
             />
-            <Select value={statusFilter} onValueChange={(v) => setStatusFilter(v ?? '')}>
-              <SelectTrigger>
-                {statusOptions.find((o) => o.value === statusFilter)?.label ?? 'Alle'}
-              </SelectTrigger>
-              <SelectContent>
-                {statusOptions.map((o) => (
-                  <SelectItem key={o.value} value={o.value}>
-                    {o.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <div className="flex gap-1.5">
+              {statusPills.map((pill) => {
+                const active = selectedStatuses.includes(pill.value);
+                return (
+                  <button
+                    key={pill.value}
+                    type="button"
+                    onClick={() => toggleStatus(pill.value)}
+                    className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
+                      active
+                        ? 'bg-primary text-primary-foreground'
+                        : 'bg-muted text-muted-foreground hover:bg-muted/80'
+                    }`}
+                  >
+                    {pill.label}
+                  </button>
+                );
+              })}
+            </div>
             <div className="flex-1" />
-            <Button size="sm" onClick={() => setWizardOpen(true)}>
+            <Button size="sm" onClick={() => { /* placeholder: SP5 will add BenchFormModal */ }}>
               <Plus />
-              Opdracht koppelen
+              Nieuwe consultant
             </Button>
           </div>
         </FilterBar>
 
-        {/* Data table with server-side pagination */}
+        {/* Data table */}
         <DataTable
           columns={consultantColumns}
           data={data}
           pagination={{ page, pageSize: PAGE_SIZE, total }}
           onPageChange={setPage}
-          rowActions={(row) => [
-            {
-              icon: Eye,
-              label: 'Bekijken',
-              onClick: () => setSelected(row),
-            },
-          ]}
+          rowActions={(row) => getRowActions(row)}
         />
       </div>
 
@@ -232,13 +264,32 @@ export function ConsultantListView({ initialData, initialCount, stats, accounts,
         />
       )}
 
-      <LinkConsultantWizard
-        open={wizardOpen}
-        onClose={() => setWizardOpen(false)}
-        accounts={accounts}
-        benchConsultants={benchConsultants}
-        roles={roles}
-      />
+      {stopTarget && (
+        <StopConsultantModal
+          consultantId={stopTarget.id}
+          open={!!stopTarget}
+          onClose={() => setStopTarget(null)}
+          onSuccess={handleRefresh}
+        />
+      )}
+
+      {extendTarget && (
+        <ExtendConsultantModal
+          consultantId={extendTarget.id}
+          open={!!extendTarget}
+          onClose={() => setExtendTarget(null)}
+          onSuccess={handleRefresh}
+        />
+      )}
+
+      {rateTarget && (
+        <RateChangeModal
+          consultantId={rateTarget.id}
+          open={!!rateTarget}
+          onClose={() => setRateTarget(null)}
+          onSuccess={handleRefresh}
+        />
+      )}
     </>
   );
 }

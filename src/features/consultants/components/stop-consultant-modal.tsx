@@ -9,7 +9,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { stopConsultant } from '../actions/stop-consultant';
-import { moveStoppedToBench } from '../actions/move-stopped-to-bench';
+import { moveToBench as moveToBenchAction } from '../actions/move-to-bench';
 
 type Props = {
   consultantId: string;
@@ -40,7 +40,7 @@ export function StopConsultantModal({ consultantId, open, onClose, onSuccess }: 
     }
 
     if (moveToBench) {
-      const benchResult = await moveStoppedToBench(consultantId);
+      const benchResult = await moveToBenchAction(consultantId);
       if ('error' in benchResult && benchResult.error) {
         toast.error(typeof benchResult.error === 'string' ? benchResult.error : 'Kon niet naar bench verplaatsen');
       } else {

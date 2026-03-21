@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Plus } from 'lucide-react';
-import { getContractStatus, getCurrentRate, contractStatusColors, type ActiveConsultantWithDetails } from '../types';
+import { getContractStatus, getCurrentRate, contractStatusColors, type ConsultantWithDetails } from '../types';
 import { ConsultantDetailModal } from './consultant-detail-modal';
 import { AddConsultantModal } from './add-consultant-modal';
 import { LinkConsultantWizard } from './link-consultant-wizard';
@@ -15,7 +15,7 @@ import type { BenchConsultantWithLanguages } from '@/features/bench/types';
 type Props = {
   accountId: string;
   accountName: string;
-  consultants: ActiveConsultantWithDetails[];
+  consultants: ConsultantWithDetails[];
   roles: { value: string; label: string }[];
   benchConsultants: BenchConsultantWithLanguages[];
 };
@@ -25,7 +25,7 @@ const fmt = (n: number) =>
 
 export function AccountConsultantsTab({ accountId, accountName, consultants, roles, benchConsultants }: Props) {
   const router = useRouter();
-  const [selected, setSelected] = useState<ActiveConsultantWithDetails | null>(null);
+  const [selected, setSelected] = useState<ConsultantWithDetails | null>(null);
   const [wizardOpen, setWizardOpen] = useState(false);
   const [manualOpen, setManualOpen] = useState(false);
 

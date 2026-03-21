@@ -28,7 +28,7 @@ export function ContractAttributionModal({ consultantId, existing, open, onClose
 
     const formData = new FormData(e.currentTarget);
     const result = await upsertContractAttribution({
-      active_consultant_id: consultantId,
+      consultant_id: consultantId,
       type,
       cc_name: type === 'cronos' ? (formData.get('cc_name') as string) || null : null,
       cc_contact_person: type === 'cronos' ? (formData.get('cc_contact_person') as string) || null : null,
