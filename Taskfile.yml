@@ -42,7 +42,7 @@ tasks:
     cmds:
       - |
         NAME={{.CLI_ARGS}}
-        NUM=$(printf "%05d" $(( $(ls supabase/migrations/*.sql 2>/dev/null | wc -l) + 1 )))
+        NUM=$(printf "%05d" $(( $(ls supabase/migrations/*.sql 2>/dev/null | sed 's/.*\///' | sed 's/_.*//' | sort -n | tail -1) + 1 )))
         FILE="supabase/migrations/${NUM}_${NAME}.sql"
         touch "$FILE"
         echo "Created $FILE"
