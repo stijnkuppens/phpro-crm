@@ -67,6 +67,8 @@ SELECT
   roles, technologies, description,
   created_at, updated_at
 FROM bench_consultants
+-- Archived bench consultants are excluded: they were archived via link_bench_to_account()
+-- which always created a corresponding active_consultant row (migrated below).
 WHERE is_archived = false;
 
 -- ── 3. Migrate data from active_consultants ────────────────────────────────
@@ -242,10 +244,12 @@ CREATE OR REPLACE FUNCTION public.link_consultant_to_account(
 RETURNS UUID
 LANGUAGE plpgsql
 SECURITY DEFINER
+SET search_path = public
 AS $$
 DECLARE
   v_consultant consultants%ROWTYPE;
   v_account_name TEXT;
+  v_account_city TEXT;
   v_effective_role TEXT;
 BEGIN
   -- 1. Lock consultant row, verify bench + not archived
@@ -260,8 +264,8 @@ BEGIN
     RAISE EXCEPTION 'Consultant niet gevonden, niet op de bench, of gearchiveerd';
   END IF;
 
-  -- 2. Fetch account name for denormalization
-  SELECT name INTO v_account_name
+  -- 2. Fetch account name and city for denormalization
+  SELECT name, city INTO v_account_name, v_account_city
   FROM accounts
   WHERE id = p_account_id;
 
@@ -272,12 +276,18 @@ BEGIN
   -- 3. Determine role: explicit > first bench role > null
   v_effective_role := COALESCE(p_role, v_consultant.roles[1]);
 
-  -- 4. Update consultant to active status
+  -- 4. Validate hourly rate
+  IF p_hourly_rate IS NULL OR p_hourly_rate <= 0 THEN
+    RAISE EXCEPTION 'Uurtarief moet groter zijn dan 0';
+  END IF;
+
+  -- 5. Update consultant to active status
   UPDATE consultants SET
     status             = 'actief',
     account_id         = p_account_id,
     role               = v_effective_role,
     client_name        = v_account_name,
+    client_city        = v_account_city,
     start_date         = p_start_date,
     end_date           = CASE WHEN p_is_indefinite THEN NULL ELSE p_end_date END,
     is_indefinite      = p_is_indefinite,
@@ -287,7 +297,7 @@ BEGIN
     notes              = p_notes
   WHERE id = p_consultant_id;
 
-  -- 5. Create initial rate history entry
+  -- 6. Create initial rate history entry
   INSERT INTO consultant_rate_history (consultant_id, date, rate, reason)
   VALUES (p_consultant_id, p_start_date, p_hourly_rate, 'Initieel tarief');
 
