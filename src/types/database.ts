@@ -2678,6 +2678,21 @@ export type Database = {
         };
         Returns: void;
       };
+      save_prognose: {
+        Args: {
+          p_year: number;
+          p_rows: Json;
+        };
+        Returns: undefined;
+      };
+      sync_account_fk_relation: {
+        Args: {
+          p_account_id: string;
+          p_table: string;
+          p_rows: Json;
+        };
+        Returns: undefined;
+      };
       approve_indexation: {
         Args: {
           p_draft_id: string;
