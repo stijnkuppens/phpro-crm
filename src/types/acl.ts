@@ -59,6 +59,8 @@ export type Permission =
   // Users (existing)
   | 'users.read'
   | 'users.write'
+  // Reference data
+  | 'reference_data.write'
   // Settings (existing)
   | 'settings.read'
   | 'settings.write'
