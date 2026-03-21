@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { ShieldX } from 'lucide-react';
 
-export const metadata = { title: 'No Access' };
+export const metadata = { title: 'Geen toegang' };
 
 export default function NoAccessPage() {
   async function signOutAction() {
@@ -15,24 +15,28 @@ export default function NoAccessPage() {
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <ShieldX className="h-5 w-5 text-muted-foreground" />
-          No access
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        <p className="text-sm text-muted-foreground">
-          Your account does not have a role assigned. Contact an administrator to
-          get access.
-        </p>
-      </CardContent>
-      <CardFooter>
-        <form action={signOutAction}>
-          <Button variant="outline">Sign out</Button>
-        </form>
-      </CardFooter>
-    </Card>
+    <div className="flex min-h-screen items-center justify-center bg-muted/50 px-4">
+      <div className="w-full max-w-md">
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <ShieldX className="h-5 w-5 text-muted-foreground" />
+              Geen toegang
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm text-muted-foreground">
+              Je account heeft nog geen rol toegewezen. Neem contact op met een
+              administrator om toegang te krijgen.
+            </p>
+          </CardContent>
+          <CardFooter>
+            <form action={signOutAction}>
+              <Button variant="outline">Uitloggen</Button>
+            </form>
+          </CardFooter>
+        </Card>
+      </div>
+    </div>
   );
 }

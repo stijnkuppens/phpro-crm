@@ -1,5 +1,11 @@
 import { ResetPasswordForm } from '@/features/auth/components/reset-password-form';
 
 export default function ResetPasswordPage() {
-  return <ResetPasswordForm />;
+  return (
+    <div className="flex min-h-screen items-center justify-center bg-muted/50 px-4">
+      <div className="w-full max-w-md">
+        <ResetPasswordForm />
+      </div>
+    </div>
+  );
 }

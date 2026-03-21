@@ -3,15 +3,18 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import Image from 'next/image';
 import { createBrowserClient } from '@/lib/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
-import { Loader2 } from 'lucide-react';
+import { Loader2, LogIn } from 'lucide-react';
+import { useBrandTheme } from '@/lib/hooks/use-brand-theme';
 
 export function LoginForm() {
   const router = useRouter();
+  const { brand, mounted } = useBrandTheme();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -24,7 +27,7 @@ export function LoginForm() {
     const { error } = await supabase.auth.signInWithPassword({ email, password });
 
     if (error) {
-      toast.error(typeof error.message === 'string' ? error.message : 'Sign in failed. Please try again.');
+      toast.error('Inloggen mislukt. Controleer je e-mailadres en wachtwoord.');
       setLoading(false);
       return;
     }
@@ -33,51 +36,107 @@ export function LoginForm() {
     router.refresh();
   };
 
+  const is25Carat = brand === '25carat';
+  const brandName = is25Carat ? '25Carat' : 'PHPro';
+
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Sign in</CardTitle>
-        <CardDescription>Enter your email and password to access the admin panel</CardDescription>
-      </CardHeader>
-      <form onSubmit={handleSubmit}>
-        <CardContent className="space-y-4">
-          <div className="space-y-2">
-            <label htmlFor="email" className="text-sm font-medium">Email</label>
-            <Input
-              id="email"
-              type="email"
-              placeholder="admin@example.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
+    <>
+      {/* ── Left panel: form ──────────────────────────────────────────────── */}
+      <div className="flex w-full flex-col justify-between p-8 lg:w-1/2">
+        {/* Logo */}
+        <div>
+          {mounted && (
+            <Image
+              src={is25Carat ? '/logos/25carat-wordmark.svg' : '/logos/phpro.svg'}
+              alt={`${brandName} logo`}
+              width={is25Carat ? 140 : 122}
+              height={is25Carat ? 45 : 42}
+              priority
             />
+          )}
+        </div>
+
+        {/* Form — centered vertically */}
+        <div className="mx-auto w-full max-w-sm">
+          <div className="mb-8">
+            <h1 className="text-3xl font-bold tracking-tight">Welkom terug</h1>
+            <p className="mt-2 text-muted-foreground">
+              Log in op je {brandName} CRM account
+            </p>
           </div>
-          <div className="space-y-2">
-            <label htmlFor="password" className="text-sm font-medium">Password</label>
-            <Input
-              id="password"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
-          </div>
-        </CardContent>
-        <CardFooter className="flex flex-col gap-4">
-          <Button type="submit" className="w-full" disabled={loading}>
-            {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            Sign in
-          </Button>
-          <div className="flex gap-4 text-sm">
-            <Link href="/register" className="text-muted-foreground hover:underline">
-              Create account
-            </Link>
-            <Link href="/forgot-password" className="text-muted-foreground hover:underline">
-              Forgot password?
-            </Link>
-          </div>
-        </CardFooter>
-      </form>
-    </Card>
+
+          <form onSubmit={handleSubmit} className="space-y-5">
+            <div className="space-y-2">
+              <Label htmlFor="email">E-mailadres</Label>
+              <Input
+                id="email"
+                type="email"
+                placeholder="naam@voorbeeld.be"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                autoComplete="email"
+                className="h-11"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <Label htmlFor="password">Wachtwoord</Label>
+                <Link
+                  href="/forgot-password"
+                  className="text-xs text-muted-foreground hover:text-primary-action hover:underline"
+                >
+                  Wachtwoord vergeten?
+                </Link>
+              </div>
+              <Input
+                id="password"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                autoComplete="current-password"
+                className="h-11"
+              />
+            </div>
+
+            <Button type="submit" className="h-11 w-full" disabled={loading}>
+              {loading ? (
+                <Loader2 className="animate-spin" />
+              ) : (
+                <LogIn />
+              )}
+              Inloggen
+            </Button>
+          </form>
+        </div>
+
+        {/* Footer */}
+        <p className="text-xs text-muted-foreground">
+          &copy; {new Date().getFullYear()} {brandName}. Alle rechten voorbehouden.
+        </p>
+      </div>
+
+      {/* ── Right panel: hero image ───────────────────────────────────────── */}
+      <div className="relative hidden lg:block lg:w-1/2">
+        <Image
+          src={is25Carat ? '/login_25carat.webp' : '/mps_phpro.webp'}
+          alt={`${brandName} team`}
+          fill
+          className="object-cover"
+          priority
+          sizes="50vw"
+        />
+        {/* Gradient overlay */}
+        <div
+          className={`absolute inset-0 ${
+            is25Carat
+              ? 'bg-gradient-to-t from-amber-950/60 via-transparent to-amber-950/20'
+              : 'bg-gradient-to-t from-lime-950/60 via-transparent to-lime-950/20'
+          }`}
+        />
+      </div>
+    </>
   );
 }
