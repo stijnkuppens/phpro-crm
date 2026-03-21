@@ -823,7 +823,7 @@ export type Database = {
           cronos_cc: string | null;
           cronos_contact: string | null;
           cronos_email: string | null;
-          bench_consultant_id: string | null;
+          consultant_id: string | null;
           consultant_role: string | null;
           forecast_category: 'Commit' | 'Best Case' | 'Pipeline' | 'Omit' | null;
           closed_at: string | null;
@@ -851,7 +851,7 @@ export type Database = {
           cronos_cc?: string | null;
           cronos_contact?: string | null;
           cronos_email?: string | null;
-          bench_consultant_id?: string | null;
+          consultant_id?: string | null;
           consultant_role?: string | null;
           forecast_category?: 'Commit' | 'Best Case' | 'Pipeline' | 'Omit' | null;
           closed_at?: string | null;
@@ -879,7 +879,7 @@ export type Database = {
           cronos_cc?: string | null;
           cronos_contact?: string | null;
           cronos_email?: string | null;
-          bench_consultant_id?: string | null;
+          consultant_id?: string | null;
           consultant_role?: string | null;
           forecast_category?: 'Commit' | 'Best Case' | 'Pipeline' | 'Omit' | null;
           closed_at?: string | null;
@@ -1056,115 +1056,34 @@ export type Database = {
           },
         ];
       };
-      bench_consultants: {
+      consultants: {
         Row: {
           id: string;
           first_name: string;
           last_name: string;
           city: string | null;
-          priority: 'High' | 'Medium' | 'Low';
+          cv_pdf_url: string | null;
+          avatar_path: string | null;
+          status: 'bench' | 'actief' | 'stopgezet';
+          is_archived: boolean;
+          priority: 'High' | 'Medium' | 'Low' | null;
           available_date: string | null;
           min_hourly_rate: number | null;
           max_hourly_rate: number | null;
-          roles: string[];
-          technologies: string[];
+          roles: string[] | null;
+          technologies: string[] | null;
           description: string | null;
-          cv_pdf_url: string | null;
-          is_archived: boolean;
-          created_at: string;
-          updated_at: string;
-        };
-        Insert: {
-          id?: string;
-          first_name: string;
-          last_name: string;
-          city?: string | null;
-          priority?: 'High' | 'Medium' | 'Low';
-          available_date?: string | null;
-          min_hourly_rate?: number | null;
-          max_hourly_rate?: number | null;
-          roles?: string[];
-          technologies?: string[];
-          description?: string | null;
-          cv_pdf_url?: string | null;
-          is_archived?: boolean;
-          created_at?: string;
-          updated_at?: string;
-        };
-        Update: {
-          id?: string;
-          first_name?: string;
-          last_name?: string;
-          city?: string | null;
-          priority?: 'High' | 'Medium' | 'Low';
-          available_date?: string | null;
-          min_hourly_rate?: number | null;
-          max_hourly_rate?: number | null;
-          roles?: string[];
-          technologies?: string[];
-          description?: string | null;
-          cv_pdf_url?: string | null;
-          is_archived?: boolean;
-          created_at?: string;
-          updated_at?: string;
-        };
-        Relationships: [];
-      };
-      bench_consultant_languages: {
-        Row: {
-          id: string;
-          bench_consultant_id: string;
-          language: string;
-          level: 'Basis' | 'Gevorderd' | 'Vloeiend' | 'Moedertaal';
-          created_at: string;
-          updated_at: string;
-        };
-        Insert: {
-          id?: string;
-          bench_consultant_id: string;
-          language: string;
-          level: 'Basis' | 'Gevorderd' | 'Vloeiend' | 'Moedertaal';
-          created_at?: string;
-          updated_at?: string;
-        };
-        Update: {
-          id?: string;
-          bench_consultant_id?: string;
-          language?: string;
-          level?: 'Basis' | 'Gevorderd' | 'Vloeiend' | 'Moedertaal';
-          created_at?: string;
-          updated_at?: string;
-        };
-        Relationships: [
-          {
-            foreignKeyName: 'bench_consultant_languages_bench_consultant_id_fkey';
-            columns: ['bench_consultant_id'];
-            isOneToOne: false;
-            referencedRelation: 'bench_consultants';
-            referencedColumns: ['id'];
-          },
-        ];
-      };
-      active_consultants: {
-        Row: {
-          id: string;
           account_id: string | null;
-          first_name: string;
-          last_name: string;
           role: string | null;
-          city: string | null;
-          cv_pdf_url: string | null;
-          is_active: boolean;
           client_name: string | null;
           client_city: string | null;
-          start_date: string;
+          start_date: string | null;
           end_date: string | null;
           is_indefinite: boolean;
-          hourly_rate: number;
+          hourly_rate: number | null;
           sow_url: string | null;
           notice_period_days: number | null;
           notes: string | null;
-          is_stopped: boolean;
           stop_date: string | null;
           stop_reason: string | null;
           created_at: string;
@@ -1172,23 +1091,31 @@ export type Database = {
         };
         Insert: {
           id?: string;
-          account_id?: string | null;
           first_name: string;
           last_name: string;
-          role?: string | null;
           city?: string | null;
           cv_pdf_url?: string | null;
-          is_active?: boolean;
+          avatar_path?: string | null;
+          status?: 'bench' | 'actief' | 'stopgezet';
+          is_archived?: boolean;
+          priority?: 'High' | 'Medium' | 'Low' | null;
+          available_date?: string | null;
+          min_hourly_rate?: number | null;
+          max_hourly_rate?: number | null;
+          roles?: string[] | null;
+          technologies?: string[] | null;
+          description?: string | null;
+          account_id?: string | null;
+          role?: string | null;
           client_name?: string | null;
           client_city?: string | null;
-          start_date: string;
+          start_date?: string | null;
           end_date?: string | null;
           is_indefinite?: boolean;
-          hourly_rate: number;
+          hourly_rate?: number | null;
           sow_url?: string | null;
           notice_period_days?: number | null;
           notes?: string | null;
-          is_stopped?: boolean;
           stop_date?: string | null;
           stop_reason?: string | null;
           created_at?: string;
@@ -1196,23 +1123,31 @@ export type Database = {
         };
         Update: {
           id?: string;
-          account_id?: string | null;
           first_name?: string;
           last_name?: string;
-          role?: string | null;
           city?: string | null;
           cv_pdf_url?: string | null;
-          is_active?: boolean;
+          avatar_path?: string | null;
+          status?: 'bench' | 'actief' | 'stopgezet';
+          is_archived?: boolean;
+          priority?: 'High' | 'Medium' | 'Low' | null;
+          available_date?: string | null;
+          min_hourly_rate?: number | null;
+          max_hourly_rate?: number | null;
+          roles?: string[] | null;
+          technologies?: string[] | null;
+          description?: string | null;
+          account_id?: string | null;
+          role?: string | null;
           client_name?: string | null;
           client_city?: string | null;
-          start_date?: string;
+          start_date?: string | null;
           end_date?: string | null;
           is_indefinite?: boolean;
-          hourly_rate?: number;
+          hourly_rate?: number | null;
           sow_url?: string | null;
           notice_period_days?: number | null;
           notes?: string | null;
-          is_stopped?: boolean;
           stop_date?: string | null;
           stop_reason?: string | null;
           created_at?: string;
@@ -1220,7 +1155,7 @@ export type Database = {
         };
         Relationships: [
           {
-            foreignKeyName: 'active_consultants_account_id_fkey';
+            foreignKeyName: 'consultants_account_id_fkey';
             columns: ['account_id'];
             isOneToOne: false;
             referencedRelation: 'accounts';
@@ -1228,10 +1163,45 @@ export type Database = {
           },
         ];
       };
+      consultant_languages: {
+        Row: {
+          id: string;
+          consultant_id: string;
+          language: string;
+          level: 'Basis' | 'Gevorderd' | 'Vloeiend' | 'Moedertaal';
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          consultant_id: string;
+          language: string;
+          level: 'Basis' | 'Gevorderd' | 'Vloeiend' | 'Moedertaal';
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          consultant_id?: string;
+          language?: string;
+          level?: 'Basis' | 'Gevorderd' | 'Vloeiend' | 'Moedertaal';
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'consultant_languages_consultant_id_fkey';
+            columns: ['consultant_id'];
+            isOneToOne: false;
+            referencedRelation: 'consultants';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
       consultant_rate_history: {
         Row: {
           id: string;
-          active_consultant_id: string;
+          consultant_id: string;
           date: string;
           rate: number;
           reason: string | null;
@@ -1241,7 +1211,7 @@ export type Database = {
         };
         Insert: {
           id?: string;
-          active_consultant_id: string;
+          consultant_id: string;
           date: string;
           rate: number;
           reason?: string | null;
@@ -1251,7 +1221,7 @@ export type Database = {
         };
         Update: {
           id?: string;
-          active_consultant_id?: string;
+          consultant_id?: string;
           date?: string;
           rate?: number;
           reason?: string | null;
@@ -1261,10 +1231,10 @@ export type Database = {
         };
         Relationships: [
           {
-            foreignKeyName: 'consultant_rate_history_active_consultant_id_fkey';
-            columns: ['active_consultant_id'];
+            foreignKeyName: 'consultant_rate_history_consultant_id_fkey';
+            columns: ['consultant_id'];
             isOneToOne: false;
-            referencedRelation: 'active_consultants';
+            referencedRelation: 'consultants';
             referencedColumns: ['id'];
           },
         ];
@@ -1272,7 +1242,7 @@ export type Database = {
       consultant_extensions: {
         Row: {
           id: string;
-          active_consultant_id: string;
+          consultant_id: string;
           new_end_date: string;
           notes: string | null;
           created_at: string;
@@ -1280,7 +1250,7 @@ export type Database = {
         };
         Insert: {
           id?: string;
-          active_consultant_id: string;
+          consultant_id: string;
           new_end_date: string;
           notes?: string | null;
           created_at?: string;
@@ -1288,7 +1258,7 @@ export type Database = {
         };
         Update: {
           id?: string;
-          active_consultant_id?: string;
+          consultant_id?: string;
           new_end_date?: string;
           notes?: string | null;
           created_at?: string;
@@ -1296,10 +1266,10 @@ export type Database = {
         };
         Relationships: [
           {
-            foreignKeyName: 'consultant_extensions_active_consultant_id_fkey';
-            columns: ['active_consultant_id'];
+            foreignKeyName: 'consultant_extensions_consultant_id_fkey';
+            columns: ['consultant_id'];
             isOneToOne: false;
-            referencedRelation: 'active_consultants';
+            referencedRelation: 'consultants';
             referencedColumns: ['id'];
           },
         ];
@@ -1307,7 +1277,7 @@ export type Database = {
       consultant_contract_attributions: {
         Row: {
           id: string;
-          active_consultant_id: string;
+          consultant_id: string;
           type: 'rechtstreeks' | 'cronos';
           contact_id: string | null;
           cc_name: string | null;
@@ -1320,7 +1290,7 @@ export type Database = {
         };
         Insert: {
           id?: string;
-          active_consultant_id: string;
+          consultant_id: string;
           type: 'rechtstreeks' | 'cronos';
           contact_id?: string | null;
           cc_name?: string | null;
@@ -1333,7 +1303,7 @@ export type Database = {
         };
         Update: {
           id?: string;
-          active_consultant_id?: string;
+          consultant_id?: string;
           type?: 'rechtstreeks' | 'cronos';
           contact_id?: string | null;
           cc_name?: string | null;
@@ -1346,10 +1316,10 @@ export type Database = {
         };
         Relationships: [
           {
-            foreignKeyName: 'consultant_contract_attributions_active_consultant_id_fkey';
-            columns: ['active_consultant_id'];
+            foreignKeyName: 'consultant_contract_attributions_consultant_id_fkey';
+            columns: ['consultant_id'];
             isOneToOne: false;
-            referencedRelation: 'active_consultants';
+            referencedRelation: 'consultants';
             referencedColumns: ['id'];
           },
           {
@@ -2655,12 +2625,12 @@ export type Database = {
         Args: Record<string, never>;
         Returns: string;
       };
-      link_bench_to_account: {
+      link_consultant_to_account: {
         Args: {
-          p_bench_consultant_id: string;
+          p_consultant_id: string;
           p_account_id: string;
           p_role: string | null;
-          p_start_date: string;
+          p_start_date: string | null;
           p_end_date: string | null;
           p_is_indefinite: boolean;
           p_hourly_rate: number;

@@ -1,21 +1,37 @@
 import { z } from 'zod';
 import type { Database } from '@/types/database';
 
-/** Supabase select string for active consultants with all relations */
-export const CONSULTANT_SELECT =
-  '*, account:accounts(id, name), rate_history:consultant_rate_history(*), extensions:consultant_extensions(*), contract_attribution:consultant_contract_attributions(*)';
+// ---------------------------------------------------------------------------
+// Database row types
+// ---------------------------------------------------------------------------
 
-export type ActiveConsultant = Database['public']['Tables']['active_consultants']['Row'];
+export type Consultant = Database['public']['Tables']['consultants']['Row'];
+export type ConsultantLanguage = Database['public']['Tables']['consultant_languages']['Row'];
 export type ConsultantRateHistory = Database['public']['Tables']['consultant_rate_history']['Row'];
 export type ConsultantExtension = Database['public']['Tables']['consultant_extensions']['Row'];
 export type ConsultantContractAttribution = Database['public']['Tables']['consultant_contract_attributions']['Row'];
 
-export type ActiveConsultantWithDetails = ActiveConsultant & {
+export type ConsultantStatus = Consultant['status']; // 'bench' | 'actief' | 'stopgezet'
+
+// ---------------------------------------------------------------------------
+// Composite types (with joined relations)
+// ---------------------------------------------------------------------------
+
+/** Supabase select string for consultants with all relations */
+export const CONSULTANT_SELECT =
+  '*, account:accounts(id, name), languages:consultant_languages(*), rate_history:consultant_rate_history(*), extensions:consultant_extensions(*), contract_attribution:consultant_contract_attributions(*)';
+
+export type ConsultantWithDetails = Consultant & {
   account: { id: string; name: string } | null;
+  languages: ConsultantLanguage[];
   rate_history: ConsultantRateHistory[];
   extensions: ConsultantExtension[];
   contract_attribution: ConsultantContractAttribution | null;
 };
+
+// ---------------------------------------------------------------------------
+// Contract status helpers
+// ---------------------------------------------------------------------------
 
 export type ContractStatus = 'stopgezet' | 'onbepaald' | 'verlopen' | 'kritiek' | 'waarschuwing' | 'actief';
 
@@ -28,8 +44,8 @@ export const contractStatusColors: Record<ContractStatus, string> = {
   stopgezet: 'bg-gray-300 text-gray-600',
 };
 
-export function getContractStatus(consultant: ActiveConsultant): ContractStatus {
-  if (consultant.is_stopped) return 'stopgezet';
+export function getContractStatus(consultant: Consultant): ContractStatus {
+  if (consultant.status === 'stopgezet') return 'stopgezet';
   if (consultant.is_indefinite || !consultant.end_date) return 'onbepaald';
   const days = Math.ceil((new Date(consultant.end_date).getTime() - Date.now()) / (1000 * 60 * 60 * 24));
   if (days < 0) return 'verlopen';
@@ -38,7 +54,7 @@ export function getContractStatus(consultant: ActiveConsultant): ContractStatus 
   return 'actief';
 }
 
-export function getCurrentRate(consultant: ActiveConsultantWithDetails): number {
+export function getCurrentRate(consultant: ConsultantWithDetails): number {
   if (!consultant.rate_history || consultant.rate_history.length === 0) {
     return Number(consultant.hourly_rate ?? 0);
   }
@@ -55,7 +71,29 @@ export function getCurrentRate(consultant: ActiveConsultantWithDetails): number 
   return Number(sorted[0].rate);
 }
 
-export const activeConsultantFormSchema = z.object({
+// ---------------------------------------------------------------------------
+// Zod schemas
+// ---------------------------------------------------------------------------
+
+/** Schema for creating/editing a bench consultant */
+export const benchConsultantFormSchema = z.object({
+  first_name: z.string().min(1, 'Voornaam is verplicht'),
+  last_name: z.string().min(1, 'Achternaam is verplicht'),
+  city: z.string().optional(),
+  priority: z.enum(['High', 'Medium', 'Low']),
+  available_date: z.string().optional().nullable(),
+  min_hourly_rate: z.coerce.number().optional().nullable(),
+  max_hourly_rate: z.coerce.number().optional().nullable(),
+  roles: z.array(z.string()).optional(),
+  technologies: z.array(z.string()).optional(),
+  description: z.string().optional(),
+  cv_pdf_url: z.string().optional().nullable(),
+});
+
+export type BenchConsultantFormValues = z.infer<typeof benchConsultantFormSchema>;
+
+/** Schema for editing an active consultant */
+export const consultantFormSchema = z.object({
   account_id: z.string().optional().nullable(),
   first_name: z.string().min(1, 'Voornaam is verplicht'),
   last_name: z.string().min(1, 'Achternaam is verplicht'),
@@ -73,4 +111,12 @@ export const activeConsultantFormSchema = z.object({
   notes: z.string().optional(),
 });
 
-export type ActiveConsultantFormValues = z.infer<typeof activeConsultantFormSchema>;
+export type ConsultantFormValues = z.infer<typeof consultantFormSchema>;
+
+/** Schema for adding/editing a language */
+export const languageFormSchema = z.object({
+  language: z.string().min(1),
+  level: z.enum(['Basis', 'Gevorderd', 'Vloeiend', 'Moedertaal']),
+});
+
+export type LanguageFormValues = z.infer<typeof languageFormSchema>;
