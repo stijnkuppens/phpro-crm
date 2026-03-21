@@ -5,16 +5,30 @@ import { getAccounts } from '@/features/accounts/queries/get-accounts';
 import { getBenchConsultants } from '@/features/bench/queries/get-bench-consultants';
 import { getReferenceOptions } from '@/features/reference-data/queries/get-reference-options';
 import { ConsultantListView } from '@/features/consultants/components/consultant-list';
+import { getContractStatus, getCurrentRate } from '@/features/consultants/types';
 
 export const metadata: Metadata = { title: 'Consultants' };
 
+const PAGE_SIZE = 25;
+
 export default async function ConsultantsPage() {
-  const [consultants, accountsResult, benchConsultants, rolesRaw] = await Promise.all([
-    getActiveConsultants(),
+  const [{ data: firstPage, count }, accountsResult, benchConsultants, rolesRaw] = await Promise.all([
+    getActiveConsultants({ pageSize: PAGE_SIZE }),
     getAccounts({ pageSize: 9999 }),
     getBenchConsultants(),
     getReferenceOptions('ref_consultant_roles'),
   ]);
+
+  // Stats need the full dataset — use a separate lightweight call
+  // React.cache deduplicates within the same request if params match
+  const { data: allConsultants } = await getActiveConsultants({ pageSize: 9999 });
+  const activeOnes = allConsultants.filter((c) => !c.is_stopped);
+  const stats = {
+    activeCount: activeOnes.length,
+    maxRevenue: activeOnes.reduce((sum, c) => sum + getCurrentRate(c) * 8 * 21, 0),
+    critical: allConsultants.filter((c) => getContractStatus(c) === 'kritiek').length,
+    stopped: allConsultants.filter((c) => c.is_stopped).length,
+  };
 
   const accounts = accountsResult.data.map((a) => ({
     id: a.id,
@@ -36,7 +50,9 @@ export default async function ConsultantsPage() {
         ]}
       />
       <ConsultantListView
-        initialData={consultants}
+        initialData={firstPage}
+        initialCount={count}
+        stats={stats}
         accounts={accounts}
         benchConsultants={benchConsultants}
         roles={roles}
