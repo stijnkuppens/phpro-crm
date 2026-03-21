@@ -14,6 +14,7 @@ import type { BenchConsultantWithLanguages } from '@/features/bench/types';
 
 type Props = {
   accountId: string;
+  accountName: string;
   consultants: ActiveConsultantWithDetails[];
   roles: { value: string; label: string }[];
   benchConsultants: BenchConsultantWithLanguages[];
@@ -22,7 +23,7 @@ type Props = {
 const fmt = (n: number) =>
   new Intl.NumberFormat('nl-BE', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(n);
 
-export function AccountConsultantsTab({ accountId, consultants, roles, benchConsultants }: Props) {
+export function AccountConsultantsTab({ accountId, accountName, consultants, roles, benchConsultants }: Props) {
   const router = useRouter();
   const [selected, setSelected] = useState<ActiveConsultantWithDetails | null>(null);
   const [wizardOpen, setWizardOpen] = useState(false);
@@ -98,7 +99,7 @@ export function AccountConsultantsTab({ accountId, consultants, roles, benchCons
       <LinkConsultantWizard
         open={wizardOpen}
         onClose={() => setWizardOpen(false)}
-        accounts={[]}
+        accounts={[{ id: accountId, name: accountName, domain: null, type: null, city: null }]}
         benchConsultants={benchConsultants}
         roles={roles}
         preselectedAccountId={accountId}

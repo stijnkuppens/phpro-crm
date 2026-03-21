@@ -497,7 +497,7 @@ export function LinkConsultantWizard({
           {step === 3 && (
             <Button
               onClick={handleSubmit}
-              disabled={loading || !accountId || !benchId || !startDate || !hourlyRate}
+              disabled={loading || !accountId || !benchId || !startDate || !hourlyRate || Number(hourlyRate) <= 0}
             >
               <Save />
               {loading ? 'Verwerken...' : 'Koppelen'}
