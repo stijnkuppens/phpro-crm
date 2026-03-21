@@ -14,7 +14,11 @@ export async function upsertRevenueEntry(
   month: number,
   amount: number,
 ): Promise<ActionResult> {
-  await requirePermission('revenue.write');
+  try {
+    await requirePermission('revenue.write');
+  } catch {
+    return err('Onvoldoende rechten');
+  }
   const supabase = await createServerClient();
   const { error } = await supabase
     .from('revenue_entries')

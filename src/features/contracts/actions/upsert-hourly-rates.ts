@@ -11,7 +11,11 @@ export async function upsertHourlyRates(
   year: number,
   rates: { role: string; rate: number }[],
 ): Promise<ActionResult<void>> {
-  await requirePermission('contracts.write');
+  try {
+    await requirePermission('contracts.write');
+  } catch {
+    return err('Onvoldoende rechten');
+  }
 
   const supabase = await createServerClient();
 

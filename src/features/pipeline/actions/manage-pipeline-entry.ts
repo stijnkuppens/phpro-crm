@@ -8,7 +8,11 @@ import { ok, err, type ActionResult } from '@/lib/action-result';
 import { pipelineEntryFormSchema, type PipelineEntryFormValues } from '../types';
 
 export async function createPipelineEntry(values: PipelineEntryFormValues): Promise<ActionResult<{ id: string }>> {
-  await requirePermission('revenue.write');
+  try {
+    await requirePermission('revenue.write');
+  } catch {
+    return err('Onvoldoende rechten');
+  }
   const parsed = pipelineEntryFormSchema.safeParse(values);
   if (!parsed.success) return err(parsed.error.flatten().fieldErrors);
   const supabase = await createServerClient();
@@ -20,7 +24,11 @@ export async function createPipelineEntry(values: PipelineEntryFormValues): Prom
 }
 
 export async function updatePipelineEntry(id: string, values: PipelineEntryFormValues): Promise<ActionResult> {
-  await requirePermission('revenue.write');
+  try {
+    await requirePermission('revenue.write');
+  } catch {
+    return err('Onvoldoende rechten');
+  }
   const parsed = pipelineEntryFormSchema.safeParse(values);
   if (!parsed.success) return err(parsed.error.flatten().fieldErrors);
   const supabase = await createServerClient();
@@ -32,7 +40,11 @@ export async function updatePipelineEntry(id: string, values: PipelineEntryFormV
 }
 
 export async function deletePipelineEntry(id: string): Promise<ActionResult> {
-  await requirePermission('revenue.write');
+  try {
+    await requirePermission('revenue.write');
+  } catch {
+    return err('Onvoldoende rechten');
+  }
   const supabase = await createServerClient();
   const { error } = await supabase.from('pipeline_entries').delete().eq('id', id);
   if (error) return err(error.message);

@@ -10,7 +10,11 @@ import { ok, err, type ActionResult } from '@/lib/action-result';
 export async function upsertIndexationConfig(
   values: IndexationConfigFormValues,
 ): Promise<ActionResult<void>> {
-  await requirePermission('indexation.write');
+  try {
+    await requirePermission('indexation.write');
+  } catch {
+    return err('Onvoldoende rechten');
+  }
 
   const parsed = indexationConfigFormSchema.safeParse(values);
   if (!parsed.success) {

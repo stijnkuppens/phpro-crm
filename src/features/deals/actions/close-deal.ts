@@ -9,7 +9,11 @@ import { ok, err, type ActionResult } from '@/lib/action-result';
 import { z } from 'zod';
 
 export async function closeDeal(dealId: string, values: CloseDealValues): Promise<ActionResult> {
-  await requirePermission('deals.write');
+  try {
+    await requirePermission('deals.write');
+  } catch {
+    return err('Onvoldoende rechten');
+  }
 
   const idResult = z.string().min(1).safeParse(dealId);
   if (!idResult.success) {

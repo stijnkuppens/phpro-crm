@@ -16,8 +16,12 @@ export async function extendConsultant(
   id: string,
   values: z.infer<typeof extendSchema>,
 ): Promise<ActionResult> {
+  try {
+    await requirePermission('consultants.write');
+  } catch {
+    return err('Onvoldoende rechten');
+  }
   if (!z.string().min(1).safeParse(id).success) return err('Ongeldig ID');
-  await requirePermission('consultants.write');
 
   const parsed = extendSchema.safeParse(values);
   if (!parsed.success) {

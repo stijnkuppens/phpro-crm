@@ -8,7 +8,11 @@ import { contactFormSchema, type ContactFormValues } from '../types';
 import { ok, err, type ActionResult } from '@/lib/action-result';
 
 export async function updateContact(id: string, values: ContactFormValues): Promise<ActionResult> {
-  await requirePermission('contacts.write');
+  try {
+    await requirePermission('contacts.write');
+  } catch {
+    return err('Onvoldoende rechten');
+  }
 
   const parsed = contactFormSchema.safeParse(values);
   if (!parsed.success) {

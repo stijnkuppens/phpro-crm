@@ -11,8 +11,12 @@ export async function archiveBenchConsultant(
   id: string,
   archive = true,
 ): Promise<ActionResult> {
+  try {
+    await requirePermission('bench.write');
+  } catch {
+    return err('Onvoldoende rechten');
+  }
   if (!z.string().min(1).safeParse(id).success) return err('Ongeldig ID');
-  await requirePermission('bench.write');
 
   const supabase = await createServerClient();
   const { error } = await supabase

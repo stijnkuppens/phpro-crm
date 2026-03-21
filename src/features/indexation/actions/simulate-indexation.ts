@@ -10,7 +10,11 @@ export async function simulateIndexation(
   baseYear: number,
   percentage: number,
 ): Promise<ActionResult<SimulationResult>> {
-  await requirePermission('indexation.read');
+  try {
+    await requirePermission('indexation.read');
+  } catch {
+    return err('Onvoldoende rechten');
+  }
 
   const supabase = await createServerClient();
 

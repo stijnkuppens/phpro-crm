@@ -8,7 +8,11 @@ import { accountFormSchema, type AccountFormValues } from '../types';
 import { ok, err, type ActionResult } from '@/lib/action-result';
 
 export async function updateAccount(id: string, values: AccountFormValues): Promise<ActionResult> {
-  await requirePermission('accounts.write');
+  try {
+    await requirePermission('accounts.write');
+  } catch {
+    return err('Onvoldoende rechten');
+  }
 
   const parsed = accountFormSchema.safeParse(values);
   if (!parsed.success) {

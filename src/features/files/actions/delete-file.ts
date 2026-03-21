@@ -6,7 +6,11 @@ import { logAction } from '@/features/audit/actions/log-action';
 import { ok, err, type ActionResult } from '@/lib/action-result';
 
 export async function deleteFile(path: string): Promise<ActionResult> {
-  await requirePermission('files.delete');
+  try {
+    await requirePermission('files.delete');
+  } catch {
+    return err('Onvoldoende rechten');
+  }
   const admin = createServiceRoleClient();
   const { error } = await admin.storage.from('documents').remove([path]);
 
@@ -24,7 +28,11 @@ export async function deleteFile(path: string): Promise<ActionResult> {
 }
 
 export async function deleteFiles(paths: string[]): Promise<ActionResult> {
-  await requirePermission('files.delete');
+  try {
+    await requirePermission('files.delete');
+  } catch {
+    return err('Onvoldoende rechten');
+  }
   const admin = createServiceRoleClient();
   const { error } = await admin.storage.from('documents').remove(paths);
 

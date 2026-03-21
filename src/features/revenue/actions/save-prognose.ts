@@ -14,7 +14,11 @@ type PrognoseEntry = {
 };
 
 export async function savePrognose(year: number, entries: PrognoseEntry[]): Promise<ActionResult> {
-  await requirePermission('revenue.write');
+  try {
+    await requirePermission('revenue.write');
+  } catch {
+    return err('Onvoldoende rechten');
+  }
   const supabase = await createServerClient();
   const rows: { revenue_client_id: string; division_id: string; service_name: string; year: number; month: number; amount: number }[] = [];
   for (const entry of entries) {

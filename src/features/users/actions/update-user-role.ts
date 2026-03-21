@@ -7,7 +7,11 @@ import { ok, err, type ActionResult } from '@/lib/action-result';
 import type { Role } from '@/types/acl';
 
 export async function updateUserRole(userId: string, newRole: Role): Promise<ActionResult> {
-  await requirePermission('users.write');
+  try {
+    await requirePermission('users.write');
+  } catch {
+    return err('Onvoldoende rechten');
+  }
   const admin = createServiceRoleClient();
   const { error } = await admin
     .from('user_profiles')

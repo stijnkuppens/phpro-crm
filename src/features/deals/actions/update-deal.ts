@@ -8,7 +8,11 @@ import { dealFormSchema, type DealFormValues } from '../types';
 import { ok, err, type ActionResult } from '@/lib/action-result';
 
 export async function updateDeal(id: string, values: DealFormValues): Promise<ActionResult> {
-  await requirePermission('deals.write');
+  try {
+    await requirePermission('deals.write');
+  } catch {
+    return err('Onvoldoende rechten');
+  }
 
   const parsed = dealFormSchema.safeParse(values);
   if (!parsed.success) {

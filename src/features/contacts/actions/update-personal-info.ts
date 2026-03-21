@@ -8,7 +8,11 @@ import { personalInfoFormSchema, type PersonalInfoFormValues } from '../types';
 import { ok, err, type ActionResult } from '@/lib/action-result';
 
 export async function updatePersonalInfo(contactId: string, values: PersonalInfoFormValues): Promise<ActionResult> {
-  await requirePermission('contacts.write');
+  try {
+    await requirePermission('contacts.write');
+  } catch {
+    return err('Onvoldoende rechten');
+  }
 
   const parsed = personalInfoFormSchema.safeParse(values);
   if (!parsed.success) {

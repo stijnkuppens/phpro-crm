@@ -8,7 +8,12 @@ import { taskFormSchema, type TaskFormValues } from '../types';
 import { ok, err, type ActionResult } from '@/lib/action-result';
 
 export async function createTask(values: TaskFormValues): Promise<ActionResult<{ id: string }>> {
-  const { userId } = await requirePermission('tasks.write');
+  let userId: string;
+  try {
+    ({ userId } = await requirePermission('tasks.write'));
+  } catch {
+    return err('Onvoldoende rechten');
+  }
 
   const parsed = taskFormSchema.safeParse(values);
   if (!parsed.success) {

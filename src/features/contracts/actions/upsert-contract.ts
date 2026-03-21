@@ -11,7 +11,11 @@ export async function upsertContract(
   accountId: string,
   values: ContractFormValues,
 ): Promise<ActionResult<{ id: string }>> {
-  await requirePermission('contracts.write');
+  try {
+    await requirePermission('contracts.write');
+  } catch {
+    return err('Onvoldoende rechten');
+  }
 
   const parsed = contractFormSchema.safeParse(values);
   if (!parsed.success) {

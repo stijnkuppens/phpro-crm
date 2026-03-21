@@ -8,7 +8,12 @@ import { dealFormSchema, type DealFormValues } from '../types';
 import { ok, err, type ActionResult } from '@/lib/action-result';
 
 export async function createDeal(values: DealFormValues): Promise<ActionResult<{ id: string }>> {
-  const { userId } = await requirePermission('deals.write');
+  let userId: string;
+  try {
+    ({ userId } = await requirePermission('deals.write'));
+  } catch {
+    return err('Onvoldoende rechten');
+  }
 
   const parsed = dealFormSchema.safeParse(values);
   if (!parsed.success) {

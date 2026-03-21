@@ -7,7 +7,11 @@ import { revalidatePath } from 'next/cache';
 import { ok, err, type ActionResult } from '@/lib/action-result';
 
 export async function deleteDeal(id: string): Promise<ActionResult> {
-  await requirePermission('deals.delete');
+  try {
+    await requirePermission('deals.delete');
+  } catch {
+    return err('Onvoldoende rechten');
+  }
 
   const supabase = await createServerClient();
   const { error } = await supabase

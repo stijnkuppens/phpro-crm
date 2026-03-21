@@ -13,7 +13,12 @@ export async function createHrRecord(
   employeeId: string,
   values: Record<string, unknown>,
 ): Promise<ActionResult<{ id: string }>> {
-  const { userId } = await requirePermission('hr.write');
+  let userId: string;
+  try {
+    ({ userId } = await requirePermission('hr.write'));
+  } catch {
+    return err('Onvoldoende rechten');
+  }
   const supabase = await createServerClient();
   const insertData: Record<string, unknown> = { employee_id: employeeId, ...values };
   if (table === 'salary_history' || table === 'evaluations') {
@@ -39,7 +44,11 @@ export async function updateHrRecord(
   id: string,
   values: Record<string, unknown>,
 ): Promise<ActionResult> {
-  await requirePermission('hr.write');
+  try {
+    await requirePermission('hr.write');
+  } catch {
+    return err('Onvoldoende rechten');
+  }
   const supabase = await createServerClient();
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { error } = await (supabase.from(table) as any).update(values).eq('id', id);
@@ -51,7 +60,11 @@ export async function updateHrRecord(
 }
 
 export async function deleteHrRecord(table: HrTable, id: string): Promise<ActionResult> {
-  await requirePermission('hr.write');
+  try {
+    await requirePermission('hr.write');
+  } catch {
+    return err('Onvoldoende rechten');
+  }
   const supabase = await createServerClient();
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { error } = await (supabase.from(table) as any).delete().eq('id', id);

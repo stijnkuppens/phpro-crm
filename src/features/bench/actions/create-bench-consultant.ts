@@ -10,7 +10,11 @@ import { ok, err, type ActionResult } from '@/lib/action-result';
 export async function createBenchConsultant(
   values: BenchConsultantFormValues,
 ): Promise<ActionResult<{ id: string }>> {
-  await requirePermission('bench.write');
+  try {
+    await requirePermission('bench.write');
+  } catch {
+    return err('Onvoldoende rechten');
+  }
 
   const parsed = benchConsultantFormSchema.safeParse(values);
   if (!parsed.success) {
