@@ -8,7 +8,10 @@ export const getBenchConsultants = cache(
     let query = supabase
       .from('bench_consultants')
       .select('*, languages:bench_consultant_languages(*)')
-      .order('available_date', { ascending: true });
+      // Primary sort is by available_date; priority sort is applied in JS below
+      // because Supabase .order() doesn't support CASE expressions.
+      .order('available_date', { ascending: true })
+      .limit(500); // safety net — bench is typically small
     if (!includeArchived) {
       query = query.eq('is_archived', false);
     }
@@ -17,6 +20,8 @@ export const getBenchConsultants = cache(
       console.error('Failed to fetch bench consultants:', error.message);
       return [];
     }
+    // Sort by priority first (High → Medium → Low), then by available_date (already ordered by DB).
+    // JS sort is stable in V8, so within the same priority tier the DB order is preserved.
     const priorityOrder: Record<string, number> = { High: 1, Medium: 2, Low: 3 };
     return (data as unknown as BenchConsultantWithLanguages[])?.sort(
       (a, b) => (priorityOrder[a.priority] ?? 99) - (priorityOrder[b.priority] ?? 99),

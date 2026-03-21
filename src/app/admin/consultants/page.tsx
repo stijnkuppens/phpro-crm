@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { PageHeader } from '@/components/admin/page-header';
 import { getActiveConsultants } from '@/features/consultants/queries/get-active-consultants';
-import { getAccounts } from '@/features/accounts/queries/get-accounts';
+import { getAccountNames } from '@/features/accounts/queries/get-account-names';
 import { getBenchConsultants } from '@/features/bench/queries/get-bench-consultants';
 import { getReferenceOptions } from '@/features/reference-data/queries/get-reference-options';
 import { ConsultantListView } from '@/features/consultants/components/consultant-list';
@@ -12,9 +12,9 @@ export const metadata: Metadata = { title: 'Consultants' };
 const PAGE_SIZE = 25;
 
 export default async function ConsultantsPage() {
-  const [{ data: firstPage, count }, accountsResult, benchConsultants, rolesRaw] = await Promise.all([
+  const [{ data: firstPage, count }, accountOptions, benchConsultants, rolesRaw] = await Promise.all([
     getActiveConsultants({ pageSize: PAGE_SIZE }),
-    getAccounts({ pageSize: 9999 }),
+    getAccountNames(),
     getBenchConsultants(),
     getReferenceOptions('ref_consultant_roles'),
   ]);
@@ -30,7 +30,7 @@ export default async function ConsultantsPage() {
     stopped: allConsultants.filter((c) => c.is_stopped).length,
   };
 
-  const accounts = accountsResult.data.map((a) => ({
+  const accounts = accountOptions.map((a) => ({
     id: a.id,
     name: a.name,
     domain: a.domain,

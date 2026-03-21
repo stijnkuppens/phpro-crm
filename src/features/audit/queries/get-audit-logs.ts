@@ -1,5 +1,5 @@
 import { cache } from 'react';
-import { createServiceRoleClient } from '@/lib/supabase/admin';
+import { createServerClient } from '@/lib/supabase/server';
 import type { AuditLog, AuditLogFilters } from '../types';
 
 type GetAuditLogsParams = {
@@ -14,11 +14,11 @@ export const getAuditLogs = cache(
     page = 1,
     pageSize = 20,
   }: GetAuditLogsParams = {}): Promise<{ data: AuditLog[]; count: number }> => {
-    const admin = createServiceRoleClient();
+    const supabase = await createServerClient();
     const from = (page - 1) * pageSize;
     const to = from + pageSize - 1;
 
-    let query = admin
+    let query = supabase
       .from('audit_logs')
       .select('*', { count: 'exact' })
       .order('created_at', { ascending: false })

@@ -1,6 +1,6 @@
 import { PageHeader } from '@/components/admin/page-header';
 import { getBenchConsultants } from '@/features/bench/queries/get-bench-consultants';
-import { getAccounts } from '@/features/accounts/queries/get-accounts';
+import { getAccountNames } from '@/features/accounts/queries/get-account-names';
 import { getReferenceOptions } from '@/features/reference-data/queries/get-reference-options';
 import { BenchGrid } from '@/features/bench/components/bench-grid';
 import { createServerClient } from '@/lib/supabase/server';
@@ -8,17 +8,17 @@ import { createServerClient } from '@/lib/supabase/server';
 export default async function BenchPage() {
   const supabase = await createServerClient();
 
-  const [consultants, { data: pipelines }, accountsResult, rolesRaw] = await Promise.all([
+  const [consultants, { data: pipelines }, accountOptions, rolesRaw] = await Promise.all([
     getBenchConsultants(),
     supabase
       .from('pipelines')
       .select('id, name, type, stages:pipeline_stages(id, name, sort_order, is_closed)')
       .order('sort_order', { ascending: true }),
-    getAccounts({ pageSize: 9999 }),
+    getAccountNames(),
     getReferenceOptions('ref_consultant_roles'),
   ]);
 
-  const accounts = accountsResult.data.map((a) => ({
+  const accounts = accountOptions.map((a) => ({
     id: a.id,
     name: a.name,
     domain: a.domain,
