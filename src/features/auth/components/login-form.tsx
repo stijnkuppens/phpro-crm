@@ -10,11 +10,11 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 import { Loader2, LogIn } from 'lucide-react';
-import { useBrandTheme } from '@/lib/hooks/use-brand-theme';
+import { useBrandTheme, type BrandTheme } from '@/lib/hooks/use-brand-theme';
 
 export function LoginForm() {
   const router = useRouter();
-  const { brand, mounted } = useBrandTheme();
+  const { brand, setBrand, mounted } = useBrandTheme();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -113,28 +113,33 @@ export function LoginForm() {
         </div>
 
         {/* Footer */}
-        <p className="text-xs text-muted-foreground">
-          &copy; {new Date().getFullYear()} {brandName}. Alle rechten voorbehouden.
-        </p>
+        <div className="flex items-center justify-between">
+          <p className="text-xs text-muted-foreground">
+            &copy; {new Date().getFullYear()} {brandName}. Alle rechten voorbehouden.
+          </p>
+          {mounted && (
+            <button
+              type="button"
+              onClick={() => setBrand(is25Carat ? 'phpro' : '25carat')}
+              className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+            >
+              Wissel naar {is25Carat ? 'PHPro' : '25Carat'}
+            </button>
+          )}
+        </div>
       </div>
 
       {/* ── Right panel: hero image ───────────────────────────────────────── */}
-      <div className="relative hidden lg:block lg:w-1/2">
+      <div className={`relative hidden lg:flex lg:w-1/2 lg:items-center lg:justify-center ${
+        is25Carat ? 'bg-neutral-800' : 'bg-gray-100'
+      }`}>
         <Image
           src={is25Carat ? '/login_25carat.webp' : '/mps_phpro.webp'}
           alt={`${brandName} team`}
           fill
-          className="object-cover"
+          className="object-contain"
           priority
           sizes="50vw"
-        />
-        {/* Gradient overlay */}
-        <div
-          className={`absolute inset-0 ${
-            is25Carat
-              ? 'bg-gradient-to-t from-amber-950/60 via-transparent to-amber-950/20'
-              : 'bg-gradient-to-t from-lime-950/60 via-transparent to-lime-950/20'
-          }`}
         />
       </div>
     </div>
