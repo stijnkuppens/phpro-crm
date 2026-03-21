@@ -18,8 +18,12 @@ export async function updateBenchConsultant(
   values: BenchConsultantFormValues,
   languages?: LanguageFormValues[],
 ): Promise<ActionResult> {
+  try {
+    await requirePermission('bench.write');
+  } catch {
+    return err('Onvoldoende rechten');
+  }
   if (!z.string().min(1).safeParse(id).success) return err('Ongeldig ID');
-  await requirePermission('bench.write');
 
   const parsed = benchConsultantFormSchema.safeParse(values);
   if (!parsed.success) {

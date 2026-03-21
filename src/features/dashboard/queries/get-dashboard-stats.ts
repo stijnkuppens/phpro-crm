@@ -12,10 +12,13 @@ export const getDashboardStats = cache(async (): Promise<DashboardStats> => {
   const supabase = await createServerClient();
 
   const [dealsResult, accountsResult, activitiesResult, tasksResult] = await Promise.all([
+    // Supabase JS doesn't support SUM aggregation directly, so we fetch and reduce in JS.
+    // .limit(10000) prevents unbounded fetches if the deals table grows large.
     supabase
       .from('deals')
       .select('amount, probability')
-      .is('closed_at', null),
+      .is('closed_at', null)
+      .limit(10000),
     supabase
       .from('accounts')
       .select('*', { count: 'exact', head: true }),

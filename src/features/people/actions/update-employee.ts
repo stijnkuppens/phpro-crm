@@ -8,7 +8,11 @@ import { ok, err, type ActionResult } from '@/lib/action-result';
 import { employeeFormSchema, type EmployeeFormValues } from '../types';
 
 export async function updateEmployee(id: string, values: EmployeeFormValues): Promise<ActionResult> {
-  await requirePermission('hr.write');
+  try {
+    await requirePermission('hr.write');
+  } catch {
+    return err('Onvoldoende rechten');
+  }
   const parsed = employeeFormSchema.safeParse(values);
   if (!parsed.success) return err(parsed.error.flatten().fieldErrors);
   const supabase = await createServerClient();

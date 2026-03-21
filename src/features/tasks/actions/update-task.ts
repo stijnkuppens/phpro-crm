@@ -8,7 +8,11 @@ import { taskFormSchema, type TaskFormValues } from '../types';
 import { ok, err, type ActionResult } from '@/lib/action-result';
 
 export async function updateTask(id: string, values: TaskFormValues): Promise<ActionResult> {
-  await requirePermission('tasks.write');
+  try {
+    await requirePermission('tasks.write');
+  } catch {
+    return err('Onvoldoende rechten');
+  }
 
   const parsed = taskFormSchema.safeParse(values);
   if (!parsed.success) {

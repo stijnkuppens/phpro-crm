@@ -7,7 +7,11 @@ import { revalidatePath } from 'next/cache';
 import { ok, err, type ActionResult } from '@/lib/action-result';
 
 export async function moveDealStage(dealId: string, newStageId: string): Promise<ActionResult> {
-  await requirePermission('deals.write');
+  try {
+    await requirePermission('deals.write');
+  } catch {
+    return err('Onvoldoende rechten');
+  }
 
   const supabase = await createServerClient();
 

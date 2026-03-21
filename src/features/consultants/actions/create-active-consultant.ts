@@ -10,7 +10,11 @@ import { ok, err, type ActionResult } from '@/lib/action-result';
 export async function createActiveConsultant(
   values: ActiveConsultantFormValues,
 ): Promise<ActionResult<{ id: string }>> {
-  await requirePermission('consultants.write');
+  try {
+    await requirePermission('consultants.write');
+  } catch {
+    return err('Onvoldoende rechten');
+  }
 
   const parsed = activeConsultantFormSchema.safeParse(values);
   if (!parsed.success) {

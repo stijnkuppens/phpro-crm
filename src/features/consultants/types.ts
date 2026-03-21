@@ -1,6 +1,10 @@
 import { z } from 'zod';
 import type { Database } from '@/types/database';
 
+/** Supabase select string for active consultants with all relations */
+export const CONSULTANT_SELECT =
+  '*, account:accounts(id, name), rate_history:consultant_rate_history(*), extensions:consultant_extensions(*), contract_attribution:consultant_contract_attributions(*)';
+
 export type ActiveConsultant = Database['public']['Tables']['active_consultants']['Row'];
 export type ConsultantRateHistory = Database['public']['Tables']['consultant_rate_history']['Row'];
 export type ConsultantExtension = Database['public']['Tables']['consultant_extensions']['Row'];

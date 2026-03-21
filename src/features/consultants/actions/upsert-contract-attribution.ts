@@ -22,7 +22,11 @@ export type UpsertContractAttributionValues = z.infer<typeof schema>;
 export async function upsertContractAttribution(
   values: UpsertContractAttributionValues,
 ): Promise<ActionResult<{ id: string }>> {
-  await requirePermission('consultants.write');
+  try {
+    await requirePermission('consultants.write');
+  } catch {
+    return err('Onvoldoende rechten');
+  }
 
   const parsed = schema.safeParse(values);
   if (!parsed.success) {

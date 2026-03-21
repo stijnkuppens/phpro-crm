@@ -1,10 +1,11 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Eye } from 'lucide-react';
+import { Eye, Plus } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
 import {
   Select,
   SelectContent,
@@ -13,6 +14,7 @@ import {
 } from '@/components/ui/select';
 import { FilterBar } from '@/components/admin/filter-bar';
 import DataTable from '@/components/admin/data-table';
+import { useEntity } from '@/lib/hooks/use-entity';
 import { consultantColumns } from '../columns';
 import {
   getContractStatus,
@@ -21,10 +23,29 @@ import {
   type ContractStatus,
 } from '../types';
 import { ConsultantDetailModal } from './consultant-detail-modal';
+import { LinkConsultantWizard } from './link-consultant-wizard';
+import type { BenchConsultantWithLanguages } from '@/features/bench/types';
+import { CONSULTANT_SELECT } from '../types';
+
+type Account = { id: string; name: string; domain: string | null; type: string | null; city: string | null };
+
+type Stats = {
+  activeCount: number;
+  maxRevenue: number;
+  critical: number;
+  stopped: number;
+};
 
 type Props = {
   initialData: ActiveConsultantWithDetails[];
+  initialCount: number;
+  stats: Stats;
+  accounts: Account[];
+  benchConsultants: BenchConsultantWithLanguages[];
+  roles: { value: string; label: string }[];
 };
+
+const PAGE_SIZE = 25;
 
 const statusOptions: { value: string; label: string }[] = [
   { value: '', label: 'Alle' },
@@ -42,70 +63,80 @@ const eurFmt = new Intl.NumberFormat('nl-BE', {
   maximumFractionDigits: 0,
 });
 
-export function ConsultantListView({ initialData }: Props) {
+/** Translate computed status to Supabase filter conditions */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function applyStatusFilter(query: any, status: string) {
+  const today = new Date().toISOString().split('T')[0];
+  const in60 = new Date(Date.now() + 60 * 86400000).toISOString().split('T')[0];
+  const in120 = new Date(Date.now() + 120 * 86400000).toISOString().split('T')[0];
+
+  switch (status) {
+    case 'stopgezet':
+      return query.eq('is_stopped', true);
+    case 'onbepaald':
+      return query.eq('is_stopped', false).or('is_indefinite.eq.true,end_date.is.null');
+    case 'verlopen':
+      return query.eq('is_stopped', false).eq('is_indefinite', false).lt('end_date', today);
+    case 'kritiek':
+      return query.eq('is_stopped', false).eq('is_indefinite', false).gte('end_date', today).lte('end_date', in60);
+    case 'waarschuwing':
+      return query.eq('is_stopped', false).eq('is_indefinite', false).gt('end_date', in60).lte('end_date', in120);
+    case 'actief':
+      return query.eq('is_stopped', false).eq('is_indefinite', false).gt('end_date', in120);
+    default:
+      return query;
+  }
+}
+
+export function ConsultantListView({ initialData, initialCount, stats, accounts, benchConsultants, roles }: Props) {
   const router = useRouter();
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
+  const [page, setPage] = useState(1);
   const [selected, setSelected] = useState<ActiveConsultantWithDetails | null>(null);
+  const [wizardOpen, setWizardOpen] = useState(false);
 
-  // Compute statuses once
-  const withStatus = useMemo(
-    () =>
-      initialData.map((c) => ({
-        consultant: c,
-        status: getContractStatus(c),
-        rate: getCurrentRate(c),
-      })),
-    [initialData],
-  );
+  const { data, total, fetchList } = useEntity<ActiveConsultantWithDetails>({
+    table: 'active_consultants',
+    select: CONSULTANT_SELECT,
+    pageSize: PAGE_SIZE,
+    initialData,
+    initialCount,
+  });
 
-  // Filter
-  const filtered = useMemo(() => {
-    let items = withStatus;
+  const load = useCallback(() => {
+    const orFilter = search
+      ? `first_name.ilike.%${search}%,last_name.ilike.%${search}%,role.ilike.%${search}%,client_name.ilike.%${search}%`
+      : undefined;
 
-    if (statusFilter) {
-      items = items.filter((i) => i.status === statusFilter);
-    }
+    fetchList({
+      page,
+      sort: { column: 'is_stopped', direction: 'asc' },
+      orFilter,
+      applyFilters: statusFilter
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        ? (q: any) => applyStatusFilter(q, statusFilter)
+        : undefined,
+    });
+  }, [fetchList, page, search, statusFilter]);
 
-    if (search) {
-      const q = search.toLowerCase();
-      items = items.filter((i) => {
-        const c = i.consultant;
-        return (
-          `${c.first_name} ${c.last_name}`.toLowerCase().includes(q) ||
-          (c.role?.toLowerCase().includes(q) ?? false) ||
-          (c.account?.name?.toLowerCase().includes(q) ?? false)
-        );
-      });
-    }
+  // Re-fetch when filters or page change — skip on initial render with no filters
+  useEffect(() => {
+    let cancelled = false;
+    if (page === 1 && !search && !statusFilter) return;
+    if (!cancelled) load();
+    return () => { cancelled = true; };
+  }, [load, page, search, statusFilter]);
 
-    return items;
-  }, [withStatus, search, statusFilter]);
-
-  const filteredData = useMemo(
-    () => filtered.map((i) => i.consultant),
-    [filtered],
-  );
-
-  // Stats
-  const stats = useMemo(() => {
-    const active = withStatus.filter((i) => !i.consultant.is_stopped);
-    const maxRevenue = active.reduce((sum, i) => sum + i.rate * 8 * 21, 0);
-    const critical = withStatus.filter((i) => i.status === 'kritiek').length;
-    const stopped = withStatus.filter((i) => i.consultant.is_stopped).length;
-
-    return {
-      activeCount: active.length,
-      maxRevenue,
-      critical,
-      stopped,
-    };
-  }, [withStatus]);
+  // Reset to page 1 when filters change
+  useEffect(() => {
+    setPage(1);
+  }, [search, statusFilter]);
 
   return (
     <>
       <div className="space-y-4">
-        {/* Stat cards */}
+        {/* Stat cards — computed from full unfiltered dataset (server-side) */}
         <div className="grid grid-cols-4 gap-4">
           <Card>
             <CardContent className="pt-4">
@@ -154,7 +185,7 @@ export function ConsultantListView({ initialData }: Props) {
               onChange={(e) => setSearch(e.target.value)}
               className="w-64"
             />
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
+            <Select value={statusFilter} onValueChange={(v) => setStatusFilter(v ?? '')}>
               <SelectTrigger>
                 {statusOptions.find((o) => o.value === statusFilter)?.label ?? 'Alle'}
               </SelectTrigger>
@@ -166,13 +197,20 @@ export function ConsultantListView({ initialData }: Props) {
                 ))}
               </SelectContent>
             </Select>
+            <div className="flex-1" />
+            <Button size="sm" onClick={() => setWizardOpen(true)}>
+              <Plus />
+              Opdracht koppelen
+            </Button>
           </div>
         </FilterBar>
 
-        {/* Data table */}
+        {/* Data table with server-side pagination */}
         <DataTable
           columns={consultantColumns}
-          data={filteredData}
+          data={data}
+          pagination={{ page, pageSize: PAGE_SIZE, total }}
+          onPageChange={setPage}
           rowActions={(row) => [
             {
               icon: Eye,
@@ -193,6 +231,14 @@ export function ConsultantListView({ initialData }: Props) {
           }}
         />
       )}
+
+      <LinkConsultantWizard
+        open={wizardOpen}
+        onClose={() => setWizardOpen(false)}
+        accounts={accounts}
+        benchConsultants={benchConsultants}
+        roles={roles}
+      />
     </>
   );
 }

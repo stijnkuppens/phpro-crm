@@ -8,7 +8,11 @@ import { contactFormSchema, type ContactFormValues } from '../types';
 import { ok, err, type ActionResult } from '@/lib/action-result';
 
 export async function createContact(values: ContactFormValues): Promise<ActionResult<{ id: string }>> {
-  await requirePermission('contacts.write');
+  try {
+    await requirePermission('contacts.write');
+  } catch {
+    return err('Onvoldoende rechten');
+  }
 
   const parsed = contactFormSchema.safeParse(values);
   if (!parsed.success) {
@@ -27,9 +31,13 @@ export async function createContact(values: ContactFormValues): Promise<ActionRe
   }
 
   // Create empty personal info record
-  await supabase
+  const { error: personalInfoError } = await supabase
     .from('contact_personal_info')
     .insert({ contact_id: data.id });
+
+  if (personalInfoError) {
+    return err(personalInfoError.message);
+  }
 
   await logAction({
     action: 'contact.created',

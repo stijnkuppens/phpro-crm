@@ -8,7 +8,11 @@ import { communicationFormSchema, type CommunicationFormValues } from '../types'
 import { ok, err, type ActionResult } from '@/lib/action-result';
 
 export async function updateCommunication(id: string, values: CommunicationFormValues): Promise<ActionResult> {
-  await requirePermission('communications.write');
+  try {
+    await requirePermission('communications.write');
+  } catch {
+    return err('Onvoldoende rechten');
+  }
 
   const parsed = communicationFormSchema.safeParse(values);
   if (!parsed.success) {

@@ -45,15 +45,15 @@ export function UserDetail({ profile: initialProfile }: Props) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>User Details</CardTitle>
+        <CardTitle>Gebruikersdetails</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
         <div>
-          <p className="text-sm font-medium text-muted-foreground">Name</p>
+          <p className="text-sm font-medium text-muted-foreground">Naam</p>
           <p>{profile.full_name || '—'}</p>
         </div>
         <div>
-          <p className="text-sm font-medium text-muted-foreground">Role</p>
+          <p className="text-sm font-medium text-muted-foreground">Rol</p>
           {currentRole === 'admin' ? (
             <Select value={profile.role} onValueChange={handleRoleChange} disabled={isPending}>
               <SelectTrigger className="w-40">
@@ -72,7 +72,7 @@ export function UserDetail({ profile: initialProfile }: Props) {
           )}
         </div>
         <div>
-          <p className="text-sm font-medium text-muted-foreground">Member since</p>
+          <p className="text-sm font-medium text-muted-foreground">Lid sinds</p>
           <p>{new Date(profile.created_at).toLocaleDateString()}</p>
         </div>
       </CardContent>

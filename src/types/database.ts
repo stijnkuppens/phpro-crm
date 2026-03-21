@@ -2655,6 +2655,51 @@ export type Database = {
         Args: Record<string, never>;
         Returns: string;
       };
+      link_bench_to_account: {
+        Args: {
+          p_bench_consultant_id: string;
+          p_account_id: string;
+          p_role: string | null;
+          p_start_date: string;
+          p_end_date: string | null;
+          p_is_indefinite: boolean;
+          p_hourly_rate: number;
+          p_notice_period_days: number;
+          p_sow_url: string | null;
+          p_notes: string | null;
+        };
+        Returns: string;
+      };
+      upsert_hourly_rates: {
+        Args: {
+          p_account_id: string;
+          p_year: number;
+          p_rates: Json;
+        };
+        Returns: void;
+      };
+      save_prognose: {
+        Args: {
+          p_year: number;
+          p_rows: Json;
+        };
+        Returns: undefined;
+      };
+      sync_account_fk_relation: {
+        Args: {
+          p_account_id: string;
+          p_table: string;
+          p_rows: Json;
+        };
+        Returns: undefined;
+      };
+      approve_indexation: {
+        Args: {
+          p_draft_id: string;
+          p_approved_by: string;
+        };
+        Returns: void;
+      };
     };
     Enums: Record<string, never>;
     CompositeTypes: Record<string, never>;

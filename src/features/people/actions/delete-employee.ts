@@ -7,7 +7,11 @@ import { revalidatePath } from 'next/cache';
 import { ok, err, type ActionResult } from '@/lib/action-result';
 
 export async function deleteEmployee(id: string): Promise<ActionResult> {
-  await requirePermission('hr.write');
+  try {
+    await requirePermission('hr.write');
+  } catch {
+    return err('Onvoldoende rechten');
+  }
   const supabase = await createServerClient();
   const { error } = await supabase.from('employees').delete().eq('id', id);
   if (error) return err(error.message);

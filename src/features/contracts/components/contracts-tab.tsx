@@ -16,7 +16,7 @@ import { SlaRatesEditModal } from './sla-rates-edit-modal';
 import { IndexationWizard } from '@/features/indexation/components/indexation-wizard';
 import type { Contract, HourlyRate, SlaRateWithTools } from '../types';
 import type { IndexationConfig } from '@/features/indexation/types';
-import type { IndexationDraftFull } from '@/features/indexation/queries/get-indexation-draft';
+import type { IndexationDraftFull } from '@/features/indexation/types';
 import type { IndexationHistoryFull } from '@/features/indexation/queries/get-indexation-history';
 
 type Props = {

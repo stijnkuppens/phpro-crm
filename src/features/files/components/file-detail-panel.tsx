@@ -8,7 +8,12 @@ import { Separator } from '@/components/ui/separator';
 import { ConfirmDialog } from '@/components/admin/confirm-dialog';
 import { FileTypeIcon } from './file-type-icon';
 import { Download, Trash2, X, Pencil, Check, ImageIcon, FolderInput } from 'lucide-react';
-import { ImageEditorDialog } from './image-editor-dialog';
+import dynamic from 'next/dynamic';
+
+const ImageEditorDialog = dynamic(
+  () => import('./image-editor-dialog').then((m) => m.ImageEditorDialog),
+  { ssr: false },
+);
 import { MoveFileDialog } from './move-file-dialog';
 import type { StorageFile } from '../types';
 

@@ -8,7 +8,11 @@ import { ok, err, type ActionResult } from '@/lib/action-result';
 import { accountRevenueFormSchema, type AccountRevenueFormValues } from '../types';
 
 export async function createAccountRevenue(accountId: string, values: AccountRevenueFormValues): Promise<ActionResult<{ id: string }>> {
-  await requirePermission('revenue.write');
+  try {
+    await requirePermission('revenue.write');
+  } catch {
+    return err('Onvoldoende rechten');
+  }
   const parsed = accountRevenueFormSchema.safeParse(values);
   if (!parsed.success) return err(parsed.error.flatten().fieldErrors);
   const supabase = await createServerClient();
@@ -20,7 +24,11 @@ export async function createAccountRevenue(accountId: string, values: AccountRev
 }
 
 export async function updateAccountRevenue(id: string, values: AccountRevenueFormValues): Promise<ActionResult> {
-  await requirePermission('revenue.write');
+  try {
+    await requirePermission('revenue.write');
+  } catch {
+    return err('Onvoldoende rechten');
+  }
   const parsed = accountRevenueFormSchema.safeParse(values);
   if (!parsed.success) return err(parsed.error.flatten().fieldErrors);
   const supabase = await createServerClient();
@@ -32,7 +40,11 @@ export async function updateAccountRevenue(id: string, values: AccountRevenueFor
 }
 
 export async function deleteAccountRevenue(id: string): Promise<ActionResult> {
-  await requirePermission('revenue.write');
+  try {
+    await requirePermission('revenue.write');
+  } catch {
+    return err('Onvoldoende rechten');
+  }
   const supabase = await createServerClient();
   const { error } = await supabase.from('account_revenue').delete().eq('id', id);
   if (error) return err(error.message);

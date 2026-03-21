@@ -1,5 +1,5 @@
 {
-  "name": "phpro-vibe-starter",
+  "name": "phpro-crm",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -8,7 +8,7 @@
     "start": "next start",
     "lint": "next lint",
     "generate:entity": "tsx scripts/generate-entity.ts",
-    "types:generate": "npx supabase gen types typescript --local > src/types/database.ts"
+    "types:generate": "task types:generate"
   },
   "keywords": [],
   "author": "",

@@ -20,8 +20,9 @@ import type { ContactWithDetails } from '@/features/contacts/types';
 import type { ActivityWithRelations } from '@/features/activities/types';
 import type { CommunicationWithDetails } from '@/features/communications/types';
 import type { IndexationConfig } from '@/features/indexation/types';
-import type { IndexationDraftFull } from '@/features/indexation/queries/get-indexation-draft';
+import type { IndexationDraftFull } from '@/features/indexation/types';
 import type { IndexationHistoryFull } from '@/features/indexation/queries/get-indexation-history';
+import type { BenchConsultantWithLanguages } from '@/features/bench/types';
 import { AvatarUpload } from '@/components/admin/avatar-upload';
 import { createBrowserClient } from '@/lib/supabase/client';
 
@@ -43,6 +44,7 @@ type Props = {
   indexationConfig?: IndexationConfig | null;
   indexationDraft?: IndexationDraftFull | null;
   indexationHistory?: IndexationHistoryFull[];
+  benchConsultants: BenchConsultantWithLanguages[];
 };
 
 const fmt = new Intl.NumberFormat('nl-BE', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
@@ -60,7 +62,7 @@ type NavItem = {
   count?: number;
 };
 
-export function AccountDetail({ account, deals, contract, hourlyRates, slaRates, consultants, accountRevenue, contacts, activities, activitiesCount, communications, communicationsCount, internalPeople, consultantRoles, indexationConfig, indexationDraft, indexationHistory }: Props) {
+export function AccountDetail({ account, deals, contract, hourlyRates, slaRates, consultants, accountRevenue, contacts, activities, activitiesCount, communications, communicationsCount, internalPeople, consultantRoles, indexationConfig, indexationDraft, indexationHistory, benchConsultants }: Props) {
   const [activeSection, setActiveSection] = useState('overview');
   const pipelineValue = deals.reduce((sum, d) => sum + (Number(d.amount) || 0), 0);
   const monthlyRevenue = consultants.reduce((sum, c) => sum + getCurrentRate(c) * 8 * 21, 0);
@@ -90,7 +92,8 @@ export function AccountDetail({ account, deals, contract, hourlyRates, slaRates,
             round={false}
             onUploaded={async (path) => {
               const supabase = createBrowserClient();
-              await supabase.from('accounts').update({ logo_url: path }).eq('id', account.id);
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              await (supabase.from('accounts') as any).update({ logo_url: path }).eq('id', account.id);
             }}
           />
 
@@ -186,10 +189,10 @@ export function AccountDetail({ account, deals, contract, hourlyRates, slaRates,
         />
       )}
       {activeSection === 'consultants' && (
-        <AccountConsultantsTab accountId={account.id} consultants={consultants} roles={consultantRoles ?? []} />
+        <AccountConsultantsTab accountId={account.id} accountName={account.name} consultants={consultants} roles={consultantRoles ?? []} benchConsultants={benchConsultants} />
       )}
       {activeSection === 'contacts' && (
-        <AccountContactsTab accountId={account.id} />
+        <AccountContactsTab accountId={account.id} initialData={contacts} initialCount={contacts.length} />
       )}
       {activeSection === 'deals' && (
         <AccountDealsTab deals={deals} />

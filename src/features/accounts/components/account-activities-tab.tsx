@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -27,6 +28,7 @@ const TYPE_CONFIG: Record<string, { label: string; className: string }> = {
 };
 
 export function AccountActivitiesTab({ accountId, initialData, initialCount }: Props) {
+  const router = useRouter();
   const [data, setData] = useState(initialData);
   const [modalOpen, setModalOpen] = useState(false);
 
@@ -73,7 +75,7 @@ export function AccountActivitiesTab({ accountId, initialData, initialCount }: P
     // A simpler approach: just close and rely on revalidation
     setModalOpen(false);
     // Trigger a soft refresh to pick up the new activity from the server
-    window.location.reload();
+    router.refresh();
   }
 
   if (data.length === 0 && !modalOpen) {
@@ -143,14 +145,15 @@ export function AccountActivitiesTab({ accountId, initialData, initialCount }: P
                 {new Date(activity.date).toLocaleDateString('nl-BE')}
               </span>
 
-              <button
-                type="button"
+              <Button
+                variant="ghost"
+                size="icon"
                 onClick={() => handleDelete(activity.id)}
-                className="shrink-0 text-muted-foreground hover:text-red-600 transition-colors"
+                className="shrink-0 h-7 w-7 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
                 title="Verwijderen"
               >
                 <Trash2 className="h-4 w-4" />
-              </button>
+              </Button>
             </div>
           );
         })}

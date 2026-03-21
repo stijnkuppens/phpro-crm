@@ -10,8 +10,12 @@ import { ok, err, type ActionResult } from '@/lib/action-result';
 export async function moveStoppedToBench(
   consultantId: string,
 ): Promise<ActionResult<{ id: string }>> {
+  try {
+    await requirePermission('bench.write');
+  } catch {
+    return err('Onvoldoende rechten');
+  }
   if (!z.string().min(1).safeParse(consultantId).success) return err('Ongeldig ID');
-  await requirePermission('bench.write');
 
   const supabase = await createServerClient();
 

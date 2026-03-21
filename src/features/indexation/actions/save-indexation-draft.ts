@@ -11,7 +11,12 @@ export async function saveIndexationDraft(
   accountId: string,
   values: IndexationDraftValues,
 ): Promise<ActionResult<{ id: string }>> {
-  const { userId } = await requirePermission('indexation.write');
+  let userId: string;
+  try {
+    ({ userId } = await requirePermission('indexation.write'));
+  } catch {
+    return err('Onvoldoende rechten');
+  }
 
   const parsed = indexationDraftSchema.safeParse(values);
   if (!parsed.success) {

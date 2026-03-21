@@ -27,7 +27,7 @@ export function DealList({ deals, page, total, onPageChange, onRefresh, loading,
       toast.success('Deal verwijderd');
       onRefresh?.();
     } else {
-      toast.error(result.error as string);
+      toast.error(typeof result.error === 'string' ? result.error : 'Er ging iets mis');
     }
   };
 

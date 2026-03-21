@@ -26,6 +26,7 @@ type Props = {
 const fmt = (n: number) =>
   new Intl.NumberFormat('nl-BE', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(n);
 
+// Named "DashboardClient" for historical reasons; this is a pure server-renderable component (no hooks/state).
 export function DashboardClient({ stats, recentActivities, upcomingTasks }: Props) {
   return (
     <div className="space-y-6">

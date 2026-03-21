@@ -1,15 +1,13 @@
 import { cache } from 'react';
 import { createServerClient } from '@/lib/supabase/server';
-import type { ActiveConsultantWithDetails } from '../types';
+import { CONSULTANT_SELECT, type ActiveConsultantWithDetails } from '../types';
 
 export const getConsultantsByAccount = cache(
   async (accountId: string): Promise<ActiveConsultantWithDetails[]> => {
     const supabase = await createServerClient();
     const { data, error } = await supabase
       .from('active_consultants')
-      .select(
-        '*, account:accounts(id, name), rate_history:consultant_rate_history(*), extensions:consultant_extensions(*), contract_attribution:consultant_contract_attributions(*)',
-      )
+      .select(CONSULTANT_SELECT)
       .eq('account_id', accountId)
       .order('is_stopped', { ascending: true })
       .order('last_name', { ascending: true });

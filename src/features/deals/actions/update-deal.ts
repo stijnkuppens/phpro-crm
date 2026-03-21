@@ -8,7 +8,11 @@ import { dealFormSchema, type DealFormValues } from '../types';
 import { ok, err, type ActionResult } from '@/lib/action-result';
 
 export async function updateDeal(id: string, values: DealFormValues): Promise<ActionResult> {
-  await requirePermission('deals.write');
+  try {
+    await requirePermission('deals.write');
+  } catch {
+    return err('Onvoldoende rechten');
+  }
 
   const parsed = dealFormSchema.safeParse(values);
   if (!parsed.success) {
@@ -16,10 +20,12 @@ export async function updateDeal(id: string, values: DealFormValues): Promise<Ac
   }
 
   const supabase = await createServerClient();
-  const { error } = await supabase
+  const { data: updatedDeal, error } = await supabase
     .from('deals')
     .update(parsed.data)
-    .eq('id', id);
+    .eq('id', id)
+    .select('account_id')
+    .single();
 
   if (error) {
     return err(error.message);
@@ -32,5 +38,8 @@ export async function updateDeal(id: string, values: DealFormValues): Promise<Ac
   });
 
   revalidatePath('/admin/deals');
+  if (updatedDeal?.account_id) {
+    revalidatePath(`/admin/accounts/${updatedDeal.account_id}`);
+  }
   return ok();
 }

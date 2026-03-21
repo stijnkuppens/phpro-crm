@@ -8,7 +8,12 @@ import { communicationFormSchema, type CommunicationFormValues } from '../types'
 import { ok, err, type ActionResult } from '@/lib/action-result';
 
 export async function createCommunication(values: CommunicationFormValues): Promise<ActionResult<{ id: string }>> {
-  const { userId } = await requirePermission('communications.write');
+  let userId: string;
+  try {
+    ({ userId } = await requirePermission('communications.write'));
+  } catch {
+    return err('Onvoldoende rechten');
+  }
 
   const parsed = communicationFormSchema.safeParse(values);
   if (!parsed.success) {

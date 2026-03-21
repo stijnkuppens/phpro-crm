@@ -19,7 +19,11 @@ export async function addAccountRelation(
   table: SubTable,
   values: Record<string, unknown>,
 ): Promise<ActionResult<{ id: string }>> {
-  await requirePermission('accounts.write');
+  try {
+    await requirePermission('accounts.write');
+  } catch {
+    return err('Onvoldoende rechten');
+  }
 
   const supabase = await createServerClient();
   // account_cc_services has no account_id column; other tables do
@@ -51,7 +55,11 @@ export async function updateAccountRelation(
   id: string,
   values: Record<string, unknown>,
 ): Promise<ActionResult> {
-  await requirePermission('accounts.write');
+  try {
+    await requirePermission('accounts.write');
+  } catch {
+    return err('Onvoldoende rechten');
+  }
 
   const supabase = await createServerClient();
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -76,7 +84,11 @@ export async function deleteAccountRelation(
   table: SubTable,
   id: string,
 ): Promise<ActionResult> {
-  await requirePermission('accounts.write');
+  try {
+    await requirePermission('accounts.write');
+  } catch {
+    return err('Onvoldoende rechten');
+  }
 
   const supabase = await createServerClient();
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -109,30 +121,22 @@ export async function syncAccountFKRelation(
   field: string,
   values: string[],
 ): Promise<ActionResult> {
-  await requirePermission('accounts.write');
-
-  const supabase = await createServerClient();
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const queryTable = (t: string) => supabase.from(t) as any;
-
-  // Delete existing
-  const { error: deleteError } = await queryTable(table)
-    .delete()
-    .eq('account_id', accountId);
-
-  if (deleteError) {
-    return err(deleteError.message);
+  try {
+    await requirePermission('accounts.write');
+  } catch {
+    return err('Onvoldoende rechten');
   }
 
-  // Insert new
-  if (values.length > 0) {
-    const rows = values.map((v) => ({ account_id: accountId, [field]: v }));
-    const { error: insertError } = await queryTable(table)
-      .insert(rows);
+  const supabase = await createServerClient();
+  const rows = values.map((v) => ({ account_id: accountId, [field]: v }));
+  const { error } = await supabase.rpc('sync_account_fk_relation', {
+    p_account_id: accountId,
+    p_table: table,
+    p_rows: rows,
+  });
 
-    if (insertError) {
-      return err(insertError.message);
-    }
+  if (error) {
+    return err(error.message);
   }
 
   await logAction({

@@ -12,7 +12,11 @@ export async function upsertSlaRates(
   year: number,
   values: SlaRateFormValues,
 ): Promise<ActionResult<void>> {
-  await requirePermission('contracts.write');
+  try {
+    await requirePermission('contracts.write');
+  } catch {
+    return err('Onvoldoende rechten');
+  }
 
   const parsed = slaRateFormSchema.safeParse(values);
   if (!parsed.success) {

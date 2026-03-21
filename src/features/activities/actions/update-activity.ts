@@ -8,7 +8,11 @@ import { activityFormSchema, type ActivityFormValues } from '../types';
 import { ok, err, type ActionResult } from '@/lib/action-result';
 
 export async function updateActivity(id: string, values: ActivityFormValues): Promise<ActionResult> {
-  await requirePermission('activities.write');
+  try {
+    await requirePermission('activities.write');
+  } catch {
+    return err('Onvoldoende rechten');
+  }
 
   const parsed = activityFormSchema.safeParse(values);
   if (!parsed.success) {

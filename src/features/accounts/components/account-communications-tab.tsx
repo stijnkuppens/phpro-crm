@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useMemo, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { useEntity } from '@/lib/hooks/use-entity';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -45,6 +46,7 @@ const FILTER_CHIPS: { value: CommType | null; label: string }[] = [
 ];
 
 export function AccountCommunicationsTab({ accountId, initialData, initialCount, contacts = [], deals = [] }: Props) {
+  const router = useRouter();
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
   const [typeFilter, setTypeFilter] = useState<CommType | null>(null);
   const [search, setSearch] = useState('');
@@ -107,8 +109,8 @@ export function AccountCommunicationsTab({ accountId, initialData, initialCount,
 
   const handleModalClose = useCallback(() => {
     setModalOpen(false);
-    window.location.reload();
-  }, []);
+    router.refresh();
+  }, [router]);
 
   return (
     <div className="space-y-4 mt-4">
@@ -125,7 +127,7 @@ export function AccountCommunicationsTab({ accountId, initialData, initialCount,
                 className="pl-9"
               />
             </div>
-            <Select value={ownerFilter} onValueChange={setOwnerFilter}>
+            <Select value={ownerFilter} onValueChange={(v) => setOwnerFilter(v ?? 'all')}>
               <SelectTrigger className="w-44">
                 {ownerFilter === 'all'
                   ? 'Alle gebruikers'

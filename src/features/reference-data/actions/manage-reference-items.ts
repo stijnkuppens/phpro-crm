@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache';
 import { createServerClient } from '@/lib/supabase/server';
 import { ok, err, type ActionResult } from '@/lib/action-result';
+import { requirePermission } from '@/lib/require-permission';
 import { refItemSchema, REF_TABLES, type RefTableKey, type RefItemFormValues } from '../types';
 
 function isValidTable(table: string): table is RefTableKey {
@@ -13,6 +14,12 @@ export async function createReferenceItem(
   table: RefTableKey,
   values: RefItemFormValues,
 ): Promise<ActionResult<{ id: string }>> {
+  try {
+    await requirePermission('reference_data.write');
+  } catch {
+    return err('Onvoldoende rechten');
+  }
+
   if (!isValidTable(table)) return err('Invalid table');
 
   const parsed = refItemSchema.safeParse(values);
@@ -36,6 +43,12 @@ export async function updateReferenceItem(
   id: string,
   values: RefItemFormValues,
 ): Promise<ActionResult> {
+  try {
+    await requirePermission('reference_data.write');
+  } catch {
+    return err('Onvoldoende rechten');
+  }
+
   if (!isValidTable(table)) return err('Invalid table');
 
   const parsed = refItemSchema.safeParse(values);
@@ -57,6 +70,12 @@ export async function deleteReferenceItem(
   table: RefTableKey,
   id: string,
 ): Promise<ActionResult> {
+  try {
+    await requirePermission('reference_data.write');
+  } catch {
+    return err('Onvoldoende rechten');
+  }
+
   if (!isValidTable(table)) return err('Invalid table');
 
   const supabase = await createServerClient();

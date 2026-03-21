@@ -6,6 +6,7 @@ const withNextIntl = createNextIntlPlugin('./src/i18n/request.ts');
 const nextConfig: NextConfig = {
   output: 'standalone',
   async headers() {
+    const isDev = process.env.NODE_ENV === 'development';
     return [
       {
         source: '/(.*)',
@@ -21,7 +22,8 @@ const nextConfig: NextConfig = {
             key: 'Content-Security-Policy',
             value: [
               "default-src 'self'",
-              "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
+              // 'unsafe-eval' is required by Next.js dev mode (fast refresh). Removed in production.
+              `script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ''}`,
               "style-src 'self' 'unsafe-inline'",
               `img-src 'self' blob: data: ${process.env.NEXT_PUBLIC_SUPABASE_URL ?? ''}`,
               "font-src 'self' fonts.gstatic.com",

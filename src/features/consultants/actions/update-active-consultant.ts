@@ -11,7 +11,11 @@ export async function updateActiveConsultant(
   id: string,
   values: ActiveConsultantFormValues,
 ): Promise<ActionResult> {
-  await requirePermission('consultants.write');
+  try {
+    await requirePermission('consultants.write');
+  } catch {
+    return err('Onvoldoende rechten');
+  }
 
   const parsed = activeConsultantFormSchema.safeParse(values);
   if (!parsed.success) {
