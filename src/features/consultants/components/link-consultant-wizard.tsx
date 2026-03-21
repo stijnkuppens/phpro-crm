@@ -111,7 +111,9 @@ export function LinkConsultantWizard({
   }, [open]);
 
   // Determine initial step based on preselections
-  const initialStep = preselectedAccountId ? (preselectedBenchConsultantId ? 3 : 2) : 1;
+  const initialStep = preselectedAccountId && preselectedBenchConsultantId ? 3
+    : preselectedAccountId ? 2
+    : 1;
   const [step, setStep] = useState(initialStep);
 
   // Reset all state when modal opens/closes
@@ -319,6 +321,11 @@ export function LinkConsultantWizard({
                 }`}
                 onClick={() => {
                   setAccountId(a.id);
+                  if (preselectedBenchConsultantId) {
+                    // Bench consultant already selected — skip step 2, go to details
+                    const bench = benchConsultants.find((c) => c.id === preselectedBenchConsultantId);
+                    if (bench) { goToStep3(bench); return; }
+                  }
                   setStep(2);
                 }}
               >
