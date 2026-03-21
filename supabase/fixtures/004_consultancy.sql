@@ -1,15 +1,16 @@
 -- ============================================================================
--- Fixtures: Consultancy data (bench, active consultants, contracts, rates)
+-- Fixtures: Consultancy data (consultants, contracts, rates)
 -- ============================================================================
 
--- ── Bench Consultants ───────────────────────────────────────────────────────
-INSERT INTO bench_consultants (id, first_name, last_name, city, priority, available_date, min_hourly_rate, max_hourly_rate, roles, technologies, description, is_archived) VALUES
-  ('b0000000-0000-0000-0000-000000000001', 'Sander', 'Vermeersch', 'Gent', 'High', '2026-03-01', 85, 110, ARRAY['Dev Senior', 'Tech Lead'], ARRAY['PHP', 'Magento', 'React', 'Docker'], 'Fullstack developer met 8 jaar ervaring.', false),
-  ('b0000000-0000-0000-0000-000000000002', 'Nathalie', 'Claeys', 'Antwerpen', 'High', '2026-02-20', 75, 95, ARRAY['Analist', 'PO'], ARRAY['Jira', 'Confluence', 'Akeneo'], 'Ervaren business analist.', false),
-  ('b0000000-0000-0000-0000-000000000003', 'Robin', 'Janssens', 'Brussel', 'Low', '2026-04-15', 65, 80, ARRAY['Dev Medior'], ARRAY['Vue.js', 'Node.js', 'MySQL'], 'Frontend developer.', false)
+-- ── Consultants (bench) ────────────────────────────────────────────────────
+INSERT INTO consultants (id, first_name, last_name, city, status, priority, available_date, min_hourly_rate, max_hourly_rate, roles, technologies, description) VALUES
+  ('b0000000-0000-0000-0000-000000000001', 'Sander', 'Vermeersch', 'Gent', 'bench', 'High', '2026-03-01', 85, 110, ARRAY['Dev Senior', 'Tech Lead'], ARRAY['PHP', 'Magento', 'React', 'Docker'], 'Fullstack developer met 8 jaar ervaring.'),
+  ('b0000000-0000-0000-0000-000000000002', 'Nathalie', 'Claeys', 'Antwerpen', 'bench', 'High', '2026-02-20', 75, 95, ARRAY['Analist', 'PO'], ARRAY['Jira', 'Confluence', 'Akeneo'], 'Ervaren business analist.'),
+  ('b0000000-0000-0000-0000-000000000003', 'Robin', 'Janssens', 'Brussel', 'bench', 'Low', '2026-04-15', 65, 80, ARRAY['Dev Medior'], ARRAY['Vue.js', 'Node.js', 'MySQL'], 'Frontend developer.')
 ON CONFLICT (id) DO NOTHING;
 
-INSERT INTO bench_consultant_languages (bench_consultant_id, language, level) VALUES
+-- ── Consultant Languages ───────────────────────────────────────────────────
+INSERT INTO consultant_languages (consultant_id, language, level) VALUES
   ('b0000000-0000-0000-0000-000000000001', 'Nederlands', 'Moedertaal'),
   ('b0000000-0000-0000-0000-000000000001', 'Engels', 'Vloeiend'),
   ('b0000000-0000-0000-0000-000000000002', 'Nederlands', 'Moedertaal'),
@@ -17,15 +18,15 @@ INSERT INTO bench_consultant_languages (bench_consultant_id, language, level) VA
   ('b0000000-0000-0000-0000-000000000003', 'Nederlands', 'Moedertaal')
 ON CONFLICT DO NOTHING;
 
--- ── Active Consultants ──────────────────────────────────────────────────────
-INSERT INTO active_consultants (id, account_id, first_name, last_name, role, city, is_active, start_date, end_date, is_indefinite, hourly_rate, notice_period_days, notes, is_stopped) VALUES
-  ('c5000000-0000-0000-0000-000000000001', 'a0000000-0000-0000-0000-000000000001', 'Kevin', 'Martens', 'Dev Senior', 'Brussel', true, '2023-06-01', '2026-05-31', false, 122, 30, 'Kevin is een sterke developer.', false),
-  ('c5000000-0000-0000-0000-000000000002', 'a0000000-0000-0000-0000-000000000001', 'Elien', 'De Wolf', 'Analist', 'Antwerpen', true, '2024-09-01', null, true, 108, 14, '', false),
-  ('c5000000-0000-0000-0000-000000000003', 'a0000000-0000-0000-0000-000000000003', 'Yasmine', 'El Amrani', 'Dev Medior', 'Antwerpen', true, '2024-03-01', '2025-12-31', false, 98, 30, '', false)
+-- ── Consultants (actief) ───────────────────────────────────────────────────
+INSERT INTO consultants (id, first_name, last_name, city, status, account_id, role, start_date, end_date, is_indefinite, hourly_rate, notice_period_days, notes) VALUES
+  ('c5000000-0000-0000-0000-000000000001', 'Kevin', 'Martens', 'Brussel', 'actief', 'a0000000-0000-0000-0000-000000000001', 'Dev Senior', '2023-06-01', '2026-05-31', false, 122, 30, 'Kevin is een sterke developer.'),
+  ('c5000000-0000-0000-0000-000000000002', 'Elien', 'De Wolf', 'Antwerpen', 'actief', 'a0000000-0000-0000-0000-000000000001', 'Analist', '2024-09-01', null, true, 108, 14, ''),
+  ('c5000000-0000-0000-0000-000000000003', 'Yasmine', 'El Amrani', 'Antwerpen', 'actief', 'a0000000-0000-0000-0000-000000000003', 'Dev Medior', '2024-03-01', '2025-12-31', false, 98, 30, '')
 ON CONFLICT (id) DO NOTHING;
 
 -- ── Rate History ────────────────────────────────────────────────────────────
-INSERT INTO consultant_rate_history (active_consultant_id, date, rate, reason) VALUES
+INSERT INTO consultant_rate_history (consultant_id, date, rate, reason) VALUES
   ('c5000000-0000-0000-0000-000000000001', '2023-06-01', 108, 'Startdatum'),
   ('c5000000-0000-0000-0000-000000000001', '2024-01-01', 115, 'Jaarlijkse indexering'),
   ('c5000000-0000-0000-0000-000000000001', '2025-01-01', 122, 'Jaarlijkse indexering'),
