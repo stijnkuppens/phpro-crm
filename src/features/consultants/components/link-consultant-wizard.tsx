@@ -9,7 +9,6 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
-import { Card, CardContent } from '@/components/ui/card';
 import {
   Select,
   SelectContent,
@@ -161,16 +160,28 @@ export function LinkConsultantWizard({
   const selectedAccount = accounts.find((a) => a.id === accountId);
   const selectedBench = benchConsultants.find((c) => c.id === benchId);
 
-  // Filtered lists
+  // Step 1 filters
+  const [accountTypeFilter, setAccountTypeFilter] = useState('');
+  const accountTypes = useMemo(() => {
+    const types = new Set(accounts.map((a) => a.type).filter(Boolean));
+    return Array.from(types) as string[];
+  }, [accounts]);
+
   const filteredAccounts = useMemo(() => {
-    if (!accountSearch) return accounts;
-    const q = accountSearch.toLowerCase();
-    return accounts.filter(
-      (a) =>
-        a.name.toLowerCase().includes(q) ||
-        (a.domain?.toLowerCase().includes(q) ?? false),
-    );
-  }, [accounts, accountSearch]);
+    let result = accounts;
+    if (accountTypeFilter) {
+      result = result.filter((a) => a.type === accountTypeFilter);
+    }
+    if (accountSearch) {
+      const q = accountSearch.toLowerCase();
+      result = result.filter(
+        (a) =>
+          a.name.toLowerCase().includes(q) ||
+          (a.domain?.toLowerCase().includes(q) ?? false),
+      );
+    }
+    return result;
+  }, [accounts, accountSearch, accountTypeFilter]);
 
   const filteredBench = useMemo(() => {
     if (!benchSearch) return benchConsultants;
@@ -270,40 +281,57 @@ export function LinkConsultantWizard({
       {/* Step 1: Account selection */}
       {step === 1 && (
         <div className="space-y-4">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Zoek account..."
-              value={accountSearch}
-              onChange={(e) => setAccountSearch(e.target.value)}
-              className="pl-9"
-              autoFocus
-            />
+          <div className="flex items-center gap-2">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Zoek account..."
+                value={accountSearch}
+                onChange={(e) => setAccountSearch(e.target.value)}
+                className="pl-9"
+                autoFocus
+              />
+            </div>
+            <div className="flex gap-1">
+              {accountTypes.map((t) => (
+                <button
+                  key={t}
+                  type="button"
+                  onClick={() => setAccountTypeFilter(accountTypeFilter === t ? '' : t)}
+                  className={`rounded-full px-2.5 py-1 text-xs font-medium transition-colors ${
+                    accountTypeFilter === t
+                      ? typeColors[t] ?? 'bg-gray-200 text-gray-800'
+                      : 'bg-muted text-muted-foreground hover:bg-muted/80'
+                  }`}
+                >
+                  {t}
+                </button>
+              ))}
+            </div>
           </div>
-          <div className="max-h-80 overflow-y-auto space-y-2">
+          <div className="max-h-80 overflow-y-auto divide-y">
             {filteredAccounts.map((a) => (
-              <Card
+              <button
                 key={a.id}
-                className={`cursor-pointer transition-colors ${
-                  accountId === a.id ? 'ring-2 ring-primary' : 'hover:bg-muted/50'
+                type="button"
+                className={`flex w-full items-center justify-between px-3 py-2 text-left transition-colors ${
+                  accountId === a.id ? 'bg-primary/5' : 'hover:bg-muted/50'
                 }`}
                 onClick={() => {
                   setAccountId(a.id);
                   setStep(2);
                 }}
               >
-                <CardContent className="p-3 flex items-center justify-between">
-                  <div>
-                    <div className="font-medium text-sm">{a.name}</div>
-                    <div className="text-xs text-muted-foreground">{a.domain ?? ''}</div>
-                  </div>
-                  {a.type && (
-                    <Badge className={typeColors[a.type] ?? 'bg-gray-100 text-gray-700'}>
-                      {a.type}
-                    </Badge>
-                  )}
-                </CardContent>
-              </Card>
+                <div className="min-w-0">
+                  <div className="truncate text-sm font-medium">{a.name}</div>
+                  {a.domain && <div className="truncate text-xs text-muted-foreground">{a.domain}</div>}
+                </div>
+                {a.type && (
+                  <Badge className={`ml-2 shrink-0 ${typeColors[a.type] ?? 'bg-gray-100 text-gray-700'}`}>
+                    {a.type}
+                  </Badge>
+                )}
+              </button>
             ))}
             {filteredAccounts.length === 0 && (
               <p className="text-center text-muted-foreground py-4">Geen accounts gevonden</p>
@@ -340,48 +368,44 @@ export function LinkConsultantWizard({
               autoFocus
             />
           </div>
-          <div className="max-h-72 overflow-y-auto space-y-2">
+          <div className="max-h-72 overflow-y-auto divide-y">
             {benchLoading ? (
               <p className="text-center text-muted-foreground py-4">Laden...</p>
             ) : (
               <>
                 {filteredBench.map((c) => (
-                  <Card
+                  <button
                     key={c.id}
-                    className={`cursor-pointer transition-colors ${
-                      benchId === c.id ? 'ring-2 ring-primary' : 'hover:bg-muted/50'
+                    type="button"
+                    className={`flex w-full items-center gap-3 px-3 py-2 text-left transition-colors ${
+                      benchId === c.id ? 'bg-primary/5' : 'hover:bg-muted/50'
                     }`}
                     onClick={() => {
                       setBenchId(c.id);
                       goToStep3(c);
                     }}
                   >
-                    <CardContent className="p-3 flex items-center gap-3">
-                      {/* Avatar initials */}
-                      <div className="h-9 w-9 rounded-full bg-primary/10 text-primary flex items-center justify-center text-sm font-medium shrink-0">
-                        {c.first_name[0]}{c.last_name[0]}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="font-medium text-sm">{c.first_name} {c.last_name}</div>
-                        <div className="text-xs text-muted-foreground">{c.city}</div>
+                    <div className="h-8 w-8 rounded-full bg-primary/10 text-primary flex items-center justify-center text-xs font-medium shrink-0">
+                      {c.first_name[0]}{c.last_name[0]}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="text-sm font-medium">{c.first_name} {c.last_name}</div>
+                      <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                        {c.city && <span>{c.city}</span>}
                         {c.roles && c.roles.length > 0 && (
-                          <div className="flex flex-wrap gap-1 mt-1">
-                            {c.roles.map((r) => (
-                              <Badge key={r} variant="secondary" className="text-[10px]">{r}</Badge>
-                            ))}
-                          </div>
+                          <span>{c.roles.slice(0, 2).join(', ')}</span>
                         )}
                       </div>
-                      <div className="text-right shrink-0">
-                        {c.min_hourly_rate && c.max_hourly_rate && (
-                          <div className="text-xs text-muted-foreground">
-                            €{c.min_hourly_rate} - €{c.max_hourly_rate}/u
-                          </div>
-                        )}
-                        <Badge className={priorityColors[c.priority] ?? ''}>{c.priority}</Badge>
-                      </div>
-                    </CardContent>
-                  </Card>
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0">
+                      {c.min_hourly_rate && c.max_hourly_rate && (
+                        <span className="text-xs text-muted-foreground">
+                          €{c.min_hourly_rate}–€{c.max_hourly_rate}/u
+                        </span>
+                      )}
+                      <Badge className={`text-[10px] ${priorityColors[c.priority] ?? ''}`}>{c.priority}</Badge>
+                    </div>
+                  </button>
                 ))}
                 {filteredBench.length === 0 && (
                   <p className="text-center text-muted-foreground py-4">Geen bench consultants gevonden</p>
