@@ -2,9 +2,10 @@
 
 import { useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Eye } from 'lucide-react';
+import { Eye, Plus } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
 import {
   Select,
   SelectContent,
@@ -18,12 +19,18 @@ import {
   getContractStatus,
   getCurrentRate,
   type ActiveConsultantWithDetails,
-  type ContractStatus,
 } from '../types';
 import { ConsultantDetailModal } from './consultant-detail-modal';
+import { LinkConsultantWizard } from './link-consultant-wizard';
+import type { BenchConsultantWithLanguages } from '@/features/bench/types';
+
+type Account = { id: string; name: string; domain: string | null; type: string | null; city: string | null };
 
 type Props = {
   initialData: ActiveConsultantWithDetails[];
+  accounts: Account[];
+  benchConsultants: BenchConsultantWithLanguages[];
+  roles: { value: string; label: string }[];
 };
 
 const statusOptions: { value: string; label: string }[] = [
@@ -42,11 +49,12 @@ const eurFmt = new Intl.NumberFormat('nl-BE', {
   maximumFractionDigits: 0,
 });
 
-export function ConsultantListView({ initialData }: Props) {
+export function ConsultantListView({ initialData, accounts, benchConsultants, roles }: Props) {
   const router = useRouter();
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
   const [selected, setSelected] = useState<ActiveConsultantWithDetails | null>(null);
+  const [wizardOpen, setWizardOpen] = useState(false);
 
   // Compute statuses once
   const withStatus = useMemo(
@@ -166,6 +174,11 @@ export function ConsultantListView({ initialData }: Props) {
                 ))}
               </SelectContent>
             </Select>
+            <div className="flex-1" />
+            <Button size="sm" onClick={() => setWizardOpen(true)}>
+              <Plus />
+              Opdracht koppelen
+            </Button>
           </div>
         </FilterBar>
 
@@ -193,6 +206,14 @@ export function ConsultantListView({ initialData }: Props) {
           }}
         />
       )}
+
+      <LinkConsultantWizard
+        open={wizardOpen}
+        onClose={() => setWizardOpen(false)}
+        accounts={accounts}
+        benchConsultants={benchConsultants}
+        roles={roles}
+      />
     </>
   );
 }
