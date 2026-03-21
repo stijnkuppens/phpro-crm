@@ -88,7 +88,7 @@ export function ContactList({ initialData, initialCount, accounts = [] }: Contac
       toast.success('Contact verwijderd');
       load();
     } else {
-      toast.error(result.error as string);
+      toast.error(typeof result.error === 'string' ? result.error : 'Er ging iets mis');
     }
   };
 

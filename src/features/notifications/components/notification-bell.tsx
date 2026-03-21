@@ -27,6 +27,7 @@ export function NotificationBell() {
   // Initial fetch
   useEffect(() => {
     if (!user) return;
+    let cancelled = false;
     const supabase = createBrowserClient();
     supabase
       .from('notifications')
@@ -35,11 +36,13 @@ export function NotificationBell() {
       .order('created_at', { ascending: false })
       .limit(20)
       .then(({ data }) => {
+        if (cancelled) return;
         if (data) {
           setNotifications(data as Notification[]);
           setUnreadCount(data.filter((n) => !n.is_read).length);
         }
       });
+    return () => { cancelled = true; };
   }, [user]);
 
   // Realtime subscription with user_id filter

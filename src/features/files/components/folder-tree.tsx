@@ -67,13 +67,16 @@ function TreeNode({ name, path, depth, currentPath, onNavigate, onSelectFile, on
   // Auto-fetch file count on mount (even when collapsed)
   useEffect(() => {
     if (!loaded) {
+      let cancelled = false;
       const supabase = createBrowserClient();
       supabase.storage.from('documents').list(path).then(({ data }) => {
+        if (cancelled) return;
         const result = parseListing(data as StorageFile[] | null);
         setChildren(result.folders);
         setFiles(result.files);
         setLoaded(true);
       });
+      return () => { cancelled = true; };
     }
   }, [path, loaded]);
 
@@ -218,13 +221,16 @@ export function FolderTree({ currentPath, onNavigate, onSelectFile, onRenameFold
   const isRootActive = currentPath === '';
 
   useEffect(() => {
+    let cancelled = false;
     const supabase = createBrowserClient();
     supabase.storage.from('documents').list('').then(({ data }) => {
+      if (cancelled) return;
       const result = parseListing(data as StorageFile[] | null);
       setRootChildren(result.folders);
       setRootFiles(result.files);
       setRootLoaded(true);
     });
+    return () => { cancelled = true; };
   }, []);
 
   async function handleRootExpand() {

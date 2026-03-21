@@ -27,9 +27,13 @@ export async function createContact(values: ContactFormValues): Promise<ActionRe
   }
 
   // Create empty personal info record
-  await supabase
+  const { error: personalInfoError } = await supabase
     .from('contact_personal_info')
     .insert({ contact_id: data.id });
+
+  if (personalInfoError) {
+    return err(personalInfoError.message);
+  }
 
   await logAction({
     action: 'contact.created',
