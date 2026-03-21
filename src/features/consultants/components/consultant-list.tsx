@@ -6,7 +6,7 @@ import {
   Eye,
   Plus,
   Pencil,
-  Link,
+  Link2,
   Archive,
   CalendarPlus,
   DollarSign,
@@ -27,6 +27,8 @@ import {
   CONSULTANT_SELECT,
 } from '../types';
 import { ConsultantDetailModal } from './consultant-detail-modal';
+import { BenchFormModal } from './bench-form-modal';
+import { LinkConsultantWizard } from './link-consultant-wizard';
 import { StopConsultantModal } from './stop-consultant-modal';
 import { ExtendConsultantModal } from './extend-consultant-modal';
 import { RateChangeModal } from './rate-change-modal';
@@ -40,10 +42,13 @@ type Stats = {
   stoppedCount: number;
 };
 
+type Account = { id: string; name: string; domain: string | null; type: string | null; city: string | null };
+
 type Props = {
   initialData: ConsultantWithDetails[];
   initialCount: number;
   stats: Stats;
+  accounts: Account[];
   roles: { value: string; label: string }[];
 };
 
@@ -61,15 +66,18 @@ const statusPills: { value: ConsultantStatus; label: string }[] = [
   { value: 'stopgezet', label: 'Stopgezet' },
 ];
 
-export function ConsultantListView({ initialData, initialCount, stats, roles }: Props) {
+export function ConsultantListView({ initialData, initialCount, stats, accounts, roles }: Props) {
   const router = useRouter();
   const [search, setSearch] = useState('');
   const [selectedStatuses, setSelectedStatuses] = useState<ConsultantStatus[]>(['bench', 'actief']);
   const [page, setPage] = useState(1);
   const [selected, setSelected] = useState<ConsultantWithDetails | null>(null);
+  const [editTarget, setEditTarget] = useState<ConsultantWithDetails | null>(null);
+  const [wizardTarget, setWizardTarget] = useState<ConsultantWithDetails | null>(null);
   const [stopTarget, setStopTarget] = useState<ConsultantWithDetails | null>(null);
   const [extendTarget, setExtendTarget] = useState<ConsultantWithDetails | null>(null);
   const [rateTarget, setRateTarget] = useState<ConsultantWithDetails | null>(null);
+  const [showNewBench, setShowNewBench] = useState(false);
 
   const { data, total, fetchList } = useEntity<ConsultantWithDetails>({
     table: 'consultants',
@@ -142,14 +150,14 @@ export function ConsultantListView({ initialData, initialCount, stats, roles }: 
     switch (row.status) {
       case 'bench':
         return [
-          { icon: Link, label: 'Koppel', onClick: () => router.push(`/admin/consultants/${row.id}`) },
-          { icon: Pencil, label: 'Bewerk', onClick: () => router.push(`/admin/consultants/${row.id}`) },
+          { icon: Link2, label: 'Koppel', onClick: () => setWizardTarget(row) },
+          { icon: Pencil, label: 'Bewerk', onClick: () => setEditTarget(row) },
           { icon: Archive, label: 'Archiveer', onClick: () => handleArchive(row), variant: 'destructive' as const, confirm: { title: 'Consultant archiveren?', description: 'Deze consultant wordt gearchiveerd en is niet meer zichtbaar in de lijst.' } },
         ];
       case 'actief':
         return [
           { icon: Eye, label: 'Bekijken', onClick: () => setSelected(row) },
-          { icon: Pencil, label: 'Bewerk', onClick: () => router.push(`/admin/consultants/${row.id}`) },
+          { icon: Pencil, label: 'Bewerk', onClick: () => setSelected(row) },
           { icon: CalendarPlus, label: 'Verlengen', onClick: () => setExtendTarget(row) },
           { icon: DollarSign, label: 'Tariefwijziging', onClick: () => setRateTarget(row) },
           { icon: Square, label: 'Stopzetten', onClick: () => setStopTarget(row), variant: 'destructive' as const },
@@ -236,7 +244,7 @@ export function ConsultantListView({ initialData, initialCount, stats, roles }: 
               })}
             </div>
             <div className="flex-1" />
-            <Button size="sm" onClick={() => { /* placeholder: SP5 will add BenchFormModal */ }}>
+            <Button size="sm" onClick={() => setShowNewBench(true)}>
               <Plus />
               Nieuwe consultant
             </Button>
@@ -288,6 +296,38 @@ export function ConsultantListView({ initialData, initialCount, stats, roles }: 
           open={!!rateTarget}
           onClose={() => setRateTarget(null)}
           onSuccess={handleRefresh}
+        />
+      )}
+
+      <BenchFormModal
+        open={showNewBench}
+        onClose={() => {
+          setShowNewBench(false);
+          handleRefresh();
+        }}
+      />
+
+      {editTarget && (
+        <BenchFormModal
+          open={!!editTarget}
+          onClose={() => {
+            setEditTarget(null);
+            handleRefresh();
+          }}
+          consultant={editTarget}
+        />
+      )}
+
+      {wizardTarget && (
+        <LinkConsultantWizard
+          open={!!wizardTarget}
+          onClose={() => {
+            setWizardTarget(null);
+            handleRefresh();
+          }}
+          accounts={accounts}
+          roles={roles}
+          preselectedBenchConsultantId={wizardTarget.id}
         />
       )}
     </>

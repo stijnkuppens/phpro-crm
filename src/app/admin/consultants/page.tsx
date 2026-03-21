@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { PageHeader } from '@/components/admin/page-header';
 import { getConsultants } from '@/features/consultants/queries/get-consultants';
+import { getAccountNames } from '@/features/accounts/queries/get-account-names';
 import { getReferenceOptions } from '@/features/reference-data/queries/get-reference-options';
 import { ConsultantListView } from '@/features/consultants/components/consultant-list';
 import { getCurrentRate } from '@/features/consultants/types';
@@ -10,8 +11,9 @@ export const metadata: Metadata = { title: 'Consultants' };
 const PAGE_SIZE = 25;
 
 export default async function ConsultantsPage() {
-  const [{ data: firstPage, count }, rolesRaw, statsData] = await Promise.all([
+  const [{ data: firstPage, count }, accountOptions, rolesRaw, statsData] = await Promise.all([
     getConsultants({ pageSize: PAGE_SIZE }),
+    getAccountNames(),
     getReferenceOptions('ref_consultant_roles'),
     // Lightweight call for stats — fetch all non-archived consultants across all statuses
     getConsultants({ pageSize: 9999, status: ['bench', 'actief', 'stopgezet'] }),
@@ -30,6 +32,13 @@ export default async function ConsultantsPage() {
   };
 
   const roles = rolesRaw.map((r) => ({ value: r.name, label: r.name }));
+  const accounts = accountOptions.map((a) => ({
+    id: a.id,
+    name: a.name,
+    domain: a.domain,
+    type: a.type,
+    city: null as string | null,
+  }));
 
   return (
     <div className="space-y-6">
@@ -45,6 +54,7 @@ export default async function ConsultantsPage() {
         initialCount={count}
         stats={stats}
         roles={roles}
+        accounts={accounts}
       />
     </div>
   );
