@@ -28,7 +28,15 @@
       "mcp__plugin_playwright_playwright__browser_navigate",
       "mcp__plugin_playwright_playwright__browser_evaluate",
       "Bash(npm install:*)",
-      "Bash(ls node_modules/date-fns/locale/nl*)"
+      "Bash(ls node_modules/date-fns/locale/nl*)",
+      "Bash(wc -l /Users/stijnkuppens/phpro/ai-projects/phpro_crm/demo_crm/src/*.tsx /Users/stijnkuppens/phpro/ai-projects/phpro_crm/demo_crm/src/*.ts)",
+      "Bash(git commit:*)",
+      "Bash(task types:generate)",
+      "Bash(source .env)",
+      "Bash(npx supabase:*)",
+      "Bash(grep -r Database[ /Users/stijnkuppens/phpro/ai-projects/phpro_crm/src/lib/supabase/)",
+      "Bash(git checkout:*)",
+      "Bash(git merge:*)"
     ]
   }
 }
