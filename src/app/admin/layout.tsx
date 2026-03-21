@@ -15,7 +15,7 @@ export default function AdminLayout({
         <AdminSidebar />
         <div className="flex flex-1 flex-col">
           <AdminTopbar />
-          <main className="flex-1 p-6">
+          <main className="flex-1 bg-muted p-6">
             <ErrorBoundary>
               <PageTransition>{children}</PageTransition>
             </ErrorBoundary>

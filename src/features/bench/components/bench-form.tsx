@@ -13,6 +13,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { Save } from 'lucide-react';
 import { benchConsultantFormSchema, type BenchConsultantFormValues, type LanguageFormValues } from '../types';
 import { createBenchConsultant } from '../actions/create-bench-consultant';
 import { updateBenchConsultant } from '../actions/update-bench-consultant';
@@ -175,6 +176,7 @@ export function BenchForm({ defaultValues, defaultLanguages, onSuccess }: Props)
       </div>
 
       <Button type="submit" disabled={loading} className="w-full">
+        <Save />
         {loading ? 'Opslaan...' : isEdit ? 'Bijwerken' : 'Aanmaken'}
       </Button>
     </form>

@@ -14,6 +14,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { Save } from 'lucide-react';
 import { dealFormSchema, type DealFormValues } from '../types';
 import { createDeal } from '../actions/create-deal';
 import { updateDeal } from '../actions/update-deal';
@@ -169,6 +170,7 @@ export function DealForm({ defaultValues, onSuccess, onCancel }: Props) {
       </div>
       <div className="flex gap-2">
         <Button type="submit" disabled={loading}>
+          <Save />
           {loading ? 'Opslaan...' : isEdit ? 'Bijwerken' : 'Aanmaken'}
         </Button>
         {onCancel && (

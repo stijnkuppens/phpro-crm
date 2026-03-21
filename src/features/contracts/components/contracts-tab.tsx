@@ -1,175 +1,163 @@
 'use client';
 
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { Button } from '@/components/ui/button';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
+import { Pencil, TrendingUp, ExternalLink } from 'lucide-react';
+import { ContractsSummaryCards } from './contracts-summary-cards';
+import { HourlyRatesSubTab } from './hourly-rates-sub-tab';
+import { SlaRatesSubTab } from './sla-rates-sub-tab';
+import { IndexationSubTab } from './indexation-sub-tab';
+import { ContractEditModal } from './contract-edit-modal';
+import { HourlyRatesEditModal } from './hourly-rates-edit-modal';
+import { SlaRatesEditModal } from './sla-rates-edit-modal';
+import { IndexationWizard } from '@/features/indexation/components/indexation-wizard';
 import type { Contract, HourlyRate, SlaRateWithTools } from '../types';
+import type { IndexationConfig } from '@/features/indexation/types';
+import type { IndexationDraftFull } from '@/features/indexation/queries/get-indexation-draft';
+import type { IndexationHistoryFull } from '@/features/indexation/queries/get-indexation-history';
 
 type Props = {
+  accountId: string;
   contract: Contract | null;
   hourlyRates: HourlyRate[];
   slaRates: SlaRateWithTools[];
+  indexationConfig: IndexationConfig | null;
+  indexationDraft: IndexationDraftFull | null;
+  indexationHistory: IndexationHistoryFull[];
 };
 
-const fmt = (n: number) =>
-  new Intl.NumberFormat('nl-BE', { style: 'currency', currency: 'EUR' }).format(n);
+export function ContractsTab({
+  accountId,
+  contract,
+  hourlyRates,
+  slaRates,
+  indexationConfig,
+  indexationDraft,
+  indexationHistory,
+}: Props) {
+  const router = useRouter();
+  const [contractEditOpen, setContractEditOpen] = useState(false);
+  const [wizardOpen, setWizardOpen] = useState(false);
+  const [editingHourlyYear, setEditingHourlyYear] = useState<number | null>(null);
+  const [editingSlaYear, setEditingSlaYear] = useState<number | null>(null);
 
-export function ContractsTab({ contract, hourlyRates, slaRates }: Props) {
-  // Group hourly rates by year
-  const ratesByYear = hourlyRates.reduce<Record<number, HourlyRate[]>>((acc, rate) => {
-    const year = rate.year;
-    if (!acc[year]) acc[year] = [];
-    acc[year].push(rate);
-    return acc;
-  }, {});
-
-  const years = Object.keys(ratesByYear).map(Number).sort((a, b) => b - a);
+  function handleSaved() {
+    setContractEditOpen(false);
+    setEditingHourlyYear(null);
+    setEditingSlaYear(null);
+    setWizardOpen(false);
+    router.refresh();
+  }
 
   return (
-    <div className="space-y-6">
-      {/* Framework Contract */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">Raamcontract</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {contract?.has_framework_contract ? (
-            <div className="grid grid-cols-2 gap-4 text-sm">
-              <div>
-                <span className="text-muted-foreground">Start:</span>{' '}
-                {contract.framework_start ? new Date(contract.framework_start).toLocaleDateString('nl-BE') : '-'}
-              </div>
-              <div>
-                <span className="text-muted-foreground">Einde:</span>{' '}
-                {contract.framework_indefinite ? 'Onbepaald' : contract.framework_end ? new Date(contract.framework_end).toLocaleDateString('nl-BE') : '-'}
-              </div>
-              {contract.framework_pdf_url && (
-                <div className="col-span-2">
-                  <span className="text-muted-foreground">Document:</span> {contract.framework_pdf_url}
-                </div>
-              )}
-            </div>
-          ) : (
-            <p className="text-sm text-muted-foreground">Geen raamcontract.</p>
-          )}
-        </CardContent>
-      </Card>
+    <div className="space-y-6 mt-4">
+      {/* Header with action buttons */}
+      <div className="flex items-center justify-between">
+        <h2 className="text-base font-semibold">Contracten & Tarieven</h2>
+        <div className="flex gap-2">
+          <Button variant="outline" size="sm" onClick={() => setWizardOpen(true)}>
+            <TrendingUp className="h-4 w-4 mr-1.5" />
+            Indexering simuleren
+          </Button>
+          <Button variant="outline" size="sm" onClick={() => setContractEditOpen(true)}>
+            <Pencil className="h-4 w-4 mr-1.5" />
+            Bewerken
+          </Button>
+        </div>
+      </div>
 
-      {/* Service Contract */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">Dienstencontract (SLA)</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {contract?.has_service_contract ? (
-            <div className="grid grid-cols-2 gap-4 text-sm">
-              <div>
-                <span className="text-muted-foreground">Start:</span>{' '}
-                {contract.service_start ? new Date(contract.service_start).toLocaleDateString('nl-BE') : '-'}
-              </div>
-              <div>
-                <span className="text-muted-foreground">Einde:</span>{' '}
-                {contract.service_indefinite ? 'Onbepaald' : contract.service_end ? new Date(contract.service_end).toLocaleDateString('nl-BE') : '-'}
-              </div>
-              {contract.service_pdf_url && (
-                <div className="col-span-2">
-                  <span className="text-muted-foreground">Document:</span> {contract.service_pdf_url}
-                </div>
-              )}
-            </div>
-          ) : (
-            <p className="text-sm text-muted-foreground">Geen dienstencontract.</p>
-          )}
-        </CardContent>
-      </Card>
+      {/* Summary cards */}
+      <ContractsSummaryCards contract={contract} indexationConfig={indexationConfig} />
 
-      {/* Purchase Orders */}
+      {/* Bestelbonnen link */}
       {contract?.purchase_orders_url && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">Bestelbonnen</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm">{contract.purchase_orders_url}</p>
-          </CardContent>
-        </Card>
+        <div className="flex items-center gap-2 text-sm">
+          <ExternalLink className="h-4 w-4 text-muted-foreground" />
+          <span className="text-muted-foreground">Bestelbonnen (Confluence):</span>
+          <a
+            href={contract.purchase_orders_url}
+            target="_blank"
+            rel="noopener"
+            className="text-primary-action hover:underline"
+          >
+            {contract.purchase_orders_url}
+          </a>
+        </div>
       )}
 
-      {/* Hourly Rates by Year */}
-      {years.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">Uurtarieven</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {years.map((year) => (
-              <div key={year}>
-                <h4 className="text-sm font-medium mb-2">{year}</h4>
-                <div className="border rounded-md">
-                  <table className="w-full text-sm">
-                    <thead>
-                      <tr className="border-b bg-muted/50">
-                        <th className="text-left p-2">Rol</th>
-                        <th className="text-right p-2">Tarief</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {ratesByYear[year].sort((a, b) => a.role.localeCompare(b.role)).map((r) => (
-                        <tr key={r.id} className="border-b last:border-0">
-                          <td className="p-2">{r.role}</td>
-                          <td className="p-2 text-right">{fmt(Number(r.rate))}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            ))}
-          </CardContent>
-        </Card>
+      {/* Sub-tabs */}
+      <Tabs defaultValue="uurtarieven">
+        <TabsList>
+          <TabsTrigger value="uurtarieven">Uurtarieven</TabsTrigger>
+          <TabsTrigger value="sla">SLA Tarieven</TabsTrigger>
+          <TabsTrigger value="indexering" className="flex items-center gap-1.5">
+            Indexering
+            <Badge className="bg-primary/15 text-primary-action border-0 text-[10px] h-4 px-1.5">{indexationHistory.length}</Badge>
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="uurtarieven">
+          <HourlyRatesSubTab hourlyRates={hourlyRates} onEditYear={setEditingHourlyYear} />
+        </TabsContent>
+
+        <TabsContent value="sla">
+          <SlaRatesSubTab slaRates={slaRates} hasServiceContract={contract?.has_service_contract ?? false} onEditYear={setEditingSlaYear} />
+        </TabsContent>
+
+        <TabsContent value="indexering">
+          <IndexationSubTab
+            accountId={accountId}
+            indexationDraft={indexationDraft}
+            indexationHistory={indexationHistory}
+            onSimulate={() => setWizardOpen(true)}
+            onApproved={handleSaved}
+          />
+        </TabsContent>
+      </Tabs>
+
+      {/* Modals */}
+      {contractEditOpen && (
+        <ContractEditModal
+          accountId={accountId}
+          contract={contract}
+          indexationConfig={indexationConfig}
+          open={contractEditOpen}
+          onClose={() => setContractEditOpen(false)}
+          onSaved={handleSaved}
+        />
       )}
 
-      {/* SLA Rates by Year */}
-      {slaRates.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">SLA Tarieven</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {slaRates
-              .sort((a, b) => b.year - a.year)
-              .map((sla) => (
-                <div key={sla.id}>
-                  <h4 className="text-sm font-medium mb-2">{sla.year}</h4>
-                  <div className="text-sm space-y-1">
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Vast maandbedrag</span>
-                      <span>{fmt(Number(sla.fixed_monthly_rate))}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Support uurtarief</span>
-                      <span>{fmt(Number(sla.support_hourly_rate))}</span>
-                    </div>
-                    {sla.tools && sla.tools.length > 0 && (
-                      <div className="mt-2">
-                        <span className="text-muted-foreground">Tools:</span>
-                        <div className="flex flex-wrap gap-1 mt-1">
-                          {sla.tools.map((t) => (
-                            <Badge key={t.id} variant="outline">
-                              {t.tool_name} ({fmt(Number(t.monthly_price))}/m)
-                            </Badge>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              ))}
-          </CardContent>
-        </Card>
+      {editingHourlyYear !== null && (
+        <HourlyRatesEditModal
+          accountId={accountId}
+          year={editingHourlyYear}
+          existingRates={hourlyRates}
+          open={editingHourlyYear !== null}
+          onClose={() => setEditingHourlyYear(null)}
+          onSaved={handleSaved}
+        />
       )}
 
-      {years.length === 0 && slaRates.length === 0 && (
-        <p className="text-center text-muted-foreground py-4">Geen tarieven geconfigureerd.</p>
+      {editingSlaYear !== null && (
+        <SlaRatesEditModal
+          accountId={accountId}
+          year={editingSlaYear}
+          existingRate={slaRates.find((s) => s.year === editingSlaYear) ?? null}
+          open={editingSlaYear !== null}
+          onClose={() => setEditingSlaYear(null)}
+          onSaved={handleSaved}
+        />
+      )}
+
+      {wizardOpen && (
+        <IndexationWizard
+          accountId={accountId}
+          open={wizardOpen}
+          onClose={handleSaved}
+        />
       )}
     </div>
   );

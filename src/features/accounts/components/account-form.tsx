@@ -16,6 +16,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { Avatar } from '@/components/admin/avatar';
 import { accountFormSchema, type AccountFormValues, type AccountReferenceData, type ReferenceOption } from '../types';
 import { createAccount } from '../actions/create-account';
 import { updateAccount } from '../actions/update-account';
@@ -64,6 +65,10 @@ type Props = {
     hosting?: Array<{ id: string; provider_id: string; provider_name: string; environment_id: string; environment_name: string; url: string | null; notes: string | null }>;
   };
   onSuccess?: () => void;
+  /** External form ref — when provided, the form doesn't render its own FormActions */
+  formRef?: React.RefObject<HTMLFormElement | null>;
+  /** Called when loading state changes — used to sync with external FormActions */
+  onLoadingChange?: (loading: boolean) => void;
 };
 
 // ── ChipInput component (inline) ────────────────────────────────────────────
@@ -221,9 +226,12 @@ function StringChipInput({
 
 // ── Main form ────────────────────────────────────────────────────────────────
 
-export function AccountForm({ referenceData, defaultValues, onSuccess }: Props) {
+export function AccountForm({ referenceData, defaultValues, onSuccess, formRef: externalFormRef, onLoadingChange }: Props) {
   const router = useRouter();
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoadingState] = useState(false);
+  const setLoading = (v: boolean) => { setLoadingState(v); onLoadingChange?.(v); };
+  const internalFormRef = useRef<HTMLFormElement>(null);
+  const formRef = externalFormRef ?? internalFormRef;
   const isEdit = !!defaultValues?.id;
 
   const ref = referenceData ?? {
@@ -429,8 +437,13 @@ export function AccountForm({ referenceData, defaultValues, onSuccess }: Props) 
     setLoading(false);
     toast.success(isEdit ? 'Account bijgewerkt' : 'Account aangemaakt');
 
+    const shouldClose = formRef.current?.dataset.closeAfterSave === 'true';
+    if (formRef.current) formRef.current.dataset.closeAfterSave = '';
+
     if (onSuccess) {
       onSuccess();
+    } else if (isEdit && shouldClose) {
+      router.push(`/admin/accounts/${accountId}`);
     } else if (isEdit) {
       router.refresh();
     } else {
@@ -439,8 +452,8 @@ export function AccountForm({ referenceData, defaultValues, onSuccess }: Props) 
   }
 
   return (
-    <form onSubmit={handleSubmit} className="max-w-5xl">
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+    <form id="account-form" ref={formRef} onSubmit={handleSubmit}>
+      <div className="rounded-xl border bg-card p-6 shadow-sm grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* -- Left Column: Bedrijfsinformatie -- */}
         <div className="space-y-4">
           <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
@@ -501,17 +514,26 @@ export function AccountForm({ referenceData, defaultValues, onSuccess }: Props) 
               </Select>
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="revenue">Omzet</Label>
+              <Label htmlFor="revenue_display">Omzet</Label>
               <div className="relative">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">$</span>
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">€</span>
                 <Input
-                  id="revenue"
-                  name="revenue"
-                  type="number"
-                  defaultValue={defaultValues?.revenue ?? ''}
-                  placeholder="bv. 1000000"
+                  id="revenue_display"
+                  type="text"
+                  inputMode="numeric"
+                  defaultValue={defaultValues?.revenue ? new Intl.NumberFormat('nl-BE').format(Number(defaultValues.revenue)) : ''}
+                  placeholder="bv. 1.000.000"
                   className="pl-7"
+                  onChange={(e) => {
+                    const raw = e.target.value.replace(/\D/g, '');
+                    const hidden = e.target.form?.querySelector<HTMLInputElement>('input[name="revenue"]');
+                    if (hidden) hidden.value = raw;
+                    if (raw) {
+                      e.target.value = new Intl.NumberFormat('nl-BE').format(Number(raw));
+                    }
+                  }}
                 />
+                <input type="hidden" name="revenue" defaultValue={defaultValues?.revenue ?? ''} />
               </div>
             </div>
           </div>
@@ -561,24 +583,67 @@ export function AccountForm({ referenceData, defaultValues, onSuccess }: Props) 
             PHPro Intern
           </h3>
 
-          <div className="space-y-1.5">
-            <Label htmlFor="managing_partner">Managing Partner</Label>
-            <Input id="managing_partner" name="managing_partner" defaultValue={defaultValues?.managing_partner ?? ''} />
-          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1.5">
+              <Label htmlFor="managing_partner">Managing Partner</Label>
+              <Select name="managing_partner" defaultValue={defaultValues?.managing_partner ?? ''}>
+                <SelectTrigger><SelectValue placeholder="Selecteer..." /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="">Geen</SelectItem>
+                  {referenceData?.internalPeople.map((p) => (
+                    <SelectItem key={p.id} value={p.name}>
+                      <Avatar path={p.avatar_url} fallback={p.name.split(/\s+/).map(w => w[0] ?? '').join('').toUpperCase().slice(0, 2)} size="xs" />
+                      {p.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
 
-          <div className="space-y-1.5">
-            <Label htmlFor="account_director">Account Director</Label>
-            <Input id="account_director" name="account_director" defaultValue={defaultValues?.account_director ?? ''} />
-          </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="account_director">Account Director</Label>
+              <Select name="account_director" defaultValue={defaultValues?.account_director ?? ''}>
+                <SelectTrigger><SelectValue placeholder="Selecteer..." /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="">Geen</SelectItem>
+                  {referenceData?.internalPeople.map((p) => (
+                    <SelectItem key={p.id} value={p.name}>
+                      <Avatar path={p.avatar_url} fallback={p.name.split(/\s+/).map(w => w[0] ?? '').join('').toUpperCase().slice(0, 2)} size="xs" />
+                      {p.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
 
-          <div className="space-y-1.5">
-            <Label htmlFor="project_manager">Project Manager</Label>
-            <Input id="project_manager" name="project_manager" defaultValue={defaultValues?.project_manager ?? ''} />
-          </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="project_manager">Project Manager</Label>
+              <Select name="project_manager" defaultValue={defaultValues?.project_manager ?? ''}>
+                <SelectTrigger><SelectValue placeholder="Selecteer..." /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="">Geen</SelectItem>
+                  {referenceData?.internalPeople.map((p) => (
+                    <SelectItem key={p.id} value={p.name}>
+                      <Avatar path={p.avatar_url} fallback={p.name.split(/\s+/).map(w => w[0] ?? '').join('').toUpperCase().slice(0, 2)} size="xs" />
+                      {p.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
 
-          <div className="space-y-1.5">
-            <Label htmlFor="team">Team</Label>
-            <Input id="team" name="team" defaultValue={defaultValues?.team ?? ''} placeholder="bv. Team 1" />
+            <div className="space-y-1.5">
+              <Label htmlFor="team">Team</Label>
+              <Select name="team" defaultValue={defaultValues?.team ?? ''}>
+                <SelectTrigger><SelectValue placeholder="Selecteer..." /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="">Geen</SelectItem>
+                  {referenceData?.teams.map((t) => (
+                    <SelectItem key={t.id} value={t.name}>{t.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
 
           <div className="space-y-1.5">
@@ -645,7 +710,7 @@ export function AccountForm({ referenceData, defaultValues, onSuccess }: Props) 
               </Button>
             </div>
             {competenceCenters.map((cc, index) => (
-              <div key={index} className="rounded-md border p-3 space-y-2">
+              <div key={index} className="rounded-lg border bg-card p-3 shadow-sm space-y-2">
                 <div className="flex items-center gap-2">
                   <Select
                     value={cc.competence_center_id || undefined}
@@ -704,7 +769,7 @@ export function AccountForm({ referenceData, defaultValues, onSuccess }: Props) 
               </Button>
             </div>
             {hosting.map((entry, index) => (
-              <div key={index} className="rounded-md border p-3 space-y-2">
+              <div key={index} className="rounded-lg border bg-card p-3 shadow-sm space-y-2">
                 <div className="flex items-center gap-2">
                   <div className="flex-1">
                     <Select
@@ -763,13 +828,6 @@ export function AccountForm({ referenceData, defaultValues, onSuccess }: Props) 
             ))}
           </div>
         </div>
-      </div>
-
-      {/* Submit button */}
-      <div className="mt-6 flex justify-end">
-        <Button type="submit" disabled={loading}>
-          {loading ? 'Opslaan...' : isEdit ? 'Bijwerken' : 'Aanmaken'}
-        </Button>
       </div>
     </form>
   );

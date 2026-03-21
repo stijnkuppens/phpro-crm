@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useCallback, useState } from 'react';
-import { Eye, Pencil, Trash2 } from 'lucide-react';
+import { Eye, Pencil, Plus, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useEntity } from '@/lib/hooks/use-entity';
 import { Button } from '@/components/ui/button';
@@ -47,7 +47,10 @@ export function AccountContactsTab({ accountId }: Props) {
   return (
     <div className="space-y-4">
       <div className="flex justify-end">
-        <Button onClick={() => setCreateOpen(true)}>Nieuw Contact</Button>
+        <Button size="sm" onClick={() => setCreateOpen(true)}>
+          <Plus className="h-4 w-4" />
+          Nieuw Contact
+        </Button>
       </div>
 
       <DataTable

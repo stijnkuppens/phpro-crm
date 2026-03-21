@@ -25,7 +25,7 @@ const nextConfig: NextConfig = {
               "style-src 'self' 'unsafe-inline'",
               `img-src 'self' blob: data: ${process.env.NEXT_PUBLIC_SUPABASE_URL ?? ''}`,
               "font-src 'self' fonts.gstatic.com",
-              `connect-src 'self' ${process.env.NEXT_PUBLIC_SUPABASE_URL ?? ''} wss://*`,
+              `connect-src 'self' ${process.env.NEXT_PUBLIC_SUPABASE_URL ?? ''} ws: wss:`,
               "frame-ancestors 'none'",
               "base-uri 'self'",
               "form-action 'self'",

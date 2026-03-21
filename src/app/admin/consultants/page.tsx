@@ -1,6 +1,9 @@
+import type { Metadata } from 'next';
 import { PageHeader } from '@/components/admin/page-header';
 import { getActiveConsultants } from '@/features/consultants/queries/get-active-consultants';
 import { ConsultantListView } from '@/features/consultants/components/consultant-list';
+
+export const metadata: Metadata = { title: 'Consultants' };
 
 export default async function ConsultantsPage() {
   const consultants = await getActiveConsultants();
@@ -14,7 +17,7 @@ export default async function ConsultantsPage() {
           { label: 'Consultants' },
         ]}
       />
-      <ConsultantListView consultants={consultants} />
+      <ConsultantListView initialData={consultants} />
     </div>
   );
 }

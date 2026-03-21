@@ -134,3 +134,117 @@ INSERT INTO sla_tools (sla_rate_id, tool_name, monthly_price) VALUES
   ('5a100000-0000-0000-0000-000000000002', 'Graylog', 160),
   ('5a100000-0000-0000-0000-000000000003', 'New Relic', 390)
 ON CONFLICT DO NOTHING;
+
+-- ── Contracts (Barco, Lotus Bakeries, Melexis, Showpad) ──────────────────────
+INSERT INTO contracts (account_id, has_framework_contract, framework_pdf_url, framework_start, framework_end, framework_indefinite, has_service_contract, service_pdf_url, service_start, service_end, service_indefinite, purchase_orders_url) VALUES
+  ('a0000000-0000-0000-0000-000000000004', true, 'raamcontract_barco_2024.pdf', '2024-06-01', '2026-05-31', false, true, 'sla_barco_2024.pdf', '2024-06-01', null, true, 'https://confluence.phpro.be/display/BA/Bestelbonnen'),
+  ('a0000000-0000-0000-0000-000000000008', true, 'raamcontract_lotus_2025.pdf', '2025-01-01', '2027-12-31', false, false, null, null, null, false, null),
+  ('a0000000-0000-0000-0000-000000000005', true, 'raamcontract_melexis_2024.pdf', '2024-01-01', null, true, true, 'sla_melexis_2024.pdf', '2024-01-01', null, true, null),
+  ('a0000000-0000-0000-0000-000000000011', false, null, null, null, false, true, 'sla_showpad_2025.pdf', '2025-03-01', '2026-02-28', false, null)
+ON CONFLICT DO NOTHING;
+
+-- ── Hourly Rates (Barco 2024-2025) ───────────────────────────────────────────
+INSERT INTO hourly_rates (account_id, year, role, rate) VALUES
+  ('a0000000-0000-0000-0000-000000000004', 2025, 'PM', 150),
+  ('a0000000-0000-0000-0000-000000000004', 2025, 'Architect', 160),
+  ('a0000000-0000-0000-0000-000000000004', 2025, 'Tech Lead', 152),
+  ('a0000000-0000-0000-0000-000000000004', 2025, 'Dev Senior', 135),
+  ('a0000000-0000-0000-0000-000000000004', 2025, 'Dev Medior', 112),
+  ('a0000000-0000-0000-0000-000000000004', 2025, 'Dev Junior', 92),
+  ('a0000000-0000-0000-0000-000000000004', 2025, 'Analist', 122),
+  ('a0000000-0000-0000-0000-000000000004', 2025, 'DevOps', 125),
+  ('a0000000-0000-0000-0000-000000000004', 2024, 'PM', 142),
+  ('a0000000-0000-0000-0000-000000000004', 2024, 'Architect', 152),
+  ('a0000000-0000-0000-0000-000000000004', 2024, 'Tech Lead', 145),
+  ('a0000000-0000-0000-0000-000000000004', 2024, 'Dev Senior', 128),
+  ('a0000000-0000-0000-0000-000000000004', 2024, 'Dev Medior', 105),
+  ('a0000000-0000-0000-0000-000000000004', 2024, 'Dev Junior', 85),
+  ('a0000000-0000-0000-0000-000000000004', 2024, 'Analist', 115),
+  ('a0000000-0000-0000-0000-000000000004', 2024, 'DevOps', 118)
+ON CONFLICT DO NOTHING;
+
+-- ── Hourly Rates (Lotus Bakeries 2024-2025) ──────────────────────────────────
+INSERT INTO hourly_rates (account_id, year, role, rate) VALUES
+  ('a0000000-0000-0000-0000-000000000008', 2025, 'PM', 140),
+  ('a0000000-0000-0000-0000-000000000008', 2025, 'Dev Senior', 125),
+  ('a0000000-0000-0000-0000-000000000008', 2025, 'Dev Medior', 105),
+  ('a0000000-0000-0000-0000-000000000008', 2025, 'Analist', 115),
+  ('a0000000-0000-0000-0000-000000000008', 2025, 'QA Engineer', 95),
+  ('a0000000-0000-0000-0000-000000000008', 2024, 'PM', 132),
+  ('a0000000-0000-0000-0000-000000000008', 2024, 'Dev Senior', 118),
+  ('a0000000-0000-0000-0000-000000000008', 2024, 'Dev Medior', 98),
+  ('a0000000-0000-0000-0000-000000000008', 2024, 'Analist', 108),
+  ('a0000000-0000-0000-0000-000000000008', 2024, 'QA Engineer', 88)
+ON CONFLICT DO NOTHING;
+
+-- ── Hourly Rates (Melexis 2023-2025) ─────────────────────────────────────────
+INSERT INTO hourly_rates (account_id, year, role, rate) VALUES
+  ('a0000000-0000-0000-0000-000000000005', 2025, 'PM', 138),
+  ('a0000000-0000-0000-0000-000000000005', 2025, 'Architect', 148),
+  ('a0000000-0000-0000-0000-000000000005', 2025, 'Dev Senior', 122),
+  ('a0000000-0000-0000-0000-000000000005', 2025, 'Dev Medior', 102),
+  ('a0000000-0000-0000-0000-000000000005', 2025, 'DevOps', 115),
+  ('a0000000-0000-0000-0000-000000000005', 2025, 'QA Engineer', 95),
+  ('a0000000-0000-0000-0000-000000000005', 2024, 'PM', 130),
+  ('a0000000-0000-0000-0000-000000000005', 2024, 'Architect', 140),
+  ('a0000000-0000-0000-0000-000000000005', 2024, 'Dev Senior', 115),
+  ('a0000000-0000-0000-0000-000000000005', 2024, 'Dev Medior', 95),
+  ('a0000000-0000-0000-0000-000000000005', 2024, 'DevOps', 108),
+  ('a0000000-0000-0000-0000-000000000005', 2024, 'QA Engineer', 88),
+  ('a0000000-0000-0000-0000-000000000005', 2023, 'PM', 122),
+  ('a0000000-0000-0000-0000-000000000005', 2023, 'Architect', 132),
+  ('a0000000-0000-0000-0000-000000000005', 2023, 'Dev Senior', 108),
+  ('a0000000-0000-0000-0000-000000000005', 2023, 'Dev Medior', 88),
+  ('a0000000-0000-0000-0000-000000000005', 2023, 'DevOps', 100),
+  ('a0000000-0000-0000-0000-000000000005', 2023, 'QA Engineer', 82)
+ON CONFLICT DO NOTHING;
+
+-- ── SLA Rates (Barco 2024-2025) ──────────────────────────────────────────────
+INSERT INTO sla_rates (id, account_id, year, fixed_monthly_rate, support_hourly_rate) VALUES
+  ('5a100000-0000-0000-0000-000000000010', 'a0000000-0000-0000-0000-000000000004', 2025, 4500, 155),
+  ('5a100000-0000-0000-0000-000000000011', 'a0000000-0000-0000-0000-000000000004', 2024, 4200, 148)
+ON CONFLICT (id) DO NOTHING;
+
+INSERT INTO sla_tools (sla_rate_id, tool_name, monthly_price) VALUES
+  ('5a100000-0000-0000-0000-000000000010', 'Datadog', 650),
+  ('5a100000-0000-0000-0000-000000000010', 'PagerDuty', 180),
+  ('5a100000-0000-0000-0000-000000000010', 'Sentry', 220),
+  ('5a100000-0000-0000-0000-000000000011', 'Datadog', 600),
+  ('5a100000-0000-0000-0000-000000000011', 'PagerDuty', 165),
+  ('5a100000-0000-0000-0000-000000000011', 'Sentry', 200)
+ON CONFLICT DO NOTHING;
+
+-- ── SLA Rates (Melexis 2024-2025) ────────────────────────────────────────────
+INSERT INTO sla_rates (id, account_id, year, fixed_monthly_rate, support_hourly_rate) VALUES
+  ('5a100000-0000-0000-0000-000000000020', 'a0000000-0000-0000-0000-000000000005', 2025, 2800, 130),
+  ('5a100000-0000-0000-0000-000000000021', 'a0000000-0000-0000-0000-000000000005', 2024, 2500, 122)
+ON CONFLICT (id) DO NOTHING;
+
+INSERT INTO sla_tools (sla_rate_id, tool_name, monthly_price) VALUES
+  ('5a100000-0000-0000-0000-000000000020', 'New Relic', 380),
+  ('5a100000-0000-0000-0000-000000000020', 'Grafana Cloud', 150),
+  ('5a100000-0000-0000-0000-000000000021', 'New Relic', 350),
+  ('5a100000-0000-0000-0000-000000000021', 'Grafana Cloud', 140)
+ON CONFLICT DO NOTHING;
+
+-- ── SLA Rates (Showpad 2025) ─────────────────────────────────────────────────
+INSERT INTO sla_rates (id, account_id, year, fixed_monthly_rate, support_hourly_rate) VALUES
+  ('5a100000-0000-0000-0000-000000000030', 'a0000000-0000-0000-0000-000000000011', 2025, 1800, 115)
+ON CONFLICT (id) DO NOTHING;
+
+INSERT INTO sla_tools (sla_rate_id, tool_name, monthly_price) VALUES
+  ('5a100000-0000-0000-0000-000000000030', 'Sentry', 120)
+ON CONFLICT DO NOTHING;
+
+-- ── SLA Rates (MediCare Plus 2024-2025) ──────────────────────────────────────
+INSERT INTO sla_rates (id, account_id, year, fixed_monthly_rate, support_hourly_rate) VALUES
+  ('5a100000-0000-0000-0000-000000000040', 'a0000000-0000-0000-0000-000000000003', 2025, 2200, 125),
+  ('5a100000-0000-0000-0000-000000000041', 'a0000000-0000-0000-0000-000000000003', 2024, 1900, 118)
+ON CONFLICT (id) DO NOTHING;
+
+INSERT INTO sla_tools (sla_rate_id, tool_name, monthly_price) VALUES
+  ('5a100000-0000-0000-0000-000000000040', 'New Relic', 320),
+  ('5a100000-0000-0000-0000-000000000040', 'Graylog', 140),
+  ('5a100000-0000-0000-0000-000000000041', 'New Relic', 300),
+  ('5a100000-0000-0000-0000-000000000041', 'Graylog', 130)
+ON CONFLICT DO NOTHING;

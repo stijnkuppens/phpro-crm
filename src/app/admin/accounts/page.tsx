@@ -1,5 +1,7 @@
 import Link from 'next/link';
+import { Plus } from 'lucide-react';
 import { PageHeader } from '@/components/admin/page-header';
+import { Button } from '@/components/ui/button';
 import { AccountList } from '@/features/accounts/components/account-list';
 import { getAccounts } from '@/features/accounts/queries/get-accounts';
 import { getAccountFilterOptions } from '@/features/accounts/queries/get-account-filter-options';
@@ -19,12 +21,10 @@ export default async function AccountsPage() {
           { label: 'Accounts' },
         ]}
         actions={
-          <Link
-            href="/admin/accounts/new"
-            className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
-          >
+          <Button size="sm" render={<Link href="/admin/accounts/new" />}>
+            <Plus />
             Nieuw Account
-          </Link>
+          </Button>
         }
       />
       <AccountList initialData={data} initialCount={count} owners={owners} countries={countries} />

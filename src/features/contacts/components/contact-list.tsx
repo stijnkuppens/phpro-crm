@@ -15,6 +15,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { ComboboxFilter } from '@/components/admin/combobox-filter';
+import { FilterBar } from '@/components/admin/filter-bar';
 import { contactColumns } from '../columns';
 import type { Contact } from '../types';
 import { deleteContact } from '../actions/delete-contact';
@@ -39,6 +40,7 @@ type ContactListProps = {
 export function ContactList({ initialData, initialCount, accounts = [] }: ContactListProps) {
   const [viewId, setViewId] = useState<string | null>(null);
   const [editId, setEditId] = useState<string | null>(null);
+  const [editFromView, setEditFromView] = useState(false);
   const { data, total, loading, refreshing, fetchList } = useEntity<Contact>({
     table: 'contacts',
     select: '*, account:accounts!account_id(id, name)',
@@ -92,40 +94,42 @@ export function ContactList({ initialData, initialCount, accounts = [] }: Contac
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center gap-3 flex-wrap">
-        <Input
-          placeholder="Zoeken op naam of e-mail..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="w-64"
-        />
-        {accounts.length > 0 && (
-          <ComboboxFilter
-            options={accounts.map((a) => ({ value: a.id, label: a.name }))}
-            value={accountFilter}
-            onValueChange={setAccountFilter}
-            placeholder="Alle accounts"
-            searchPlaceholder="Zoek account..."
-            className="w-48"
+      <FilterBar>
+        <div className="flex items-center gap-3 flex-wrap">
+          <Input
+            placeholder="Zoeken op naam of e-mail..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="w-64"
           />
-        )}
-        <Select value={roleFilter} onValueChange={(v) => setRoleFilter(v ?? 'all')}>
-          <SelectTrigger className="w-48"><SelectValue /></SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">Alle rollen</SelectItem>
-            {ROLES.map((r) => (
-              <SelectItem key={r} value={r}>{r}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        <Button
-          variant={steercoOnly ? 'default' : 'outline'}
-          size="sm"
-          onClick={() => setSteercoOnly((prev) => !prev)}
-        >
-          Steerco
-        </Button>
-      </div>
+          {accounts.length > 0 && (
+            <ComboboxFilter
+              options={accounts.map((a) => ({ value: a.id, label: a.name }))}
+              value={accountFilter}
+              onValueChange={setAccountFilter}
+              placeholder="Alle accounts"
+              searchPlaceholder="Zoek account..."
+              className="w-48"
+            />
+          )}
+          <Select value={roleFilter} onValueChange={(v) => setRoleFilter(v ?? 'all')}>
+            <SelectTrigger className="w-48"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Alle rollen</SelectItem>
+              {ROLES.map((r) => (
+                <SelectItem key={r} value={r}>{r}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Button
+            variant={steercoOnly ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => setSteercoOnly((prev) => !prev)}
+          >
+            Steerco
+          </Button>
+        </div>
+      </FilterBar>
       <DataTable
         columns={contactColumns as any}
         data={data}
@@ -145,14 +149,14 @@ export function ContactList({ initialData, initialCount, accounts = [] }: Contac
       <ContactViewModal
         contactId={viewId}
         onClose={() => setViewId(null)}
-        onEdit={(id) => { setViewId(null); setEditId(id); }}
+        onEdit={(id) => { setViewId(null); setEditId(id); setEditFromView(true); }}
       />
       <ContactFormModal
         contactId={editId}
         accountId={data.find((r) => r.id === editId)?.account_id ?? ''}
         open={editId !== null}
-        onClose={() => setEditId(null)}
-        onSaved={() => { setEditId(null); load(); }}
+        onClose={() => { const id = editId; setEditId(null); if (editFromView) { setViewId(id); setEditFromView(false); } }}
+        onSaved={() => { const id = editId; setEditId(null); if (editFromView) { setViewId(id); setEditFromView(false); } load(); }}
       />
     </div>
   );

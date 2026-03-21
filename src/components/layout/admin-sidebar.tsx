@@ -1,8 +1,10 @@
 'use client';
 
+import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useTranslations } from 'next-intl';
+import { useBrandTheme } from '@/lib/hooks/use-brand-theme';
 import {
   Sidebar,
   SidebarContent,
@@ -36,9 +38,15 @@ import {
   Contact,
 } from 'lucide-react';
 
+const brandLogos: Record<string, { src: string; alt: string; width: number; height: number }> = {
+  phpro: { src: '/logos/phpro.svg', alt: 'PHPro', width: 100, height: 34 },
+  '25carat': { src: '/logos/25carat-wordmark.svg', alt: '25Carat', width: 120, height: 39 },
+};
+
 export function AdminSidebar() {
   const pathname = usePathname();
   const t = useTranslations('nav');
+  const { brand } = useBrandTheme();
 
   const navSections = [
     {
@@ -90,8 +98,14 @@ export function AdminSidebar() {
   return (
     <Sidebar>
       <SidebarHeader className="flex h-14 items-center border-b px-4">
-        <Link href="/admin" className="text-lg font-bold">
-          PHPro CRM
+        <Link href="/admin">
+          <Image
+            src={brandLogos[brand].src}
+            alt={brandLogos[brand].alt}
+            width={brandLogos[brand].width}
+            height={brandLogos[brand].height}
+            priority
+          />
         </Link>
       </SidebarHeader>
       <SidebarContent>
@@ -125,7 +139,9 @@ export function AdminSidebar() {
         ))}
       </SidebarContent>
       <SidebarFooter className="border-t p-4">
-        <p className="text-xs text-muted-foreground">PHPro CRM</p>
+        <p className="text-xs text-muted-foreground">
+          {brand === '25carat' ? '25Carat' : 'PHPro'} CRM
+        </p>
       </SidebarFooter>
     </Sidebar>
   );

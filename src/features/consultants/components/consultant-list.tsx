@@ -1,65 +1,196 @@
 'use client';
 
-import { useState } from 'react';
-import { Badge } from '@/components/ui/badge';
+import { useMemo, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { Eye } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
-import { getContractStatus, getCurrentRate, type ActiveConsultantWithDetails, type ContractStatus } from '../types';
+import { Input } from '@/components/ui/input';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+} from '@/components/ui/select';
+import { FilterBar } from '@/components/admin/filter-bar';
+import DataTable from '@/components/admin/data-table';
+import { consultantColumns } from '../columns';
+import {
+  getContractStatus,
+  getCurrentRate,
+  type ActiveConsultantWithDetails,
+  type ContractStatus,
+} from '../types';
 import { ConsultantDetailModal } from './consultant-detail-modal';
 
 type Props = {
-  consultants: ActiveConsultantWithDetails[];
+  initialData: ActiveConsultantWithDetails[];
 };
 
-const statusColors: Record<ContractStatus, string> = {
-  actief: 'bg-green-100 text-green-800',
-  waarschuwing: 'bg-yellow-100 text-yellow-800',
-  kritiek: 'bg-red-100 text-red-800',
-  verlopen: 'bg-gray-100 text-gray-800',
-  onbepaald: 'bg-blue-100 text-blue-800',
-  stopgezet: 'bg-gray-300 text-gray-600',
-};
+const statusOptions: { value: string; label: string }[] = [
+  { value: '', label: 'Alle' },
+  { value: 'actief', label: 'Actief' },
+  { value: 'waarschuwing', label: 'Waarschuwing' },
+  { value: 'kritiek', label: 'Kritiek' },
+  { value: 'verlopen', label: 'Verlopen' },
+  { value: 'onbepaald', label: 'Onbepaald' },
+  { value: 'stopgezet', label: 'Stopgezet' },
+];
 
-const fmt = (n: number) =>
-  new Intl.NumberFormat('nl-BE', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(n);
+const eurFmt = new Intl.NumberFormat('nl-BE', {
+  style: 'currency',
+  currency: 'EUR',
+  maximumFractionDigits: 0,
+});
 
-export function ConsultantListView({ consultants }: Props) {
+export function ConsultantListView({ initialData }: Props) {
+  const router = useRouter();
+  const [search, setSearch] = useState('');
+  const [statusFilter, setStatusFilter] = useState('');
   const [selected, setSelected] = useState<ActiveConsultantWithDetails | null>(null);
 
-  if (consultants.length === 0) {
-    return <p className="text-center text-muted-foreground py-8">Geen actieve consultants.</p>;
-  }
+  // Compute statuses once
+  const withStatus = useMemo(
+    () =>
+      initialData.map((c) => ({
+        consultant: c,
+        status: getContractStatus(c),
+        rate: getCurrentRate(c),
+      })),
+    [initialData],
+  );
+
+  // Filter
+  const filtered = useMemo(() => {
+    let items = withStatus;
+
+    if (statusFilter) {
+      items = items.filter((i) => i.status === statusFilter);
+    }
+
+    if (search) {
+      const q = search.toLowerCase();
+      items = items.filter((i) => {
+        const c = i.consultant;
+        return (
+          `${c.first_name} ${c.last_name}`.toLowerCase().includes(q) ||
+          (c.role?.toLowerCase().includes(q) ?? false) ||
+          (c.account?.name?.toLowerCase().includes(q) ?? false)
+        );
+      });
+    }
+
+    return items;
+  }, [withStatus, search, statusFilter]);
+
+  const filteredData = useMemo(
+    () => filtered.map((i) => i.consultant),
+    [filtered],
+  );
+
+  // Stats
+  const stats = useMemo(() => {
+    const active = withStatus.filter((i) => !i.consultant.is_stopped);
+    const maxRevenue = active.reduce((sum, i) => sum + i.rate * 8 * 21, 0);
+    const critical = withStatus.filter((i) => i.status === 'kritiek').length;
+    const stopped = withStatus.filter((i) => i.consultant.is_stopped).length;
+
+    return {
+      activeCount: active.length,
+      maxRevenue,
+      critical,
+      stopped,
+    };
+  }, [withStatus]);
 
   return (
     <>
-      <div className="space-y-3">
-        {consultants.map((c) => {
-          const status = getContractStatus(c);
-          const rate = getCurrentRate(c);
-          return (
-            <Card key={c.id} className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => setSelected(c)}>
-              <CardContent className="p-4 flex items-center gap-4">
-                <div className="flex-1">
-                  <div className="font-medium text-sm">{c.first_name} {c.last_name}</div>
-                  <div className="text-xs text-muted-foreground">{c.role} - {c.city}</div>
-                </div>
-                <div className="text-sm">{c.account?.name ?? c.client_name ?? ''}</div>
-                <div className="text-sm font-medium">{fmt(rate)}/u</div>
-                <Badge className={statusColors[status]}>{status}</Badge>
-                <div className="text-xs text-muted-foreground">
-                  {c.start_date ? new Date(c.start_date).toLocaleDateString('nl-BE') : ''} -
-                  {c.is_indefinite ? ' onbepaald' : c.end_date ? ` ${new Date(c.end_date).toLocaleDateString('nl-BE')}` : ''}
-                </div>
-              </CardContent>
-            </Card>
-          );
-        })}
+      <div className="space-y-4">
+        {/* Stat cards */}
+        <div className="grid grid-cols-4 gap-4">
+          <Card>
+            <CardContent className="pt-4">
+              <div className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                Actief
+              </div>
+              <div className="text-2xl font-bold mt-1">{stats.activeCount}</div>
+              <div className="text-xs text-muted-foreground">consultants</div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="pt-4">
+              <div className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                Max maandomzet
+              </div>
+              <div className="text-2xl font-bold mt-1">{eurFmt.format(stats.maxRevenue)}</div>
+              <div className="text-xs text-muted-foreground">op basis van uurtarieven</div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="pt-4">
+              <div className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                Kritieke contracten
+              </div>
+              <div className="text-2xl font-bold mt-1">{stats.critical}</div>
+              <div className="text-xs text-muted-foreground">binnen 60 dagen</div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="pt-4">
+              <div className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                Stopgezet
+              </div>
+              <div className="text-2xl font-bold mt-1">{stats.stopped}</div>
+              <div className="text-xs text-muted-foreground">consultants</div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Filter bar */}
+        <FilterBar>
+          <div className="flex flex-wrap items-center gap-3">
+            <Input
+              placeholder="Zoek consultant..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="w-64"
+            />
+            <Select value={statusFilter} onValueChange={setStatusFilter}>
+              <SelectTrigger>
+                {statusOptions.find((o) => o.value === statusFilter)?.label ?? 'Alle'}
+              </SelectTrigger>
+              <SelectContent>
+                {statusOptions.map((o) => (
+                  <SelectItem key={o.value} value={o.value}>
+                    {o.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        </FilterBar>
+
+        {/* Data table */}
+        <DataTable
+          columns={consultantColumns}
+          data={filteredData}
+          rowActions={(row) => [
+            {
+              icon: Eye,
+              label: 'Bekijken',
+              onClick: () => setSelected(row),
+            },
+          ]}
+        />
       </div>
 
       {selected && (
         <ConsultantDetailModal
           consultant={selected}
           open={!!selected}
-          onClose={() => setSelected(null)}
+          onClose={() => {
+            setSelected(null);
+            router.refresh();
+          }}
         />
       )}
     </>

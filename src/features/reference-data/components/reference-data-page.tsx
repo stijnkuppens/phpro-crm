@@ -16,7 +16,10 @@ import {
 } from '@/components/ui/table';
 import { ConfirmDialog } from '@/components/admin/confirm-dialog';
 import { createBrowserClient } from '@/lib/supabase/client';
+import { AvatarUpload } from '@/components/admin/avatar-upload';
+import { Avatar } from '@/components/admin/avatar';
 import { REF_TABLES, type RefTableKey, type ReferenceItem, type RefItemFormValues } from '../types';
+import { Save } from 'lucide-react';
 import {
   createReferenceItem,
   updateReferenceItem,
@@ -41,7 +44,7 @@ export function ReferenceDataPage({ initialTable, initialData }: Props) {
     const supabase = createBrowserClient();
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { data, error } = await (supabase.from(table) as any)
-      .select('id, name, sort_order, is_active, created_at, updated_at')
+      .select('id, name, sort_order, is_active, avatar_url, created_at, updated_at')
       .order('sort_order', { ascending: true })
       .order('name', { ascending: true });
 
@@ -125,6 +128,7 @@ export function ReferenceDataPage({ initialTable, initialData }: Props) {
   }
 
   const selectedLabel = REF_TABLES.find((t) => t.key === selectedTable)?.label ?? selectedTable;
+  const hasAvatar = selectedTable === 'ref_internal_people';
 
   return (
     <div className="flex gap-6">
@@ -157,6 +161,7 @@ export function ReferenceDataPage({ initialTable, initialData }: Props) {
         <Table>
           <TableHeader>
             <TableRow>
+              {hasAvatar && <TableHead className="w-14">Foto</TableHead>}
               <TableHead>Naam</TableHead>
               <TableHead className="w-28">Volgorde</TableHead>
               <TableHead className="w-24">Actief</TableHead>
@@ -166,6 +171,7 @@ export function ReferenceDataPage({ initialTable, initialData }: Props) {
           <TableBody>
             {showAdd && (
               <TableRow>
+                {hasAvatar && <TableCell />}
                 <TableCell>
                   <Input
                     value={addValues.name}
@@ -186,6 +192,7 @@ export function ReferenceDataPage({ initialTable, initialData }: Props) {
                 <TableCell>
                   <div className="flex gap-1">
                     <Button size="sm" onClick={handleAdd} disabled={isPending}>
+                      <Save />
                       Opslaan
                     </Button>
                     <Button size="sm" variant="ghost" onClick={() => setShowAdd(false)}>
@@ -199,6 +206,21 @@ export function ReferenceDataPage({ initialTable, initialData }: Props) {
               <TableRow key={item.id}>
                 {editingId === item.id ? (
                   <>
+                    {hasAvatar && (
+                      <TableCell>
+                        <AvatarUpload
+                          currentPath={item.avatar_url}
+                          fallback={item.name.split(/\s+/).map(w => w[0] ?? '').join('').toUpperCase().slice(0, 2)}
+                          storagePath={`internal-people/${item.id}`}
+                          size="sm"
+                          onUploaded={async (path) => {
+                            const supabase = createBrowserClient();
+                            await supabase.from('ref_internal_people').update({ avatar_url: path }).eq('id', item.id);
+                            setItems((prev) => prev.map((i) => i.id === item.id ? { ...i, avatar_url: path } : i));
+                          }}
+                        />
+                      </TableCell>
+                    )}
                     <TableCell>
                       <Input
                         value={editValues.name}
@@ -222,6 +244,7 @@ export function ReferenceDataPage({ initialTable, initialData }: Props) {
                     <TableCell>
                       <div className="flex gap-1">
                         <Button size="sm" onClick={() => handleSaveEdit(item.id)} disabled={isPending}>
+                          <Save />
                           Opslaan
                         </Button>
                         <Button size="sm" variant="ghost" onClick={cancelEdit}>
@@ -232,6 +255,21 @@ export function ReferenceDataPage({ initialTable, initialData }: Props) {
                   </>
                 ) : (
                   <>
+                    {hasAvatar && (
+                      <TableCell>
+                        <AvatarUpload
+                          currentPath={item.avatar_url}
+                          fallback={item.name.split(/\s+/).map(w => w[0] ?? '').join('').toUpperCase().slice(0, 2)}
+                          storagePath={`internal-people/${item.id}`}
+                          size="sm"
+                          onUploaded={async (path) => {
+                            const supabase = createBrowserClient();
+                            await supabase.from('ref_internal_people').update({ avatar_url: path }).eq('id', item.id);
+                            setItems((prev) => prev.map((i) => i.id === item.id ? { ...i, avatar_url: path } : i));
+                          }}
+                        />
+                      </TableCell>
+                    )}
                     <TableCell
                       className="cursor-pointer"
                       onClick={() => startEdit(item)}
@@ -275,7 +313,7 @@ export function ReferenceDataPage({ initialTable, initialData }: Props) {
             ))}
             {items.length === 0 && !showAdd && (
               <TableRow>
-                <TableCell colSpan={4} className="text-center text-muted-foreground py-8">
+                <TableCell colSpan={hasAvatar ? 5 : 4} className="text-center text-muted-foreground py-8">
                   Geen items gevonden
                 </TableCell>
               </TableRow>

@@ -12,8 +12,13 @@ import { getAccountRevenue } from '@/features/revenue/queries/get-account-revenu
 import { getContactsByAccount } from '@/features/contacts/queries/get-contacts-by-account';
 import { getActivities } from '@/features/activities/queries/get-activities';
 import { getCommunications } from '@/features/communications/queries/get-communications';
+import { getReferenceOptions } from '@/features/reference-data/queries/get-reference-options';
+import { getIndexationConfig } from '@/features/indexation/queries/get-indexation-config';
+import { getIndexationDraft } from '@/features/indexation/queries/get-indexation-draft';
+import { getIndexationHistory } from '@/features/indexation/queries/get-indexation-history';
 import { AccountDetail } from '@/features/accounts/components/account-detail';
 import { Pencil } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 type Props = {
   params: Promise<{ id: string }>;
@@ -33,7 +38,7 @@ export default async function AccountDetailPage({ params }: Props) {
     notFound();
   }
 
-  const [deals, contract, hourlyRates, slaRates, consultants, accountRevenue, contacts, activities, communications] = await Promise.all([
+  const [deals, contract, hourlyRates, slaRates, consultants, accountRevenue, contacts, activities, communications, internalPeople, consultantRolesRaw, indexationConfig, indexationDraft, indexationHistory] = await Promise.all([
     getDealsByAccount(id),
     getContract(id),
     getHourlyRates(id),
@@ -43,7 +48,14 @@ export default async function AccountDetailPage({ params }: Props) {
     getContactsByAccount(id),
     getActivities({ filters: { account_id: id }, pageSize: 50 }),
     getCommunications({ filters: { account_id: id }, pageSize: 50 }),
+    getReferenceOptions('ref_internal_people'),
+    getReferenceOptions('ref_consultant_roles'),
+    getIndexationConfig(id),
+    getIndexationDraft(id),
+    getIndexationHistory(id),
   ]);
+
+  const consultantRoles = consultantRolesRaw.map((r) => ({ value: r.name, label: r.name }));
 
   return (
     <div className="space-y-6">
@@ -55,13 +67,10 @@ export default async function AccountDetailPage({ params }: Props) {
           { label: account.name },
         ]}
         actions={
-          <Link
-            href={`/admin/accounts/${id}/edit`}
-            className="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
-          >
-            <Pencil className="h-4 w-4" />
+          <Button render={<Link href={`/admin/accounts/${id}/edit`} />}>
+            <Pencil />
             Bewerken
-          </Link>
+          </Button>
         }
       />
       <AccountDetail
@@ -77,6 +86,11 @@ export default async function AccountDetailPage({ params }: Props) {
         activitiesCount={activities.count}
         communications={communications.data}
         communicationsCount={communications.count}
+        internalPeople={internalPeople}
+        consultantRoles={consultantRoles}
+        indexationConfig={indexationConfig}
+        indexationDraft={indexationDraft}
+        indexationHistory={indexationHistory}
       />
     </div>
   );

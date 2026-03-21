@@ -1,7 +1,8 @@
 'use client';
 
+import { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Building2, MessageSquare, FileText, Users, Contact, Handshake, Activity, TrendingUp, type LucideIcon } from 'lucide-react';
 import { AccountOverviewTab } from './account-overview-tab';
 import { AccountContactsTab } from './account-contacts-tab';
 import { AccountCommunicationsTab } from './account-communications-tab';
@@ -10,7 +11,7 @@ import { AccountDealsTab } from '@/features/deals/components/account-deals-tab';
 import { ContractsTab } from '@/features/contracts/components/contracts-tab';
 import { AccountConsultantsTab } from '@/features/consultants/components/account-consultants-tab';
 import { OmzetTab } from '@/features/revenue/components/omzet-tab';
-import type { AccountWithRelations } from '../types';
+import type { AccountWithRelations, ReferenceOption } from '../types';
 import type { DealWithRelations } from '@/features/deals/types';
 import type { Contract, HourlyRate, SlaRateWithTools } from '@/features/contracts/types';
 import { getCurrentRate, type ActiveConsultantWithDetails } from '@/features/consultants/types';
@@ -18,6 +19,11 @@ import type { AccountRevenue } from '@/features/revenue/types';
 import type { ContactWithDetails } from '@/features/contacts/types';
 import type { ActivityWithRelations } from '@/features/activities/types';
 import type { CommunicationWithDetails } from '@/features/communications/types';
+import type { IndexationConfig } from '@/features/indexation/types';
+import type { IndexationDraftFull } from '@/features/indexation/queries/get-indexation-draft';
+import type { IndexationHistoryFull } from '@/features/indexation/queries/get-indexation-history';
+import { AvatarUpload } from '@/components/admin/avatar-upload';
+import { createBrowserClient } from '@/lib/supabase/client';
 
 type Props = {
   account: AccountWithRelations;
@@ -32,6 +38,11 @@ type Props = {
   activitiesCount: number;
   communications: CommunicationWithDetails[];
   communicationsCount: number;
+  internalPeople?: ReferenceOption[];
+  consultantRoles?: { value: string; label: string }[];
+  indexationConfig?: IndexationConfig | null;
+  indexationDraft?: IndexationDraftFull | null;
+  indexationHistory?: IndexationHistoryFull[];
 };
 
 const fmt = new Intl.NumberFormat('nl-BE', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
@@ -39,13 +50,32 @@ const fmt = new Intl.NumberFormat('nl-BE', { minimumFractionDigits: 0, maximumFr
 const typeStyles: Record<string, string> = {
   Klant: 'bg-green-100 text-green-700',
   Prospect: 'bg-blue-100 text-blue-700',
-  Partner: 'bg-purple-100 text-purple-700',
+  Partner: 'bg-orange-100 text-orange-700',
 };
 
-export function AccountDetail({ account, deals, contract, hourlyRates, slaRates, consultants, accountRevenue, contacts, activities, activitiesCount, communications, communicationsCount }: Props) {
+type NavItem = {
+  key: string;
+  label: string;
+  icon: LucideIcon;
+  count?: number;
+};
+
+export function AccountDetail({ account, deals, contract, hourlyRates, slaRates, consultants, accountRevenue, contacts, activities, activitiesCount, communications, communicationsCount, internalPeople, consultantRoles, indexationConfig, indexationDraft, indexationHistory }: Props) {
+  const [activeSection, setActiveSection] = useState('overview');
   const pipelineValue = deals.reduce((sum, d) => sum + (Number(d.amount) || 0), 0);
   const monthlyRevenue = consultants.reduce((sum, c) => sum + getCurrentRate(c) * 8 * 21, 0);
   const initials = account.name.split(/\s+/).slice(0, 2).map(w => w[0]?.toUpperCase() ?? '').join('');
+
+  const navItems: NavItem[] = [
+    { key: 'overview', label: 'Overview', icon: Building2 },
+    { key: 'communicatie', label: 'Communicatie', icon: MessageSquare },
+    { key: 'contracten', label: 'Contracten', icon: FileText },
+    { key: 'consultants', label: 'Consultants', icon: Users, count: consultants.length },
+    { key: 'contacts', label: 'Contacts', icon: Contact, count: contacts.length },
+    { key: 'deals', label: 'Deals', icon: Handshake, count: deals.length },
+    { key: 'activiteiten', label: 'Activiteiten', icon: Activity, count: activities.length },
+    { key: 'omzet', label: 'Omzet', icon: TrendingUp },
+  ];
 
   return (
     <div className="space-y-6">
@@ -53,9 +83,16 @@ export function AccountDetail({ account, deals, contract, hourlyRates, slaRates,
       <div className="rounded-lg border border-border bg-card overflow-hidden">
         <div className="flex items-center gap-4 px-5 py-4">
           {/* Avatar */}
-          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary text-sm font-semibold">
-            {initials}
-          </div>
+          <AvatarUpload
+            currentPath={account.logo_url}
+            fallback={initials}
+            storagePath={`accounts/${account.id}`}
+            round={false}
+            onUploaded={async (path) => {
+              const supabase = createBrowserClient();
+              await supabase.from('accounts').update({ logo_url: path }).eq('id', account.id);
+            }}
+          />
 
           {/* Info */}
           <div className="flex-1 min-w-0">
@@ -64,7 +101,7 @@ export function AccountDetail({ account, deals, contract, hourlyRates, slaRates,
               <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium ${typeStyles[account.type] ?? 'bg-muted text-muted-foreground'}`}>
                 {account.type}
               </span>
-              <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium ${account.status === 'Actief' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+              <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium ${account.status === 'Actief' ? 'bg-primary/15 text-primary-action' : 'bg-muted text-muted-foreground'}`}>
                 {account.status}
               </span>
             </div>
@@ -99,51 +136,70 @@ export function AccountDetail({ account, deals, contract, hourlyRates, slaRates,
         </div>
       </div>
 
-      {/* Tabs */}
-      <Tabs defaultValue="overview">
-        <TabsList>
-          <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="communicatie">Communicatie</TabsTrigger>
-          <TabsTrigger value="contracten">Contracten & Tarieven</TabsTrigger>
-          <TabsTrigger value="consultants">
-            Consultants{consultants.length > 0 && <Badge variant="secondary" className="ml-1 px-1.5 py-0 text-[10px]">{consultants.length}</Badge>}
-          </TabsTrigger>
-          <TabsTrigger value="contacts">
-            Contacts{contacts.length > 0 && <Badge variant="secondary" className="ml-1 px-1.5 py-0 text-[10px]">{contacts.length}</Badge>}
-          </TabsTrigger>
-          <TabsTrigger value="deals">
-            Deals{deals.length > 0 && <Badge variant="secondary" className="ml-1 px-1.5 py-0 text-[10px]">{deals.length}</Badge>}
-          </TabsTrigger>
-          <TabsTrigger value="activiteiten">
-            Activiteiten{activities.length > 0 && <Badge variant="secondary" className="ml-1 px-1.5 py-0 text-[10px]">{activities.length}</Badge>}
-          </TabsTrigger>
-          <TabsTrigger value="omzet">Omzet</TabsTrigger>
-        </TabsList>
-        <TabsContent value="overview">
-          <AccountOverviewTab account={account} contract={contract} contacts={contacts} />
-        </TabsContent>
-        <TabsContent value="communicatie">
-          <AccountCommunicationsTab accountId={account.id} initialData={communications} initialCount={communicationsCount} />
-        </TabsContent>
-        <TabsContent value="contracten">
-          <ContractsTab contract={contract} hourlyRates={hourlyRates} slaRates={slaRates} />
-        </TabsContent>
-        <TabsContent value="consultants">
-          <AccountConsultantsTab consultants={consultants} />
-        </TabsContent>
-        <TabsContent value="contacts">
-          <AccountContactsTab accountId={account.id} />
-        </TabsContent>
-        <TabsContent value="deals">
-          <AccountDealsTab deals={deals} />
-        </TabsContent>
-        <TabsContent value="activiteiten">
-          <AccountActivitiesTab accountId={account.id} initialData={activities} initialCount={activitiesCount} />
-        </TabsContent>
-        <TabsContent value="omzet">
-          <OmzetTab accountId={account.id} initialData={accountRevenue} />
-        </TabsContent>
-      </Tabs>
+      {/* Navigation bar */}
+      <nav className="flex items-center gap-1 rounded-xl border bg-card shadow-sm px-2 py-1.5">
+        {navItems.map((item) => {
+          const Icon = item.icon;
+          const isActive = activeSection === item.key;
+          return (
+            <button
+              key={item.key}
+              onClick={() => setActiveSection(item.key)}
+              className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium transition-colors ${
+                isActive
+                  ? 'bg-primary/10 text-primary-action'
+                  : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
+              }`}
+            >
+              <Icon className="h-4 w-4" />
+              {item.label}
+              {item.count != null && item.count > 0 && (
+                <Badge className="bg-primary/15 text-primary-action border-0 text-[10px] h-4 px-1.5">{item.count}</Badge>
+              )}
+            </button>
+          );
+        })}
+      </nav>
+
+      {/* Content */}
+      {activeSection === 'overview' && (
+        <AccountOverviewTab account={account} contract={contract} contacts={contacts} internalPeople={internalPeople} />
+      )}
+      {activeSection === 'communicatie' && (
+        <AccountCommunicationsTab
+          accountId={account.id}
+          initialData={communications}
+          initialCount={communicationsCount}
+          contacts={contacts.map((c) => ({ id: c.id, first_name: c.first_name, last_name: c.last_name }))}
+          deals={deals.map((d) => ({ id: d.id, title: d.title }))}
+        />
+      )}
+      {activeSection === 'contracten' && (
+        <ContractsTab
+          accountId={account.id}
+          contract={contract}
+          hourlyRates={hourlyRates}
+          slaRates={slaRates}
+          indexationConfig={indexationConfig ?? null}
+          indexationDraft={indexationDraft ?? null}
+          indexationHistory={indexationHistory ?? []}
+        />
+      )}
+      {activeSection === 'consultants' && (
+        <AccountConsultantsTab accountId={account.id} consultants={consultants} roles={consultantRoles ?? []} />
+      )}
+      {activeSection === 'contacts' && (
+        <AccountContactsTab accountId={account.id} />
+      )}
+      {activeSection === 'deals' && (
+        <AccountDealsTab deals={deals} />
+      )}
+      {activeSection === 'activiteiten' && (
+        <AccountActivitiesTab accountId={account.id} initialData={activities} initialCount={activitiesCount} />
+      )}
+      {activeSection === 'omzet' && (
+        <OmzetTab accountId={account.id} initialData={accountRevenue} />
+      )}
     </div>
   );
 }

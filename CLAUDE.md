@@ -335,3 +335,31 @@ Fixture data uses non-RFC-compliant UUIDs (e.g. `a0000000-0000-0000-0000-0000000
 - Action param guards: `z.string().min(1).safeParse(id).success`
 
 The database FK constraint enforces referential integrity — Zod doesn't need to validate UUID format.
+
+### Base UI Select: Never rely on `SelectValue` for ID-based selects
+
+Base UI's `SelectValue` renders the matched `SelectItem` children as the trigger label. But it only works when items are mounted — before the dropdown opens, or when the value doesn't match any item, it falls back to displaying the raw `value` prop (a UUID).
+
+**Bad** (shows UUID in trigger):
+```tsx
+<Select value={ownerId} onValueChange={setOwnerId}>
+  <SelectTrigger><SelectValue placeholder="Selecteer..." /></SelectTrigger>
+  <SelectContent>
+    {users.map((u) => <SelectItem key={u.id} value={u.id}>{u.name}</SelectItem>)}
+  </SelectContent>
+</Select>
+```
+
+**Good** (always shows human-readable label):
+```tsx
+<Select value={ownerId} onValueChange={setOwnerId}>
+  <SelectTrigger>
+    {users.find((u) => u.id === ownerId)?.name ?? 'Selecteer...'}
+  </SelectTrigger>
+  <SelectContent>
+    {users.map((u) => <SelectItem key={u.id} value={u.id}>{u.name}</SelectItem>)}
+  </SelectContent>
+</Select>
+```
+
+Always explicitly render the label in `SelectTrigger` by looking up the selected value in the options array. This prevents UUIDs from ever appearing in the UI.

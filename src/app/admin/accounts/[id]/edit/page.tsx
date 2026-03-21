@@ -1,10 +1,9 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { requirePermission } from '@/lib/require-permission';
-import { PageHeader } from '@/components/admin/page-header';
 import { getAccount } from '@/features/accounts/queries/get-account';
 import { getReferenceOptions } from '@/features/reference-data/queries/get-reference-options';
-import { AccountForm } from '@/features/accounts/components/account-form';
+import { AccountEditPageClient } from '@/features/accounts/components/account-edit-page-client';
 import type { AccountReferenceData } from '@/features/accounts/types';
 
 type Props = {
@@ -22,7 +21,7 @@ export default async function AccountEditPage({ params }: Props) {
 
   const { id } = await params;
 
-  const [account, technologies, collaborationTypes, hostingProviders, hostingEnvironments, competenceCenters, ccServices] = await Promise.all([
+  const [account, technologies, collaborationTypes, hostingProviders, hostingEnvironments, competenceCenters, ccServices, internalPeople, teams] = await Promise.all([
     getAccount(id),
     getReferenceOptions('ref_technologies'),
     getReferenceOptions('ref_collaboration_types'),
@@ -30,6 +29,8 @@ export default async function AccountEditPage({ params }: Props) {
     getReferenceOptions('ref_hosting_environments'),
     getReferenceOptions('ref_competence_centers'),
     getReferenceOptions('ref_cc_services'),
+    getReferenceOptions('ref_internal_people'),
+    getReferenceOptions('ref_teams'),
   ]);
 
   if (!account) {
@@ -43,6 +44,8 @@ export default async function AccountEditPage({ params }: Props) {
     hostingEnvironments,
     competenceCenters,
     ccServices,
+    internalPeople,
+    teams,
   };
 
   const defaultValues = {
@@ -86,17 +89,16 @@ export default async function AccountEditPage({ params }: Props) {
   };
 
   return (
-    <div className="space-y-6">
-      <PageHeader
-        title={`${account.name} bewerken`}
-        breadcrumbs={[
-          { label: 'Admin', href: '/admin' },
-          { label: 'Accounts', href: '/admin/accounts' },
-          { label: account.name, href: `/admin/accounts/${id}` },
-          { label: 'Bewerken' },
-        ]}
-      />
-      <AccountForm referenceData={referenceData} defaultValues={defaultValues} />
-    </div>
+    <AccountEditPageClient
+      account={{ id: account.id, name: account.name }}
+      referenceData={referenceData}
+      defaultValues={defaultValues}
+      breadcrumbs={[
+        { label: 'Admin', href: '/admin' },
+        { label: 'Accounts', href: '/admin/accounts' },
+        { label: account.name, href: `/admin/accounts/${id}` },
+        { label: 'Bewerken' },
+      ]}
+    />
   );
 }

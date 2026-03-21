@@ -6,14 +6,18 @@ import type { AccountWithRelations } from '../types';
 import type { Contract } from '@/features/contracts/types';
 import type { ContactWithDetails } from '@/features/contacts/types';
 import { FileText, Shield, Users } from 'lucide-react';
+import { Avatar } from '@/components/admin/avatar';
+import type { ReferenceOption } from '../types';
 
 type Props = {
   account: AccountWithRelations;
   contract: Contract | null;
   contacts: ContactWithDetails[];
+  internalPeople?: ReferenceOption[];
 };
 
-export function AccountOverviewTab({ account, contract, contacts }: Props) {
+export function AccountOverviewTab({ account, contract, contacts, internalPeople = [] }: Props) {
+  const personLookup = new Map(internalPeople.map((p) => [p.name, p]));
   const steercoContacts = contacts.filter((c) => c.is_steerco || c.is_pinned);
 
   return (
@@ -35,6 +39,12 @@ export function AccountOverviewTab({ account, contract, contacts }: Props) {
           <InfoRow label="Land" value={account.country} />
           <InfoRow label="BTW" value={account.vat_number} />
           <InfoRow label="PHPro Contract" value={account.phpro_contract} />
+          {account.about && (
+            <div className="pt-2 border-t">
+              <span className="text-sm font-semibold">Over</span>
+              <p className="text-sm text-muted-foreground mt-0.5 whitespace-pre-wrap">{account.about}</p>
+            </div>
+          )}
         </CardContent>
       </Card>
 
@@ -44,9 +54,9 @@ export function AccountOverviewTab({ account, contract, contacts }: Props) {
           <CardTitle className="text-sm font-semibold">PHPro Intern</CardTitle>
         </CardHeader>
         <CardContent className="space-y-3 text-sm">
-          <InfoRow label="Mng. Partner" value={account.managing_partner} />
-          <InfoRow label="Acc. Director" value={account.account_director} />
-          <InfoRow label="Project Manager" value={account.project_manager} />
+          <PersonRow label="Mng. Partner" value={account.managing_partner} person={personLookup.get(account.managing_partner ?? '')} />
+          <PersonRow label="Acc. Director" value={account.account_director} person={personLookup.get(account.account_director ?? '')} />
+          <PersonRow label="Project Manager" value={account.project_manager} person={personLookup.get(account.project_manager ?? '')} />
           <InfoRow label="Owner" value={account.owner?.full_name} />
           <InfoRow label="Team" value={account.team} />
           <InfoRow label="Contract" value={account.phpro_contract} />
@@ -208,17 +218,6 @@ export function AccountOverviewTab({ account, contract, contacts }: Props) {
         </CardContent>
       </Card>
 
-      {/* About */}
-      {account.about && (
-        <Card className="lg:col-span-2">
-          <CardHeader>
-            <CardTitle className="text-sm font-semibold">Over</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm text-muted-foreground whitespace-pre-wrap">{account.about}</p>
-          </CardContent>
-        </Card>
-      )}
     </div>
   );
 }
@@ -229,6 +228,20 @@ function InfoRow({ label, value }: { label: string; value?: string | null }) {
     <div className="flex">
       <span className="text-muted-foreground w-32 shrink-0">{label}</span>
       <span>{value}</span>
+    </div>
+  );
+}
+
+function PersonRow({ label, value, person }: { label: string; value?: string | null; person?: ReferenceOption }) {
+  if (!value) return null;
+  const initials = value.split(/\s+/).map(w => w[0] ?? '').join('').toUpperCase().slice(0, 2);
+  return (
+    <div className="flex">
+      <span className="text-muted-foreground w-32 shrink-0">{label}</span>
+      <span className="flex items-center gap-2">
+        <Avatar path={person?.avatar_url} fallback={initials} size="xs" />
+        {value}
+      </span>
     </div>
   );
 }

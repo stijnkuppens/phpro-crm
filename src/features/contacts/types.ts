@@ -7,6 +7,7 @@ export type ContactPersonalInfo = Database['public']['Tables']['contact_personal
 
 // ── Extended type ───────────────────────────────────────────────────────────
 export type ContactWithDetails = Contact & {
+  avatar_url?: string | null; // TODO: remove after types:generate
   personal_info: ContactPersonalInfo | null;
   account: { id: string; name: string } | null;
 };

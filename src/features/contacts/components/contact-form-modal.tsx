@@ -9,6 +9,7 @@ import { createContact } from '../actions/create-contact';
 import { updateContact } from '../actions/update-contact';
 import { updatePersonalInfo } from '../actions/update-personal-info';
 import { createBrowserClient } from '@/lib/supabase/client';
+import { Save } from 'lucide-react';
 import { zodFieldErrors } from '@/lib/form-errors';
 import { contactFormSchema } from '../types';
 import type { ContactFormValues, PersonalInfoFormValues, ContactWithDetails } from '../types';
@@ -136,7 +137,7 @@ export function ContactFormModal({ contactId, accountId, open, onClose, onSaved 
         />
         <div className="flex justify-end gap-2 pt-2">
           <Button type="button" variant="outline" onClick={onClose} disabled={loading}>Annuleren</Button>
-          <Button type="submit" disabled={loading}>{loading ? 'Opslaan...' : 'Opslaan'}</Button>
+          <Button type="submit" disabled={loading}><Save />{loading ? 'Opslaan...' : 'Opslaan'}</Button>
         </div>
       </form>
     </Modal>

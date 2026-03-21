@@ -16,6 +16,8 @@ export const REF_TABLES = [
   { key: 'ref_stop_reasons', label: 'Stop Reasons' },
   { key: 'ref_lead_sources', label: 'Lead Sources' },
   { key: 'ref_distribution_types', label: 'Distribution Types' },
+  { key: 'ref_internal_people', label: 'Internal People' },
+  { key: 'ref_teams', label: 'Teams' },
 ] as const;
 
 export type RefTableKey = (typeof REF_TABLES)[number]['key'];
@@ -25,6 +27,7 @@ export type ReferenceItem = {
   name: string;
   sort_order: number;
   is_active: boolean;
+  avatar_url?: string | null;
   created_at: string;
   updated_at: string;
 };

@@ -1,23 +1,36 @@
 'use client';
 
-import { useCallback, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { useEntity } from '@/lib/hooks/use-entity';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { FilterBar } from '@/components/admin/filter-bar';
+import { DateRangePicker } from '@/components/ui/date-range-picker';
 import { CommunicationModal } from '@/features/communications/components/communication-modal';
 import type { Communication, CommunicationWithDetails } from '@/features/communications/types';
-import { Mail, FileText, Users, Phone, ChevronDown, ChevronRight, Plus } from 'lucide-react';
+import type { DateRange } from 'react-day-picker';
+import { Mail, FileText, Users, Phone, ChevronDown, ChevronRight, Plus, Search } from 'lucide-react';
 
 type Props = {
   accountId: string;
   initialData: CommunicationWithDetails[];
   initialCount: number;
+  contacts?: { id: string; first_name: string; last_name: string }[];
+  deals?: { id: string; title: string }[];
 };
 
 const TYPE_CONFIG = {
   email: { icon: Mail, bg: 'bg-blue-50 dark:bg-blue-950', color: 'text-blue-600 dark:text-blue-400', label: 'E-mail' },
   note: { icon: FileText, bg: 'bg-amber-50 dark:bg-amber-950', color: 'text-amber-600 dark:text-amber-400', label: 'Notitie' },
-  meeting: { icon: Users, bg: 'bg-green-50 dark:bg-green-950', color: 'text-green-600 dark:text-green-400', label: 'Meeting' },
+  meeting: { icon: Users, bg: 'bg-green-50 dark:bg-green-950', color: 'text-green-600 dark:text-green-400', label: 'Vergadering' },
   call: { icon: Phone, bg: 'bg-purple-50 dark:bg-purple-950', color: 'text-purple-600 dark:text-purple-400', label: 'Call' },
 } as const;
 
@@ -27,118 +40,148 @@ const FILTER_CHIPS: { value: CommType | null; label: string }[] = [
   { value: null, label: 'Alles' },
   { value: 'email', label: 'E-mail' },
   { value: 'note', label: 'Notitie' },
-  { value: 'meeting', label: 'Meeting' },
+  { value: 'meeting', label: 'Vergadering' },
   { value: 'call', label: 'Call' },
 ];
 
-export function AccountCommunicationsTab({ accountId, initialData, initialCount }: Props) {
-  const [displayData, setDisplayData] = useState<CommunicationWithDetails[]>(initialData);
+export function AccountCommunicationsTab({ accountId, initialData, initialCount, contacts = [], deals = [] }: Props) {
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
   const [typeFilter, setTypeFilter] = useState<CommType | null>(null);
+  const [search, setSearch] = useState('');
+  const [ownerFilter, setOwnerFilter] = useState('all');
+  const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
   const [modalOpen, setModalOpen] = useState(false);
-  const [filterLoading, setFilterLoading] = useState(false);
 
-  const { fetchList } = useEntity<Communication>({
-    table: 'communications',
-    pageSize: 100,
-    initialData: initialData as unknown as Communication[],
-    initialCount,
-  });
-
-  const handleFilterChange = useCallback(
-    async (type: CommType | null) => {
-      setTypeFilter(type);
-      setFilterLoading(true);
-
-      const eqFilters: Record<string, string> = { account_id: accountId };
-      if (type) {
-        eqFilters.type = type;
+  // Derive unique owners from data for the filter dropdown
+  const owners = useMemo(() => {
+    const map = new Map<string, string>();
+    for (const c of initialData) {
+      if (c.owner?.id) {
+        map.set(c.owner.id, c.owner.full_name || 'Onbekend');
       }
+    }
+    return Array.from(map, ([id, name]) => ({ id, name }));
+  }, [initialData]);
 
-      // useEntity fetchList updates its internal data, but we need CommunicationWithDetails.
-      // Since useEntity only selects '*' (no joins), we use it for the query but
-      // note that joined fields (contact, deal, owner) won't be present.
-      // For filter-driven re-fetches, we accept base Communication data.
-      await fetchList({ page: 1, eqFilters });
+  // Client-side filtering (all data loaded with pageSize 100)
+  const filteredData = useMemo(() => {
+    let result = initialData;
 
-      // fetchList updates useEntity's internal state. We need to get that data.
-      // Unfortunately useEntity doesn't return the result from fetchList directly.
-      // Workaround: use the Supabase browser client directly for filtered queries
-      // with joins. For simplicity, we'll do a client-side filter on initialData
-      // for the type filter (since all data is already loaded with pageSize: 100).
-      // This is acceptable because the filter is on the already-fetched dataset.
+    if (typeFilter) {
+      result = result.filter((c) => c.type === typeFilter);
+    }
+    if (search) {
+      const q = search.toLowerCase();
+      result = result.filter((c) => {
+        const content = typeof c.content === 'object' && c.content ? (c.content as { text?: string }).text ?? '' : typeof c.content === 'string' ? c.content : '';
+        return (
+          c.subject?.toLowerCase().includes(q) ||
+          content.toLowerCase().includes(q) ||
+          c.to?.toLowerCase().includes(q)
+        );
+      });
+    }
+    if (ownerFilter !== 'all') {
+      result = result.filter((c) => c.owner?.id === ownerFilter);
+    }
+    if (dateRange?.from) {
+      result = result.filter((c) => new Date(c.date) >= dateRange.from!);
+    }
+    if (dateRange?.to) {
+      const to = new Date(dateRange.to);
+      to.setHours(23, 59, 59);
+      result = result.filter((c) => new Date(c.date) <= to);
+    }
 
-      // Actually, let's just filter the initialData for type filtering since we have
-      // all communications loaded. For large datasets this would need server-side,
-      // but 100 communications per account is a reasonable limit.
-      if (type) {
-        setDisplayData(initialData.filter((c) => c.type === type));
-      } else {
-        setDisplayData(initialData);
-      }
-      setFilterLoading(false);
-    },
-    [accountId, fetchList, initialData],
-  );
+    return result;
+  }, [initialData, typeFilter, search, ownerFilter, dateRange]);
 
   const toggleExpand = useCallback((id: string) => {
     setExpanded((prev) => {
       const next = new Set(prev);
-      if (next.has(id)) {
-        next.delete(id);
-      } else {
-        next.add(id);
-      }
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
       return next;
     });
   }, []);
 
   const handleModalClose = useCallback(() => {
     setModalOpen(false);
-    // After creating a communication, reload to pick up new data from server
     window.location.reload();
   }, []);
 
   return (
     <div className="space-y-4 mt-4">
-      {/* Header with filter chips and create button */}
-      <div className="flex items-center justify-between gap-4">
-        <div className="flex gap-1.5 flex-wrap">
-          {FILTER_CHIPS.map((chip) => (
-            <button
-              key={chip.label}
-              type="button"
-              onClick={() => handleFilterChange(chip.value)}
-              className={`px-3 py-1 text-xs font-medium rounded-full border transition-colors ${
-                typeFilter === chip.value
-                  ? 'bg-primary text-primary-foreground border-primary'
-                  : 'bg-muted/50 text-muted-foreground border-border hover:bg-muted'
-              }`}
-            >
-              {chip.label}
-            </button>
-          ))}
+      {/* Search + filters bar */}
+      <FilterBar>
+        <div className="flex flex-col gap-3">
+          <div className="flex items-center gap-3 flex-wrap">
+            <div className="relative flex-1 min-w-[200px]">
+              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Zoek op onderwerp, inhoud..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="pl-9"
+              />
+            </div>
+            <Select value={ownerFilter} onValueChange={setOwnerFilter}>
+              <SelectTrigger className="w-44">
+                {ownerFilter === 'all'
+                  ? 'Alle gebruikers'
+                  : owners.find((o) => o.id === ownerFilter)?.name ?? 'Alle gebruikers'}
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Alle gebruikers</SelectItem>
+                {owners.map((o) => (
+                  <SelectItem key={o.id} value={o.id}>{o.name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <DateRangePicker
+              value={dateRange}
+              onChange={setDateRange}
+              placeholder="Datum bereik"
+              className="h-10"
+            />
+            <Button size="sm" onClick={() => setModalOpen(true)}>
+              <Plus className="h-4 w-4 mr-1" /> Nieuw
+            </Button>
+          </div>
+          {/* Type pills */}
+          <div className="flex gap-1.5">
+            {FILTER_CHIPS.map((chip) => (
+              <button
+                key={chip.label}
+                type="button"
+                onClick={() => setTypeFilter(chip.value)}
+                className={`px-3 py-1 text-xs font-medium rounded-full transition-colors ${
+                  typeFilter === chip.value
+                    ? 'bg-primary text-primary-foreground'
+                    : 'bg-muted/50 text-muted-foreground hover:bg-muted'
+                }`}
+              >
+                {chip.label}
+              </button>
+            ))}
+          </div>
         </div>
-        <Button size="sm" onClick={() => setModalOpen(true)}>
-          <Plus className="h-4 w-4 mr-1" /> Nieuwe Communicatie
-        </Button>
-      </div>
+      </FilterBar>
 
       {/* Timeline */}
-      {filterLoading ? (
-        <div className="py-8 text-center text-muted-foreground">Laden...</div>
-      ) : displayData.length === 0 ? (
+      {filteredData.length === 0 ? (
         <div className="py-8 text-center text-muted-foreground">Geen communicatie gevonden.</div>
       ) : (
         <div className="space-y-2">
-          {displayData.map((comm) => {
+          {filteredData.map((comm) => {
             const config = TYPE_CONFIG[comm.type as CommType] ?? TYPE_CONFIG.note;
             const Icon = config.icon;
             const isExpanded = expanded.has(comm.id);
-            const contentStr = typeof comm.content === 'string' ? comm.content : '';
+            const contentObj = typeof comm.content === 'object' && comm.content ? (comm.content as { text?: string }) : null;
+            const contentStr = contentObj?.text ?? (typeof comm.content === 'string' ? comm.content : '');
 
             return (
-              <div key={comm.id} className="border rounded-lg overflow-hidden">
+              <div key={comm.id} className="border rounded-lg bg-card overflow-hidden">
                 <button
                   type="button"
                   onClick={() => toggleExpand(comm.id)}
@@ -154,7 +197,7 @@ export function AccountCommunicationsTab({ accountId, initialData, initialCount 
                     <div className="flex items-center gap-2 flex-wrap">
                       <span className="font-semibold text-sm truncate">{comm.subject}</span>
                       {comm.deal && (
-                        <Badge variant="outline" className="text-xs shrink-0">
+                        <Badge className="bg-primary/15 text-primary-action border-0 text-xs shrink-0">
                           {comm.deal.title}
                         </Badge>
                       )}
@@ -165,15 +208,27 @@ export function AccountCommunicationsTab({ accountId, initialData, initialCount 
                       )}
                     </div>
                     {contentStr && !isExpanded && (
-                      <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{contentStr}</p>
+                      <p className="text-xs text-muted-foreground mt-1 line-clamp-1">{contentStr}</p>
                     )}
                   </div>
 
-                  {/* Date and expand indicator */}
-                  <div className="flex items-center gap-2 shrink-0">
-                    <span className="text-xs text-muted-foreground">
-                      {new Date(comm.date).toLocaleDateString('nl-BE')}
-                    </span>
+                  {/* Date + owner + expand */}
+                  <div className="flex items-center gap-3 shrink-0">
+                    <div className="text-right">
+                      <div className="text-xs text-muted-foreground">
+                        {new Date(comm.date).toLocaleDateString('nl-BE', { day: 'numeric', month: 'short', year: 'numeric' })}
+                        {' '}
+                        {new Date(comm.date).toLocaleTimeString('nl-BE', { hour: '2-digit', minute: '2-digit' })}
+                      </div>
+                      {comm.owner?.full_name && (
+                        <div className="text-xs text-muted-foreground">{comm.owner.full_name}</div>
+                      )}
+                    </div>
+                    {comm.owner?.full_name && (
+                      <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-muted text-[10px] font-medium">
+                        {comm.owner.full_name.split(/\s+/).map(w => w[0] ?? '').join('').toUpperCase().slice(0, 2)}
+                      </div>
+                    )}
                     {isExpanded ? (
                       <ChevronDown className="h-4 w-4 text-muted-foreground" />
                     ) : (
@@ -194,11 +249,15 @@ export function AccountCommunicationsTab({ accountId, initialData, initialCount 
         </div>
       )}
 
-      <CommunicationModal
-        open={modalOpen}
-        onClose={handleModalClose}
-        accountId={accountId}
-      />
+      {modalOpen && (
+        <CommunicationModal
+          open={modalOpen}
+          onClose={handleModalClose}
+          accountId={accountId}
+          contacts={contacts}
+          deals={deals}
+        />
+      )}
     </div>
   );
 }

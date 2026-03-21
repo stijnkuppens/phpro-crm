@@ -250,3 +250,25 @@ INSERT INTO ref_distribution_types (name, sort_order) VALUES
   ('4%', 1),
   ('50/50', 2)
 ON CONFLICT (name) DO NOTHING;
+
+-- ── ref_internal_people (PHPro internal people for account roles) ────────
+INSERT INTO ref_internal_people (name, sort_order) VALUES
+  ('Jeroen', 1),
+  ('Bert', 2),
+  ('Nathalie', 3),
+  ('Wim', 4),
+  ('Sophie', 5),
+  ('Pieter', 6),
+  ('Stijn', 7),
+  ('Tom', 8),
+  ('Jan', 9),
+  ('Lisa', 10)
+ON CONFLICT (name) DO NOTHING;
+
+-- ── ref_teams (PHPro internal teams) ────────────────────────────────────
+INSERT INTO ref_teams (name, sort_order) VALUES
+  ('Team 1', 1),
+  ('Team 2', 2),
+  ('Team 3', 3),
+  ('Team 4', 4)
+ON CONFLICT (name) DO NOTHING;

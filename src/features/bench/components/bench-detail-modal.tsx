@@ -47,6 +47,10 @@ export function BenchDetailModal({ consultant, open, onClose, pipelines }: Props
   return (
     <Modal open={open} onClose={onClose} title={`${consultant.first_name} ${consultant.last_name}`} size="wide">
       <div className="space-y-4">
+        <div className="flex justify-end gap-2">
+          <Button variant="outline" size="sm" onClick={() => setShowQuickDeal(true)}>Maak deal aan</Button>
+          <Button size="sm" onClick={() => setEditing(true)}>Bewerken</Button>
+        </div>
         <div className="grid grid-cols-2 gap-4 text-sm">
           <div>
             <span className="text-muted-foreground">Stad:</span> {consultant.city ?? '-'}
@@ -104,10 +108,6 @@ export function BenchDetailModal({ consultant, open, onClose, pipelines }: Props
             <p className="text-sm mt-1">{consultant.description}</p>
           </div>
         )}
-        <div className="flex justify-end gap-2">
-          <Button variant="outline" onClick={() => setShowQuickDeal(true)}>Maak deal aan</Button>
-          <Button onClick={() => setEditing(true)}>Bewerken</Button>
-        </div>
       </div>
 
       <QuickDealModal

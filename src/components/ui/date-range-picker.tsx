@@ -2,6 +2,7 @@
 
 import * as React from "react"
 import { format } from "date-fns"
+import { nlBE } from "date-fns/locale"
 import { CalendarIcon } from "lucide-react"
 import type { DateRange } from "react-day-picker"
 
@@ -39,10 +40,10 @@ export function DateRangePicker({
             {value?.from ? (
               value.to ? (
                 <>
-                  {format(value.from, "dd/MM/yyyy")} – {format(value.to, "dd/MM/yyyy")}
+                  {format(value.from, "dd MMM yyyy", { locale: nlBE })} – {format(value.to, "dd MMM yyyy", { locale: nlBE })}
                 </>
               ) : (
-                format(value.from, "dd/MM/yyyy")
+                format(value.from, "dd MMM yyyy", { locale: nlBE })
               )
             ) : (
               placeholder
@@ -56,6 +57,7 @@ export function DateRangePicker({
           selected={value}
           onSelect={onChange}
           numberOfMonths={2}
+          locale={nlBE}
         />
       </PopoverContent>
     </Popover>

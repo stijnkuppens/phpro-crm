@@ -1,6 +1,7 @@
 'use client';
 
 import type { ColumnDef } from '@tanstack/react-table';
+import { Avatar } from '@/components/admin/avatar';
 import type { AccountListItem } from './types';
 
 export const accountColumns: ColumnDef<AccountListItem>[] = [
@@ -17,9 +18,7 @@ export const accountColumns: ColumnDef<AccountListItem>[] = [
         .join('');
       return (
         <div className="flex items-center gap-3">
-          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-muted text-xs font-medium">
-            {initials}
-          </div>
+          <Avatar path={row.original.logo_url} fallback={initials} round={false} />
           <div className="min-w-0">
             <div className="truncate font-medium">{name}</div>
             {domain && (
@@ -36,14 +35,12 @@ export const accountColumns: ColumnDef<AccountListItem>[] = [
     cell: ({ row }) => {
       const type = row.original.type;
       const styles: Record<string, string> = {
-        Klant: 'bg-green-100 text-green-700 border-green-200',
-        Prospect: 'bg-blue-100 text-blue-700 border-blue-200',
-        Partner: 'bg-purple-100 text-purple-700 border-purple-200',
+        Klant: 'bg-green-100 text-green-700',
+        Prospect: 'bg-blue-100 text-blue-700',
+        Partner: 'bg-orange-100 text-orange-700',
       };
       return (
-        <span
-          className={`inline-flex items-center rounded-full border px-2 py-0.5 text-xs font-medium ${styles[type] ?? ''}`}
-        >
+        <span className={`inline-flex items-center rounded-full border-0 px-2 py-0.5 text-xs font-medium ${styles[type] ?? 'bg-muted text-muted-foreground'}`}>
           {type}
         </span>
       );
@@ -53,17 +50,12 @@ export const accountColumns: ColumnDef<AccountListItem>[] = [
     accessorKey: 'status',
     header: 'Status',
     cell: ({ row }) => {
-      const status = row.original.status;
-      const isActive = status === 'Actief';
+      const isActive = row.original.status === 'Actief';
       return (
-        <span
-          className={`inline-flex items-center rounded-full border px-2 py-0.5 text-xs font-medium ${
-            isActive
-              ? 'bg-green-100 text-green-700 border-green-200'
-              : 'bg-red-100 text-red-700 border-red-200'
-          }`}
-        >
-          {status}
+        <span className={`inline-flex items-center rounded-full border-0 px-2 py-0.5 text-xs font-medium ${
+          isActive ? 'bg-primary/15 text-primary-action' : 'bg-muted text-muted-foreground'
+        }`}>
+          {row.original.status}
         </span>
       );
     },
@@ -74,13 +66,9 @@ export const accountColumns: ColumnDef<AccountListItem>[] = [
     cell: ({ row }) => {
       const has = row.original.has_framework_contract;
       return (
-        <span
-          className={`inline-flex items-center rounded-full border px-2 py-0.5 text-xs font-medium ${
-            has
-              ? 'bg-green-100 text-green-700 border-green-200'
-              : 'bg-gray-100 text-gray-500 border-gray-200'
-          }`}
-        >
+        <span className={`inline-flex items-center rounded-full border-0 px-2 py-0.5 text-xs font-medium ${
+          has ? 'bg-primary/15 text-primary-action' : 'bg-muted text-muted-foreground'
+        }`}>
           {has ? 'Ja' : 'Nee'}
         </span>
       );
@@ -92,13 +80,9 @@ export const accountColumns: ColumnDef<AccountListItem>[] = [
     cell: ({ row }) => {
       const has = row.original.has_service_contract;
       return (
-        <span
-          className={`inline-flex items-center rounded-full border px-2 py-0.5 text-xs font-medium ${
-            has
-              ? 'bg-blue-100 text-blue-700 border-blue-200'
-              : 'bg-gray-100 text-gray-500 border-gray-200'
-          }`}
-        >
+        <span className={`inline-flex items-center rounded-full border-0 px-2 py-0.5 text-xs font-medium ${
+          has ? 'bg-primary/15 text-primary-action' : 'bg-muted text-muted-foreground'
+        }`}>
           {has ? 'Ja' : 'Nee'}
         </span>
       );
@@ -110,8 +94,10 @@ export const accountColumns: ColumnDef<AccountListItem>[] = [
     cell: ({ row }) => {
       const count = row.original.active_consultant_count;
       return (
-        <span className="text-sm text-muted-foreground">
-          {count} actief
+        <span className={`inline-flex items-center rounded-full border-0 px-2 py-0.5 text-xs font-medium ${
+          count > 0 ? 'bg-primary/15 text-primary-action' : 'bg-muted text-muted-foreground'
+        }`}>
+          {count > 0 ? `${count} actief` : 'Geen'}
         </span>
       );
     },

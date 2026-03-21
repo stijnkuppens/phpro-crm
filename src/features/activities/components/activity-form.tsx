@@ -15,6 +15,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { Save } from 'lucide-react';
 import { activityFormSchema, type ActivityFormValues } from '../types';
 import { createActivity } from '../actions/create-activity';
 import { updateActivity } from '../actions/update-activity';
@@ -121,6 +122,7 @@ export function ActivityForm({ defaultValues, onSuccess, onCancel }: Props) {
       </div>
       <div className="flex gap-2">
         <Button type="submit" disabled={loading}>
+          <Save />
           {loading ? 'Opslaan...' : isEdit ? 'Bijwerken' : 'Aanmaken'}
         </Button>
         {onCancel && (

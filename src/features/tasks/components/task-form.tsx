@@ -13,6 +13,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { Save } from 'lucide-react';
 import { taskFormSchema, type TaskFormValues } from '../types';
 import { createTask } from '../actions/create-task';
 import { updateTask } from '../actions/update-task';
@@ -118,6 +119,7 @@ export function TaskForm({ defaultValues, onSuccess, onCancel }: Props) {
       </div>
       <div className="flex gap-2">
         <Button type="submit" disabled={loading}>
+          <Save />
           {loading ? 'Opslaan...' : isEdit ? 'Bijwerken' : 'Aanmaken'}
         </Button>
         {onCancel && (

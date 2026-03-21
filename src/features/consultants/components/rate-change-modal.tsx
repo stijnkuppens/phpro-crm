@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
+import { Save } from 'lucide-react';
 import { addRateChange } from '../actions/add-rate-change';
 
 type Props = {
@@ -67,6 +68,7 @@ export function RateChangeModal({ consultantId, open, onClose, onSuccess }: Prop
         <div className="flex gap-2 justify-end">
           <Button type="button" variant="outline" onClick={onClose}>Annuleren</Button>
           <Button type="submit" disabled={loading}>
+            <Save />
             {loading ? 'Verwerken...' : 'Opslaan'}
           </Button>
         </div>

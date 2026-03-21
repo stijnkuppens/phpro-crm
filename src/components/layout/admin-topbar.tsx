@@ -19,6 +19,7 @@ import {
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import { LogOut, User } from 'lucide-react';
 import { ThemeToggle } from '@/components/layout/theme-toggle';
+import { BrandSwitcher } from '@/components/layout/brand-switcher';
 import { NotificationBell } from '@/features/notifications/components/notification-bell';
 
 function LocaleSwitcher() {
@@ -65,6 +66,7 @@ export function AdminTopbar() {
     <header className="flex h-14 items-center gap-4 border-b bg-background px-4">
       <SidebarTrigger />
       <div className="flex-1" />
+      <BrandSwitcher />
       <LocaleSwitcher />
       <ThemeToggle />
       <NotificationBell />

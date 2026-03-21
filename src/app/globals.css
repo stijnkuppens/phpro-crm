@@ -99,6 +99,7 @@
     --color-secondary-foreground: var(--secondary-foreground);
     --color-secondary: var(--secondary);
     --color-primary-foreground: var(--primary-foreground);
+    --color-primary-action: var(--primary-action);
     --color-primary: var(--primary);
     --color-popover-foreground: var(--popover-foreground);
     --color-popover: var(--popover);
@@ -113,6 +114,68 @@
     --radius-2xl: calc(var(--radius) * 1.8);
     --radius-3xl: calc(var(--radius) * 2.2);
     --radius-4xl: calc(var(--radius) * 2.6);
+}
+
+/* ─── PHPro brand theme ─── */
+[data-brand="phpro"] {
+  --primary: #bdd431;
+  --primary-action: #7a8a1e;
+  --primary-foreground: #1a1a1a;
+  --accent: #eef5c8;
+  --accent-foreground: #1a1a1a;
+  --ring: #bdd431;
+  --sidebar-primary: #bdd431;
+  --sidebar-primary-foreground: #1a1a1a;
+  --sidebar-accent: #e8f0b8;
+  --sidebar-accent-foreground: #1a1a1a;
+  --sidebar-ring: #bdd431;
+}
+
+[data-brand="phpro"].dark {
+  --primary: #bdd431;
+  --primary-action: #bdd431;
+  --primary-foreground: #1a1a1a;
+  --accent: #2a2e12;
+  --accent-foreground: #eef5c8;
+  --ring: #bdd431;
+  --sidebar-primary: #bdd431;
+  --sidebar-primary-foreground: #1a1a1a;
+  --sidebar-accent: #2a2e12;
+  --sidebar-accent-foreground: #eef5c8;
+  --sidebar-ring: #bdd431;
+}
+
+/* ─── 25Carat brand theme ─── */
+[data-brand="25carat"] {
+  --primary: #C5A053;
+  --primary-action: #96782e;
+  --primary-foreground: #ffffff;
+  --accent: #f5edd8;
+  --accent-foreground: #1E2029;
+  --muted: #f9f6ee;
+  --muted-foreground: #5c5747;
+  --ring: #C5A053;
+  --sidebar-primary: #C5A053;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #f5edd8;
+  --sidebar-accent-foreground: #1E2029;
+  --sidebar-ring: #C5A053;
+}
+
+[data-brand="25carat"].dark {
+  --primary: #C5A053;
+  --primary-action: #C5A053;
+  --primary-foreground: #1a1a1a;
+  --accent: #2e2a1e;
+  --accent-foreground: #dcc88a;
+  --muted: #1e1d19;
+  --muted-foreground: #a89868;
+  --ring: #C5A053;
+  --sidebar-primary: #C5A053;
+  --sidebar-primary-foreground: #1a1a1a;
+  --sidebar-accent: #2e2a1e;
+  --sidebar-accent-foreground: #dcc88a;
+  --sidebar-ring: #C5A053;
 }
 
 @layer base {

@@ -50,5 +50,8 @@ export async function createActiveConsultant(
   });
 
   revalidatePath('/admin/consultants');
+  if (parsed.data.account_id) {
+    revalidatePath(`/admin/accounts/${parsed.data.account_id}`);
+  }
   return ok(data);
 }

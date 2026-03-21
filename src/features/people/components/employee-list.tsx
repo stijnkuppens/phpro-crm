@@ -6,6 +6,7 @@ import { Eye, Pencil, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useEntity } from '@/lib/hooks/use-entity';
 import DataTable from '@/components/admin/data-table';
+import { FilterBar } from '@/components/admin/filter-bar';
 import { Input } from '@/components/ui/input';
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
@@ -60,24 +61,26 @@ export function EmployeeList({ initialData, initialCount }: Props) {
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-wrap gap-4">
-        <Input
-          placeholder="Zoeken op naam..."
-          value={search}
-          onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-          className="w-64"
-        />
-        <Select value={status} onValueChange={(v) => { if (v) { setStatus(v); setPage(1); } }}>
-          <SelectTrigger className="w-32">
-            <SelectValue placeholder="Status" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">Alle</SelectItem>
-            <SelectItem value="actief">Actief</SelectItem>
-            <SelectItem value="inactief">Inactief</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
+      <FilterBar>
+        <div className="flex flex-wrap gap-4">
+          <Input
+            placeholder="Zoeken op naam..."
+            value={search}
+            onChange={(e) => { setSearch(e.target.value); setPage(1); }}
+            className="w-64"
+          />
+          <Select value={status} onValueChange={(v) => { if (v) { setStatus(v); setPage(1); } }}>
+            <SelectTrigger className="w-32">
+              <SelectValue placeholder="Status" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Alle</SelectItem>
+              <SelectItem value="actief">Actief</SelectItem>
+              <SelectItem value="inactief">Inactief</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      </FilterBar>
       <DataTable
         columns={employeeColumns as any}
         data={data}

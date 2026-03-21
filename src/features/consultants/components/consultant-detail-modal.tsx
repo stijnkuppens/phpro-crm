@@ -4,10 +4,12 @@ import { useState } from 'react';
 import { Modal } from '@/components/admin/modal';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { getContractStatus, getCurrentRate, type ActiveConsultantWithDetails, type ContractStatus } from '../types';
+import { ExternalLink } from 'lucide-react';
+import { getContractStatus, getCurrentRate, contractStatusColors, type ActiveConsultantWithDetails } from '../types';
 import { StopConsultantModal } from './stop-consultant-modal';
 import { ExtendConsultantModal } from './extend-consultant-modal';
 import { RateChangeModal } from './rate-change-modal';
+import { ContractAttributionModal } from './contract-attribution-modal';
 
 type Props = {
   consultant: ActiveConsultantWithDetails;
@@ -15,20 +17,11 @@ type Props = {
   onClose: () => void;
 };
 
-const statusColors: Record<ContractStatus, string> = {
-  actief: 'bg-green-100 text-green-800',
-  waarschuwing: 'bg-yellow-100 text-yellow-800',
-  kritiek: 'bg-red-100 text-red-800',
-  verlopen: 'bg-gray-100 text-gray-800',
-  onbepaald: 'bg-blue-100 text-blue-800',
-  stopgezet: 'bg-gray-300 text-gray-600',
-};
-
 const fmt = (n: number) =>
   new Intl.NumberFormat('nl-BE', { style: 'currency', currency: 'EUR' }).format(n);
 
 export function ConsultantDetailModal({ consultant, open, onClose }: Props) {
-  const [activeModal, setActiveModal] = useState<'stop' | 'extend' | 'rate' | null>(null);
+  const [activeModal, setActiveModal] = useState<'stop' | 'extend' | 'rate' | 'contract-attr' | null>(null);
   const status = getContractStatus(consultant);
   const rate = getCurrentRate(consultant);
 
@@ -43,7 +36,7 @@ export function ConsultantDetailModal({ consultant, open, onClose }: Props) {
             <div><span className="text-muted-foreground">Account:</span> {consultant.account?.name ?? consultant.client_name ?? '-'}</div>
             <div>
               <span className="text-muted-foreground">Status:</span>{' '}
-              <Badge className={statusColors[status]}>{status}</Badge>
+              <Badge className={contractStatusColors[status]}>{status}</Badge>
             </div>
             <div><span className="text-muted-foreground">Huidig tarief:</span> {fmt(rate)}/u</div>
             <div>
@@ -53,6 +46,72 @@ export function ConsultantDetailModal({ consultant, open, onClose }: Props) {
             </div>
             <div><span className="text-muted-foreground">Opzegtermijn:</span> {consultant.notice_period_days ?? 30} dagen</div>
           </div>
+
+          {/* Contract Attribution */}
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <h4 className="text-sm font-medium">Contract attributie</h4>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setActiveModal('contract-attr')}
+              >
+                {consultant.contract_attribution ? 'Contract wijzigen' : 'Contract instellen'}
+              </Button>
+            </div>
+            {consultant.contract_attribution ? (
+              <div className="border rounded-md p-3 text-sm space-y-1">
+                <div>
+                  <span className="text-muted-foreground">Type:</span>{' '}
+                  <Badge className={consultant.contract_attribution.type === 'rechtstreeks' ? 'bg-green-100 text-green-800' : 'bg-blue-100 text-blue-800'}>
+                    {consultant.contract_attribution.type === 'rechtstreeks' ? 'Rechtstreeks' : 'Cronos'}
+                  </Badge>
+                </div>
+                {consultant.contract_attribution.type === 'cronos' && (
+                  <>
+                    {consultant.contract_attribution.cc_name && (
+                      <div><span className="text-muted-foreground">CC Naam:</span> {consultant.contract_attribution.cc_name}</div>
+                    )}
+                    {consultant.contract_attribution.cc_contact_person && (
+                      <div><span className="text-muted-foreground">CC Contactpersoon:</span> {consultant.contract_attribution.cc_contact_person}</div>
+                    )}
+                    {consultant.contract_attribution.cc_email && (
+                      <div><span className="text-muted-foreground">CC E-mail:</span> {consultant.contract_attribution.cc_email}</div>
+                    )}
+                    {consultant.contract_attribution.cc_phone && (
+                      <div><span className="text-muted-foreground">CC Telefoon:</span> {consultant.contract_attribution.cc_phone}</div>
+                    )}
+                  </>
+                )}
+              </div>
+            ) : (
+              <p className="text-sm text-muted-foreground">Geen contract attributie</p>
+            )}
+          </div>
+
+          {/* SOW URL */}
+          {consultant.sow_url && (
+            <div>
+              <h4 className="text-sm font-medium mb-1">SOW</h4>
+              <a
+                href={consultant.sow_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-sm text-primary-action hover:underline inline-flex items-center gap-1"
+              >
+                {consultant.sow_url}
+                <ExternalLink className="h-3 w-3" />
+              </a>
+            </div>
+          )}
+
+          {/* Notes */}
+          {consultant.notes && (
+            <div>
+              <h4 className="text-sm font-medium mb-1">Notities</h4>
+              <p className="text-sm text-muted-foreground whitespace-pre-wrap">{consultant.notes}</p>
+            </div>
+          )}
 
           {/* Rate history */}
           {consultant.rate_history && consultant.rate_history.length > 0 && (
@@ -137,6 +196,18 @@ export function ConsultantDetailModal({ consultant, open, onClose }: Props) {
           open
           onClose={() => setActiveModal(null)}
           onSuccess={onClose}
+        />
+      )}
+      {activeModal === 'contract-attr' && (
+        <ContractAttributionModal
+          consultantId={consultant.id}
+          existing={consultant.contract_attribution}
+          open
+          onClose={() => setActiveModal(null)}
+          onSaved={() => {
+            setActiveModal(null);
+            onClose();
+          }}
         />
       )}
     </>

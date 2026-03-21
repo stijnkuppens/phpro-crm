@@ -42,15 +42,15 @@ export async function simulateIndexation(
   const rates = (hourlyRates ?? []).map((r) => ({
     role: r.role,
     current_rate: r.rate,
-    proposed_rate: Math.round(r.rate * multiplier * 100) / 100,
+    proposed_rate: Math.round(r.rate * multiplier),
   }));
 
   const sla = slaRates
     ? {
         fixed_monthly_rate: slaRates.fixed_monthly_rate,
         support_hourly_rate: slaRates.support_hourly_rate,
-        proposed_fixed: Math.round(slaRates.fixed_monthly_rate * multiplier * 100) / 100,
-        proposed_support: Math.round(slaRates.support_hourly_rate * multiplier * 100) / 100,
+        proposed_fixed: Math.round(slaRates.fixed_monthly_rate * multiplier),
+        proposed_support: Math.round(slaRates.support_hourly_rate * multiplier),
       }
     : null;
 

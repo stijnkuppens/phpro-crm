@@ -7,7 +7,9 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import { stopConsultant } from '../actions/stop-consultant';
+import { moveStoppedToBench } from '../actions/move-stopped-to-bench';
 
 type Props = {
   consultantId: string;
@@ -18,6 +20,7 @@ type Props = {
 
 export function StopConsultantModal({ consultantId, open, onClose, onSuccess }: Props) {
   const [loading, setLoading] = useState(false);
+  const [moveToBench, setMoveToBench] = useState(false);
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -36,6 +39,18 @@ export function StopConsultantModal({ consultantId, open, onClose, onSuccess }: 
       return;
     }
 
+    if (moveToBench) {
+      const benchResult = await moveStoppedToBench(consultantId);
+      if ('error' in benchResult && benchResult.error) {
+        toast.error(typeof benchResult.error === 'string' ? benchResult.error : 'Kon niet naar bench verplaatsen');
+      } else {
+        toast.success('Consultant stopgezet en naar bench verplaatst');
+        onClose();
+        onSuccess?.();
+        return;
+      }
+    }
+
     toast.success('Consultant stopgezet');
     onClose();
     onSuccess?.();
@@ -51,6 +66,14 @@ export function StopConsultantModal({ consultantId, open, onClose, onSuccess }: 
         <div className="space-y-2">
           <Label htmlFor="stop_reason">Reden</Label>
           <Textarea id="stop_reason" name="stop_reason" rows={3} />
+        </div>
+        <div className="flex items-center gap-2">
+          <Checkbox
+            id="move_to_bench"
+            checked={moveToBench}
+            onCheckedChange={(checked) => setMoveToBench(checked === true)}
+          />
+          <Label htmlFor="move_to_bench">Naar bench verplaatsen</Label>
         </div>
         <div className="flex gap-2 justify-end">
           <Button type="button" variant="outline" onClick={onClose}>Annuleren</Button>

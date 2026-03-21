@@ -6,6 +6,7 @@ import { Modal } from '@/components/admin/modal';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
+import { Save } from 'lucide-react';
 import { simulateIndexation } from '../actions/simulate-indexation';
 import { saveIndexationDraft } from '../actions/save-indexation-draft';
 import { approveIndexation } from '../actions/approve-indexation';
@@ -25,7 +26,8 @@ export function IndexationWizard({ accountId, open, onClose }: Props) {
   const [loading, setLoading] = useState(false);
   const [baseYear, setBaseYear] = useState(new Date().getFullYear() - 1);
   const [targetYear, setTargetYear] = useState(new Date().getFullYear());
-  const [percentage, setPercentage] = useState(0);
+  const [percentageStr, setPercentageStr] = useState('');
+  const percentage = Number(percentageStr) || 0;
   const [simulation, setSimulation] = useState<SimulationResult | null>(null);
   const [draftId, setDraftId] = useState<string | null>(null);
 
@@ -108,7 +110,7 @@ export function IndexationWizard({ accountId, open, onClose }: Props) {
             </div>
             <div className="space-y-2">
               <Label htmlFor="percentage">Percentage (%)</Label>
-              <Input id="percentage" type="number" step="0.01" value={percentage} onChange={(e) => setPercentage(Number(e.target.value))} />
+              <Input id="percentage" type="number" step="0.01" value={percentageStr} onChange={(e) => setPercentageStr(e.target.value)} />
             </div>
           </div>
           <div className="flex justify-end">
@@ -160,6 +162,7 @@ export function IndexationWizard({ accountId, open, onClose }: Props) {
           <div className="flex gap-2 justify-end">
             <Button variant="outline" onClick={() => setStep(1)}>Terug</Button>
             <Button onClick={handleSaveDraft} disabled={loading}>
+              <Save />
               {loading ? 'Opslaan...' : 'Draft opslaan'}
             </Button>
           </div>

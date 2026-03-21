@@ -12,6 +12,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { Save } from 'lucide-react';
 import { closeDealSchema, type CloseDealValues } from '../types';
 import { closeDeal } from '../actions/close-deal';
 
@@ -115,6 +116,7 @@ export function CloseDealModal({ dealId, open, onOpenChange, onSuccess }: Props)
               Annuleren
             </Button>
             <Button type="submit" disabled={loading}>
+              <Save />
               {loading ? 'Opslaan...' : 'Bevestigen'}
             </Button>
           </div>

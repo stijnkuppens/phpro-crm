@@ -71,7 +71,7 @@ function RowActionButton<T extends Record<string, any>>({ action, row }: { actio
             <Button
               variant="ghost"
               size="icon"
-              className={`h-8 w-8 ${action.variant === 'destructive' ? 'text-muted-foreground hover:text-destructive hover:bg-destructive/10' : 'text-muted-foreground'}`}
+              className={`h-8 w-8 ${action.variant === 'destructive' ? 'text-muted-foreground hover:text-destructive hover:bg-destructive/10' : 'text-muted-foreground hover:text-primary-action hover:bg-primary/10'}`}
               onClick={(e) => {
                 e.stopPropagation();
                 if (action.confirm) {
@@ -187,7 +187,7 @@ export default function DataTable<T extends Record<string, any>>({
         )}
       </div>
 
-      <div className="rounded-md border">
+      <div className="rounded-xl border bg-card shadow-sm">
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (

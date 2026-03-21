@@ -15,6 +15,15 @@ export type ActiveConsultantWithDetails = ActiveConsultant & {
 
 export type ContractStatus = 'stopgezet' | 'onbepaald' | 'verlopen' | 'kritiek' | 'waarschuwing' | 'actief';
 
+export const contractStatusColors: Record<ContractStatus, string> = {
+  actief: 'bg-green-100 text-green-800',
+  waarschuwing: 'bg-yellow-100 text-yellow-800',
+  kritiek: 'bg-red-100 text-red-800',
+  verlopen: 'bg-gray-100 text-gray-800',
+  onbepaald: 'bg-blue-100 text-blue-800',
+  stopgezet: 'bg-gray-300 text-gray-600',
+};
+
 export function getContractStatus(consultant: ActiveConsultant): ContractStatus {
   if (consultant.is_stopped) return 'stopgezet';
   if (consultant.is_indefinite || !consultant.end_date) return 'onbepaald';

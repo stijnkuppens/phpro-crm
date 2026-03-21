@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { StatCard } from '@/components/admin/stat-card';
-import { DollarSign, TrendingUp, Users } from 'lucide-react';
+import { DollarSign, Save, TrendingUp, Users } from 'lucide-react';
 import { savePrognose } from '@/features/revenue/actions/save-prognose';
 import type { RevenueClientFull, DivisionWithServices, RevenueEntry } from '@/features/revenue/types';
 import type { PrognoseLine, PrognoseLineAction } from '../types';
@@ -90,6 +90,7 @@ export function PrognoseEditor({ clients, divisions, entries, forecastYear, last
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle className="text-sm">Prognose {forecastYear}</CardTitle>
           <Button onClick={handleSave} disabled={saving} size="sm">
+            <Save />
             {saving ? 'Opslaan...' : 'Opslaan'}
           </Button>
         </CardHeader>

@@ -7,7 +7,28 @@
       "WebSearch",
       "Bash(ls -la /Users/stijnkuppens/phpro/ai-projects/phpro_crm/src/app/\\\\\\(auth\\\\\\)/)",
       "Bash(cat /Users/stijnkuppens/phpro/ai-projects/phpro_crm/src/app/\\\\\\(auth\\\\\\)/layout.tsx)",
-      "Bash(task db:seed)"
+      "Bash(task db:seed)",
+      "WebFetch(domain:www.phpro.be)",
+      "WebFetch(domain:25carat.be)",
+      "Bash(npx tsc:*)",
+      "Bash(for feature:*)",
+      "Bash(do echo:*)",
+      "Read(//Users/stijnkuppens/phpro/ai-projects/phpro_crm/src/features/**)",
+      "Bash(done)",
+      "WebFetch(domain:akfpartners.com)",
+      "WebFetch(domain:softwaremill.com)",
+      "WebFetch(domain:makerkit.dev)",
+      "WebFetch(domain:supabase.com)",
+      "WebFetch(domain:www.workingsoftware.dev)",
+      "WebFetch(domain:c4model.com)",
+      "WebFetch(domain:www.eraser.io)",
+      "WebFetch(domain:www.figma.com)",
+      "WebFetch(domain:icepanel.io)",
+      "Bash(curl -s -L -o /Users/stijnkuppens/phpro/ai-projects/phpro_crm/src/app/favicon.ico \"https://www.phpro.be/favicon.ico\")",
+      "mcp__plugin_playwright_playwright__browser_navigate",
+      "mcp__plugin_playwright_playwright__browser_evaluate",
+      "Bash(npm install:*)",
+      "Bash(ls node_modules/date-fns/locale/nl*)"
     ]
   }
 }

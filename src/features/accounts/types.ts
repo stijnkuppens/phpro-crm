@@ -41,6 +41,7 @@ export type AccountServiceWithRef = {
 
 // ── Extended account with relations ─────────────────────────────────────────
 export type AccountWithRelations = Account & {
+  logo_url?: string | null; // TODO: remove after types:generate
   manual_services: AccountManualService[];
   tech_stacks: AccountTechStackWithRef[];
   samenwerkingsvormen: AccountSamenwerkingsvormWithRef[];
@@ -51,7 +52,7 @@ export type AccountWithRelations = Account & {
 };
 
 // ── Reference data type (passed as props to form) ───────────────────────────
-export type ReferenceOption = { id: string; name: string };
+export type ReferenceOption = { id: string; name: string; avatar_url?: string | null };
 
 export type AccountReferenceData = {
   technologies: ReferenceOption[];
@@ -60,6 +61,8 @@ export type AccountReferenceData = {
   hostingEnvironments: ReferenceOption[];
   competenceCenters: ReferenceOption[];
   ccServices: ReferenceOption[];
+  internalPeople: ReferenceOption[];
+  teams: ReferenceOption[];
 };
 
 // ── Zod schemas for form validation ─────────────────────────────────────────
@@ -112,6 +115,7 @@ export type AccountListItem = {
   id: string;
   name: string;
   domain: string | null;
+  logo_url?: string | null; // TODO: remove after types:generate
   type: 'Klant' | 'Prospect' | 'Partner';
   status: 'Actief' | 'Inactief';
   owner: { id: string; full_name: string | null } | null;

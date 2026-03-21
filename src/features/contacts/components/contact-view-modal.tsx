@@ -5,9 +5,10 @@ import { Modal } from '@/components/admin/modal';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
-import { Mail, Phone } from 'lucide-react';
+import { Mail, Phone, ShieldCheck, Star, Eye, UtensilsCrossed, CalendarDays, Gift } from 'lucide-react';
 import Link from 'next/link';
 import { createBrowserClient } from '@/lib/supabase/client';
+import { AvatarUpload } from '@/components/admin/avatar-upload';
 import type { ContactWithDetails } from '../types';
 
 type Props = {
@@ -52,27 +53,49 @@ export function ContactViewModal({ contactId, onClose, onEdit }: Props) {
           {/* Header */}
           <div className="flex items-start justify-between">
             <div className="flex items-center gap-4">
-              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-muted text-lg font-medium">
-                {initials}
-              </div>
+              <AvatarUpload
+                currentPath={contact.avatar_url}
+                fallback={initials}
+                storagePath={`contacts/${contact.id}`}
+                onUploaded={async (path) => {
+                  const supabase = createBrowserClient();
+                  await supabase.from('contacts').update({ avatar_url: path }).eq('id', contact.id);
+                  setContact((prev) => prev ? { ...prev, avatar_url: path } : prev);
+                }}
+              />
               <div>
                 <h2 className="text-lg font-semibold">{contact.first_name} {contact.last_name}</h2>
                 {contact.title && <p className="text-sm text-muted-foreground">{contact.title}</p>}
                 <div className="mt-1 flex items-center gap-2">
-                  {contact.role && <Badge variant="outline">{contact.role}</Badge>}
-                  {contact.is_steerco && <Badge variant="secondary">Steerco</Badge>}
-                  {contact.is_pinned && <Badge>Overview</Badge>}
+                  {contact.role && (
+                    <Badge className="bg-primary/15 text-primary-action border-0">
+                      <ShieldCheck className="mr-1 h-3 w-3" />{contact.role}
+                    </Badge>
+                  )}
+                  {contact.is_steerco && (
+                    <Badge className="bg-primary/15 text-primary-action border-0">
+                      <Star className="mr-1 h-3 w-3" />Steerco
+                    </Badge>
+                  )}
+                  {contact.is_pinned && (
+                    <Badge className="bg-primary/15 text-primary-action border-0">
+                      <Eye className="mr-1 h-3 w-3" />Overview
+                    </Badge>
+                  )}
                 </div>
               </div>
             </div>
-            {contact.account && (
-              <Link
-                href={`/admin/accounts/${contact.account.id}`}
-                className="text-sm font-medium text-primary hover:underline"
-              >
-                {contact.account.name}
-              </Link>
-            )}
+            <div className="flex items-center gap-3">
+              {contact.account && (
+                <Link
+                  href={`/admin/accounts/${contact.account.id}`}
+                  className="text-sm font-medium text-primary hover:underline"
+                >
+                  {contact.account.name}
+                </Link>
+              )}
+              <Button size="sm" onClick={() => onEdit(contact.id)}>Bewerken</Button>
+            </div>
           </div>
 
           {/* Contact info */}
@@ -93,9 +116,21 @@ export function ContactViewModal({ contactId, onClose, onEdit }: Props) {
           {(pi?.invite_dinner || pi?.invite_event || pi?.invite_gift) && (
             <div className="flex items-center gap-2">
               <span className="text-sm text-muted-foreground">Relatiebeheer:</span>
-              {pi?.invite_dinner && <Badge variant="outline">Diner</Badge>}
-              {pi?.invite_event && <Badge variant="outline">Event</Badge>}
-              {pi?.invite_gift && <Badge variant="outline">Gift</Badge>}
+              {pi?.invite_dinner && (
+                <Badge className="bg-primary/15 text-primary-action border-0">
+                  <UtensilsCrossed className="mr-1 h-3 w-3" />Diner
+                </Badge>
+              )}
+              {pi?.invite_event && (
+                <Badge className="bg-primary/15 text-primary-action border-0">
+                  <CalendarDays className="mr-1 h-3 w-3" />Event
+                </Badge>
+              )}
+              {pi?.invite_gift && (
+                <Badge className="bg-primary/15 text-primary-action border-0">
+                  <Gift className="mr-1 h-3 w-3" />Gift
+                </Badge>
+              )}
             </div>
           )}
 
@@ -131,11 +166,6 @@ export function ContactViewModal({ contactId, onClose, onEdit }: Props) {
             )}
           </div>
 
-          {/* Footer */}
-          <div className="flex justify-end gap-2">
-            <Button variant="outline" onClick={onClose}>Sluiten</Button>
-            <Button onClick={() => onEdit(contact.id)}>Bewerken</Button>
-          </div>
         </div>
       )}
     </Modal>

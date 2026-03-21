@@ -6,15 +6,17 @@ export const getSlaRates = cache(
   async (accountId: string, years?: number[]): Promise<SlaRateWithTools[]> => {
     const supabase = await createServerClient();
 
-    const currentYear = new Date().getFullYear();
-    const targetYears = years ?? [currentYear, currentYear - 1, currentYear - 2];
-
-    const { data, error } = await supabase
+    let query = supabase
       .from('sla_rates')
       .select('*, tools:sla_tools(*)')
       .eq('account_id', accountId)
-      .in('year', targetYears)
       .order('year', { ascending: false });
+
+    if (years) {
+      query = query.in('year', years);
+    }
+
+    const { data, error } = await query;
 
     if (error) {
       console.error('Failed to fetch SLA rates:', error.message);
