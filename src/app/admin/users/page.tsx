@@ -14,9 +14,7 @@ export default async function UsersPage() {
         title="Gebruikers"
         breadcrumbs={[{ label: 'Admin', href: '/admin' }, { label: 'Gebruikers' }]}
         actions={
-          <Link href="/admin/users/invite">
-            <Button>Gebruiker uitnodigen</Button>
-          </Link>
+          <Button nativeButton={false} render={<Link href="/admin/users/invite" />}>Gebruiker uitnodigen</Button>
         }
       />
       <DataTable columns={userColumns} data={users} />

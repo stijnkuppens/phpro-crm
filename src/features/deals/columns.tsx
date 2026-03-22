@@ -3,6 +3,7 @@
 import type { ColumnDef } from '@tanstack/react-table';
 import { Badge } from '@/components/ui/badge';
 import type { DealWithRelations } from './types';
+import { formatEUR } from '@/lib/format';
 
 const ORIGIN_BADGE: Record<string, { label: string; className: string }> = {
   rechtstreeks: { label: 'Direct', className: 'bg-green-100 text-green-800 border-green-200' },
@@ -38,7 +39,7 @@ export const dealColumns: ColumnDef<DealWithRelations>[] = [
     header: 'Bedrag',
     cell: ({ getValue }) => {
       const n = Number(getValue<number>() ?? 0);
-      return new Intl.NumberFormat('nl-BE', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(n);
+      return formatEUR(n);
     },
   },
   {

@@ -15,6 +15,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { moveDealStage } from '../actions/move-deal-stage';
 import type { DealCard } from '../types';
+import { formatEUR } from '@/lib/format';
 
 type Stage = {
   id: string;
@@ -60,16 +61,13 @@ function DraggableDealCard({ deal }: { deal: DealCard }) {
     opacity: isDragging ? 0.5 : 1,
   };
 
-  const fmt = (n: number) =>
-    new Intl.NumberFormat('nl-BE', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(n);
-
   return (
     <Card ref={setNodeRef} style={style} {...listeners} {...attributes} className="cursor-grab active:cursor-grabbing">
       <CardContent className="p-3">
         <div className="text-sm font-medium mb-1">{deal.title}</div>
         <div className="text-xs text-muted-foreground mb-1">{deal.account_name}</div>
         <div className="flex items-center justify-between text-xs">
-          <span className="font-semibold">{fmt(deal.amount)}</span>
+          <span className="font-semibold">{formatEUR(deal.amount)}</span>
           <span>{deal.probability}%</span>
         </div>
         {deal.forecast_category && (

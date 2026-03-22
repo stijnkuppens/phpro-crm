@@ -22,7 +22,7 @@ export function NotificationBell() {
   const { user } = useAuth();
   const router = useRouter();
   const [notifications, setNotifications] = useState<Notification[]>([]);
-  const [unreadCount, setUnreadCount] = useState(0);
+  const unreadCount = notifications.filter((n) => !n.is_read).length;
 
   // Initial fetch
   useEffect(() => {
@@ -39,7 +39,6 @@ export function NotificationBell() {
         if (cancelled) return;
         if (data) {
           setNotifications(data as Notification[]);
-          setUnreadCount(data.filter((n) => !n.is_read).length);
         }
       });
     return () => { cancelled = true; };
@@ -62,7 +61,6 @@ export function NotificationBell() {
         (payload) => {
           const newNotification = payload.new as Notification;
           setNotifications((prev) => [newNotification, ...prev].slice(0, 20));
-          setUnreadCount((prev) => prev + 1);
         },
       )
       .subscribe();
@@ -79,7 +77,6 @@ export function NotificationBell() {
         setNotifications((prev) =>
           prev.map((n) => (n.id === notification.id ? { ...n, is_read: true } : n)),
         );
-        setUnreadCount((prev) => Math.max(0, prev - 1));
       }
       if (notification.link) {
         router.push(notification.link);
@@ -91,7 +88,6 @@ export function NotificationBell() {
   const handleMarkAllRead = useCallback(async () => {
     await markAllAsRead();
     setNotifications((prev) => prev.map((n) => ({ ...n, is_read: true })));
-    setUnreadCount(0);
   }, []);
 
   return (

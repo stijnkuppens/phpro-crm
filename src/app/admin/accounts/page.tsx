@@ -21,7 +21,7 @@ export default async function AccountsPage() {
           { label: 'Accounts' },
         ]}
         actions={
-          <Button size="sm" render={<Link href="/admin/accounts/new" />}>
+          <Button size="sm" nativeButton={false} render={<Link href="/admin/accounts/new" />}>
             <Plus />
             Nieuw Account
           </Button>

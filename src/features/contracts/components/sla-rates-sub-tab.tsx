@@ -6,15 +6,13 @@ import { Pencil, Plus, Wrench } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import type { SlaRateWithTools } from '../types';
+import { formatEUR } from '@/lib/format';
 
 type Props = {
   slaRates: SlaRateWithTools[];
   hasServiceContract?: boolean;
   onEditYear: (year: number) => void;
 };
-
-const fmt = (n: number) =>
-  new Intl.NumberFormat('nl-BE', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(n);
 
 export function SlaRatesSubTab({ slaRates, hasServiceContract, onEditYear }: Props) {
   const sorted = useMemo(() => [...slaRates].sort((a, b) => b.year - a.year).slice(0, 3), [slaRates]);
@@ -76,7 +74,7 @@ export function SlaRatesSubTab({ slaRates, hasServiceContract, onEditYear }: Pro
         <Card>
           <CardContent className="pt-4">
             <div className="text-[10px] font-semibold uppercase tracking-wider text-primary-action">Vast maandtarief</div>
-            <div className="text-2xl font-bold mt-1">{fmt(Number(current.fixed_monthly_rate))}</div>
+            <div className="text-2xl font-bold mt-1">{formatEUR(Number(current.fixed_monthly_rate))}</div>
             <div className="text-xs text-primary-action">{current.year}{current.year === new Date().getFullYear() ? ' (huidig)' : ''}</div>
             {fixedDiff != null && fixedDiff !== 0 && (
               <span className={`text-xs font-medium ${fixedDiff > 0 ? 'text-green-600' : 'text-red-600'}`}>
@@ -88,7 +86,7 @@ export function SlaRatesSubTab({ slaRates, hasServiceContract, onEditYear }: Pro
         <Card>
           <CardContent className="pt-4">
             <div className="text-[10px] font-semibold uppercase tracking-wider text-primary-action">Support uurtarief</div>
-            <div className="text-2xl font-bold mt-1">{fmt(Number(current.support_hourly_rate))}/u</div>
+            <div className="text-2xl font-bold mt-1">{formatEUR(Number(current.support_hourly_rate))}/u</div>
             <div className="text-xs text-primary-action">{current.year}{current.year === new Date().getFullYear() ? ' (huidig)' : ''}</div>
             {supportDiff != null && supportDiff !== 0 && (
               <span className={`text-xs font-medium ${supportDiff > 0 ? 'text-green-600' : 'text-red-600'}`}>
@@ -169,7 +167,7 @@ export function SlaRatesSubTab({ slaRates, hasServiceContract, onEditYear }: Pro
               <td className="p-3">Totaal / maand (excl. support)</td>
               {sorted.map((sla, i) => (
                 <td key={sla.year} className={`p-3 text-right ${i === 0 ? 'bg-primary/5' : ''}`}>
-                  {fmt(getYearTotal(sla))}
+                  {formatEUR(getYearTotal(sla))}
                 </td>
               ))}
               <td className="p-3 text-right">
@@ -204,7 +202,7 @@ function RateRow({ label, values, indent, suffix }: { label: string; values: (nu
       {values.map((val, i) => (
         <td key={i} className={`p-3 text-right ${i === 0 ? 'bg-primary/5' : ''}`}>
           {val != null ? (
-            <span>{fmt(val)}{suffix}</span>
+            <span>{formatEUR(val)}{suffix}</span>
           ) : (
             <span className="text-muted-foreground">—</span>
           )}

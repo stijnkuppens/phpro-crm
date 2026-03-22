@@ -11,14 +11,9 @@ export type DashboardStats = {
 export const getDashboardStats = cache(async (): Promise<DashboardStats> => {
   const supabase = await createServerClient();
 
-  const [dealsResult, accountsResult, activitiesResult, tasksResult] = await Promise.all([
-    // Supabase JS doesn't support SUM aggregation directly, so we fetch and reduce in JS.
-    // .limit(10000) prevents unbounded fetches if the deals table grows large.
-    supabase
-      .from('deals')
-      .select('amount, probability')
-      .is('closed_at', null)
-      .limit(10000),
+  const [dealValueResult, accountsResult, activitiesResult, tasksResult] = await Promise.all([
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- RPC added in migration 00074, regenerate types with `task types:generate`
+    (supabase.rpc as any)('get_open_deal_value') as Promise<{ data: number | null; error: unknown }>,
     supabase
       .from('accounts')
       .select('*', { count: 'exact', head: true }),
@@ -35,13 +30,8 @@ export const getDashboardStats = cache(async (): Promise<DashboardStats> => {
       .lt('due_date', new Date().toISOString().split('T')[0]),
   ]);
 
-  const openDealValue = (dealsResult.data ?? []).reduce(
-    (sum, d) => sum + (Number(d.amount ?? 0) * (d.probability ?? 0)) / 100,
-    0,
-  );
-
   return {
-    openDealValue,
+    openDealValue: Number(dealValueResult.data ?? 0),
     upcomingActivities: activitiesResult.count ?? 0,
     overdueTasks: tasksResult.count ?? 0,
     totalAccounts: accountsResult.count ?? 0,

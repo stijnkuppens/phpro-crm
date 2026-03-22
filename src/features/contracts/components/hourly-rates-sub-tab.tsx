@@ -4,14 +4,12 @@ import { useMemo } from 'react';
 import { Pencil, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import type { HourlyRate } from '../types';
+import { formatEUR } from '@/lib/format';
 
 type Props = {
   hourlyRates: HourlyRate[];
   onEditYear: (year: number) => void;
 };
-
-const fmt = (n: number) =>
-  new Intl.NumberFormat('nl-BE', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(n);
 
 export function HourlyRatesSubTab({ hourlyRates, onEditYear }: Props) {
   const { roles, years, rateMap } = useMemo(() => {
@@ -99,7 +97,7 @@ export function HourlyRatesSubTab({ hourlyRates, onEditYear }: Props) {
                       <td key={year} className={`p-3 text-right ${i === 0 ? 'bg-primary/5' : ''}`}>
                         {rate != null ? (
                           <span className="inline-flex items-center gap-1.5">
-                            {fmt(rate)}
+                            {formatEUR(rate)}
                             {i === 0 && diff != null && diff !== 0 && (
                               <span className={`text-[11px] font-medium ${diff > 0 ? 'text-green-600' : 'text-red-600'}`}>
                                 {diff > 0 ? '+' : ''}{diff}
@@ -113,7 +111,7 @@ export function HourlyRatesSubTab({ hourlyRates, onEditYear }: Props) {
                     );
                   })}
                   <td className="p-3 text-right text-muted-foreground">
-                    {dailyRate != null ? fmt(dailyRate) : '—'}
+                    {dailyRate != null ? formatEUR(dailyRate) : '—'}
                   </td>
                 </tr>
               );

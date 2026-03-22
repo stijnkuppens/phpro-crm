@@ -13,7 +13,8 @@ export const getAccountNames = cache(async (): Promise<AccountOption[]> => {
   const { data, error } = await supabase
     .from('accounts')
     .select('id, name, domain, type')
-    .order('name', { ascending: true });
+    .order('name', { ascending: true })
+    .limit(500);
 
   if (error) {
     console.error('Failed to fetch account names:', error.message);

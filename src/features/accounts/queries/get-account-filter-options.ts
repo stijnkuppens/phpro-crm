@@ -11,13 +11,12 @@ export const getAccountFilterOptions = cache(async (): Promise<FilterOptions> =>
 
   const [{ data: owners }, { data: countries }] = await Promise.all([
     supabase.from('user_profiles').select('id, full_name').order('full_name'),
-    supabase.from('accounts').select('country').not('country', 'is', null),
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- RPC added in migration 00078
+    (supabase.rpc as any)('get_distinct_account_countries'),
   ]);
 
-  const uniqueCountries = [...new Set((countries ?? []).map((r) => r.country as string))].sort();
-
   return {
-    owners: (owners ?? []).map((o) => ({ id: o.id, full_name: o.full_name ?? '' })),
-    countries: uniqueCountries,
+    owners: (owners ?? []).map((o: { id: string; full_name: string | null }) => ({ id: o.id, full_name: o.full_name ?? '' })),
+    countries: (countries ?? []).map((r: { country: string }) => r.country),
   };
 });

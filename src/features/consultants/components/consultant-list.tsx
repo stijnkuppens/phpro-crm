@@ -34,6 +34,7 @@ import { ExtendConsultantModal } from './extend-consultant-modal';
 import { RateChangeModal } from './rate-change-modal';
 import { archiveConsultant } from '../actions/archive-consultant';
 import { moveToBench } from '../actions/move-to-bench';
+import { formatEUR } from '@/lib/format';
 
 type Stats = {
   benchCount: number;
@@ -54,11 +55,6 @@ type Props = {
 
 const PAGE_SIZE = 25;
 
-const eurFmt = new Intl.NumberFormat('nl-BE', {
-  style: 'currency',
-  currency: 'EUR',
-  maximumFractionDigits: 0,
-});
 
 const statusPills: { value: ConsultantStatus; label: string }[] = [
   { value: 'bench', label: 'Bench' },
@@ -105,10 +101,8 @@ export function ConsultantListView({ initialData, initialCount, stats, accounts,
   }, [fetchList, page, search, selectedStatuses]);
 
   useEffect(() => {
-    let cancelled = false;
     if (page === 1 && !search && selectedStatuses.length === 2 && selectedStatuses.includes('bench') && selectedStatuses.includes('actief')) return;
-    if (!cancelled) load();
-    return () => { cancelled = true; };
+    load();
   }, [load, page, search, selectedStatuses]);
 
   useEffect(() => {
@@ -157,7 +151,6 @@ export function ConsultantListView({ initialData, initialCount, stats, accounts,
       case 'actief':
         return [
           { icon: Eye, label: 'Bekijken', onClick: () => setSelected(row) },
-          { icon: Pencil, label: 'Bewerk', onClick: () => setSelected(row) },
           { icon: CalendarPlus, label: 'Verlengen', onClick: () => setExtendTarget(row) },
           { icon: DollarSign, label: 'Tariefwijziging', onClick: () => setRateTarget(row) },
           { icon: Square, label: 'Stopzetten', onClick: () => setStopTarget(row), variant: 'destructive' as const },
@@ -200,7 +193,7 @@ export function ConsultantListView({ initialData, initialCount, stats, accounts,
               <div className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
                 Max maandomzet
               </div>
-              <div className="text-2xl font-bold mt-1">{eurFmt.format(stats.maxRevenue)}</div>
+              <div className="text-2xl font-bold mt-1">{formatEUR(stats.maxRevenue)}</div>
               <div className="text-xs text-muted-foreground">op basis van uurtarieven</div>
             </CardContent>
           </Card>

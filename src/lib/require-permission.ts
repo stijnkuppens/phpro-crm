@@ -17,13 +17,7 @@ export async function requirePermission(
     throw new Error('Unauthorized: not authenticated');
   }
 
-  const { data: profile } = await supabase
-    .from('user_profiles')
-    .select('role')
-    .eq('id', user.id)
-    .single();
-
-  const role = profile?.role as Role | undefined;
+  const role = user.app_metadata?.role as Role | undefined;
   if (!role) {
     throw new Error('Unauthorized: no role assigned');
   }

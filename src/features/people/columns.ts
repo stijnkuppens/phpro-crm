@@ -2,6 +2,7 @@
 
 import type { ColumnDef } from '@tanstack/react-table';
 import type { Employee } from './types';
+import { formatEUR } from '@/lib/format';
 
 export const employeeColumns: ColumnDef<Employee>[] = [
   {
@@ -27,7 +28,7 @@ export const employeeColumns: ColumnDef<Employee>[] = [
     cell: ({ getValue }) => {
       const n = Number(getValue<number | null>() ?? 0);
       return n > 0
-        ? new Intl.NumberFormat('nl-BE', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(n)
+        ? formatEUR(n)
         : '';
     },
   },

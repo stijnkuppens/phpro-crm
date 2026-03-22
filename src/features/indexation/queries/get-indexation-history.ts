@@ -22,7 +22,8 @@ export const getIndexationHistory = cache(
         sla_tools:indexation_history_sla_tools(*)
       `)
       .eq('account_id', accountId)
-      .order('date', { ascending: false });
+      .order('date', { ascending: false })
+      .limit(20);
 
     if (error) {
       console.error('Failed to fetch indexation history:', error.message);

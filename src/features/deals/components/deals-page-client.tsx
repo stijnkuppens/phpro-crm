@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useMemo, useRef } from 'react';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -84,22 +84,30 @@ export function DealsPageClient({ pipelines, initialDeals, initialCount, initial
     setLoading(false);
   }, [page, activePipeline, viewMode, originFilter]);
 
+  const prevFilters = useRef({ activePipeline, viewMode, originFilter });
+  const isInitialLoad = useRef(true);
+
   useEffect(() => {
-    // Skip initial fetch — server provided data for the first pipeline + page 1 + kanban + no origin filter
-    if (page === 1 && activePipeline === initialPipelineId && viewMode === 'kanban' && originFilter === 'all') return;
+    if (isInitialLoad.current) {
+      isInitialLoad.current = false;
+      return;
+    }
+    const filtersChanged =
+      prevFilters.current.activePipeline !== activePipeline ||
+      prevFilters.current.viewMode !== viewMode ||
+      prevFilters.current.originFilter !== originFilter;
+    if (filtersChanged) {
+      prevFilters.current = { activePipeline, viewMode, originFilter };
+      if (page !== 1) { setPage(1); return; }
+    }
     const signal = { cancelled: false };
     fetchDeals(signal);
     return () => { signal.cancelled = true; };
-  }, [fetchDeals, page, activePipeline, initialPipelineId, viewMode, originFilter]);
-
-  // Reset to page 1 when switching pipelines, view mode, or origin filter
-  useEffect(() => {
-    setPage(1);
-  }, [activePipeline, viewMode, originFilter]);
+  }, [fetchDeals, page, activePipeline, viewMode, originFilter]);
 
   const pipeline = pipelines.find((p) => p.id === activePipeline);
 
-  const dealCards: DealCard[] = deals.map((d) => ({
+  const dealCards: DealCard[] = useMemo(() => deals.map((d) => ({
     id: d.id,
     title: d.title,
     amount: Number(d.amount ?? 0),
@@ -110,7 +118,7 @@ export function DealsPageClient({ pipelines, initialDeals, initialCount, initial
     stage_id: d.stage_id,
     forecast_category: d.forecast_category,
     origin: d.origin,
-  }));
+  })), [deals]);
 
   return (
     <div className="space-y-4">
@@ -162,14 +170,6 @@ export function DealsPageClient({ pipelines, initialDeals, initialCount, initial
           stages={pipeline.stages}
           deals={dealCards}
           onRefresh={() => fetchDeals()}
-        />
-      ) : viewMode === 'archief' ? (
-        <DealList
-          deals={deals}
-          page={page}
-          total={total}
-          onPageChange={setPage}
-          loading={loading}
         />
       ) : (
         <DealList

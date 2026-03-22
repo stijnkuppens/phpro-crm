@@ -12,15 +12,13 @@ import { StopConsultantModal } from './stop-consultant-modal';
 import { ExtendConsultantModal } from './extend-consultant-modal';
 import { RateChangeModal } from './rate-change-modal';
 import { ContractAttributionModal } from './contract-attribution-modal';
+import { formatCurrency } from '@/lib/format';
 
 type Props = {
   consultant: ConsultantWithDetails;
   open: boolean;
   onClose: () => void;
 };
-
-const fmt = (n: number) =>
-  new Intl.NumberFormat('nl-BE', { style: 'currency', currency: 'EUR' }).format(n);
 
 const priorityColors: Record<string, string> = {
   High: 'bg-red-100 text-red-800',
@@ -59,7 +57,7 @@ function BenchDetail({ consultant }: { consultant: ConsultantWithDetails }) {
         <div>
           <span className="text-muted-foreground">Tarief:</span>{' '}
           {consultant.min_hourly_rate || consultant.max_hourly_rate
-            ? `${consultant.min_hourly_rate ? fmt(consultant.min_hourly_rate) : '?'} - ${consultant.max_hourly_rate ? fmt(consultant.max_hourly_rate) : '?'}/u`
+            ? `${consultant.min_hourly_rate ? formatCurrency(consultant.min_hourly_rate) : '?'} - ${consultant.max_hourly_rate ? formatCurrency(consultant.max_hourly_rate) : '?'}/u`
             : '-'}
         </div>
       </div>
@@ -144,7 +142,7 @@ function ActiveDetail({ consultant }: { consultant: ConsultantWithDetails }) {
           <span className="text-muted-foreground">Contract:</span>{' '}
           <Badge className={contractStatusColors[status]}>{status}</Badge>
         </div>
-        <div><span className="text-muted-foreground">Huidig tarief:</span> {fmt(rate)}/u</div>
+        <div><span className="text-muted-foreground">Huidig tarief:</span> {formatCurrency(rate)}/u</div>
         <div>
           <span className="text-muted-foreground">Periode:</span>{' '}
           {consultant.start_date ? new Date(consultant.start_date).toLocaleDateString('nl-BE') : '-'} -{' '}
@@ -227,7 +225,7 @@ function ActiveDetail({ consultant }: { consultant: ConsultantWithDetails }) {
                   .map((rh) => (
                     <tr key={rh.id} className="border-b last:border-0">
                       <td className="p-2">{new Date(rh.date).toLocaleDateString('nl-BE')}</td>
-                      <td className="p-2 text-right">{fmt(Number(rh.rate))}</td>
+                      <td className="p-2 text-right">{formatCurrency(Number(rh.rate))}</td>
                       <td className="p-2">{rh.reason ?? '-'}</td>
                     </tr>
                   ))}

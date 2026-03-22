@@ -10,23 +10,14 @@ type Props = {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { id } = await params;
-  try {
-    const user = await getUser(id);
-    return { title: user.full_name || 'User' };
-  } catch {
-    return { title: 'User' };
-  }
+  const user = await getUser(id);
+  return { title: user?.full_name || 'User' };
 }
 
 export default async function UserDetailPage({ params }: Props) {
   const { id } = await params;
-
-  let profile;
-  try {
-    profile = await getUser(id);
-  } catch {
-    notFound();
-  }
+  const profile = await getUser(id);
+  if (!profile) notFound();
 
   return (
     <div className="mx-auto max-w-2xl space-y-6">

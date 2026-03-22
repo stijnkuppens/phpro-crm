@@ -15,7 +15,8 @@ export const getDealsByAccount = cache(async (accountId: string): Promise<DealWi
       pipeline:pipelines!pipeline_id(id, name, type)
     `)
     .eq('account_id', accountId)
-    .order('created_at', { ascending: false });
+    .order('created_at', { ascending: false })
+    .limit(50);
   if (error) {
     console.error('Failed to fetch deals by account:', error.message);
     return [];

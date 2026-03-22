@@ -6,9 +6,11 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { StatCard } from '@/components/admin/stat-card';
 import { DollarSign, Save, TrendingUp, Users } from 'lucide-react';
+import { toast } from 'sonner';
 import { savePrognose } from '@/features/revenue/actions/save-prognose';
 import type { RevenueClientFull, DivisionWithServices, RevenueEntry } from '@/features/revenue/types';
 import type { PrognoseLine, PrognoseLineAction } from '../types';
+import { formatEUR } from '@/lib/format';
 
 type Props = {
   clients: RevenueClientFull[];
@@ -17,9 +19,6 @@ type Props = {
   forecastYear: number;
   lastKnownYear: number;
 };
-
-const fmt = (n: number) =>
-  new Intl.NumberFormat('nl-BE', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(n);
 
 export function PrognoseEditor({ clients, divisions, entries, forecastYear, lastKnownYear }: Props) {
   const initialLines = useMemo(() => {
@@ -45,11 +44,13 @@ export function PrognoseEditor({ clients, divisions, entries, forecastYear, last
   const [lines, setLines] = useState(initialLines);
   const [saving, setSaving] = useState(false);
 
-  const totalForecast = lines.reduce((s, l) => s + l.forecastTotal, 0);
-  const totalLastYear = lines.reduce((s, l) => s + l.lastKnownTotal, 0);
-  const consultancyTotal = lines
-    .filter((l) => l.serviceName.toLowerCase() === 'consultancy')
-    .reduce((s, l) => s + l.forecastTotal, 0);
+  const { totalForecast, totalLastYear, consultancyTotal } = useMemo(() =>
+    lines.reduce((acc, l) => ({
+      totalForecast: acc.totalForecast + l.forecastTotal,
+      totalLastYear: acc.totalLastYear + l.lastKnownTotal,
+      consultancyTotal: acc.consultancyTotal + (l.serviceName.toLowerCase() === 'consultancy' ? l.forecastTotal : 0),
+    }), { totalForecast: 0, totalLastYear: 0, consultancyTotal: 0 }),
+  [lines]);
 
   function updateLine(index: number, action: PrognoseLineAction, customAmount?: number) {
     setLines((prev) => {
@@ -74,16 +75,21 @@ export function PrognoseEditor({ clients, divisions, entries, forecastYear, last
         service_name: l.serviceName,
         amount: l.forecastTotal,
       }));
-    await savePrognose(forecastYear, prognoseEntries);
+    const result = await savePrognose(forecastYear, prognoseEntries);
     setSaving(false);
+    if ('error' in result && result.error) {
+      toast.error(typeof result.error === 'string' ? result.error : 'Opslaan mislukt');
+      return;
+    }
+    toast.success('Prognose opgeslagen');
   }
 
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-3 gap-4">
-        <StatCard title={`Prognose ${forecastYear}`} value={fmt(totalForecast)} icon={TrendingUp} />
-        <StatCard title={`Realisatie ${lastKnownYear}`} value={fmt(totalLastYear)} icon={DollarSign} />
-        <StatCard title="Consultancy" value={fmt(consultancyTotal)} icon={Users} />
+        <StatCard title={`Prognose ${forecastYear}`} value={formatEUR(totalForecast)} icon={TrendingUp} />
+        <StatCard title={`Realisatie ${lastKnownYear}`} value={formatEUR(totalLastYear)} icon={DollarSign} />
+        <StatCard title="Consultancy" value={formatEUR(consultancyTotal)} icon={Users} />
       </div>
 
       <Card>
@@ -112,7 +118,7 @@ export function PrognoseEditor({ clients, divisions, entries, forecastYear, last
                   <td className="p-2">{line.clientName}</td>
                   <td className="p-2">{line.divisionName}</td>
                   <td className="p-2">{line.serviceName}</td>
-                  <td className="text-right p-2 tabular-nums">{fmt(line.lastKnownTotal)}</td>
+                  <td className="text-right p-2 tabular-nums">{formatEUR(line.lastKnownTotal)}</td>
                   <td className="text-right p-2">
                     {line.action === 'custom' ? (
                       <Input
@@ -122,7 +128,7 @@ export function PrognoseEditor({ clients, divisions, entries, forecastYear, last
                         className="w-28 text-right inline-block"
                       />
                     ) : (
-                      <span className="tabular-nums">{fmt(line.forecastTotal)}</span>
+                      <span className="tabular-nums">{formatEUR(line.forecastTotal)}</span>
                     )}
                   </td>
                   <td className="text-center p-2">

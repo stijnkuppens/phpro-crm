@@ -11,6 +11,7 @@ import type { CommunicationWithDetails } from '@/features/communications/types';
 import { DealLinkedTabs } from './deal-linked-tabs';
 import { CloseDealModal } from './close-deal-modal';
 import type { DealWithRelations } from '../types';
+import { formatEUR } from '@/lib/format';
 
 type Props = {
   deal: DealWithRelations;
@@ -18,9 +19,6 @@ type Props = {
   tasks: TaskWithRelations[];
   communications: CommunicationWithDetails[];
 };
-
-const fmt = (n: number) =>
-  new Intl.NumberFormat('nl-BE', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(n);
 
 const FC_COLORS: Record<string, string> = {
   Commit: 'bg-green-100 text-green-800',
@@ -73,7 +71,7 @@ export function DealDetail({ deal, activities, tasks, communications }: Props) {
               </Badge>
             )}
           </div>
-          <InfoRow label="Bedrag" value={fmt(Number(deal.amount ?? 0))} />
+          <InfoRow label="Bedrag" value={formatEUR(Number(deal.amount ?? 0))} />
           <InfoRow label="Kans" value={`${deal.probability ?? 0}%`} />
           <InfoRow label="Close Date" value={deal.close_date ? new Date(deal.close_date).toLocaleDateString('nl-BE') : undefined} />
           <InfoRow label="Lead Source" value={deal.lead_source} />

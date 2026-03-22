@@ -7,10 +7,10 @@ import {
   SelectContent,
   SelectItem,
   SelectTrigger,
-  SelectValue,
 } from '@/components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import type { RevenueEntry, RevenueClientFull, DivisionWithServices } from '../types';
+import { formatEUR } from '@/lib/format';
 
 type Props = {
   clients: RevenueClientFull[];
@@ -20,9 +20,6 @@ type Props = {
 };
 
 const MONTHS = ['Jan', 'Feb', 'Mrt', 'Apr', 'Mei', 'Jun', 'Jul', 'Aug', 'Sep', 'Okt', 'Nov', 'Dec'];
-
-const fmt = (n: number) =>
-  new Intl.NumberFormat('nl-BE', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(n);
 
 export function RevenuePageClient({ clients, divisions, entries, years }: Props) {
   const [selectedYear, setSelectedYear] = useState(years[years.length - 1] ?? new Date().getFullYear());
@@ -55,7 +52,7 @@ export function RevenuePageClient({ clients, divisions, entries, years }: Props)
       <div className="flex flex-wrap gap-4 items-center">
         <Select value={String(selectedYear)} onValueChange={(v) => setSelectedYear(Number(v))}>
           <SelectTrigger className="w-28">
-            <SelectValue />
+            {selectedYear}
           </SelectTrigger>
           <SelectContent>
             {years.map((y) => (
@@ -103,14 +100,14 @@ export function RevenuePageClient({ clients, divisions, entries, years }: Props)
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-sm">Totaal: {fmt(grandTotal)}</CardTitle>
+          <CardTitle className="text-sm">Totaal: {formatEUR(grandTotal)}</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b">
-                  <th className="text-left p-2 sticky left-0 bg-white min-w-[190px]">
+                  <th className="text-left p-2 sticky left-0 bg-card min-w-[190px]">
                     {viewMode === 'client' ? 'Client' : 'Service'}
                   </th>
                   {MONTHS.map((m) => (
@@ -128,11 +125,11 @@ export function RevenuePageClient({ clients, divisions, entries, years }: Props)
                       const ct = clientTotals[client.id];
                       return (
                         <tr key={client.id} className="border-b hover:bg-muted/50">
-                          <td className="p-2 sticky left-0 bg-white font-medium">{client.name}</td>
+                          <td className="p-2 sticky left-0 bg-card font-medium">{client.name}</td>
                           {ct.months.map((m, i) => (
-                            <td key={i} className="text-right p-2 tabular-nums">{m > 0 ? fmt(m) : ''}</td>
+                            <td key={i} className="text-right p-2 tabular-nums">{m > 0 ? formatEUR(m) : ''}</td>
                           ))}
-                          <td className="text-right p-2 font-bold tabular-nums">{fmt(ct.total)}</td>
+                          <td className="text-right p-2 font-bold tabular-nums">{formatEUR(ct.total)}</td>
                         </tr>
                       );
                     })}

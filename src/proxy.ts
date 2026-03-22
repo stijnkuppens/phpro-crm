@@ -61,12 +61,16 @@ export async function proxy(request: NextRequest) {
 
   // Check role-based permissions for admin routes
   if (isAdminRoute && user) {
-    const { data } = await supabase
-      .from('user_profiles')
-      .select('role')
-      .eq('id', user.id)
-      .single();
-    const role = data?.role as Role | undefined;
+    // Transition-safe: prefer JWT claim, fall back to DB during re-login window
+    let role = user.app_metadata?.role as Role | undefined;
+    if (!role) {
+      const { data } = await supabase
+        .from('user_profiles')
+        .select('role')
+        .eq('id', user.id)
+        .single();
+      role = data?.role as Role | undefined;
+    }
     if (!role) {
       return NextResponse.redirect(new URL('/no-access', request.url));
     }
@@ -86,6 +90,6 @@ export async function proxy(request: NextRequest) {
   return response;
 }
 
-export const config = {
+export const proxyConfig = {
   matcher: ['/admin/:path*', '/login', '/register', '/forgot-password', '/reset-password'],
 };

@@ -5,12 +5,7 @@ import { Avatar } from '@/components/admin/avatar';
 import type { ConsultantWithDetails, ConsultantStatus } from './types';
 import { contractStatusColors } from './types';
 import { getContractStatus, getCurrentRate } from './utils';
-
-const rateFmt = new Intl.NumberFormat('nl-BE', {
-  style: 'currency',
-  currency: 'EUR',
-  maximumFractionDigits: 0,
-});
+import { formatEUR } from '@/lib/format';
 
 const dateFmt = (d: string) => new Date(d).toLocaleDateString('nl-BE');
 
@@ -99,18 +94,18 @@ export const consultantColumns: ColumnDef<ConsultantWithDetails>[] = [
         if (min != null && max != null) {
           return (
             <span className="text-sm font-medium">
-              {rateFmt.format(min)}&ndash;{rateFmt.format(max)}/u
+              {formatEUR(min)}&ndash;{formatEUR(max)}/u
             </span>
           );
         }
-        if (min != null) return <span className="text-sm font-medium">vanaf {rateFmt.format(min)}/u</span>;
-        if (max != null) return <span className="text-sm font-medium">tot {rateFmt.format(max)}/u</span>;
+        if (min != null) return <span className="text-sm font-medium">vanaf {formatEUR(min)}/u</span>;
+        if (max != null) return <span className="text-sm font-medium">tot {formatEUR(max)}/u</span>;
         return <span className="text-sm text-muted-foreground">-</span>;
       }
       const rate = getCurrentRate(c);
       return (
         <span className="text-sm font-medium">
-          {rateFmt.format(rate)}/u
+          {formatEUR(rate)}/u
         </span>
       );
     },

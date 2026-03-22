@@ -25,6 +25,7 @@ import {
   addAccountRelation,
   deleteAccountRelation,
 } from '../actions/manage-account-relations';
+import { formatNumber } from '@/lib/format';
 
 // ── Constants (not from ref tables) ─────────────────────────────────────────
 
@@ -521,7 +522,7 @@ export function AccountForm({ referenceData, defaultValues, onSuccess, formRef: 
                   id="revenue_display"
                   type="text"
                   inputMode="numeric"
-                  defaultValue={defaultValues?.revenue ? new Intl.NumberFormat('nl-BE').format(Number(defaultValues.revenue)) : ''}
+                  defaultValue={defaultValues?.revenue ? formatNumber(Number(defaultValues.revenue)) : ''}
                   placeholder="bv. 1.000.000"
                   className="pl-7"
                   onChange={(e) => {
@@ -529,7 +530,7 @@ export function AccountForm({ referenceData, defaultValues, onSuccess, formRef: 
                     const hidden = e.target.form?.querySelector<HTMLInputElement>('input[name="revenue"]');
                     if (hidden) hidden.value = raw;
                     if (raw) {
-                      e.target.value = new Intl.NumberFormat('nl-BE').format(Number(raw));
+                      e.target.value = formatNumber(Number(raw));
                     }
                   }}
                 />

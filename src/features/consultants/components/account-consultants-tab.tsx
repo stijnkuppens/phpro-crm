@@ -9,6 +9,7 @@ import { contractStatusColors, type ConsultantWithDetails } from '../types';
 import { getContractStatus, getCurrentRate } from '../utils';
 import { ConsultantDetailModal } from './consultant-detail-modal';
 import { LinkConsultantWizard } from './link-consultant-wizard';
+import { formatEUR } from '@/lib/format';
 
 type Props = {
   accountId: string;
@@ -16,9 +17,6 @@ type Props = {
   consultants: ConsultantWithDetails[];
   roles: { value: string; label: string }[];
 };
-
-const fmt = (n: number) =>
-  new Intl.NumberFormat('nl-BE', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(n);
 
 export function AccountConsultantsTab({ accountId, accountName, consultants, roles }: Props) {
   const [selected, setSelected] = useState<ConsultantWithDetails | null>(null);
@@ -59,8 +57,8 @@ export function AccountConsultantsTab({ accountId, accountName, consultants, rol
                     <div className="text-xs text-muted-foreground">{c.role} - {c.city}</div>
                   </div>
                   <div className="text-right">
-                    <div className="text-sm font-medium">{fmt(rate)}/u</div>
-                    <div className="text-xs text-muted-foreground">{fmt(rate * 8 * 21)}/maand</div>
+                    <div className="text-sm font-medium">{formatEUR(rate)}/u</div>
+                    <div className="text-xs text-muted-foreground">{formatEUR(rate * 8 * 21)}/maand</div>
                   </div>
                   <Badge className={contractStatusColors[status]}>{status}</Badge>
                   <div className="text-xs text-muted-foreground">

@@ -9,6 +9,9 @@ export const getFiles = cache(async (bucket = 'documents', limit = 100) => {
     sortBy: { column: 'created_at', order: 'desc' },
   });
 
-  if (error) throw new Error(error.message);
+  if (error) {
+    console.error('getFiles error:', error.message);
+    return [];
+  }
   return (data ?? []) as unknown as StorageFile[];
 });

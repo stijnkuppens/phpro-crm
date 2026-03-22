@@ -118,7 +118,7 @@ export function useFileUpload({
       let completed = 0;
       let failed = 0;
 
-      for (const file of valid) {
+      await Promise.all(valid.map(async (file) => {
         const path = pathPrefix ? `${pathPrefix}/${file.name}` : file.name;
         const { error } = await supabase.storage
           .from(bucket)
@@ -127,12 +127,10 @@ export function useFileUpload({
             contentType: file.type,
           });
 
-        if (error) {
-          failed++;
-        }
+        if (error) failed++;
         completed++;
         setProgress(Math.round((completed / valid.length) * 100));
-      }
+      }));
 
       setUploading(false);
 

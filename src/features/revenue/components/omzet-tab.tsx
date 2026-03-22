@@ -7,14 +7,12 @@ import { Input } from '@/components/ui/input';
 import { Trash2, Pencil, Plus, X, Check } from 'lucide-react';
 import { createAccountRevenue, updateAccountRevenue, deleteAccountRevenue } from '../actions/manage-account-revenue';
 import type { AccountRevenue, AccountRevenueFormValues } from '../types';
+import { formatEUR } from '@/lib/format';
 
 type Props = {
   accountId: string;
   initialData: AccountRevenue[];
 };
-
-const fmt = (n: number) =>
-  new Intl.NumberFormat('nl-BE', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(n);
 
 export function OmzetTab({ accountId, initialData }: Props) {
   const [data, setData] = useState(initialData);
@@ -128,7 +126,7 @@ export function OmzetTab({ accountId, initialData }: Props) {
                     ) : (
                       <>
                         <td className="p-2 font-medium">{r.category}</td>
-                        <td className="p-2 text-right tabular-nums">{fmt(Number(r.amount))}</td>
+                        <td className="p-2 text-right tabular-nums">{formatEUR(Number(r.amount))}</td>
                         <td className="p-2 text-muted-foreground">{r.notes}</td>
                         <td className="p-2 text-right">
                           <Button size="sm" variant="ghost" onClick={() => { setEditingId(r.id); setEditValues({ year: r.year, category: r.category, amount: Number(r.amount), notes: r.notes ?? '' }); }}><Pencil className="h-3 w-3" /></Button>

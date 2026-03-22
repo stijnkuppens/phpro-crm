@@ -9,6 +9,9 @@ export const getUser = cache(async (id: string) => {
     .eq('id', id)
     .single();
 
-  if (error) throw new Error(error.message);
+  if (error) {
+    console.error('getUser error:', error.message);
+    return null;
+  }
   return data;
 });

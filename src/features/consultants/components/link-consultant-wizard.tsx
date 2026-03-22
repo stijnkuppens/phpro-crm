@@ -19,6 +19,7 @@ import { ArrowLeft, Check, Save, Search } from 'lucide-react';
 import { linkConsultantToAccount } from '../actions/link-consultant-to-account';
 import { createBrowserClient } from '@/lib/supabase/client';
 import type { ConsultantWithDetails } from '../types';
+import { formatEUR } from '@/lib/format';
 
 type Account = { id: string; name: string; domain: string | null; type: string | null; city: string | null };
 
@@ -59,21 +60,22 @@ const priorityColors: Record<string, string> = {
   Low: 'bg-gray-100 text-gray-800',
 };
 
-const eurFmt = (n: number) =>
-  new Intl.NumberFormat('nl-BE', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(n);
 
 function calcWorkdays(start: string, end: string | null): number {
-  if (!start || !end) return 0;
+  if (!end) return 0;
   const s = new Date(start);
   const e = new Date(end);
-  let count = 0;
-  const d = new Date(s);
-  while (d <= e) {
-    const day = d.getDay();
-    if (day !== 0 && day !== 6) count++;
-    d.setDate(d.getDate() + 1);
+  if (e < s) return 0;
+  const totalDays = Math.round((e.getTime() - s.getTime()) / 86400000) + 1;
+  const fullWeeks = Math.floor(totalDays / 7);
+  const remainder = totalDays % 7;
+  const startDay = s.getDay();
+  let extraWorkdays = 0;
+  for (let i = 0; i < remainder; i++) {
+    const day = (startDay + i) % 7;
+    if (day !== 0 && day !== 6) extraWorkdays++;
   }
-  return count;
+  return fullWeeks * 5 + extraWorkdays;
 }
 
 export function LinkConsultantWizard({
@@ -533,10 +535,10 @@ export function LinkConsultantWizard({
             <div className="bg-muted/50 rounded-lg p-3 text-sm">
               <div className="text-muted-foreground">Geschatte omzet</div>
               <div className="text-lg font-bold">
-                {eurFmt(estimatedRevenue)}
+                {formatEUR(estimatedRevenue)}
               </div>
               <div className="text-xs text-muted-foreground">
-                {eurFmt(Number(hourlyRate))}/u × 8u × {werkdagen || 21} werkdagen
+                {formatEUR(Number(hourlyRate))}/u × 8u × {werkdagen || 21} werkdagen
               </div>
             </div>
           )}

@@ -6,6 +6,7 @@ import { StatCard } from '@/components/admin/stat-card';
 import { DollarSign } from 'lucide-react';
 import type { PipelineEntryWithDivision } from '../types';
 import type { DivisionWithServices } from '@/features/revenue/types';
+import { formatEUR } from '@/lib/format';
 
 type Props = {
   entries: PipelineEntryWithDivision[];
@@ -14,9 +15,6 @@ type Props = {
 };
 
 const MONTHS = ['Jan', 'Feb', 'Mrt', 'Apr', 'Mei', 'Jun', 'Jul', 'Aug', 'Sep', 'Okt', 'Nov', 'Dec'];
-
-const fmt = (n: number) =>
-  new Intl.NumberFormat('nl-BE', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(n);
 
 export function PipelinePageClient({ entries, divisions, year }: Props) {
   const totalSold = entries.reduce((s, e) => s + Number(e.total), 0);
@@ -46,15 +44,15 @@ export function PipelinePageClient({ entries, divisions, year }: Props) {
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <StatCard title={`Totaal Sold ${year}`} value={fmt(totalSold)} icon={DollarSign} />
+        <StatCard title={`Totaal Sold ${year}`} value={formatEUR(totalSold)} icon={DollarSign} />
         {byDivision.map((d) => (
-          <StatCard key={d.name} title={d.name} value={fmt(d.total)} icon={DollarSign} />
+          <StatCard key={d.name} title={d.name} value={formatEUR(d.total)} icon={DollarSign} />
         ))}
       </div>
       {byDivision.map((divGroup) => (
         <Card key={divGroup.name}>
           <CardHeader>
-            <CardTitle className="text-sm" style={{ color: divGroup.color }}>{divGroup.name} — {fmt(divGroup.total)}</CardTitle>
+            <CardTitle className="text-sm" style={{ color: divGroup.color }}>{divGroup.name} — {formatEUR(divGroup.total)}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="overflow-x-auto">
@@ -74,8 +72,8 @@ export function PipelinePageClient({ entries, divisions, year }: Props) {
                       <tr key={entry.id} className="border-b hover:bg-muted/50">
                         <td className="p-2">{entry.client}</td>
                         <td className="p-2">{entry.service_name}</td>
-                        <td className="text-right p-2 font-medium tabular-nums">{fmt(Number(entry.total))}</td>
-                        {spread.map((v, i) => (<td key={i} className="text-right p-2 tabular-nums text-xs">{v > 0 ? fmt(Math.round(v)) : ''}</td>))}
+                        <td className="text-right p-2 font-medium tabular-nums">{formatEUR(Number(entry.total))}</td>
+                        {spread.map((v, i) => (<td key={i} className="text-right p-2 tabular-nums text-xs">{v > 0 ? formatEUR(Math.round(v)) : ''}</td>))}
                       </tr>
                     );
                   })}

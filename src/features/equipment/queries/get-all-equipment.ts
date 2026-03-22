@@ -8,7 +8,8 @@ export const getAllEquipment = cache(
     const { data, error } = await supabase
       .from('equipment')
       .select(`*, employee:employees!employee_id(id, first_name, last_name)`)
-      .order('date_issued', { ascending: false });
+      .order('date_issued', { ascending: false })
+      .limit(200);
     if (error) { console.error('Failed to fetch equipment:', error.message); return []; }
     return (data as unknown as EquipmentWithEmployee[]) ?? [];
   },

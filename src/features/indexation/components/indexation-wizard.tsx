@@ -11,15 +11,13 @@ import { simulateIndexation } from '../actions/simulate-indexation';
 import { saveIndexationDraft } from '../actions/save-indexation-draft';
 import { approveIndexation } from '../actions/approve-indexation';
 import type { SimulationResult, IndexationDraftValues } from '../types';
+import { formatCurrency } from '@/lib/format';
 
 type Props = {
   accountId: string;
   open: boolean;
   onClose: () => void;
 };
-
-const fmt = (n: number) =>
-  new Intl.NumberFormat('nl-BE', { style: 'currency', currency: 'EUR' }).format(n);
 
 export function IndexationWizard({ accountId, open, onClose }: Props) {
   const [step, setStep] = useState(1);
@@ -139,8 +137,8 @@ export function IndexationWizard({ accountId, open, onClose }: Props) {
                 {simulation.rates.map((r) => (
                   <tr key={r.role} className="border-b last:border-0">
                     <td className="p-2">{r.role}</td>
-                    <td className="p-2 text-right">{fmt(r.current_rate)}</td>
-                    <td className="p-2 text-right font-medium">{fmt(r.proposed_rate)}</td>
+                    <td className="p-2 text-right">{formatCurrency(r.current_rate)}</td>
+                    <td className="p-2 text-right font-medium">{formatCurrency(r.proposed_rate)}</td>
                   </tr>
                 ))}
               </tbody>
@@ -151,11 +149,11 @@ export function IndexationWizard({ accountId, open, onClose }: Props) {
               <div className="font-medium">SLA Tarieven</div>
               <div className="flex justify-between">
                 <span>Vast maandbedrag</span>
-                <span>{fmt(simulation.sla.fixed_monthly_rate)} → <strong>{fmt(simulation.sla.proposed_fixed)}</strong></span>
+                <span>{formatCurrency(simulation.sla.fixed_monthly_rate)} → <strong>{formatCurrency(simulation.sla.proposed_fixed)}</strong></span>
               </div>
               <div className="flex justify-between">
                 <span>Support uurtarief</span>
-                <span>{fmt(simulation.sla.support_hourly_rate)} → <strong>{fmt(simulation.sla.proposed_support)}</strong></span>
+                <span>{formatCurrency(simulation.sla.support_hourly_rate)} → <strong>{formatCurrency(simulation.sla.proposed_support)}</strong></span>
               </div>
             </div>
           )}

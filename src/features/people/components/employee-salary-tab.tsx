@@ -1,11 +1,9 @@
 'use client';
 
 import type { SalaryHistory } from '../types';
+import { formatEUR } from '@/lib/format';
 
 type Props = { history: SalaryHistory[] };
-
-const fmt = (n: number) =>
-  new Intl.NumberFormat('nl-BE', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(n);
 
 export function EmployeeSalaryTab({ history }: Props) {
   if (!history || history.length === 0) {
@@ -30,7 +28,7 @@ export function EmployeeSalaryTab({ history }: Props) {
               <td className="py-2 pr-4">
                 {row.date ? new Date(row.date).toLocaleDateString('nl-BE') : '—'}
               </td>
-              <td className="py-2 pr-4">{fmt(Number(row.gross_salary ?? 0))}</td>
+              <td className="py-2 pr-4">{formatEUR(Number(row.gross_salary ?? 0))}</td>
               <td className="py-2 text-muted-foreground">{row.reason ?? '—'}</td>
             </tr>
           ))}

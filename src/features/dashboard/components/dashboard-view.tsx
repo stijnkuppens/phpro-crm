@@ -2,6 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { StatCard } from '@/components/admin/stat-card';
 import { DollarSign, AlertCircle, Calendar, Building2 } from 'lucide-react';
 import type { DashboardStats } from '../queries/get-dashboard-stats';
+import { formatEUR } from '@/lib/format';
 
 type ActivityRow = {
   id: string;
@@ -23,17 +24,13 @@ type Props = {
   upcomingTasks: TaskRow[];
 };
 
-const fmt = (n: number) =>
-  new Intl.NumberFormat('nl-BE', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(n);
-
-// Named "DashboardClient" for historical reasons; this is a pure server-renderable component (no hooks/state).
-export function DashboardClient({ stats, recentActivities, upcomingTasks }: Props) {
+export function DashboardView({ stats, recentActivities, upcomingTasks }: Props) {
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard
           title="Open Deal Waarde"
-          value={fmt(stats.openDealValue)}
+          value={formatEUR(stats.openDealValue)}
           icon={DollarSign}
         />
         <StatCard

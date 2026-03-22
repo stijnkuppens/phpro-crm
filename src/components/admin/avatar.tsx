@@ -4,6 +4,20 @@ import { useEffect, useState } from 'react';
 import { createBrowserClient, withApiKey } from '@/lib/supabase/client';
 import { cn } from '@/lib/utils';
 
+const urlCache = new Map<string, { url: string; expiresAt: number }>();
+const CACHE_TTL_MS = 3500 * 1000; // slightly less than the 3600s signed URL TTL
+
+function getCachedUrl(path: string): string | null {
+  const entry = urlCache.get(path);
+  if (entry && Date.now() < entry.expiresAt) return entry.url;
+  urlCache.delete(path);
+  return null;
+}
+
+function setCachedUrl(path: string, url: string): void {
+  urlCache.set(path, { url, expiresAt: Date.now() + CACHE_TTL_MS });
+}
+
 type Props = {
   /** Storage path relative to avatars bucket */
   path?: string | null;
@@ -25,14 +39,18 @@ export function Avatar({ path, fallback, size = 'sm', round = true }: Props) {
 
   useEffect(() => {
     if (!path) { setUrl(null); return; }
+    const cached = getCachedUrl(path);
+    if (cached) { setUrl(cached); return; }
     let cancelled = false;
     const supabase = createBrowserClient();
-    supabase.storage
-      .from('avatars')
-      .createSignedUrl(path, 3600)
-      .then(({ data }) => {
-        if (!cancelled && data?.signedUrl) setUrl(withApiKey(data.signedUrl));
-      });
+    supabase.storage.from('avatars').createSignedUrl(path, 3600).then(({ data }) => {
+      if (cancelled) return;
+      if (data?.signedUrl) {
+        const finalUrl = withApiKey(data.signedUrl);
+        setCachedUrl(path, finalUrl);
+        setUrl(finalUrl);
+      }
+    });
     return () => { cancelled = true; };
   }, [path]);
 
