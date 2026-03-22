@@ -1,5 +1,7 @@
 version: "3"
 
+dotenv: ['.env']
+
 tasks:
   setup:
     desc: "Run the full interactive project setup"
@@ -7,20 +9,15 @@ tasks:
       - bash setup.sh
 
   dev:
-    desc: "Start Supabase and Next.js dev server (auto-setup on first run)"
+    desc: "Start Supabase and Next.js dev server"
     cmds:
-      - |
-        if [ ! -f .env ]; then
-          bash setup.sh
-        else
-          docker compose up -d
-        fi
+      - task: dev:supabase
       - task: dev:next
 
   dev:supabase:
-    desc: "Start Supabase services via docker compose"
+    desc: "Start Supabase local dev via CLI"
     cmds:
-      - docker compose up -d
+      - npx supabase start
 
   dev:next:
     desc: "Start Next.js development server"
@@ -28,14 +25,14 @@ tasks:
       - npm run dev
 
   dev:stop:
-    desc: "Stop all Supabase docker services"
+    desc: "Stop Supabase local dev"
     cmds:
-      - docker compose down
+      - npx supabase stop
 
   db:migrate:
-    desc: "Run all migration files against the database"
+    desc: "Apply pending migrations to local database"
     cmds:
-      - for f in supabase/migrations/*.sql; do echo "Applying $(basename $f)..." && docker compose exec -T db psql -U supabase_admin -h 127.0.0.1 -d postgres < "$f"; done
+      - npx supabase db push --local
 
   db:new-migration:
     desc: "Create a new migration file (usage: task db:new-migration -- <name>)"
@@ -48,38 +45,37 @@ tasks:
         echo "Created $FILE"
 
   db:reset:
-    desc: "Drop and recreate the public schema, re-run migrations, data, and fixtures"
+    desc: "Drop and recreate database, re-run migrations and seed"
     cmds:
-      - docker compose exec -T db psql -U supabase_admin -h 127.0.0.1 -d postgres -c "DROP SCHEMA public CASCADE; CREATE SCHEMA public; GRANT ALL ON SCHEMA public TO postgres; GRANT USAGE ON SCHEMA public TO anon; GRANT USAGE ON SCHEMA public TO authenticated; GRANT USAGE ON SCHEMA public TO service_role; DELETE FROM auth.users;"
-      - task: db:migrate
-      - task: db:data
-      - task: db:fixtures
-
-  db:seed:
-    desc: "Run both production data and demo fixtures"
-    cmds:
-      - task: db:data
-      - task: db:fixtures
+      - npx supabase db reset
 
   db:data:
-    desc: "Apply production data migrations (safe for all environments)"
+    desc: "Apply production data only"
     cmds:
-      - for f in supabase/data/*.sql; do echo "  $(basename $f)" && docker compose exec -T db psql -U supabase_admin -h 127.0.0.1 -d postgres -q < "$f"; done
+      - |
+        for f in supabase/data/*.sql; do
+          echo "  $(basename $f)"
+          docker exec -i supabase_db_phpro-crm psql -U postgres -q < "$f"
+        done
 
   db:fixtures:
-    desc: "Load demo fixtures (dev/staging only, never production)"
+    desc: "Load demo fixtures (dev/staging only)"
     cmds:
-      - for f in supabase/fixtures/*.sql; do echo "  $(basename $f)" && docker compose exec -T db psql -U supabase_admin -h 127.0.0.1 -d postgres -q < "$f"; done
+      - |
+        for f in supabase/fixtures/*.sql; do
+          echo "  $(basename $f)"
+          docker exec -i supabase_db_phpro-crm psql -U postgres -q < "$f"
+        done
 
   db:studio:
     desc: "Open Supabase Studio in the browser"
     cmds:
-      - open http://localhost:${STUDIO_PORT:-3001}
+      - open http://localhost:54323
 
   types:generate:
     desc: "Generate TypeScript types from the database schema"
     cmds:
-      - npx supabase gen types typescript --db-url "postgresql://postgres:${POSTGRES_PASSWORD}@127.0.0.1:${POSTGRES_EXPOSED_PORT:-5432}/postgres" --schema public > src/types/database.ts
+      - npx supabase gen types typescript --local --schema public 2>/dev/null > src/types/database.ts
 
   entity:new:
     desc: "Scaffold a new entity (usage: task entity:new -- <name>)"
@@ -102,21 +98,26 @@ tasks:
       - npm run build
 
   prod:up:
-    desc: "Start production stack with docker compose"
+    desc: "Start production stack"
     cmds:
-      - docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build
+      - docker compose -f docker-compose.prod.yml up -d --build
+
+  prod:down:
+    desc: "Stop production stack"
+    cmds:
+      - docker compose -f docker-compose.prod.yml down
 
   clean:
-    desc: "Stop and remove all containers and volumes"
+    desc: "Stop Supabase and remove all local data"
     cmds:
-      - docker compose down -v --remove-orphans
+      - npx supabase stop --no-backup
 
   logs:
-    desc: "Tail all docker compose logs"
+    desc: "Tail Supabase logs"
     cmds:
-      - docker compose logs -f
+      - npx supabase logs
 
-  logs:supabase:
-    desc: "Tail logs for a specific Supabase service (usage: task logs:supabase -- <service>)"
+  status:
+    desc: "Show Supabase service status and URLs"
     cmds:
-      - docker compose logs -f {{.CLI_ARGS}}
+      - npx supabase status

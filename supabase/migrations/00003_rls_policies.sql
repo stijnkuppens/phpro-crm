@@ -1,7 +1,6 @@
--- Enable RLS on all tables
+-- Enable RLS on tables created in earlier migrations
 ALTER TABLE public.user_profiles ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.app_settings ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.contacts ENABLE ROW LEVEL SECURITY;
 
 -- ── user_profiles policies ──────────────────────
 DROP POLICY IF EXISTS "users_can_read_profiles" ON public.user_profiles;
@@ -50,25 +49,4 @@ CREATE POLICY "admins_can_delete_settings" ON public.app_settings
     EXISTS (SELECT 1 FROM public.user_profiles WHERE id = auth.uid() AND role = 'admin')
   );
 
--- ── contacts policies (using inlined EXISTS for performance) ──
-DROP POLICY IF EXISTS "authenticated_can_read_contacts" ON public.contacts;
-CREATE POLICY "authenticated_can_read_contacts" ON public.contacts
-  FOR SELECT TO authenticated USING (true);
-
-DROP POLICY IF EXISTS "editors_can_insert_contacts" ON public.contacts;
-CREATE POLICY "editors_can_insert_contacts" ON public.contacts
-  FOR INSERT TO authenticated WITH CHECK (
-    EXISTS (SELECT 1 FROM public.user_profiles WHERE id = auth.uid() AND role IN ('admin', 'editor'))
-  );
-
-DROP POLICY IF EXISTS "editors_can_update_contacts" ON public.contacts;
-CREATE POLICY "editors_can_update_contacts" ON public.contacts
-  FOR UPDATE TO authenticated USING (
-    EXISTS (SELECT 1 FROM public.user_profiles WHERE id = auth.uid() AND role IN ('admin', 'editor'))
-  );
-
-DROP POLICY IF EXISTS "admins_can_delete_contacts" ON public.contacts;
-CREATE POLICY "admins_can_delete_contacts" ON public.contacts
-  FOR DELETE TO authenticated USING (
-    EXISTS (SELECT 1 FROM public.user_profiles WHERE id = auth.uid() AND role = 'admin')
-  );
+-- Contacts RLS policies moved to 00012_contacts.sql (contacts table created there)

@@ -2,7 +2,7 @@ import nodemailer from 'nodemailer';
 
 const transporter = nodemailer.createTransport({
   host: process.env.SMTP_HOST ?? 'localhost',
-  port: Number(process.env.SMTP_PORT ?? 1025),
+  port: Number(process.env.SMTP_PORT ?? 54325),
   secure: false,
   // No auth needed for Mailpit / dev. Add user/pass for production SMTP.
 });

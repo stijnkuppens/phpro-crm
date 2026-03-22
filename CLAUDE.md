@@ -10,7 +10,7 @@ Claude acts as senior tech lead and solution architect with full responsibility 
 
 - Next.js 16 (App Router, Turbopack)
 - React 19
-- Supabase (self-hosted via Docker Compose, Kong gateway on port 8000)
+- Supabase (local dev via `supabase start`, production via Docker Compose)
 - `@supabase/ssr` for cookie-based auth
 - Tailwind CSS v4, shadcn/ui components
 - TypeScript strict mode
@@ -217,19 +217,18 @@ supabase/
 **Commands:**
 | Command | What it runs | When to use |
 |---------|-------------|-------------|
-| `task db:reset` | Drop schema + migrations + data + fixtures | Full local rebuild |
-| `task db:migrate` | `supabase/migrations/*.sql` | Apply schema changes |
+| `task db:reset` | `supabase db reset` — drops, migrates, seeds | Full local rebuild |
 | `task db:data` | `supabase/data/*.sql` | Production deploy, CI/CD |
 | `task db:fixtures` | `supabase/fixtures/*.sql` | Dev/staging setup |
-| `task db:seed` | Both data + fixtures | After manual migration run |
+| `task types:generate` | `supabase gen types` | After schema changes |
 
-All commands run inside Docker via `docker compose exec` against the `db` container.
+All commands use the Supabase CLI against the local `supabase start` instance.
 
 **Rules:**
 - **Migrations contain schema only** — `CREATE TABLE`, `ALTER`, `CREATE FUNCTION`, `CREATE TRIGGER`, `ENABLE ROW LEVEL SECURITY`, `CREATE POLICY`, `GRANT`. Never `INSERT` data.
-- **Production data goes in `supabase/data/`** — pipelines, stages, reference indices, default settings. Must be idempotent (`ON CONFLICT DO NOTHING`). Run in every environment including production via `npm run db:data`.
-- **Demo/test data goes in `supabase/fixtures/`** — fake users, sample accounts, contacts. Must be idempotent. Never runs in production. Only via `npm run db:fixtures`.
-- **`seed.sql`** — fallback for `supabase db reset`, includes both data/ and fixtures/ via `\ir`.
+- **Production data goes in `supabase/data/`** — pipelines, stages, reference indices, default settings. Must be idempotent (`ON CONFLICT DO NOTHING`). Run in every environment including production.
+- **Demo/test data goes in `supabase/fixtures/`** — fake users, sample accounts, contacts. Must be idempotent. Never runs in production.
+- **Seeding** is configured in `supabase/config.toml` via `[db.seed] sql_paths` — runs `data/*.sql` then `fixtures/*.sql` during `supabase db reset`.
 - **New tables MUST include `GRANT` statements** in the migration — without table-level grants, RLS policies are useless. Use `GRANT SELECT, INSERT, UPDATE, DELETE ON <table> TO authenticated;` as appropriate.
 - **Files are numbered** — `001_`, `002_`, etc. for execution order within each directory.
 
