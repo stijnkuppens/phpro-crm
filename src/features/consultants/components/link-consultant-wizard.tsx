@@ -6,6 +6,7 @@ import { toast } from 'sonner';
 import { Modal } from '@/components/admin/modal';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { DatePicker } from '@/components/ui/date-picker';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
@@ -483,16 +484,11 @@ export function LinkConsultantWizard({
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label>Startdatum *</Label>
-              <Input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} required />
+              <DatePicker value={startDate} onChange={setStartDate} required />
             </div>
             <div className="space-y-2">
               <Label>Einddatum</Label>
-              <Input
-                type="date"
-                value={endDate}
-                onChange={(e) => setEndDate(e.target.value)}
-                disabled={isIndefinite}
-              />
+              <DatePicker value={endDate} onChange={setEndDate} disabled={isIndefinite} />
             </div>
           </div>
 

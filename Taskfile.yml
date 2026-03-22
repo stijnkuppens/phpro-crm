@@ -67,6 +67,21 @@ tasks:
           docker exec -i supabase_db_phpro-crm psql -U postgres -q < "$f"
         done
 
+  db:backup:
+    desc: "Backup database (add -- --prod for production)"
+    cmds:
+      - bash scripts/db-backup.sh {{.CLI_ARGS}}
+
+  db:restore:
+    desc: "Restore database from backup (usage: task db:restore -- <file>)"
+    cmds:
+      - |
+        FILE={{.CLI_ARGS}}
+        if [ -z "$FILE" ]; then echo "Usage: task db:restore -- supabase/backups/<file>.sql.gz"; exit 1; fi
+        echo "Restoring from $FILE..."
+        gunzip -c "$FILE" | psql postgresql://postgres:postgres@127.0.0.1:54322/postgres
+        echo "Restored."
+
   db:studio:
     desc: "Open Supabase Studio in the browser"
     cmds:

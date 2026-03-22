@@ -11,7 +11,7 @@ export const getReferenceOptions = cache(async (table: string) => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { data } = await (supabase.from(table as any) as any)
     .select(select)
-    .eq('is_active', true)
+    .eq('active', true)
     .order('sort_order', { ascending: true });
   return (data ?? []) as { id: string; name: string; avatar_url?: string | null }[];
 });

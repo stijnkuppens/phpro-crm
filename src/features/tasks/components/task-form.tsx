@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { Input } from '@/components/ui/input';
+import { DatePicker } from '@/components/ui/date-picker';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import {
@@ -102,7 +103,7 @@ export function TaskForm({ defaultValues, onSuccess, onCancel }: Props) {
         </div>
         <div className="space-y-2">
           <Label htmlFor="due_date">Vervaldatum</Label>
-          <Input id="due_date" name="due_date" type="date" defaultValue={defaultValues?.due_date ?? ''} />
+          <DatePicker name="due_date" value={defaultValues?.due_date ?? ''} />
         </div>
         <div className="space-y-2">
           <Label htmlFor="assigned_to">Toegewezen aan (ID)</Label>

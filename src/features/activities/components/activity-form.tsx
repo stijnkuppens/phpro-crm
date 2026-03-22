@@ -6,6 +6,7 @@ import { toast } from 'sonner';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
+import { DateTimePicker } from '@/components/ui/date-time-picker';
 import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
@@ -97,7 +98,7 @@ export function ActivityForm({ defaultValues, onSuccess, onCancel }: Props) {
         </div>
         <div className="space-y-2">
           <Label htmlFor="date">Datum *</Label>
-          <Input id="date" name="date" type="datetime-local" defaultValue={defaultValues?.date ?? ''} required />
+          <DateTimePicker name="date" value={defaultValues?.date ?? ''} required />
         </div>
         <div className="space-y-2">
           <Label htmlFor="duration_minutes">Duur (minuten)</Label>

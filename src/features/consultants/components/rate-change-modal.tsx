@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { toast } from 'sonner';
 import { Modal } from '@/components/admin/modal';
 import { Input } from '@/components/ui/input';
+import { DatePicker } from '@/components/ui/date-picker';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
@@ -50,7 +51,7 @@ export function RateChangeModal({ consultantId, open, onClose, onSuccess }: Prop
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-2">
             <Label htmlFor="date">Datum *</Label>
-            <Input id="date" name="date" type="date" required />
+            <DatePicker name="date" required />
           </div>
           <div className="space-y-2">
             <Label htmlFor="rate">Nieuw tarief (€) *</Label>

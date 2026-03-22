@@ -1,6 +1,9 @@
 # dependencies
 node_modules/
 
+# database backups
+supabase/backups/
+
 # next.js
 .next/
 out/

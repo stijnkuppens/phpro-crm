@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { Input } from '@/components/ui/input';
+import { DatePicker } from '@/components/ui/date-picker';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -115,7 +116,7 @@ export function DealForm({ defaultValues, onSuccess, onCancel }: Props) {
         </div>
         <div className="space-y-2">
           <Label htmlFor="close_date">Sluitdatum</Label>
-          <Input id="close_date" name="close_date" type="date" defaultValue={defaultValues?.close_date ?? ''} />
+          <DatePicker name="close_date" value={defaultValues?.close_date ?? ''} />
         </div>
         <div className="space-y-2">
           <Label htmlFor="owner_id">Eigenaar ID</Label>

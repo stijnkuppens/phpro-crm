@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -18,6 +18,39 @@ export function LoginForm() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+
+  // Handle hash-based auth tokens (invite, magic link, recovery).
+  // @supabase/ssr's createBrowserClient does NOT auto-detect hash fragments,
+  // so we manually parse and call setSession().
+  useEffect(() => {
+    const hash = window.location.hash;
+    if (!hash.includes('access_token')) return;
+
+    const params = new URLSearchParams(hash.substring(1));
+    const accessToken = params.get('access_token');
+    const refreshToken = params.get('refresh_token');
+    const type = params.get('type');
+
+    if (!accessToken || !refreshToken) return;
+
+    setLoading(true);
+    const supabase = createBrowserClient();
+    supabase.auth.setSession({ access_token: accessToken, refresh_token: refreshToken })
+      .then(({ error }) => {
+        if (error) {
+          toast.error('Sessie instellen mislukt');
+          setLoading(false);
+          return;
+        }
+        // Clear hash from URL before redirecting
+        window.history.replaceState(null, '', window.location.pathname);
+        if (type === 'invite' || type === 'recovery') {
+          router.replace('/reset-password');
+        } else {
+          router.replace('/admin');
+        }
+      });
+  }, [router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

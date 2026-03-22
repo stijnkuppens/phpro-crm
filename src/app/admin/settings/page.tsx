@@ -1,6 +1,7 @@
 import { PageHeader } from '@/components/admin/page-header';
 import { getSettings } from '@/features/settings/queries/get-settings';
 import { SettingsForm } from '@/features/settings/components/settings-form';
+import { ChangePasswordForm } from '@/features/settings/components/change-password-form';
 
 export default async function SettingsPage() {
   const settings = await getSettings();
@@ -12,6 +13,7 @@ export default async function SettingsPage() {
         breadcrumbs={[{ label: 'Admin', href: '/admin' }, { label: 'Instellingen' }]}
       />
       <SettingsForm initialData={settings} />
+      <ChangePasswordForm />
     </div>
   );
 }

@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { DatePicker } from '@/components/ui/date-picker';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import {
@@ -108,7 +109,7 @@ export function CloseDealModal({ dealId, open, onOpenChange, onSuccess }: Props)
           {closedType === 'longterm' && (
             <div className="space-y-2">
               <Label htmlFor="longterm_date">Follow-up datum *</Label>
-              <Input id="longterm_date" name="longterm_date" type="date" required />
+              <DatePicker name="longterm_date" required />
             </div>
           )}
           <div className="flex gap-2 justify-end">

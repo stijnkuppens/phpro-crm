@@ -215,11 +215,11 @@ export function CommunicationModal({ open, onClose, accountId, contacts = [], de
         {/* Actions */}
         <div className="flex justify-end gap-2 pt-2">
           <Button type="button" variant="outline" onClick={onClose} disabled={loading || sending}>Annuleer</Button>
-          {canSendEmail && (
+          {type === 'email' && (
             <Button
               type="button"
               variant="outline"
-              disabled={loading || sending}
+              disabled={loading || sending || !canSendEmail}
               onClick={handleSendEmail}
             >
               <Send className="h-4 w-4 mr-1.5" />

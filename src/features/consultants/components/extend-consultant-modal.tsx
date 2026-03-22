@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { toast } from 'sonner';
 import { Modal } from '@/components/admin/modal';
 import { Input } from '@/components/ui/input';
+import { DatePicker } from '@/components/ui/date-picker';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
@@ -46,7 +47,7 @@ export function ExtendConsultantModal({ consultantId, open, onClose, onSuccess }
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="space-y-2">
           <Label htmlFor="new_end_date">Nieuwe einddatum *</Label>
-          <Input id="new_end_date" name="new_end_date" type="date" required />
+          <DatePicker name="new_end_date" required />
         </div>
         <div className="space-y-2">
           <Label htmlFor="notes">Notities</Label>

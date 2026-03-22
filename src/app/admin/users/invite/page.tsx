@@ -1,26 +1,24 @@
 import { PageHeader } from '@/components/admin/page-header';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { InviteForm } from '@/features/users/components/invite-form';
 
 export default function InviteUserPage() {
   return (
     <div className="mx-auto max-w-2xl space-y-6">
       <PageHeader
-        title="Invite User"
+        title="Gebruiker uitnodigen"
         breadcrumbs={[
           { label: 'Admin', href: '/admin' },
-          { label: 'Users', href: '/admin/users' },
-          { label: 'Invite' },
+          { label: 'Gebruikers', href: '/admin/users' },
+          { label: 'Uitnodigen' },
         ]}
       />
       <Card>
         <CardHeader>
-          <CardTitle>Invite a New User</CardTitle>
+          <CardTitle>Nieuwe gebruiker uitnodigen</CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-sm text-muted-foreground">
-            User invitation is not yet implemented. Use Supabase Auth to invite users via the
-            dashboard or API.
-          </p>
+          <InviteForm />
         </CardContent>
       </Card>
     </div>

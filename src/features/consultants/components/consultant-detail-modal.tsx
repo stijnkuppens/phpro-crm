@@ -5,8 +5,9 @@ import { Modal } from '@/components/admin/modal';
 import { Avatar } from '@/components/admin/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from '@/components/ui/tooltip';
 import { ExternalLink } from 'lucide-react';
-import { contractStatusColors, type ConsultantWithDetails } from '../types';
+import { contractStatusColors, contractStatusDescriptions, type ConsultantWithDetails } from '../types';
 import { getContractStatus, getCurrentRate } from '../utils';
 import { StopConsultantModal } from './stop-consultant-modal';
 import { ExtendConsultantModal } from './extend-consultant-modal';
@@ -140,7 +141,12 @@ function ActiveDetail({ consultant }: { consultant: ConsultantWithDetails }) {
         <div><span className="text-muted-foreground">Account:</span> {consultant.account?.name ?? consultant.client_name ?? '-'}</div>
         <div>
           <span className="text-muted-foreground">Contract:</span>{' '}
-          <Badge className={contractStatusColors[status]}>{status}</Badge>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger render={<Badge className={`cursor-help ${contractStatusColors[status]}`}>{status}</Badge>} />
+              <TooltipContent>{contractStatusDescriptions[status]}</TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
         </div>
         <div><span className="text-muted-foreground">Huidig tarief:</span> {formatCurrency(rate)}/u</div>
         <div>

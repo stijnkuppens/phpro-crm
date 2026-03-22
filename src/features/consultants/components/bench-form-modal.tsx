@@ -7,6 +7,7 @@ import { Modal } from '@/components/admin/modal';
 import { AvatarUpload } from '@/components/admin/avatar-upload';
 import { PdfUploadField } from '@/components/admin/pdf-upload-field';
 import { Input } from '@/components/ui/input';
+import { DatePicker } from '@/components/ui/date-picker';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -150,7 +151,7 @@ export function BenchFormModal({ open, onClose, consultant }: Props) {
           </div>
           <div className="space-y-2">
             <Label htmlFor="available_date">Beschikbaar vanaf</Label>
-            <Input id="available_date" name="available_date" type="date" defaultValue={consultant?.available_date ?? ''} />
+            <DatePicker name="available_date" value={consultant?.available_date ?? ''} />
           </div>
         </div>
 

@@ -5,7 +5,8 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Plus } from 'lucide-react';
-import { contractStatusColors, type ConsultantWithDetails } from '../types';
+import { contractStatusColors, contractStatusDescriptions, type ConsultantWithDetails } from '../types';
+import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from '@/components/ui/tooltip';
 import { getContractStatus, getCurrentRate } from '../utils';
 import { ConsultantDetailModal } from './consultant-detail-modal';
 import { LinkConsultantWizard } from './link-consultant-wizard';
@@ -60,7 +61,12 @@ export function AccountConsultantsTab({ accountId, accountName, consultants, rol
                     <div className="text-sm font-medium">{formatEUR(rate)}/u</div>
                     <div className="text-xs text-muted-foreground">{formatEUR(rate * 8 * 21)}/maand</div>
                   </div>
-                  <Badge className={contractStatusColors[status]}>{status}</Badge>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger render={<Badge className={`cursor-help ${contractStatusColors[status]}`}>{status}</Badge>} />
+                      <TooltipContent>{contractStatusDescriptions[status]}</TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
                   <div className="text-xs text-muted-foreground">
                     {c.start_date ? new Date(c.start_date).toLocaleDateString('nl-BE') : ''} -
                     {c.is_indefinite ? ' onbepaald' : c.end_date ? ` ${new Date(c.end_date).toLocaleDateString('nl-BE')}` : ''}

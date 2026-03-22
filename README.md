@@ -77,6 +77,9 @@ Run `task --list` for all commands.
 | `task db:data` | Apply production data only |
 | `task db:fixtures` | Load demo fixtures only |
 | `task db:studio` | Open Supabase Studio in browser |
+| `task db:backup` | Backup local database to `supabase/backups/` |
+| `task db:backup -- --prod` | Backup production database |
+| `task db:restore -- <file>` | Restore from a backup file |
 
 ### Code
 
@@ -94,6 +97,40 @@ Run `task --list` for all commands.
 |---------|-------------|
 | `task prod:up` | Start production stack (Docker Compose) |
 | `task prod:down` | Stop production stack |
+
+## Database Backups
+
+Backups are stored in `supabase/backups/` (gitignored). The last 30 backups are retained automatically.
+
+### Manual backup
+
+```bash
+task db:backup            # local dev
+task db:backup -- --prod  # production
+```
+
+### Restore
+
+```bash
+task db:restore -- supabase/backups/local_20260322_060000.sql.gz
+```
+
+### Automated daily backup (macOS)
+
+```bash
+# Install the launchd plist (runs daily at 6:00 AM)
+cp scripts/be.phpro.crm.db-backup.plist ~/Library/LaunchAgents/
+launchctl load ~/Library/LaunchAgents/be.phpro.crm.db-backup.plist
+
+# Verify it's loaded
+launchctl list | grep phpro
+
+# Uninstall
+launchctl unload ~/Library/LaunchAgents/be.phpro.crm.db-backup.plist
+rm ~/Library/LaunchAgents/be.phpro.crm.db-backup.plist
+```
+
+Logs are written to `supabase/backups/cron.log`. The backup only succeeds if Supabase is running locally.
 
 ## Database Architecture
 

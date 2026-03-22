@@ -3,7 +3,8 @@
 import type { ColumnDef } from '@tanstack/react-table';
 import { Avatar } from '@/components/admin/avatar';
 import type { ConsultantWithDetails, ConsultantStatus } from './types';
-import { contractStatusColors } from './types';
+import { contractStatusColors, contractStatusDescriptions } from './types';
+import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from '@/components/ui/tooltip';
 import { getContractStatus, getCurrentRate } from './utils';
 import { formatEUR } from '@/lib/format';
 
@@ -33,11 +34,19 @@ export const consultantColumns: ColumnDef<ConsultantWithDetails>[] = [
           <span className={`inline-flex w-fit items-center rounded-full px-2 py-0.5 text-xs font-medium ${statusBadgeStyles[status]}`}>
             {statusLabels[status]}
           </span>
-          {status === 'actief' && (
-            <span className={`inline-flex w-fit items-center rounded-full px-2 py-0.5 text-xs font-medium ${contractStatusColors[getContractStatus(c)]}`}>
-              {getContractStatus(c)}
-            </span>
-          )}
+          {status === 'actief' && (() => {
+            const cs = getContractStatus(c);
+            return (
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger className={`inline-flex w-fit cursor-help items-center rounded-full px-2 py-0.5 text-xs font-medium ${contractStatusColors[cs]}`}>
+                    {cs}
+                  </TooltipTrigger>
+                  <TooltipContent>{contractStatusDescriptions[cs]}</TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            );
+          })()}
         </div>
       );
     },

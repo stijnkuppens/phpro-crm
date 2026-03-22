@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { toast } from 'sonner';
 import { Modal } from '@/components/admin/modal';
 import { Input } from '@/components/ui/input';
+import { DatePicker } from '@/components/ui/date-picker';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
@@ -142,11 +143,11 @@ export function ContractEditModal({ accountId, contract, indexationConfig, open,
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
                 <Label>Start</Label>
-                <Input name="framework_start" type="date" defaultValue={contract?.framework_start ?? ''} />
+                <DatePicker name="framework_start" value={contract?.framework_start ?? ''} />
               </div>
               <div className="space-y-1.5">
                 <Label>Einde</Label>
-                <Input name="framework_end" type="date" defaultValue={contract?.framework_end ?? ''} />
+                <DatePicker name="framework_end" value={contract?.framework_end ?? ''} />
               </div>
               <div className="space-y-1.5">
                 <Label>PDF URL</Label>
@@ -170,11 +171,11 @@ export function ContractEditModal({ accountId, contract, indexationConfig, open,
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
                 <Label>Start</Label>
-                <Input name="service_start" type="date" defaultValue={contract?.service_start ?? ''} />
+                <DatePicker name="service_start" value={contract?.service_start ?? ''} />
               </div>
               <div className="space-y-1.5">
                 <Label>Einde</Label>
-                <Input name="service_end" type="date" defaultValue={contract?.service_end ?? ''} />
+                <DatePicker name="service_end" value={contract?.service_end ?? ''} />
               </div>
               <div className="space-y-1.5">
                 <Label>PDF URL</Label>

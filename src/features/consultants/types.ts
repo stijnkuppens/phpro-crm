@@ -44,6 +44,15 @@ export const contractStatusColors: Record<ContractStatus, string> = {
   stopgezet: 'bg-gray-300 text-gray-600',
 };
 
+export const contractStatusDescriptions: Record<ContractStatus, string> = {
+  actief: 'Einddatum meer dan 120 dagen weg',
+  waarschuwing: 'Einddatum binnen 120 dagen',
+  kritiek: 'Einddatum binnen 60 dagen',
+  verlopen: 'Einddatum is verstreken',
+  onbepaald: 'Contract van onbepaalde duur',
+  stopgezet: 'Consultant is stopgezet',
+};
+
 // ---------------------------------------------------------------------------
 // Zod schemas
 // ---------------------------------------------------------------------------

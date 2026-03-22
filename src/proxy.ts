@@ -91,5 +91,5 @@ export async function proxy(request: NextRequest) {
 }
 
 export const proxyConfig = {
-  matcher: ['/admin/:path*', '/login', '/register', '/forgot-password', '/reset-password'],
+  matcher: ['/admin/:path*', '/login', '/register', '/forgot-password', '/reset-password', '/auth/callback'],
 };
