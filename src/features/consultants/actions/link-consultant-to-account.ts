@@ -39,14 +39,14 @@ export async function linkConsultantToAccount(
   const { data, error } = await supabase.rpc('link_consultant_to_account', {
     p_consultant_id: parsed.data.consultant_id,
     p_account_id: parsed.data.account_id,
-    p_role: parsed.data.role ?? null,
+    p_role: parsed.data.role ?? undefined,
     p_start_date: parsed.data.start_date,
-    p_end_date: parsed.data.is_indefinite ? null : (parsed.data.end_date ?? null),
+    p_end_date: parsed.data.is_indefinite ? undefined : (parsed.data.end_date ?? undefined),
     p_is_indefinite: parsed.data.is_indefinite ?? false,
     p_hourly_rate: parsed.data.hourly_rate,
     p_notice_period_days: parsed.data.notice_period_days ?? 30,
-    p_sow_url: parsed.data.sow_url ?? null,
-    p_notes: parsed.data.notes ?? null,
+    p_sow_url: parsed.data.sow_url ?? undefined,
+    p_notes: parsed.data.notes ?? undefined,
   });
 
   if (error) {

@@ -126,7 +126,7 @@ export function NotificationBell() {
               <span className={n.is_read ? 'text-muted-foreground' : 'font-medium'}>{n.title}</span>
               {n.message && <span className="text-xs text-muted-foreground">{n.message}</span>}
               <span className="text-xs text-muted-foreground">
-                {new Date(n.created_at).toLocaleDateString()}
+                {n.created_at ? new Date(n.created_at).toLocaleDateString() : '—'}
               </span>
             </DropdownMenuItem>
           ))

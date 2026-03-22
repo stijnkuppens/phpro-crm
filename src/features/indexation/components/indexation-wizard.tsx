@@ -36,12 +36,12 @@ export function IndexationWizard({ accountId, open, onClose }: Props) {
     const result = await simulateIndexation(accountId, baseYear, percentage);
     setLoading(false);
 
-    if ('error' in result && result.error) {
+    if (!result.success) {
       toast.error(typeof result.error === 'string' ? result.error : 'Simulatie mislukt');
       return;
     }
 
-    if ('data' in result && result.data) {
+    if (result.data) {
       setSimulation(result.data);
       setStep(2);
     }
@@ -65,12 +65,12 @@ export function IndexationWizard({ accountId, open, onClose }: Props) {
     const result = await saveIndexationDraft(accountId, values);
     setLoading(false);
 
-    if ('error' in result && result.error) {
+    if (!result.success) {
       toast.error(typeof result.error === 'string' ? result.error : 'Opslaan mislukt');
       return;
     }
 
-    if ('data' in result && result.data) {
+    if (result.data) {
       setDraftId(result.data.id);
       toast.success('Draft opgeslagen');
       setStep(3);
@@ -83,7 +83,7 @@ export function IndexationWizard({ accountId, open, onClose }: Props) {
     const result = await approveIndexation(accountId, draftId);
     setLoading(false);
 
-    if ('error' in result && result.error) {
+    if (!result.success) {
       toast.error(typeof result.error === 'string' ? result.error : 'Goedkeuring mislukt');
       return;
     }

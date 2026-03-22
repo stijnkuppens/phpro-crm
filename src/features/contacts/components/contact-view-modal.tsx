@@ -9,6 +9,7 @@ import { Mail, Phone, ShieldCheck, Star, Eye, UtensilsCrossed, CalendarDays, Gif
 import Link from 'next/link';
 import { createBrowserClient } from '@/lib/supabase/client';
 import { AvatarUpload } from '@/components/admin/avatar-upload';
+import { updateContactAvatar } from '../actions/update-contact-avatar';
 import type { ContactWithDetails } from '../types';
 
 type Props = {
@@ -58,9 +59,7 @@ export function ContactViewModal({ contactId, onClose, onEdit }: Props) {
                 fallback={initials}
                 storagePath={`contacts/${contact.id}`}
                 onUploaded={async (path) => {
-                  const supabase = createBrowserClient();
-                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                  await (supabase.from('contacts') as any).update({ avatar_url: path }).eq('id', contact.id);
+                  await updateContactAvatar(contact.id, path);
                   setContact((prev) => prev ? { ...prev, avatar_url: path } : prev);
                 }}
               />

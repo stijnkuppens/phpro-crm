@@ -14,7 +14,8 @@ import { OmzetTab } from '@/features/revenue/components/omzet-tab';
 import type { AccountWithRelations, ReferenceOption } from '../types';
 import type { DealWithRelations } from '@/features/deals/types';
 import type { Contract, HourlyRate, SlaRateWithTools } from '@/features/contracts/types';
-import { getCurrentRate, type ConsultantWithDetails } from '@/features/consultants/types';
+import type { ConsultantWithDetails } from '@/features/consultants/types';
+import { getCurrentRate } from '@/features/consultants/utils';
 import type { AccountRevenue } from '@/features/revenue/types';
 import type { ContactWithDetails } from '@/features/contacts/types';
 import type { ActivityWithRelations } from '@/features/activities/types';
@@ -23,7 +24,7 @@ import type { IndexationConfig } from '@/features/indexation/types';
 import type { IndexationDraftFull } from '@/features/indexation/types';
 import type { IndexationHistoryFull } from '@/features/indexation/queries/get-indexation-history';
 import { AvatarUpload } from '@/components/admin/avatar-upload';
-import { createBrowserClient } from '@/lib/supabase/client';
+import { updateAccountAvatar } from '../actions/update-account-avatar';
 
 type Props = {
   account: AccountWithRelations;
@@ -89,9 +90,7 @@ export function AccountDetail({ account, deals, contract, hourlyRates, slaRates,
             storagePath={`accounts/${account.id}`}
             round={false}
             onUploaded={async (path) => {
-              const supabase = createBrowserClient();
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              await (supabase.from('accounts') as any).update({ logo_url: path }).eq('id', account.id);
+              await updateAccountAvatar(account.id, path);
             }}
           />
 

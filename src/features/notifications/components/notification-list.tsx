@@ -79,7 +79,7 @@ export function NotificationList() {
                 <span className="text-sm text-muted-foreground">{n.message}</span>
               )}
               <span className="text-xs text-muted-foreground">
-                {new Date(n.created_at).toLocaleDateString()}
+                {n.created_at ? new Date(n.created_at).toLocaleDateString() : '—'}
               </span>
             </li>
           ))}

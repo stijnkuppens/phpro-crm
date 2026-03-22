@@ -17,12 +17,12 @@ export default function ContactsError({
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <AlertTriangle className="h-5 w-5 text-destructive" />
-            Failed to load contacts
+            Contacten laden mislukt
           </CardTitle>
         </CardHeader>
         <CardContent>
           <p className="text-sm text-muted-foreground">
-            An unexpected error occurred loading contacts.
+            Er is een onverwachte fout opgetreden bij het laden van contacten.
           </p>
           {process.env.NODE_ENV === 'development' && (
             <pre className="mt-4 max-h-40 overflow-auto rounded bg-muted p-3 text-xs">
@@ -31,7 +31,7 @@ export default function ContactsError({
           )}
         </CardContent>
         <CardFooter>
-          <Button onClick={reset}>Try again</Button>
+          <Button onClick={reset}>Opnieuw proberen</Button>
         </CardFooter>
       </Card>
     </div>

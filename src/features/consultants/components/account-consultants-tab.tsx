@@ -5,7 +5,8 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Plus } from 'lucide-react';
-import { getContractStatus, getCurrentRate, contractStatusColors, type ConsultantWithDetails } from '../types';
+import { contractStatusColors, type ConsultantWithDetails } from '../types';
+import { getContractStatus, getCurrentRate } from '../utils';
 import { ConsultantDetailModal } from './consultant-detail-modal';
 import { LinkConsultantWizard } from './link-consultant-wizard';
 

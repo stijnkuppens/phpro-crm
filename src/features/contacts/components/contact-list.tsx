@@ -75,8 +75,9 @@ export function ContactList({ initialData, initialCount, accounts = [] }: Contac
   }, [fetchList, page, search, accountFilter, roleFilter, steercoOnly]);
 
   useEffect(() => {
+    if (initialData && page === 1 && !search && accountFilter === 'all' && roleFilter === 'all' && !steercoOnly) return;
     load();
-  }, [load]);
+  }, [load, initialData, page, search, accountFilter, roleFilter, steercoOnly]);
 
   useEffect(() => {
     setPage(1);

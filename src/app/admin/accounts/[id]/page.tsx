@@ -47,7 +47,7 @@ export default async function AccountDetailPage({ params }: Props) {
     getAccountRevenue(id),
     getContactsByAccount(id),
     getActivities({ filters: { account_id: id }, pageSize: 50 }),
-    getCommunications({ filters: { account_id: id }, pageSize: 50 }),
+    getCommunications({ filters: { account_id: id }, pageSize: 25 }),
     getReferenceOptions('ref_internal_people'),
     getReferenceOptions('ref_consultant_roles'),
     getIndexationConfig(id),

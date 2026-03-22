@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useCallback, useEffect } from 'react';
-import { Pencil, Trash2 } from 'lucide-react';
+import { Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useEntity } from '@/lib/hooks/use-entity';
 import DataTable from '@/components/admin/data-table';
@@ -102,7 +102,6 @@ export function ActivityList({ initialData, initialCount }: Props) {
         loading={loading}
         refreshing={refreshing}
         rowActions={(row) => [
-          { icon: Pencil, label: 'Bewerken', onClick: () => { /* TODO: open edit modal when available */ } },
           { icon: Trash2, label: 'Verwijderen', variant: 'destructive' as const, confirm: { title: 'Activiteit verwijderen?', description: 'Dit verwijdert de activiteit permanent.' }, onClick: () => handleDelete(row.id) },
         ]}
         bulkActions={[

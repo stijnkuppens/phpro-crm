@@ -3,7 +3,8 @@
 import type { ColumnDef } from '@tanstack/react-table';
 import { Avatar } from '@/components/admin/avatar';
 import type { ConsultantWithDetails, ConsultantStatus } from './types';
-import { getContractStatus, getCurrentRate, contractStatusColors } from './types';
+import { contractStatusColors } from './types';
+import { getContractStatus, getCurrentRate } from './utils';
 
 const rateFmt = new Intl.NumberFormat('nl-BE', {
   style: 'currency',

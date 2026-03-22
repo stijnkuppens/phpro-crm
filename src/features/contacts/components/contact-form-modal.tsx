@@ -93,7 +93,12 @@ export function ContactFormModal({ contactId, accountId, open, onClose, onSaved 
         setLoading(false);
         return;
       }
-      await updatePersonalInfo(contactId, personalValues);
+      const piResult = await updatePersonalInfo(contactId, personalValues);
+      if (!piResult.success) {
+        toast.error('Contact bijgewerkt, maar persoonlijke info kon niet worden opgeslagen');
+        setLoading(false);
+        return;
+      }
       toast.success('Contact bijgewerkt');
     } else {
       const result = await createContact(parsedContact.data);
@@ -103,7 +108,12 @@ export function ContactFormModal({ contactId, accountId, open, onClose, onSaved 
         return;
       }
       if (result.data?.id) {
-        await updatePersonalInfo(result.data.id, personalValues);
+        const piResult = await updatePersonalInfo(result.data.id, personalValues);
+        if (!piResult.success) {
+          toast.error('Contact aangemaakt, maar persoonlijke info kon niet worden opgeslagen');
+          setLoading(false);
+          return;
+        }
       }
       toast.success('Contact aangemaakt');
     }

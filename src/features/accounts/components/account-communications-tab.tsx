@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useEntity } from '@/lib/hooks/use-entity';
 import { Badge } from '@/components/ui/badge';
@@ -11,12 +11,11 @@ import {
   SelectContent,
   SelectItem,
   SelectTrigger,
-  SelectValue,
 } from '@/components/ui/select';
 import { FilterBar } from '@/components/admin/filter-bar';
 import { DateRangePicker } from '@/components/ui/date-range-picker';
 import { CommunicationModal } from '@/features/communications/components/communication-modal';
-import type { Communication, CommunicationWithDetails } from '@/features/communications/types';
+import type { CommunicationWithDetails } from '@/features/communications/types';
 import type { DateRange } from 'react-day-picker';
 import { Mail, FileText, Users, Phone, ChevronDown, ChevronRight, Plus, Search } from 'lucide-react';
 
@@ -27,6 +26,15 @@ type Props = {
   contacts?: { id: string; first_name: string; last_name: string }[];
   deals?: { id: string; title: string }[];
 };
+
+const COMM_SELECT = `
+  *,
+  contact:contacts!contact_id(id, first_name, last_name),
+  deal:deals!deal_id(id, title),
+  owner:user_profiles!owner_id(id, full_name)
+`;
+
+const PAGE_SIZE = 25;
 
 const TYPE_CONFIG = {
   email: { icon: Mail, bg: 'bg-blue-50 dark:bg-blue-950', color: 'text-blue-600 dark:text-blue-400', label: 'E-mail' },
@@ -53,8 +61,17 @@ export function AccountCommunicationsTab({ accountId, initialData, initialCount,
   const [ownerFilter, setOwnerFilter] = useState('all');
   const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
   const [modalOpen, setModalOpen] = useState(false);
+  const [page, setPage] = useState(1);
 
-  // Derive unique owners from data for the filter dropdown
+  const { data, total, loading, refreshing, fetchList } = useEntity<CommunicationWithDetails>({
+    table: 'communications',
+    select: COMM_SELECT,
+    pageSize: PAGE_SIZE,
+    initialData,
+    initialCount,
+  });
+
+  // Derive unique owners from initialData (stable list unaffected by filters)
   const owners = useMemo(() => {
     const map = new Map<string, string>();
     for (const c of initialData) {
@@ -65,38 +82,45 @@ export function AccountCommunicationsTab({ accountId, initialData, initialCount,
     return Array.from(map, ([id, name]) => ({ id, name }));
   }, [initialData]);
 
-  // Client-side filtering (all data loaded with pageSize 100)
-  const filteredData = useMemo(() => {
-    let result = initialData;
+  const load = useCallback(() => {
+    const eqFilters: Record<string, string | boolean> = { account_id: accountId };
+    if (typeFilter) eqFilters.type = typeFilter;
+    if (ownerFilter !== 'all') eqFilters.owner_id = ownerFilter;
 
-    if (typeFilter) {
-      result = result.filter((c) => c.type === typeFilter);
-    }
-    if (search) {
-      const q = search.toLowerCase();
-      result = result.filter((c) => {
-        const content = typeof c.content === 'object' && c.content ? (c.content as { text?: string }).text ?? '' : typeof c.content === 'string' ? c.content : '';
-        return (
-          c.subject?.toLowerCase().includes(q) ||
-          content.toLowerCase().includes(q) ||
-          c.to?.toLowerCase().includes(q)
-        );
-      });
-    }
-    if (ownerFilter !== 'all') {
-      result = result.filter((c) => c.owner?.id === ownerFilter);
-    }
-    if (dateRange?.from) {
-      result = result.filter((c) => new Date(c.date) >= dateRange.from!);
-    }
-    if (dateRange?.to) {
-      const to = new Date(dateRange.to);
-      to.setHours(23, 59, 59);
-      result = result.filter((c) => new Date(c.date) <= to);
-    }
+    const orFilter = search
+      ? `subject.ilike.%${search}%,to.ilike.%${search}%`
+      : undefined;
 
-    return result;
-  }, [initialData, typeFilter, search, ownerFilter, dateRange]);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const applyFilters = (query: any) => {
+      if (dateRange?.from) {
+        query = query.gte('date', dateRange.from.toISOString());
+      }
+      if (dateRange?.to) {
+        const to = new Date(dateRange.to);
+        to.setHours(23, 59, 59);
+        query = query.lte('date', to.toISOString());
+      }
+      return query;
+    };
+
+    fetchList({
+      page,
+      sort: { column: 'date', direction: 'desc' },
+      orFilter,
+      eqFilters,
+      applyFilters: (dateRange?.from || dateRange?.to) ? applyFilters : undefined,
+    });
+  }, [fetchList, page, accountId, typeFilter, search, ownerFilter, dateRange]);
+
+  useEffect(() => {
+    if (initialData && page === 1 && !typeFilter && !search && ownerFilter === 'all' && !dateRange) return;
+    load();
+  }, [load, initialData, page, typeFilter, search, ownerFilter, dateRange]);
+
+  useEffect(() => {
+    setPage(1);
+  }, [typeFilter, search, ownerFilter, dateRange]);
 
   const toggleExpand = useCallback((id: string) => {
     setExpanded((prev) => {
@@ -171,11 +195,11 @@ export function AccountCommunicationsTab({ accountId, initialData, initialCount,
       </FilterBar>
 
       {/* Timeline */}
-      {filteredData.length === 0 ? (
+      {data.length === 0 && !loading ? (
         <div className="py-8 text-center text-muted-foreground">Geen communicatie gevonden.</div>
       ) : (
         <div className="space-y-2">
-          {filteredData.map((comm) => {
+          {data.map((comm) => {
             const config = TYPE_CONFIG[comm.type as CommType] ?? TYPE_CONFIG.note;
             const Icon = config.icon;
             const isExpanded = expanded.has(comm.id);
@@ -248,6 +272,31 @@ export function AccountCommunicationsTab({ accountId, initialData, initialCount,
               </div>
             );
           })}
+        </div>
+      )}
+
+      {/* Pagination */}
+      {total > PAGE_SIZE && (
+        <div className="flex justify-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={page <= 1}
+            onClick={() => setPage((p) => p - 1)}
+          >
+            Vorige
+          </Button>
+          <span className="text-sm text-muted-foreground self-center">
+            Pagina {page} van {Math.ceil(total / PAGE_SIZE)}
+          </span>
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={page >= Math.ceil(total / PAGE_SIZE)}
+            onClick={() => setPage((p) => p + 1)}
+          >
+            Volgende
+          </Button>
         </div>
       )}
 

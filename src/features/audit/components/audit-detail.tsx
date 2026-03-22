@@ -76,7 +76,7 @@ export function AuditDetail({ log, open, onClose }: AuditDetailProps) {
           <SheetDescription>
             <Badge variant="secondary">{log.action}</Badge>
             {' '}on {log.entity_type ?? 'unknown'} at{' '}
-            {new Date(log.created_at).toLocaleString()}
+            {log.created_at ? new Date(log.created_at).toLocaleString() : '—'}
           </SheetDescription>
         </SheetHeader>
 

@@ -9,7 +9,8 @@ import { Badge } from '@/components/ui/badge';
 import type { AuditLog } from '../types';
 import { AuditDetail } from './audit-detail';
 
-function formatTimestamp(iso: string): string {
+function formatTimestamp(iso: string | null): string {
+  if (!iso) return '—';
   return new Date(iso).toLocaleString('en-GB', {
     dateStyle: 'short',
     timeStyle: 'medium',

@@ -26,7 +26,6 @@ export function useEntity<T extends Record<string, unknown>>({
   // Targeted cast: .from() with a dynamic table name returns a union type that TS
   // can't narrow. We cast the query builder, not the entire client.
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const queryTable = (t: TableName) => supabase.from(t) as any;
   const [data, setData] = useState<T[]>(initialData ?? []);
   const [total, setTotal] = useState(initialCount ?? 0);
