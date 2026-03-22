@@ -3,11 +3,10 @@ import { getPipelineEntries } from '@/features/pipeline/queries/get-pipeline-ent
 import { getDivisions } from '@/features/revenue/queries/get-divisions';
 import { PipelinePageClient } from '@/features/pipeline/components/pipeline-page-client';
 
-const PIPELINE_YEAR = new Date().getFullYear();
-
 export default async function PipelineAnalyticsPage() {
+  const year = new Date().getFullYear();
   const [entries, divisions] = await Promise.all([
-    getPipelineEntries(PIPELINE_YEAR),
+    getPipelineEntries(year),
     getDivisions(),
   ]);
 
@@ -20,7 +19,7 @@ export default async function PipelineAnalyticsPage() {
           { label: 'Pipeline' },
         ]}
       />
-      <PipelinePageClient entries={entries} divisions={divisions} year={PIPELINE_YEAR} />
+      <PipelinePageClient entries={entries} divisions={divisions} year={year} />
     </div>
   );
 }

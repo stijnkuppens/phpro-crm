@@ -4,14 +4,14 @@ import { getRevenueClients } from '@/features/revenue/queries/get-revenue-client
 import { getRevenueEntries } from '@/features/revenue/queries/get-revenue-entries';
 import { PrognoseEditor } from '@/features/prognose/components/prognose-editor';
 
-const FORECAST_YEAR = new Date().getFullYear() + 1;
-const LAST_KNOWN_YEAR = new Date().getFullYear();
-
 export default async function PrognosePage() {
+  const currentYear = new Date().getFullYear();
+  const forecastYear = currentYear + 1;
+
   const [divisions, clients, entries] = await Promise.all([
     getDivisions(),
     getRevenueClients(),
-    getRevenueEntries({ years: [LAST_KNOWN_YEAR - 1, LAST_KNOWN_YEAR, FORECAST_YEAR] }),
+    getRevenueEntries({ years: [currentYear - 1, currentYear, forecastYear] }),
   ]);
 
   return (
@@ -27,8 +27,8 @@ export default async function PrognosePage() {
         clients={clients}
         divisions={divisions}
         entries={entries}
-        forecastYear={FORECAST_YEAR}
-        lastKnownYear={LAST_KNOWN_YEAR}
+        forecastYear={forecastYear}
+        lastKnownYear={currentYear}
       />
     </div>
   );

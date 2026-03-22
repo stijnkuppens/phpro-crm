@@ -5,6 +5,20 @@ const withNextIntl = createNextIntlPlugin('./src/i18n/request.ts');
 
 const nextConfig: NextConfig = {
   output: 'standalone',
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'http',
+        hostname: 'localhost',
+      },
+      ...(process.env.NEXT_PUBLIC_SUPABASE_URL
+        ? [{
+            protocol: new URL(process.env.NEXT_PUBLIC_SUPABASE_URL).protocol.replace(':', '') as 'http' | 'https',
+            hostname: new URL(process.env.NEXT_PUBLIC_SUPABASE_URL).hostname,
+          }]
+        : []),
+    ],
+  },
   async headers() {
     const isDev = process.env.NODE_ENV === 'development';
     return [

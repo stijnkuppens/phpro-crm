@@ -36,7 +36,20 @@
       "Bash(npx supabase:*)",
       "Bash(grep -r Database[ /Users/stijnkuppens/phpro/ai-projects/phpro_crm/src/lib/supabase/)",
       "Bash(git checkout:*)",
-      "Bash(git merge:*)"
+      "Bash(git merge:*)",
+      "Bash(/Users/stijnkuppens/phpro/ai-projects/phpro_crm/.agent-workspace/_protocol.md:*)",
+      "Bash(mkdir -p .agent-workspace/research .agent-workspace/quality)",
+      "Bash(cp ~/.claude/skills/agent-team-protocol/_protocol.md .agent-workspace/_protocol.md)",
+      "Bash(docker ps:*)",
+      "Bash(PGPASSWORD=postgres psql -h 127.0.0.1 -U postgres -d postgres -c \"SELECT column_name FROM information_schema.columns WHERE table_name = 'accounts' AND column_name LIKE '%logo%' OR table_name = 'contacts' AND column_name LIKE '%avatar%'\" 2>&1)",
+      "Bash(PGPASSWORD=b61ec494b05535c8e1e99f618f55ebd0 npx supabase gen types typescript --db-url \"postgresql://postgres:b61ec494b05535c8e1e99f618f55ebd0@127.0.0.1:5432/postgres\")",
+      "Bash(ls:*)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "Bash(chmod:*)",
+      "Bash(supabase start:*)",
+      "Bash(curl:*)",
+      "Bash(docker exec:*)",
+      "Bash(git status:*)"
     ]
   }
 }

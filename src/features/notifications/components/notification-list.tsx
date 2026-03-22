@@ -1,34 +1,18 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { createBrowserClient } from '@/lib/supabase/client';
-import { useAuth } from '@/lib/hooks/use-auth';
 import { markAsRead, markAllAsRead } from '../actions/mark-as-read';
 import type { Notification } from '../types';
 import { Button } from '@/components/ui/button';
 
-export function NotificationList() {
-  const { user } = useAuth();
-  const router = useRouter();
-  const [notifications, setNotifications] = useState<Notification[]>([]);
+type Props = {
+  initialData: Notification[];
+};
 
-  useEffect(() => {
-    if (!user) return;
-    let cancelled = false;
-    const supabase = createBrowserClient();
-    supabase
-      .from('notifications')
-      .select('*')
-      .eq('user_id', user.id)
-      .order('created_at', { ascending: false })
-      .limit(50)
-      .then(({ data }) => {
-        if (cancelled) return;
-        if (data) setNotifications(data as Notification[]);
-      });
-    return () => { cancelled = true; };
-  }, [user]);
+export function NotificationList({ initialData }: Props) {
+  const router = useRouter();
+  const [notifications, setNotifications] = useState<Notification[]>(initialData);
 
   const handleClick = useCallback(
     async (notification: Notification) => {

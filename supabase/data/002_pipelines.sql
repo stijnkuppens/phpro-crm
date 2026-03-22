@@ -19,7 +19,7 @@ INSERT INTO pipeline_stages (pipeline_id, name, sort_order, probability, color, 
   ('00000000-0000-0000-0000-000000000001', 'Gewonnen',       6, 100, '#22c55e', true,  true,  false),
   ('00000000-0000-0000-0000-000000000001', 'Verloren',       7,   0, '#ef4444', true,  false, false),
   ('00000000-0000-0000-0000-000000000001', 'Longterm',       8,   0, '#f59e0b', true,  false, true)
-ON CONFLICT (id) DO NOTHING;
+ON CONFLICT (pipeline_id, name) DO NOTHING;
 
 -- RFP stages
 INSERT INTO pipeline_stages (pipeline_id, name, sort_order, probability, color, is_closed, is_won, is_longterm) VALUES
@@ -31,7 +31,7 @@ INSERT INTO pipeline_stages (pipeline_id, name, sort_order, probability, color, 
   ('00000000-0000-0000-0000-000000000002', 'Gewonnen',         6, 100, '#22c55e', true,  true,  false),
   ('00000000-0000-0000-0000-000000000002', 'Verloren',         7,   0, '#ef4444', true,  false, false),
   ('00000000-0000-0000-0000-000000000002', 'Longterm',         8,   0, '#f59e0b', true,  false, true)
-ON CONFLICT (id) DO NOTHING;
+ON CONFLICT (pipeline_id, name) DO NOTHING;
 
 -- Consultancy Profielen stages
 INSERT INTO pipeline_stages (pipeline_id, name, sort_order, probability, color, is_closed, is_won, is_longterm) VALUES
@@ -41,4 +41,4 @@ INSERT INTO pipeline_stages (pipeline_id, name, sort_order, probability, color, 
   ('00000000-0000-0000-0000-000000000003', 'Contract',         4,  75, '#115e59', false, false, false),
   ('00000000-0000-0000-0000-000000000003', 'Geplaatst',        5, 100, '#22c55e', true,  true,  false),
   ('00000000-0000-0000-0000-000000000003', 'Niet weerhouden',  6,   0, '#ef4444', true,  false, false)
-ON CONFLICT (id) DO NOTHING;
+ON CONFLICT (pipeline_id, name) DO NOTHING;

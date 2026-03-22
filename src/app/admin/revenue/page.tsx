@@ -5,10 +5,13 @@ import { getRevenueEntries } from '@/features/revenue/queries/get-revenue-entrie
 import { RevenuePageClient } from '@/features/revenue/components/revenue-page-client';
 
 export default async function RevenuePage() {
+  const currentYear = new Date().getFullYear();
+  const years = [currentYear - 2, currentYear - 1, currentYear, currentYear + 1];
+
   const [divisions, clients, entries] = await Promise.all([
     getDivisions(),
     getRevenueClients(),
-    getRevenueEntries({ years: [2023, 2024, 2025, 2026] }),
+    getRevenueEntries({ years }),
   ]);
 
   return (
@@ -24,7 +27,7 @@ export default async function RevenuePage() {
         clients={clients}
         divisions={divisions}
         entries={entries}
-        years={[2023, 2024, 2025, 2026]}
+        years={years}
       />
     </div>
   );
