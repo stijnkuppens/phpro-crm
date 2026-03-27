@@ -96,6 +96,7 @@ export function TaskList({ initialData, initialCount }: Props) {
         </div>
       </FilterBar>
       <DataTable
+        tableId="tasks"
         columns={taskColumns as any}
         data={data}
         pagination={{ page, pageSize: PAGE_SIZE, total }}

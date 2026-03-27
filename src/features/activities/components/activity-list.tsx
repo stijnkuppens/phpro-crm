@@ -96,6 +96,7 @@ export function ActivityList({ initialData, initialCount }: Props) {
         </div>
       </FilterBar>
       <DataTable
+        tableId="activities"
         columns={activityColumns as any}
         data={data}
         pagination={{ page, pageSize: PAGE_SIZE, total }}

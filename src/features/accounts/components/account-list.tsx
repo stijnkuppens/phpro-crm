@@ -73,6 +73,7 @@ export function AccountList({ initialData, initialCount, owners, countries }: Ac
         <AccountFiltersBar filters={filters} onFilterChange={setFilters} owners={owners} countries={countries} />
       </FilterBar>
       <DataTable
+        tableId="accounts"
         columns={accountColumns}
         data={data}
         pagination={{ page, pageSize: PAGE_SIZE, total }}

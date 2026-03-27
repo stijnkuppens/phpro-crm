@@ -249,6 +249,7 @@ export function ConsultantListView({ initialData, initialCount, stats, accounts,
 
         {/* Data table */}
         <DataTable
+          tableId="consultants"
           columns={consultantColumns}
           data={data}
           pagination={{ page, pageSize: PAGE_SIZE, total }}

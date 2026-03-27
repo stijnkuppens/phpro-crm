@@ -33,6 +33,7 @@ export function DealList({ deals, page, total, onPageChange, onRefresh, loading,
 
   return (
     <DataTable
+      tableId="deals"
       columns={dealColumns}
       data={deals}
       pagination={{ page, pageSize: 50, total }}

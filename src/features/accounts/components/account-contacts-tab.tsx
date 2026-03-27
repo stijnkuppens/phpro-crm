@@ -54,6 +54,7 @@ export function AccountContactsTab({ accountId, initialData, initialCount }: Pro
       </div>
 
       <DataTable
+        tableId="account-contacts"
         columns={contactColumns as any}
         data={data}
         pagination={{ page: 1, pageSize: 100, total }}

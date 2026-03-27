@@ -17,7 +17,7 @@ export default async function UsersPage() {
           <Button nativeButton={false} render={<Link href="/admin/users/invite" />}>Gebruiker uitnodigen</Button>
         }
       />
-      <DataTable columns={userColumns} data={users} />
+      <DataTable tableId="users" columns={userColumns} data={users} />
     </div>
   );
 }

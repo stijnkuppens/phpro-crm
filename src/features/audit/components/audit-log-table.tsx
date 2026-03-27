@@ -105,6 +105,7 @@ export function AuditLogTable({
   return (
     <>
       <DataTable
+        tableId="audit-logs"
         columns={columns}
         data={data}
         pagination={pagination}

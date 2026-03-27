@@ -13,5 +13,5 @@ export function AccountDealsTab({ deals }: Props) {
     return <div className="py-8 text-center text-muted-foreground">Geen deals voor dit account.</div>;
   }
 
-  return <DataTable columns={dealColumns} data={deals} />;
+  return <DataTable tableId="account-deals" columns={dealColumns} data={deals} />;
 }

@@ -136,6 +136,7 @@ export function ContactList({ initialData, initialCount, accounts = [] }: Contac
         </div>
       </FilterBar>
       <DataTable
+        tableId="contacts"
         columns={contactColumns as any}
         data={data}
         pagination={{ page, pageSize: PAGE_SIZE, total }}
