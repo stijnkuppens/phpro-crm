@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { useEntity } from '@/lib/hooks/use-entity';
 import { AuditLogTable } from './audit-log-table';
 import { AuditFilters } from './audit-filters';
@@ -23,6 +23,7 @@ export function AuditList({ initialData, initialCount }: AuditListProps) {
 
   const [page, setPage] = useState(1);
   const [filters, setFilters] = useState<AuditLogFilters>({});
+  const isInitialMount = useRef(true);
 
   const load = useCallback(() => {
     const eqFilters: Record<string, string> = {};
@@ -36,7 +37,10 @@ export function AuditList({ initialData, initialCount }: AuditListProps) {
   }, [fetchList, page, filters]);
 
   useEffect(() => {
-    if (initialData && page === 1 && !filters.action && !filters.entityType) return;
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+      if (initialData && page === 1) return;
+    }
     load();
   }, [load, initialData, page, filters]);
 

@@ -2,13 +2,7 @@
 
 import { Search } from 'lucide-react';
 import { Input } from '@/components/ui/input';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+import { ComboboxFilter } from '@/components/admin/combobox-filter';
 import type { AccountFilters } from '../types';
 
 export type OwnerOption = { id: string; full_name: string };
@@ -32,64 +26,48 @@ export function AccountFiltersBar({ filters, onFilterChange, owners = [], countr
           className="w-48 pl-9"
         />
       </div>
-      <Select
+      <ComboboxFilter
+        options={[
+          { value: 'Klant', label: 'Klant' },
+          { value: 'Prospect', label: 'Prospect' },
+          { value: 'Partner', label: 'Partner' },
+        ]}
         value={filters.type ?? 'all'}
-        onValueChange={(v) => onFilterChange({ ...filters, type: !v || v === 'all' ? undefined : v })}
-      >
-        <SelectTrigger className="w-36">
-          <SelectValue placeholder="Alle types" />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="all">Alle types</SelectItem>
-          <SelectItem value="Klant">Klant</SelectItem>
-          <SelectItem value="Prospect">Prospect</SelectItem>
-          <SelectItem value="Partner">Partner</SelectItem>
-        </SelectContent>
-      </Select>
-      <Select
+        onValueChange={(v) => onFilterChange({ ...filters, type: v === 'all' ? undefined : v })}
+        placeholder="Alle types"
+        searchPlaceholder="Zoek type..."
+        className="w-40"
+      />
+      <ComboboxFilter
+        options={[
+          { value: 'Actief', label: 'Actief' },
+          { value: 'Inactief', label: 'Inactief' },
+        ]}
         value={filters.status ?? 'all'}
-        onValueChange={(v) => onFilterChange({ ...filters, status: !v || v === 'all' ? undefined : v })}
-      >
-        <SelectTrigger className="w-40">
-          <SelectValue placeholder="Alle statussen" />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="all">Alle statussen</SelectItem>
-          <SelectItem value="Actief">Actief</SelectItem>
-          <SelectItem value="Inactief">Inactief</SelectItem>
-        </SelectContent>
-      </Select>
+        onValueChange={(v) => onFilterChange({ ...filters, status: v === 'all' ? undefined : v })}
+        placeholder="Alle statussen"
+        searchPlaceholder="Zoek status..."
+        className="w-44"
+      />
       {owners.length > 0 && (
-        <Select
+        <ComboboxFilter
+          options={owners.map((o) => ({ value: o.id, label: o.full_name }))}
           value={filters.owner_id ?? 'all'}
-          onValueChange={(v) => onFilterChange({ ...filters, owner_id: !v || v === 'all' ? undefined : v })}
-        >
-          <SelectTrigger className="w-44">
-            {owners.find((o) => o.id === filters.owner_id)?.full_name ?? 'Alle owners'}
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">Alle owners</SelectItem>
-            {owners.map((o) => (
-              <SelectItem key={o.id} value={o.id}>{o.full_name}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+          onValueChange={(v) => onFilterChange({ ...filters, owner_id: v === 'all' ? undefined : v })}
+          placeholder="Alle owners"
+          searchPlaceholder="Zoek owner..."
+          className="w-48"
+        />
       )}
       {countries.length > 0 && (
-        <Select
+        <ComboboxFilter
+          options={countries.map((c) => ({ value: c, label: c }))}
           value={filters.country ?? 'all'}
-          onValueChange={(v) => onFilterChange({ ...filters, country: !v || v === 'all' ? undefined : v })}
-        >
-          <SelectTrigger className="w-36">
-            <SelectValue placeholder="Alle landen" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">Alle landen</SelectItem>
-            {countries.map((c) => (
-              <SelectItem key={c} value={c}>{c}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+          onValueChange={(v) => onFilterChange({ ...filters, country: v === 'all' ? undefined : v })}
+          placeholder="Alle landen"
+          searchPlaceholder="Zoek land..."
+          className="w-40"
+        />
       )}
     </div>
   );

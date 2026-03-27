@@ -7,7 +7,7 @@ import { getAccounts } from '@/features/accounts/queries/get-accounts';
 import { getAccountFilterOptions } from '@/features/accounts/queries/get-account-filter-options';
 
 export default async function AccountsPage() {
-  const [{ data, count }, { owners, countries }] = await Promise.all([
+  const [{ data, count }, filterOptions] = await Promise.all([
     getAccounts(),
     getAccountFilterOptions(),
   ]);
@@ -27,7 +27,7 @@ export default async function AccountsPage() {
           </Button>
         }
       />
-      <AccountList initialData={data} initialCount={count} owners={owners} countries={countries} />
+      <AccountList initialData={data} initialCount={count} filterOptions={filterOptions} />
     </div>
   );
 }

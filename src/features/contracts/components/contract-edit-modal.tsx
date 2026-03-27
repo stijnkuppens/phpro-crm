@@ -15,6 +15,7 @@ import {
   SelectTrigger,
 } from '@/components/ui/select';
 import { Save } from 'lucide-react';
+import { PdfUploadField } from '@/components/admin/pdf-upload-field';
 import { upsertContract } from '../actions/upsert-contract';
 import { upsertIndexationConfig } from '@/features/indexation/actions/upsert-indexation-config';
 import type { Contract, ContractFormValues } from '../types';
@@ -45,6 +46,8 @@ export function ContractEditModal({ accountId, contract, indexationConfig, open,
   const [indexType, setIndexType] = useState(indexationConfig?.indexation_type ?? '');
   const [indexMonth, setIndexMonth] = useState(String(indexationConfig?.start_month ?? ''));
   const [indexYear, setIndexYear] = useState(indexationConfig?.start_year?.toString() ?? '');
+  const [frameworkPdf, setFrameworkPdf] = useState(contract?.framework_pdf_url ?? '');
+  const [servicePdf, setServicePdf] = useState(contract?.service_pdf_url ?? '');
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -53,12 +56,12 @@ export function ContractEditModal({ accountId, contract, indexationConfig, open,
     const fd = new FormData(e.currentTarget);
     const values: ContractFormValues = {
       has_framework_contract: hasFramework,
-      framework_pdf_url: (fd.get('framework_pdf_url') as string) || null,
+      framework_pdf_url: frameworkPdf || null,
       framework_start: (fd.get('framework_start') as string) || null,
       framework_end: (fd.get('framework_end') as string) || null,
       framework_indefinite: fd.get('framework_indefinite') === 'on',
       has_service_contract: hasService,
-      service_pdf_url: (fd.get('service_pdf_url') as string) || null,
+      service_pdf_url: servicePdf || null,
       service_start: (fd.get('service_start') as string) || null,
       service_end: (fd.get('service_end') as string) || null,
       service_indefinite: fd.get('service_indefinite') === 'on',
@@ -91,7 +94,7 @@ export function ContractEditModal({ accountId, contract, indexationConfig, open,
     <Modal open={open} onClose={onClose} title="Contract & Indexering bewerken" size="wide">
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Indexation config */}
-        <div className="space-y-3">
+        <div className="rounded-lg bg-amber-50 dark:bg-amber-950/30 p-4 space-y-3 [&_input]:bg-white [&_[data-slot=select-trigger]]:bg-white [&_button[data-slot=button]]:bg-white dark:[&_input]:bg-background dark:[&_[data-slot=select-trigger]]:bg-background dark:[&_button[data-slot=button]]:bg-background">
           <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Indexering</h3>
           <div className="grid grid-cols-3 gap-3">
             <div className="space-y-1.5">
@@ -134,7 +137,7 @@ export function ContractEditModal({ accountId, contract, indexationConfig, open,
         </div>
 
         {/* Raamcontract */}
-        <div className="space-y-3">
+        <div className="rounded-lg bg-primary/5 p-4 space-y-3 [&_input]:bg-white [&_[data-slot=select-trigger]]:bg-white [&_button[data-slot=button]]:bg-white dark:[&_input]:bg-background dark:[&_[data-slot=select-trigger]]:bg-background dark:[&_button[data-slot=button]]:bg-background">
           <div className="flex items-center justify-between">
             <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Raamcontract</h3>
             <Switch checked={hasFramework} onCheckedChange={setHasFramework} />
@@ -150,8 +153,12 @@ export function ContractEditModal({ accountId, contract, indexationConfig, open,
                 <DatePicker name="framework_end" value={contract?.framework_end ?? ''} />
               </div>
               <div className="space-y-1.5">
-                <Label>PDF URL</Label>
-                <Input name="framework_pdf_url" defaultValue={contract?.framework_pdf_url ?? ''} placeholder="https://..." />
+                <Label>PDF Document</Label>
+                <PdfUploadField
+                  value={frameworkPdf}
+                  onChange={setFrameworkPdf}
+                  folder={`contracts/${accountId}`}
+                />
               </div>
               <div className="flex items-center gap-2 pt-6">
                 <input type="checkbox" name="framework_indefinite" id="framework_indefinite" defaultChecked={contract?.framework_indefinite ?? false} />
@@ -162,7 +169,7 @@ export function ContractEditModal({ accountId, contract, indexationConfig, open,
         </div>
 
         {/* Service contract */}
-        <div className="space-y-3">
+        <div className="rounded-lg bg-blue-50 dark:bg-blue-950/30 p-4 space-y-3 [&_input]:bg-white [&_[data-slot=select-trigger]]:bg-white [&_button[data-slot=button]]:bg-white dark:[&_input]:bg-background dark:[&_[data-slot=select-trigger]]:bg-background dark:[&_button[data-slot=button]]:bg-background">
           <div className="flex items-center justify-between">
             <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Dienstencontract (SLA)</h3>
             <Switch checked={hasService} onCheckedChange={setHasService} />
@@ -178,8 +185,12 @@ export function ContractEditModal({ accountId, contract, indexationConfig, open,
                 <DatePicker name="service_end" value={contract?.service_end ?? ''} />
               </div>
               <div className="space-y-1.5">
-                <Label>PDF URL</Label>
-                <Input name="service_pdf_url" defaultValue={contract?.service_pdf_url ?? ''} placeholder="https://..." />
+                <Label>PDF Document</Label>
+                <PdfUploadField
+                  value={servicePdf}
+                  onChange={setServicePdf}
+                  folder={`contracts/${accountId}`}
+                />
               </div>
               <div className="flex items-center gap-2 pt-6">
                 <input type="checkbox" name="service_indefinite" id="service_indefinite" defaultChecked={contract?.service_indefinite ?? false} />

@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useState } from 'react';
-import { Eye, Pencil, Plus, Trash2 } from 'lucide-react';
+import { SquarePen, Plus, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useEntity } from '@/lib/hooks/use-entity';
 import { Button } from '@/components/ui/button';
@@ -57,12 +57,12 @@ export function AccountContactsTab({ accountId, initialData, initialCount }: Pro
         tableId="account-contacts"
         columns={contactColumns as any}
         data={data}
+        onRowClick={(row) => setViewId(row.id)}
         pagination={{ page: 1, pageSize: 100, total }}
         loading={loading}
         refreshing={refreshing}
         rowActions={(row) => [
-          { icon: Eye, label: 'Bekijken', onClick: () => setViewId(row.id) },
-          { icon: Pencil, label: 'Bewerken', onClick: () => setEditId(row.id) },
+          { icon: SquarePen, label: 'Bewerken', onClick: () => setEditId(row.id) },
           { icon: Trash2, label: 'Verwijderen', variant: 'destructive' as const, confirm: { title: 'Contact verwijderen?', description: 'Dit verwijdert het contact permanent.' }, onClick: () => handleDelete(row.id) },
         ]}
       />

@@ -48,14 +48,14 @@ export function ComboboxFilter({
         render={
           <Button
             variant="outline"
-            className={cn('justify-between font-normal', className)}
+            className={cn('h-10 justify-between font-normal', className)}
           >
             <span className="truncate">{selectedLabel ?? placeholder}</span>
             <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
           </Button>
         }
       />
-      <PopoverContent className="w-[var(--anchor-width)] p-0" align="start">
+      <PopoverContent className="min-w-[var(--anchor-width)] w-auto p-0" align="start">
         <Command>
           <CommandInput placeholder={searchPlaceholder} />
           <CommandList>

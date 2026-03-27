@@ -2,7 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
-import { Eye, Pencil, Trash2 } from 'lucide-react';
+import { SquarePen, Trash2 } from 'lucide-react';
 import DataTable from '@/components/admin/data-table';
 import { dealColumns } from '../columns';
 import { deleteDeal } from '../actions/delete-deal';
@@ -36,11 +36,11 @@ export function DealList({ deals, page, total, onPageChange, onRefresh, loading,
       tableId="deals"
       columns={dealColumns}
       data={deals}
+      onRowClick={(row) => router.push(`/admin/accounts/${row.account_id}`)}
       pagination={{ page, pageSize: 50, total }}
       onPageChange={onPageChange}
       rowActions={(row) => [
-        { icon: Eye, label: 'Bekijken', onClick: () => router.push(`/admin/accounts/${row.account_id}`) },
-        { icon: Pencil, label: 'Bewerken', onClick: () => router.push(`/admin/accounts/${row.account_id}`) },
+        { icon: SquarePen, label: 'Bewerken', onClick: () => router.push(`/admin/accounts/${row.account_id}`) },
         { icon: Trash2, label: 'Verwijderen', variant: 'destructive' as const, confirm: { title: 'Deal verwijderen?', description: 'Dit verwijdert de deal permanent.' }, onClick: () => handleDelete(row.id) },
       ]}
       bulkActions={[

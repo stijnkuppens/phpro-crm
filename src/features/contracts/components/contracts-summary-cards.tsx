@@ -1,8 +1,11 @@
 'use client';
 
+import { useCallback } from 'react';
+import { toast } from 'sonner';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { FileText, Calendar, Shield, TrendingUp } from 'lucide-react';
+import { FileText, Calendar, Shield, TrendingUp, ExternalLink, Download } from 'lucide-react';
+import { createBrowserClient } from '@/lib/supabase/client';
 import type { Contract } from '../types';
 import type { IndexationConfig } from '@/features/indexation/types';
 
@@ -20,6 +23,15 @@ function fmtDate(d: string | null | undefined): string {
 }
 
 export function ContractsSummaryCards({ contract, indexationConfig }: Props) {
+  const handleDownload = useCallback(async (path: string) => {
+    const supabase = createBrowserClient();
+    const { data, error } = await supabase.storage.from('documents').createSignedUrl(path, 300);
+    if (error || !data?.signedUrl) {
+      toast.error('Download mislukt');
+      return;
+    }
+    window.open(data.signedUrl, '_blank');
+  }, []);
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
       {/* Indexering */}
@@ -66,17 +78,29 @@ export function ContractsSummaryCards({ contract, indexationConfig }: Props) {
                 <Calendar className="h-3.5 w-3.5" />
                 {fmtDate(contract.framework_start)} → {contract.framework_indefinite ? 'Onbepaald' : fmtDate(contract.framework_end)}
               </div>
-              {contract.framework_pdf_url && (
-                <a
-                  href={contract.framework_pdf_url}
-                  target="_blank"
-                  rel="noopener"
-                  className="inline-flex items-center gap-1.5 rounded-md border px-2.5 py-1 text-xs hover:bg-muted transition-colors"
-                >
-                  <FileText className="h-3.5 w-3.5" />
-                  {contract.framework_pdf_url.split('/').pop() ?? 'PDF'}
-                </a>
-              )}
+              <div className="flex flex-col gap-1.5 mt-1">
+                {contract.framework_doc_path && (
+                  <button
+                    type="button"
+                    onClick={() => handleDownload(contract.framework_doc_path!)}
+                    className="inline-flex items-center gap-1.5 text-xs text-primary-action hover:underline cursor-pointer"
+                  >
+                    <Download className="h-3 w-3" />
+                    {contract.framework_doc_path.split('/').pop()?.replace(/^\d+_/, '') ?? 'Document'}
+                  </button>
+                )}
+                {contract.framework_pdf_url && (
+                  <a
+                    href={contract.framework_pdf_url}
+                    target="_blank"
+                    rel="noopener"
+                    className="inline-flex items-center gap-1.5 text-xs text-primary-action hover:underline"
+                  >
+                    <ExternalLink className="h-3 w-3" />
+                    {contract.framework_pdf_url}
+                  </a>
+                )}
+              </div>
             </>
           ) : (
             <p className="text-muted-foreground italic">Geen raamcontract</p>
@@ -104,17 +128,29 @@ export function ContractsSummaryCards({ contract, indexationConfig }: Props) {
                 <Calendar className="h-3.5 w-3.5" />
                 {fmtDate(contract.service_start)} → {contract.service_indefinite ? 'Onbepaald' : fmtDate(contract.service_end)}
               </div>
-              {contract.service_pdf_url && (
-                <a
-                  href={contract.service_pdf_url}
-                  target="_blank"
-                  rel="noopener"
-                  className="inline-flex items-center gap-1.5 rounded-md border px-2.5 py-1 text-xs hover:bg-muted transition-colors"
-                >
-                  <FileText className="h-3.5 w-3.5" />
-                  {contract.service_pdf_url.split('/').pop() ?? 'PDF'}
-                </a>
-              )}
+              <div className="flex flex-col gap-1.5 mt-1">
+                {contract.service_doc_path && (
+                  <button
+                    type="button"
+                    onClick={() => handleDownload(contract.service_doc_path!)}
+                    className="inline-flex items-center gap-1.5 text-xs text-primary-action hover:underline cursor-pointer"
+                  >
+                    <Download className="h-3 w-3" />
+                    {contract.service_doc_path.split('/').pop()?.replace(/^\d+_/, '') ?? 'Document'}
+                  </button>
+                )}
+                {contract.service_pdf_url && (
+                  <a
+                    href={contract.service_pdf_url}
+                    target="_blank"
+                    rel="noopener"
+                    className="inline-flex items-center gap-1.5 text-xs text-primary-action hover:underline"
+                  >
+                    <ExternalLink className="h-3 w-3" />
+                    {contract.service_pdf_url}
+                  </a>
+                )}
+              </div>
             </>
           ) : (
             <p className="text-muted-foreground italic">Geen dienstencontract</p>

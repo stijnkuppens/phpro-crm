@@ -2,18 +2,20 @@ import { cache } from 'react';
 import { createServerClient } from '@/lib/supabase/server';
 import type { FilterOption } from '@/components/admin/data-table-filters';
 
-export const getAccountFilterOptions = cache(
+export const getTaskFilterOptions = cache(
   async (): Promise<Record<string, FilterOption[]>> => {
     const supabase = await createServerClient();
 
-    const [{ data: owners }] = await Promise.all([
+    const [{ data: accounts }, { data: users }] = await Promise.all([
+      supabase.from('accounts').select('id, name').order('name'),
       supabase.from('user_profiles').select('id, full_name').order('full_name'),
     ]);
 
     return {
-      owner_id: (owners ?? []).map((o: { id: string; full_name: string | null }) => ({
-        value: o.id,
-        label: o.full_name ?? '',
+      account_id: (accounts ?? []).map((a) => ({ value: a.id, label: a.name })),
+      assigned_to: (users ?? []).map((u) => ({
+        value: u.id,
+        label: u.full_name ?? '',
       })),
     };
   },

@@ -1,11 +1,14 @@
 'use client';
 
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
-import { Pencil, TrendingUp, ExternalLink } from 'lucide-react';
+import { SquarePen, TrendingUp, ExternalLink, Download } from 'lucide-react';
+import { createBrowserClient } from '@/lib/supabase/client';
+import Link from 'next/link';
 import { ContractsSummaryCards } from './contracts-summary-cards';
 import { HourlyRatesSubTab } from './hourly-rates-sub-tab';
 import { SlaRatesSubTab } from './sla-rates-sub-tab';
@@ -13,9 +16,6 @@ import { IndexationSubTab } from './indexation-sub-tab';
 import dynamic from 'next/dynamic';
 import type { Contract, HourlyRate, SlaRateWithTools } from '../types';
 
-const ContractEditModal = dynamic(() => import('./contract-edit-modal').then(m => ({ default: m.ContractEditModal })), { ssr: false });
-const HourlyRatesEditModal = dynamic(() => import('./hourly-rates-edit-modal').then(m => ({ default: m.HourlyRatesEditModal })), { ssr: false });
-const SlaRatesEditModal = dynamic(() => import('./sla-rates-edit-modal').then(m => ({ default: m.SlaRatesEditModal })), { ssr: false });
 const IndexationWizard = dynamic(() => import('@/features/indexation/components/indexation-wizard').then(m => ({ default: m.IndexationWizard })), { ssr: false });
 import type { IndexationConfig } from '@/features/indexation/types';
 import type { IndexationDraftFull } from '@/features/indexation/types';
@@ -41,15 +41,18 @@ export function ContractsTab({
   indexationHistory,
 }: Props) {
   const router = useRouter();
-  const [contractEditOpen, setContractEditOpen] = useState(false);
+  const handleDownload = useCallback(async (path: string) => {
+    const supabase = createBrowserClient();
+    const { data, error } = await supabase.storage.from('documents').createSignedUrl(path, 300);
+    if (error || !data?.signedUrl) {
+      toast.error('Download mislukt');
+      return;
+    }
+    window.open(data.signedUrl, '_blank');
+  }, []);
   const [wizardOpen, setWizardOpen] = useState(false);
-  const [editingHourlyYear, setEditingHourlyYear] = useState<number | null>(null);
-  const [editingSlaYear, setEditingSlaYear] = useState<number | null>(null);
 
   function handleSaved() {
-    setContractEditOpen(false);
-    setEditingHourlyYear(null);
-    setEditingSlaYear(null);
     setWizardOpen(false);
     router.refresh();
   }
@@ -64,8 +67,8 @@ export function ContractsTab({
             <TrendingUp className="h-4 w-4 mr-1.5" />
             Indexering simuleren
           </Button>
-          <Button variant="outline" size="sm" onClick={() => setContractEditOpen(true)}>
-            <Pencil className="h-4 w-4 mr-1.5" />
+          <Button variant="outline" size="sm" nativeButton={false} render={<Link href={`/admin/accounts/${accountId}/contracten/edit`} />}>
+            <SquarePen className="h-4 w-4 mr-1.5" />
             Bewerken
           </Button>
         </div>
@@ -74,19 +77,31 @@ export function ContractsTab({
       {/* Summary cards */}
       <ContractsSummaryCards contract={contract} indexationConfig={indexationConfig} />
 
-      {/* Bestelbonnen link */}
-      {contract?.purchase_orders_url && (
-        <div className="flex items-center gap-2 text-sm">
-          <ExternalLink className="h-4 w-4 text-muted-foreground" />
-          <span className="text-muted-foreground">Bestelbonnen (Confluence):</span>
-          <a
-            href={contract.purchase_orders_url}
-            target="_blank"
-            rel="noopener"
-            className="text-primary-action hover:underline"
-          >
-            {contract.purchase_orders_url}
-          </a>
+      {/* Bestelbonnen */}
+      {(contract?.purchase_orders_url || contract?.purchase_orders_doc_path) && (
+        <div className="flex items-center gap-4 text-sm">
+          <span className="text-muted-foreground">Bestelbonnen:</span>
+          {contract.purchase_orders_url && (
+            <a
+              href={contract.purchase_orders_url}
+              target="_blank"
+              rel="noopener"
+              className="inline-flex items-center gap-1.5 text-sm text-primary-action hover:underline"
+            >
+              <ExternalLink className="h-3.5 w-3.5" />
+              {contract.purchase_orders_url}
+            </a>
+          )}
+          {contract.purchase_orders_doc_path && (
+            <button
+              type="button"
+              onClick={() => handleDownload(contract.purchase_orders_doc_path!)}
+              className="inline-flex items-center gap-1.5 text-sm text-primary-action hover:underline cursor-pointer"
+            >
+              <Download className="h-3.5 w-3.5" />
+              {contract.purchase_orders_doc_path.split('/').pop()?.replace(/^\d+_/, '') ?? 'Document'}
+            </button>
+          )}
         </div>
       )}
 
@@ -102,11 +117,11 @@ export function ContractsTab({
         </TabsList>
 
         <TabsContent value="uurtarieven">
-          <HourlyRatesSubTab hourlyRates={hourlyRates} onEditYear={setEditingHourlyYear} />
+          <HourlyRatesSubTab hourlyRates={hourlyRates} />
         </TabsContent>
 
         <TabsContent value="sla">
-          <SlaRatesSubTab slaRates={slaRates} hasServiceContract={contract?.has_service_contract ?? false} onEditYear={setEditingSlaYear} />
+          <SlaRatesSubTab slaRates={slaRates} hasServiceContract={contract?.has_service_contract ?? false} />
         </TabsContent>
 
         <TabsContent value="indexering">
@@ -121,43 +136,11 @@ export function ContractsTab({
       </Tabs>
 
       {/* Modals */}
-      {contractEditOpen && (
-        <ContractEditModal
-          accountId={accountId}
-          contract={contract}
-          indexationConfig={indexationConfig}
-          open={contractEditOpen}
-          onClose={() => setContractEditOpen(false)}
-          onSaved={handleSaved}
-        />
-      )}
-
-      {editingHourlyYear !== null && (
-        <HourlyRatesEditModal
-          accountId={accountId}
-          year={editingHourlyYear}
-          existingRates={hourlyRates}
-          open={editingHourlyYear !== null}
-          onClose={() => setEditingHourlyYear(null)}
-          onSaved={handleSaved}
-        />
-      )}
-
-      {editingSlaYear !== null && (
-        <SlaRatesEditModal
-          accountId={accountId}
-          year={editingSlaYear}
-          existingRate={slaRates.find((s) => s.year === editingSlaYear) ?? null}
-          open={editingSlaYear !== null}
-          onClose={() => setEditingSlaYear(null)}
-          onSaved={handleSaved}
-        />
-      )}
-
       {wizardOpen && (
         <IndexationWizard
           accountId={accountId}
           open={wizardOpen}
+          draft={indexationDraft}
           onClose={handleSaved}
         />
       )}

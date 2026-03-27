@@ -41,8 +41,8 @@ export function RateChangeModal({ consultantId, open, onClose, onSuccess }: Prop
     }
 
     toast.success('Tarief gewijzigd');
-    onClose();
     onSuccess?.();
+    onClose();
   }
 
   return (

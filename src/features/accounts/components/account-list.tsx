@@ -1,29 +1,27 @@
 'use client';
 
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
-import { Eye, Pencil, Trash2 } from 'lucide-react';
+import { SquarePen, Trash2 } from 'lucide-react';
 import { useEntity } from '@/lib/hooks/use-entity';
 import DataTable from '@/components/admin/data-table';
-import { AccountFiltersBar, type OwnerOption } from './account-filters';
+import { buildFilterQuery, type FilterOption } from '@/components/admin/data-table-filters';
 import { accountColumns } from '../columns';
 import { deleteAccount } from '../actions/delete-account';
-import { escapeSearch } from '@/lib/utils/escape-search';
-import type { Account, AccountFilters } from '../types';
+import type { AccountListItem } from '../types';
 
 const PAGE_SIZE = 25;
 
 type AccountListProps = {
-  initialData?: Account[];
+  initialData?: AccountListItem[];
   initialCount?: number;
-  owners?: OwnerOption[];
-  countries?: string[];
+  filterOptions?: Record<string, FilterOption[]>;
 };
 
-export function AccountList({ initialData, initialCount, owners, countries }: AccountListProps) {
+export function AccountList({ initialData, initialCount, filterOptions }: AccountListProps) {
   const router = useRouter();
-  const { data, total, loading, refreshing, fetchList } = useEntity<Account>({
+  const { data, total, loading, refreshing, fetchList } = useEntity<AccountListItem>({
     table: 'accounts',
     pageSize: PAGE_SIZE,
     initialData,
@@ -31,30 +29,29 @@ export function AccountList({ initialData, initialCount, owners, countries }: Ac
   });
 
   const [page, setPage] = useState(1);
-  const [filters, setFilters] = useState<AccountFilters>({});
+  const [filters, setFilters] = useState<Record<string, string | undefined>>({});
+  const isInitialMount = useRef(true);
 
   const load = useCallback(() => {
-    const orFilter = filters.search
-      ? `name.ilike.%${escapeSearch(filters.search)}%,domain.ilike.%${escapeSearch(filters.search)}%`
-      : undefined;
-    const eqFilters: Record<string, string> = {};
-    if (filters.type) eqFilters.type = filters.type;
-    if (filters.status) eqFilters.status = filters.status;
-    if (filters.owner_id) eqFilters.owner_id = filters.owner_id;
-    if (filters.country) eqFilters.country = filters.country;
-
-    fetchList({
-      page,
-      orFilter,
-      eqFilters: Object.keys(eqFilters).length > 0 ? eqFilters : undefined,
-    });
+    const { orFilter, eqFilters } = buildFilterQuery(accountColumns, filters);
+    fetchList({ page, orFilter, eqFilters });
   }, [fetchList, page, filters]);
 
   useEffect(() => {
-    // Skip initial fetch when server provided data and no filters/pagination change
-    if (initialData && page === 1 && !filters.search && !filters.type && !filters.status && !filters.owner_id && !filters.country) return;
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+      if (initialData && page === 1) return;
+    }
     load();
   }, [load, initialData, page, filters]);
+
+  const handleFilterChange = useCallback(
+    (newFilters: Record<string, string | undefined>) => {
+      setFilters(newFilters);
+      setPage(1);
+    },
+    [],
+  );
 
   const handleDelete = async (id: string) => {
     const result = await deleteAccount(id);
@@ -70,16 +67,18 @@ export function AccountList({ initialData, initialCount, owners, countries }: Ac
     <div className="space-y-4">
       <DataTable
         tableId="accounts"
-        filterBar={<AccountFiltersBar filters={filters} onFilterChange={setFilters} owners={owners} countries={countries} />}
         columns={accountColumns}
         data={data}
+        filters={filters}
+        onFilterChange={handleFilterChange}
+        filterOptions={filterOptions}
+        onRowClick={(row) => router.push(`/admin/accounts/${row.id}`)}
         pagination={{ page, pageSize: PAGE_SIZE, total }}
         onPageChange={setPage}
         loading={loading}
         refreshing={refreshing}
         rowActions={(row) => [
-          { icon: Eye, label: 'Bekijken', onClick: () => router.push(`/admin/accounts/${row.id}`) },
-          { icon: Pencil, label: 'Bewerken', onClick: () => router.push(`/admin/accounts/${row.id}/edit`) },
+          { icon: SquarePen, label: 'Bewerken', onClick: () => router.push(`/admin/accounts/${row.id}/edit`) },
           { icon: Trash2, label: 'Verwijderen', variant: 'destructive' as const, confirm: { title: 'Account verwijderen?', description: 'Dit verwijdert het account en alle gekoppelde gegevens.' }, onClick: () => handleDelete(row.id) },
         ]}
         bulkActions={[

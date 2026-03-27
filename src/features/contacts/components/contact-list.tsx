@@ -1,19 +1,12 @@
 'use client';
 
-import { useState, useCallback, useEffect } from 'react';
-import { Eye, Pencil, Trash2 } from 'lucide-react';
+import { useState, useCallback, useEffect, useRef } from 'react';
+import { SquarePen, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useEntity } from '@/lib/hooks/use-entity';
 import DataTable from '@/components/admin/data-table';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { ComboboxFilter } from '@/components/admin/combobox-filter';
 import { contactColumns } from '../columns';
 import type { Contact } from '../types';
@@ -56,6 +49,7 @@ export function ContactList({ initialData, initialCount, accounts = [] }: Contac
   const [accountFilter, setAccountFilter] = useState<string>('all');
   const [roleFilter, setRoleFilter] = useState<string>('all');
   const [steercoOnly, setSteercoOnly] = useState(false);
+  const isInitialMount = useRef(true);
 
   const load = useCallback(() => {
     const eqFilters: Record<string, string | boolean> = {};
@@ -78,7 +72,10 @@ export function ContactList({ initialData, initialCount, accounts = [] }: Contac
   }, [fetchList, page, search, accountFilter, roleFilter, steercoOnly]);
 
   useEffect(() => {
-    if (initialData && page === 1 && !search && accountFilter === 'all' && roleFilter === 'all' && !steercoOnly) return;
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+      if (initialData && page === 1) return;
+    }
     load();
   }, [load, initialData, page, search, accountFilter, roleFilter, steercoOnly]);
 
@@ -118,15 +115,14 @@ export function ContactList({ initialData, initialCount, accounts = [] }: Contac
                 className="w-48"
               />
             )}
-            <Select value={roleFilter} onValueChange={(v) => setRoleFilter(v ?? 'all')}>
-              <SelectTrigger className="w-48"><SelectValue /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Alle rollen</SelectItem>
-                {ROLES.map((r) => (
-                  <SelectItem key={r} value={r}>{r}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <ComboboxFilter
+              options={ROLES.map((r) => ({ value: r, label: r }))}
+              value={roleFilter}
+              onValueChange={setRoleFilter}
+              placeholder="Alle rollen"
+              searchPlaceholder="Zoek rol..."
+              className="w-48"
+            />
             <Button
               variant={steercoOnly ? 'default' : 'outline'}
               size="sm"
@@ -138,13 +134,13 @@ export function ContactList({ initialData, initialCount, accounts = [] }: Contac
         }
         columns={contactColumns as any}
         data={data}
+        onRowClick={(row) => setViewId(row.id)}
         pagination={{ page, pageSize: PAGE_SIZE, total }}
         onPageChange={setPage}
         loading={loading}
         refreshing={refreshing}
         rowActions={(row) => [
-          { icon: Eye, label: 'Bekijken', onClick: () => setViewId(row.id) },
-          { icon: Pencil, label: 'Bewerken', onClick: () => setEditId(row.id) },
+          { icon: SquarePen, label: 'Bewerken', onClick: () => setEditId(row.id) },
           { icon: Trash2, label: 'Verwijderen', variant: 'destructive' as const, confirm: { title: 'Contact verwijderen?', description: 'Dit verwijdert het contact permanent.' }, onClick: () => handleDelete(row.id) },
         ]}
         bulkActions={[

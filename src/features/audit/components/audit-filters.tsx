@@ -1,12 +1,6 @@
 'use client';
 
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+import { ComboboxFilter } from '@/components/admin/combobox-filter';
 import { DateRangePicker } from '@/components/ui/date-range-picker';
 import { format } from 'date-fns';
 import type { DateRange } from 'react-day-picker';
@@ -36,52 +30,24 @@ type AuditFiltersProps = {
 export function AuditFilters({ filters, onFilterChange }: AuditFiltersProps) {
   return (
     <div className="flex flex-wrap items-end gap-3">
+      <ComboboxFilter
+        options={ACTION_OPTIONS.map((opt) => ({ value: opt, label: opt }))}
+        value={filters.action ?? 'all'}
+        onValueChange={(v) => onFilterChange({ ...filters, action: v === 'all' ? undefined : v })}
+        placeholder="Alle acties"
+        searchPlaceholder="Zoek actie..."
+        className="w-40"
+      />
+      <ComboboxFilter
+        options={ENTITY_TYPE_OPTIONS.map((opt) => ({ value: opt, label: opt }))}
+        value={filters.entityType ?? 'all'}
+        onValueChange={(v) => onFilterChange({ ...filters, entityType: v === 'all' ? undefined : v })}
+        placeholder="Alle entiteiten"
+        searchPlaceholder="Zoek entiteit..."
+        className="w-44"
+      />
       <div className="space-y-1">
-        <label className="text-xs font-medium text-muted-foreground">Action</label>
-        <Select
-          value={filters.action ?? ''}
-          onValueChange={(val) =>
-            onFilterChange({ ...filters, action: val || undefined })
-          }
-        >
-          <SelectTrigger>
-            <SelectValue placeholder="All actions" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="">All actions</SelectItem>
-            {ACTION_OPTIONS.map((opt) => (
-              <SelectItem key={opt} value={opt}>
-                {opt}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
-
-      <div className="space-y-1">
-        <label className="text-xs font-medium text-muted-foreground">Entity Type</label>
-        <Select
-          value={filters.entityType ?? ''}
-          onValueChange={(val) =>
-            onFilterChange({ ...filters, entityType: val || undefined })
-          }
-        >
-          <SelectTrigger>
-            <SelectValue placeholder="All types" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="">All types</SelectItem>
-            {ENTITY_TYPE_OPTIONS.map((opt) => (
-              <SelectItem key={opt} value={opt}>
-                {opt}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
-
-      <div className="space-y-1">
-        <label className="block text-xs font-medium text-muted-foreground">Period</label>
+        <label className="block text-xs font-medium text-muted-foreground">Periode</label>
         <DateRangePicker
           value={
             filters.dateFrom

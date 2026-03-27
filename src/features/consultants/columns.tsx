@@ -22,14 +22,44 @@ const statusLabels: Record<ConsultantStatus, string> = {
   stopgezet: 'Stopgezet',
 };
 
+function calcMaxRevenue(c: ConsultantWithDetails): number | null {
+  if (c.status !== 'actief') return null;
+  const rate = getCurrentRate(c);
+  if (!rate || !c.start_date) return null;
+  const end = c.is_indefinite || !c.end_date ? null : new Date(c.end_date);
+  // For indefinite: estimate 12 months from now
+  const endDate = end ?? new Date(Date.now() + 365 * 24 * 60 * 60 * 1000);
+  const start = new Date(c.start_date) > new Date() ? new Date(c.start_date) : new Date();
+  const months = Math.max(0, (endDate.getTime() - start.getTime()) / (1000 * 60 * 60 * 24 * 30.44));
+  return Math.round(rate * 8 * 21 * months);
+}
+
 export const consultantColumns: ColumnDef<ConsultantWithDetails>[] = [
   {
     id: 'status',
-    meta: { label: 'Status' },
+    meta: {
+      label: 'Status',
+      filter: {
+        type: 'select',
+        options: [
+          { value: 'actief', label: 'Actief' },
+          { value: 'bench', label: 'Bench' },
+          { value: 'stopgezet', label: 'Stopgezet' },
+        ],
+        placeholder: 'Alle statussen',
+      },
+    },
     header: 'Status',
     cell: ({ row }) => {
       const c = row.original;
       const status = c.status;
+      if (c.is_archived) {
+        return (
+          <span className="inline-flex w-fit items-center rounded-full px-2 py-0.5 text-xs font-medium bg-red-100 text-red-700 border-0">
+            Gearchiveerd
+          </span>
+        );
+      }
       return (
         <div className="flex flex-col gap-1">
           <span className={`inline-flex w-fit items-center rounded-full px-2 py-0.5 text-xs font-medium ${statusBadgeStyles[status]}`}>
@@ -55,7 +85,10 @@ export const consultantColumns: ColumnDef<ConsultantWithDetails>[] = [
   {
     accessorKey: 'last_name',
     id: 'consultant',
-    meta: { label: 'Consultant' },
+    meta: {
+      label: 'Consultant',
+      filter: { type: 'search', placeholder: 'Zoek consultant...', searchColumns: ['first_name', 'last_name'] },
+    },
     header: 'Consultant',
     cell: ({ row }) => {
       const c = row.original;
@@ -145,6 +178,16 @@ export const consultantColumns: ColumnDef<ConsultantWithDetails>[] = [
           {start} &rarr; {end}
         </span>
       );
+    },
+  },
+  {
+    id: 'max_revenue',
+    meta: { label: 'Max. omzet' },
+    header: 'Max. omzet',
+    cell: ({ row }) => {
+      const revenue = calcMaxRevenue(row.original);
+      if (revenue == null) return <span className="text-sm text-muted-foreground">-</span>;
+      return <span className="text-sm font-medium text-primary-action">{formatEUR(revenue)}</span>;
     },
   },
 ];

@@ -186,13 +186,15 @@ export function BenchFormModal({ open, onClose, consultant }: Props) {
         </div>
 
         {/* CV Upload */}
-        <PdfUploadField
-          label="CV"
-          value={cvUrl}
-          onChange={setCvUrl}
-          bucket="documents"
-          folder={isEdit ? `consultants/${consultant!.id}` : 'consultants'}
-        />
+        <div className="space-y-1.5">
+          <Label>CV</Label>
+          <PdfUploadField
+            value={cvUrl}
+            onChange={setCvUrl}
+            bucket="documents"
+            folder={isEdit ? `consultants/${consultant!.id}` : 'consultants'}
+          />
+        </div>
 
         {/* Languages */}
         <div className="space-y-2">

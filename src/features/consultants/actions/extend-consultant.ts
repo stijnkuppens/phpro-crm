@@ -44,7 +44,7 @@ export async function extendConsultant(
 
   const { error: updateError } = await supabase
     .from('consultants')
-    .update({ end_date: parsed.data.new_end_date })
+    .update({ end_date: parsed.data.new_end_date, is_indefinite: false })
     .eq('id', id);
 
   if (updateError) {

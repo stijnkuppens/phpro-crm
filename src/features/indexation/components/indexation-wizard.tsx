@@ -1,34 +1,133 @@
 'use client';
 
-import { useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 import { Modal } from '@/components/admin/modal';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
-import { Save } from 'lucide-react';
+import { Textarea } from '@/components/ui/textarea';
+import { Check, RotateCcw, Save } from 'lucide-react';
 import { simulateIndexation } from '../actions/simulate-indexation';
 import { saveIndexationDraft } from '../actions/save-indexation-draft';
 import { approveIndexation } from '../actions/approve-indexation';
-import type { SimulationResult, IndexationDraftValues } from '../types';
+import type { SimulationResult, IndexationDraftFull, IndexationDraftValues } from '../types';
 import { formatCurrency } from '@/lib/format';
 
 type Props = {
   accountId: string;
   open: boolean;
   onClose: () => void;
+  draft?: IndexationDraftFull | null;
 };
 
-export function IndexationWizard({ accountId, open, onClose }: Props) {
-  const [step, setStep] = useState(1);
-  const [loading, setLoading] = useState(false);
-  const [baseYear, setBaseYear] = useState(new Date().getFullYear() - 1);
-  const [targetYear, setTargetYear] = useState(new Date().getFullYear());
-  const [percentageStr, setPercentageStr] = useState('');
-  const percentage = Number(percentageStr) || 0;
-  const [simulation, setSimulation] = useState<SimulationResult | null>(null);
-  const [draftId, setDraftId] = useState<string | null>(null);
+const STEP_TITLES = ['% Instellen', 'Simulatie', 'Onderhandeling', 'Goedkeuring'];
+const QUICK_PCTS = [1.5, 2.0, 2.5, 3.0, 3.5, 4.0];
 
+function applyIndex(val: number, pct: number): number {
+  if (!val || !pct) return val;
+  return Math.round(val * (1 + pct / 100));
+}
+
+export function IndexationWizard({ accountId, open, onClose, draft }: Props) {
+  const hasDraftData = draft && draft.rates?.length > 0;
+
+  const [step, setStep] = useState(hasDraftData ? 3 : 1);
+  const [loading, setLoading] = useState(false);
+  const [baseYear, setBaseYear] = useState(draft?.base_year ?? new Date().getFullYear() - 1);
+  const [targetYear, setTargetYear] = useState(draft?.target_year ?? new Date().getFullYear());
+  const [percentageStr, setPercentageStr] = useState(draft ? String(Number(draft.percentage)) : '');
+  const percentage = Number(percentageStr) || 0;
+
+  // Simulation result
+  const [simulation, setSimulation] = useState<SimulationResult | null>(() => {
+    if (!hasDraftData) return null;
+    return {
+      rates: draft.rates.map((r) => ({
+        role: r.role,
+        current_rate: Number(r.current_rate),
+        proposed_rate: applyIndex(Number(r.current_rate), Number(draft.percentage)),
+      })),
+      sla: draft.sla
+        ? {
+            fixed_monthly_rate: 0,
+            support_hourly_rate: 0,
+            proposed_fixed: Number(draft.sla.fixed_monthly_rate),
+            proposed_support: Number(draft.sla.support_hourly_rate),
+          }
+        : null,
+    };
+  });
+
+  // Step 3: Negotiation state
+  const [draftRates, setDraftRates] = useState<Record<string, string>>(() => {
+    if (!hasDraftData) return {};
+    const map: Record<string, string> = {};
+    for (const r of draft.rates) {
+      map[r.role] = String(Number(r.proposed_rate));
+    }
+    return map;
+  });
+  const [draftSla, setDraftSla] = useState<Record<string, string>>(() => {
+    if (!draft?.sla) return {} as Record<string, string>;
+    return {
+      fixed_monthly_rate: String(Number(draft.sla.fixed_monthly_rate)),
+      support_hourly_rate: String(Number(draft.sla.support_hourly_rate)),
+    } as Record<string, string>;
+  });
+  const [draftPctHourly, setDraftPctHourly] = useState(
+    draft?.adjustment_pct_hourly != null ? String(Number(draft.adjustment_pct_hourly)) : '',
+  );
+  const [draftPctSla, setDraftPctSla] = useState(
+    draft?.adjustment_pct_sla != null ? String(Number(draft.adjustment_pct_sla)) : '',
+  );
+  const [draftInfo, setDraftInfo] = useState(draft?.info ?? '');
+  const [draftId, setDraftId] = useState<string | null>(draft?.id ?? null);
+
+  // Initialize negotiation state from simulation
+  const initNegotiationFromSim = useCallback((sim: SimulationResult) => {
+    const rates: Record<string, string> = {};
+    for (const r of sim.rates) rates[r.role] = String(r.proposed_rate);
+    setDraftRates(rates);
+    if (sim.sla) {
+      setDraftSla({
+        fixed_monthly_rate: String(sim.sla.proposed_fixed),
+        support_hourly_rate: String(sim.sla.proposed_support),
+      });
+    }
+    setDraftPctHourly(String(percentage));
+    setDraftPctSla(String(percentage));
+  }, [percentage]);
+
+  // Bulk recalculate hourly rates from a new %
+  const recalcHourly = useCallback((pct: number) => {
+    if (!simulation) return;
+    const rates: Record<string, string> = {};
+    for (const r of simulation.rates) {
+      rates[r.role] = String(applyIndex(r.current_rate, pct));
+    }
+    setDraftRates(rates);
+  }, [simulation]);
+
+  // Bulk recalculate SLA from a new %
+  const recalcSla = useCallback((pct: number) => {
+    if (!simulation?.sla) return;
+    setDraftSla({
+      fixed_monthly_rate: String(applyIndex(simulation.sla.fixed_monthly_rate, pct)),
+      support_hourly_rate: String(applyIndex(simulation.sla.support_hourly_rate, pct)),
+    });
+  }, [simulation]);
+
+  // Get final negotiated value (draft or simulated fallback)
+  const getFinalRate = useCallback((role: string) => {
+    return Number(draftRates[role]) || 0;
+  }, [draftRates]);
+
+  const getFinalSla = useCallback((key: string) => {
+    return Number(draftSla[key]) || 0;
+  }, [draftSla]);
+
+  // Step 1: Simulate
   async function handleSimulate() {
     setLoading(true);
     const result = await simulateIndexation(accountId, baseYear, percentage);
@@ -45,6 +144,13 @@ export function IndexationWizard({ accountId, open, onClose }: Props) {
     }
   }
 
+  // Step 2 → 3: Initialize negotiation
+  function goToNegotiation() {
+    if (simulation) initNegotiationFromSim(simulation);
+    setStep(3);
+  }
+
+  // Step 3: Save draft
   async function handleSaveDraft() {
     if (!simulation) return;
     setLoading(true);
@@ -53,11 +159,20 @@ export function IndexationWizard({ accountId, open, onClose }: Props) {
       target_year: targetYear,
       base_year: baseYear,
       percentage,
-      rates: simulation.rates,
-      sla: simulation.sla ? {
-        fixed_monthly_rate: simulation.sla.proposed_fixed,
-        support_hourly_rate: simulation.sla.proposed_support,
-      } : null,
+      info: draftInfo || undefined,
+      adjustment_pct_hourly: Number(draftPctHourly) || null,
+      adjustment_pct_sla: Number(draftPctSla) || null,
+      rates: simulation.rates.map((r) => ({
+        role: r.role,
+        current_rate: r.current_rate,
+        proposed_rate: getFinalRate(r.role),
+      })),
+      sla: simulation.sla
+        ? {
+            fixed_monthly_rate: getFinalSla('fixed_monthly_rate'),
+            support_hourly_rate: getFinalSla('support_hourly_rate'),
+          }
+        : null,
     };
 
     const result = await saveIndexationDraft(accountId, values);
@@ -71,12 +186,17 @@ export function IndexationWizard({ accountId, open, onClose }: Props) {
     if (result.data) {
       setDraftId(result.data.id);
       toast.success('Draft opgeslagen');
-      setStep(3);
     }
   }
 
+  // Step 4: Approve
   async function handleApprove() {
+    if (!draftId) {
+      // Save draft first if not yet saved
+      await handleSaveDraft();
+    }
     if (!draftId) return;
+
     setLoading(true);
     const result = await approveIndexation(accountId, draftId);
     setLoading(false);
@@ -90,99 +210,411 @@ export function IndexationWizard({ accountId, open, onClose }: Props) {
     onClose();
   }
 
+  // Clickable step navigation (can go back to completed steps)
+  function goToStep(s: number) {
+    if (s < step) setStep(s);
+  }
+
   return (
-    <Modal open={open} onClose={onClose} title={`Indexatie — Stap ${step} van 3`} size="wide">
+    <Modal open={open} onClose={onClose} title={`Indexatie — ${STEP_TITLES[step - 1]}`} size="extra-wide">
+      {/* Step indicator */}
+      <div className="flex items-center gap-2 mb-6">
+        {STEP_TITLES.map((title, i) => {
+          const s = i + 1;
+          const completed = s < step;
+          const current = s === step;
+          return (
+            <div key={s} className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => goToStep(s)}
+                disabled={s >= step}
+                className={`h-8 w-8 rounded-full flex items-center justify-center text-sm font-medium transition-colors ${
+                  completed || current
+                    ? 'bg-primary text-primary-foreground'
+                    : 'bg-muted text-muted-foreground'
+                } ${completed ? 'cursor-pointer hover:opacity-80' : s > step ? 'cursor-default' : ''}`}
+              >
+                {completed ? <Check className="h-4 w-4" /> : s}
+              </button>
+              <span className={`text-sm ${current ? 'font-medium' : 'text-muted-foreground'}`}>
+                {title}
+              </span>
+              {i < STEP_TITLES.length - 1 && <div className="w-8 h-px bg-border" />}
+            </div>
+          );
+        })}
+      </div>
+
+      {/* ── Step 1: % Instellen ──────────────────────────────────── */}
       {step === 1 && (
-        <div className="space-y-4">
+        <div className="space-y-5">
           <p className="text-sm text-muted-foreground">
-            Configureer het basisjaar, doeljaar en het indexatiepercentage.
+            Kies het indexatiepercentage. Gebruik een snelkeuze of voer een eigen waarde in.
           </p>
+
+          {/* Quick-select buttons */}
+          <div className="flex flex-wrap gap-2">
+            {QUICK_PCTS.map((p) => (
+              <button
+                key={p}
+                type="button"
+                onClick={() => setPercentageStr(String(p))}
+                className={`rounded-full px-4 py-1.5 text-sm font-medium transition-colors ${
+                  percentage === p
+                    ? 'bg-primary text-primary-foreground'
+                    : 'bg-muted text-muted-foreground hover:bg-muted/80'
+                }`}
+              >
+                +{p}%
+              </button>
+            ))}
+          </div>
+
           <div className="grid grid-cols-3 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="base_year">Basisjaar</Label>
-              <Input id="base_year" type="number" value={baseYear} onChange={(e) => setBaseYear(Number(e.target.value))} />
+              <Label>Basisjaar</Label>
+              <Input type="number" value={baseYear} onChange={(e) => setBaseYear(Number(e.target.value))} />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="target_year">Doeljaar</Label>
-              <Input id="target_year" type="number" value={targetYear} onChange={(e) => setTargetYear(Number(e.target.value))} />
+              <Label>Doeljaar</Label>
+              <Input type="number" value={targetYear} onChange={(e) => setTargetYear(Number(e.target.value))} />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="percentage">Percentage (%)</Label>
-              <Input id="percentage" type="number" step="0.01" value={percentageStr} onChange={(e) => setPercentageStr(e.target.value)} />
+              <Label>Percentage (%)</Label>
+              <Input type="number" step="0.1" value={percentageStr} onChange={(e) => setPercentageStr(e.target.value)} />
             </div>
           </div>
+
           <div className="flex justify-end">
             <Button onClick={handleSimulate} disabled={loading || percentage <= 0}>
-              {loading ? 'Berekenen...' : 'Simuleren'}
+              {loading ? 'Berekenen...' : 'Simuleren →'}
             </Button>
           </div>
         </div>
       )}
 
+      {/* ── Step 2: Simulatie (read-only) ────────────────────────── */}
       {step === 2 && simulation && (
-        <div className="space-y-4">
+        <div className="space-y-5">
           <p className="text-sm text-muted-foreground">
-            Resultaat: +{percentage}% op basis van {baseYear} → {targetYear}
+            Overzicht: +{percentage}% op basis van {baseYear} → {targetYear}
           </p>
-          <div className="border rounded-md">
+
+          {/* Hourly rates table */}
+          <div className="rounded-lg border overflow-hidden">
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b bg-muted/50">
-                  <th className="text-left p-2">Rol</th>
-                  <th className="text-right p-2">Huidig</th>
-                  <th className="text-right p-2">Voorstel</th>
+                  <th className="text-left p-2.5 font-medium">Rol</th>
+                  <th className="text-right p-2.5 font-medium">Huidig ({baseYear})</th>
+                  <th className="text-right p-2.5 font-medium">Gesimuleerd ({targetYear})</th>
+                  <th className="text-right p-2.5 font-medium">Verschil</th>
                 </tr>
               </thead>
               <tbody>
-                {simulation.rates.map((r) => (
-                  <tr key={r.role} className="border-b last:border-0">
-                    <td className="p-2">{r.role}</td>
-                    <td className="p-2 text-right">{formatCurrency(r.current_rate)}</td>
-                    <td className="p-2 text-right font-medium">{formatCurrency(r.proposed_rate)}</td>
-                  </tr>
-                ))}
+                {simulation.rates.map((r) => {
+                  const diff = r.proposed_rate - r.current_rate;
+                  return (
+                    <tr key={r.role} className="border-b last:border-0">
+                      <td className="p-2.5">{r.role}</td>
+                      <td className="p-2.5 text-right">{formatCurrency(r.current_rate)}</td>
+                      <td className="p-2.5 text-right font-medium">{formatCurrency(r.proposed_rate)}</td>
+                      <td className={`p-2.5 text-right text-xs font-medium ${diff > 0 ? 'text-green-600' : diff < 0 ? 'text-red-600' : ''}`}>
+                        {diff > 0 ? '+' : ''}{diff !== 0 ? formatCurrency(diff) : '—'}
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
+
+          {/* SLA table */}
           {simulation.sla && (
-            <div className="border rounded-md p-3 text-sm space-y-1">
-              <div className="font-medium">SLA Tarieven</div>
-              <div className="flex justify-between">
-                <span>Vast maandbedrag</span>
-                <span>{formatCurrency(simulation.sla.fixed_monthly_rate)} → <strong>{formatCurrency(simulation.sla.proposed_fixed)}</strong></span>
-              </div>
-              <div className="flex justify-between">
-                <span>Support uurtarief</span>
-                <span>{formatCurrency(simulation.sla.support_hourly_rate)} → <strong>{formatCurrency(simulation.sla.proposed_support)}</strong></span>
-              </div>
+            <div className="rounded-lg border overflow-hidden">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b bg-muted/50">
+                    <th className="text-left p-2.5 font-medium">Kostenpost</th>
+                    <th className="text-right p-2.5 font-medium">Huidig</th>
+                    <th className="text-right p-2.5 font-medium">Gesimuleerd</th>
+                    <th className="text-right p-2.5 font-medium">Verschil</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {[
+                    { label: 'Vast maandtarief', current: simulation.sla.fixed_monthly_rate, proposed: simulation.sla.proposed_fixed },
+                    { label: 'Support uurtarief', current: simulation.sla.support_hourly_rate, proposed: simulation.sla.proposed_support },
+                  ].map((row) => {
+                    const diff = row.proposed - row.current;
+                    return (
+                      <tr key={row.label} className="border-b last:border-0">
+                        <td className="p-2.5">{row.label}</td>
+                        <td className="p-2.5 text-right">{formatCurrency(row.current)}</td>
+                        <td className="p-2.5 text-right font-medium">{formatCurrency(row.proposed)}</td>
+                        <td className={`p-2.5 text-right text-xs font-medium ${diff > 0 ? 'text-green-600' : ''}`}>
+                          {diff > 0 ? '+' : ''}{diff !== 0 ? formatCurrency(diff) : '—'}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
             </div>
           )}
+
           <div className="flex gap-2 justify-end">
             <Button variant="outline" onClick={() => setStep(1)}>Terug</Button>
-            <Button onClick={handleSaveDraft} disabled={loading}>
-              <Save />
-              {loading ? 'Opslaan...' : 'Draft opslaan'}
-            </Button>
+            <Button onClick={goToNegotiation}>Onderhandeling →</Button>
           </div>
         </div>
       )}
 
-      {step === 3 && (
-        <div className="space-y-4">
+      {/* ── Step 3: Onderhandeling ───────────────────────────────── */}
+      {step === 3 && simulation && (
+        <div className="space-y-5">
           <p className="text-sm text-muted-foreground">
-            De draft is opgeslagen. Keur de indexatie goed om de nieuwe tarieven toe te passen voor {targetYear}.
+            Pas individuele tarieven aan of herbereken alles met een ander percentage.
           </p>
-          <div className="p-4 border rounded-md bg-muted/30 text-sm">
-            <div>Basisjaar: {baseYear}</div>
-            <div>Doeljaar: {targetYear}</div>
-            <div>Percentage: +{percentage}%</div>
-            <div>Rollen: {simulation?.rates.length ?? 0}</div>
-            <div>SLA: {simulation?.sla ? 'Ja' : 'Nee'}</div>
+
+          {/* Bulk recalculation */}
+          <div className="grid grid-cols-2 gap-4 rounded-lg border bg-muted/30 p-4">
+            <div className="flex items-end gap-2">
+              <div className="flex-1 space-y-1.5">
+                <Label className="text-xs">Herbereken uurtarieven op %</Label>
+                <Input
+                  type="number"
+                  step="0.1"
+                  value={draftPctHourly}
+                  onChange={(e) => {
+                    setDraftPctHourly(e.target.value);
+                    const p = Number(e.target.value);
+                    if (p > 0) recalcHourly(p);
+                  }}
+                  placeholder={String(percentage)}
+                  className="bg-white dark:bg-background"
+                />
+              </div>
+              <Button
+                variant="ghost"
+                size="icon-sm"
+                onClick={() => { setDraftPctHourly(String(percentage)); recalcHourly(percentage); }}
+                title="Reset naar simulatie %"
+              >
+                <RotateCcw className="h-3.5 w-3.5" />
+              </Button>
+            </div>
+            <div className="flex items-end gap-2">
+              <div className="flex-1 space-y-1.5">
+                <Label className="text-xs">Herbereken SLA op %</Label>
+                <Input
+                  type="number"
+                  step="0.1"
+                  value={draftPctSla}
+                  onChange={(e) => {
+                    setDraftPctSla(e.target.value);
+                    const p = Number(e.target.value);
+                    if (p > 0) recalcSla(p);
+                  }}
+                  placeholder={String(percentage)}
+                  className="bg-white dark:bg-background"
+                />
+              </div>
+              <Button
+                variant="ghost"
+                size="icon-sm"
+                onClick={() => { setDraftPctSla(String(percentage)); recalcSla(percentage); }}
+                title="Reset naar simulatie %"
+              >
+                <RotateCcw className="h-3.5 w-3.5" />
+              </Button>
+            </div>
           </div>
+
+          {/* Hourly rates — editable */}
+          <div className="rounded-lg border overflow-hidden">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b bg-muted/50">
+                  <th className="text-left p-2.5 font-medium">Rol</th>
+                  <th className="text-right p-2.5 font-medium">Huidig</th>
+                  <th className="text-right p-2.5 font-medium">Sim +{percentage}%</th>
+                  <th className="text-right p-2.5 font-medium">Onderhandeld</th>
+                </tr>
+              </thead>
+              <tbody>
+                {simulation.rates.map((r) => {
+                  const negotiated = Number(draftRates[r.role]) || 0;
+                  const diff = negotiated - r.proposed_rate;
+                  return (
+                    <tr key={r.role} className="border-b last:border-0">
+                      <td className="p-2.5">{r.role}</td>
+                      <td className="p-2.5 text-right text-muted-foreground">{formatCurrency(r.current_rate)}</td>
+                      <td className="p-2.5 text-right text-muted-foreground">{formatCurrency(r.proposed_rate)}</td>
+                      <td className="p-1.5 w-36">
+                        <div className="flex items-center gap-1.5">
+                          <Input
+                            type="number"
+                            value={draftRates[r.role] ?? ''}
+                            onChange={(e) => setDraftRates((prev) => ({ ...prev, [r.role]: e.target.value }))}
+                            placeholder={String(r.proposed_rate)}
+                            className="h-8 text-right text-sm"
+                          />
+                          {diff !== 0 && (
+                            <span className={`text-[10px] font-medium shrink-0 ${diff > 0 ? 'text-green-600' : 'text-red-600'}`}>
+                              {diff > 0 ? '+' : ''}{Math.round(diff)}
+                            </span>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+
+          {/* SLA — editable */}
+          {simulation.sla && (
+            <div className="rounded-lg border overflow-hidden">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b bg-muted/50">
+                    <th className="text-left p-2.5 font-medium">Kostenpost</th>
+                    <th className="text-right p-2.5 font-medium">Huidig</th>
+                    <th className="text-right p-2.5 font-medium">Gesimuleerd</th>
+                    <th className="text-right p-2.5 font-medium">Onderhandeld</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {[
+                    { key: 'fixed_monthly_rate', label: 'Vast maandtarief', current: simulation.sla.fixed_monthly_rate, sim: simulation.sla.proposed_fixed },
+                    { key: 'support_hourly_rate', label: 'Support uurtarief', current: simulation.sla.support_hourly_rate, sim: simulation.sla.proposed_support },
+                  ].map((row) => (
+                    <tr key={row.key} className="border-b last:border-0">
+                      <td className="p-2.5">{row.label}</td>
+                      <td className="p-2.5 text-right text-muted-foreground">{formatCurrency(row.current)}</td>
+                      <td className="p-2.5 text-right text-muted-foreground">{formatCurrency(row.sim)}</td>
+                      <td className="p-1.5 w-36">
+                        <Input
+                          type="number"
+                          value={draftSla[row.key] ?? ''}
+                          onChange={(e) => setDraftSla((prev) => ({ ...prev, [row.key]: e.target.value }))}
+                          placeholder={String(row.sim)}
+                          className="h-8 text-right text-sm"
+                        />
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+
+          {/* Notes */}
+          <div className="space-y-1.5">
+            <Label>Notities (context, afspraken, open punten)</Label>
+            <Textarea
+              value={draftInfo}
+              onChange={(e) => setDraftInfo(e.target.value)}
+              placeholder="Bijv. klant akkoord met 2.5% op uurtarieven, SLA blijft gelijk..."
+              rows={3}
+            />
+          </div>
+
           <div className="flex gap-2 justify-end">
             <Button variant="outline" onClick={() => setStep(2)}>Terug</Button>
+            <Button variant="outline" onClick={handleSaveDraft} disabled={loading}>
+              <Save />
+              {loading ? 'Opslaan...' : 'Opslaan als draft'}
+            </Button>
+            <Button onClick={() => setStep(4)}>Naar goedkeuring →</Button>
+          </div>
+        </div>
+      )}
+
+      {/* ── Step 4: Goedkeuring ──────────────────────────────────── */}
+      {step === 4 && simulation && (
+        <div className="space-y-5">
+          <p className="text-sm text-muted-foreground">
+            Controleer de definitieve tarieven voor {targetYear}. Na goedkeuring worden deze direct toegepast.
+          </p>
+
+          <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
+            {/* Hourly rates summary */}
+            <div className="rounded-lg border overflow-hidden">
+              <div className="bg-muted/50 p-2.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                Uurtarieven {targetYear}
+              </div>
+              <table className="w-full text-sm">
+                <tbody>
+                  {simulation.rates.map((r) => {
+                    const final = getFinalRate(r.role);
+                    return (
+                      <tr key={r.role} className="border-b last:border-0">
+                        <td className="p-2.5">{r.role}</td>
+                        <td className="p-2.5 text-right text-muted-foreground line-through">{formatCurrency(r.current_rate)}</td>
+                        <td className="p-2.5 text-right font-medium text-green-600">{formatCurrency(final)}</td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+
+            {/* SLA summary */}
+            <div className="space-y-4">
+              {simulation.sla && (
+                <div className="rounded-lg border overflow-hidden">
+                  <div className="bg-muted/50 p-2.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                    SLA Tarieven {targetYear}
+                  </div>
+                  <table className="w-full text-sm">
+                    <tbody>
+                      {[
+                        { label: 'Vast maandtarief', current: simulation.sla.fixed_monthly_rate, final: getFinalSla('fixed_monthly_rate') },
+                        { label: 'Support uurtarief', current: simulation.sla.support_hourly_rate, final: getFinalSla('support_hourly_rate') },
+                      ].map((row) => (
+                        <tr key={row.label} className="border-b last:border-0">
+                          <td className="p-2.5">{row.label}</td>
+                          <td className="p-2.5 text-right text-muted-foreground line-through">{formatCurrency(row.current)}</td>
+                          <td className="p-2.5 text-right font-medium text-green-600">{formatCurrency(row.final)}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+
+              {/* Meta info */}
+              <div className="rounded-lg border bg-muted/30 p-4 text-sm space-y-1">
+                <div className="grid grid-cols-2 gap-1">
+                  <span className="text-muted-foreground">Basisjaar:</span><span className="font-medium">{baseYear}</span>
+                  <span className="text-muted-foreground">Doeljaar:</span><span className="font-medium">{targetYear}</span>
+                  <span className="text-muted-foreground">Basis %:</span><span className="font-medium">+{percentage}%</span>
+                  {draftPctHourly && Number(draftPctHourly) !== percentage && (
+                    <><span className="text-muted-foreground">Aanpassing uurtarieven:</span><span className="font-medium">+{draftPctHourly}%</span></>
+                  )}
+                  {draftPctSla && Number(draftPctSla) !== percentage && (
+                    <><span className="text-muted-foreground">Aanpassing SLA:</span><span className="font-medium">+{draftPctSla}%</span></>
+                  )}
+                </div>
+              </div>
+
+              {draftInfo && (
+                <div className="rounded-lg border bg-muted/30 p-4 text-sm">
+                  <div className="text-xs font-medium text-muted-foreground mb-1">Notities</div>
+                  <p className="whitespace-pre-wrap">{draftInfo}</p>
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div className="flex gap-2 justify-end">
+            <Button variant="outline" onClick={() => setStep(3)}>Terug</Button>
             <Button onClick={handleApprove} disabled={loading}>
-              {loading ? 'Goedkeuren...' : 'Goedkeuren & toepassen'}
+              {loading ? 'Goedkeuren...' : 'Bevestigen & tarieven opslaan'}
             </Button>
           </div>
         </div>

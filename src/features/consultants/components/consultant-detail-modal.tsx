@@ -1,8 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Modal } from '@/components/admin/modal';
 import { Avatar } from '@/components/admin/avatar';
+import { createBrowserClient } from '@/lib/supabase/client';
+import { CONSULTANT_SELECT } from '../types';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from '@/components/ui/tooltip';
@@ -220,19 +222,24 @@ function ActiveDetail({ consultant }: { consultant: ConsultantWithDetails }) {
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b bg-muted/50">
-                  <th className="text-left p-2">Datum</th>
+                  <th className="text-left p-2">Gewijzigd op</th>
+                  <th className="text-left p-2">Actief vanaf</th>
                   <th className="text-right p-2">Tarief</th>
                   <th className="text-left p-2">Reden</th>
                 </tr>
               </thead>
               <tbody>
                 {[...consultant.rate_history]
-                  .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+                  .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
                   .map((rh) => (
                     <tr key={rh.id} className="border-b last:border-0">
+                      <td className="p-2 text-muted-foreground">
+                        {new Date(rh.created_at).toLocaleDateString('nl-BE')}{' '}
+                        {new Date(rh.created_at).toLocaleTimeString('nl-BE', { hour: '2-digit', minute: '2-digit' })}
+                      </td>
                       <td className="p-2">{new Date(rh.date).toLocaleDateString('nl-BE')}</td>
                       <td className="p-2 text-right">{formatCurrency(Number(rh.rate))}</td>
-                      <td className="p-2">{rh.reason ?? '-'}</td>
+                      <td className="p-2 text-muted-foreground">{rh.reason ?? '-'}</td>
                     </tr>
                   ))}
               </tbody>
@@ -245,13 +252,30 @@ function ActiveDetail({ consultant }: { consultant: ConsultantWithDetails }) {
       {consultant.extensions && consultant.extensions.length > 0 && (
         <div>
           <h4 className="text-sm font-medium mb-2">Verlengingen</h4>
-          <div className="space-y-1">
-            {consultant.extensions.map((ext) => (
-              <div key={ext.id} className="text-sm flex gap-2">
-                <span>Verlengd tot {new Date(ext.new_end_date).toLocaleDateString('nl-BE')}</span>
-                {ext.notes && <span className="text-muted-foreground">— {ext.notes}</span>}
-              </div>
-            ))}
+          <div className="border rounded-md">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b bg-muted/50">
+                  <th className="text-left p-2">Gewijzigd op</th>
+                  <th className="text-left p-2">Nieuwe einddatum</th>
+                  <th className="text-left p-2">Notities</th>
+                </tr>
+              </thead>
+              <tbody>
+                {[...consultant.extensions]
+                  .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+                  .map((ext) => (
+                    <tr key={ext.id} className="border-b last:border-0">
+                      <td className="p-2 text-muted-foreground">
+                        {new Date(ext.created_at).toLocaleDateString('nl-BE')}{' '}
+                        {new Date(ext.created_at).toLocaleTimeString('nl-BE', { hour: '2-digit', minute: '2-digit' })}
+                      </td>
+                      <td className="p-2">{new Date(ext.new_end_date).toLocaleDateString('nl-BE')}</td>
+                      <td className="p-2 text-muted-foreground">{ext.notes ?? '-'}</td>
+                    </tr>
+                  ))}
+              </tbody>
+            </table>
           </div>
         </div>
       )}
@@ -291,9 +315,26 @@ function StopgezetDetail({ consultant }: { consultant: ConsultantWithDetails }) 
   );
 }
 
-export function ConsultantDetailModal({ consultant, open, onClose }: Props) {
+export function ConsultantDetailModal({ consultant: initialConsultant, open, onClose }: Props) {
+  const [consultant, setConsultant] = useState(initialConsultant);
   const [activeModal, setActiveModal] = useState<'stop' | 'extend' | 'rate' | 'contract-attr' | null>(null);
   const initials = `${consultant.first_name[0]}${consultant.last_name[0]}`;
+
+  const refresh = useCallback(async () => {
+    const supabase = createBrowserClient();
+    const { data } = await supabase
+      .from('consultants')
+      .select(CONSULTANT_SELECT)
+      .eq('id', consultant.id)
+      .single();
+    if (data) setConsultant(data as unknown as ConsultantWithDetails);
+  }, [consultant.id]);
+
+  // Re-fetch when a sub-modal closes after a successful action
+  const handleSubModalSuccess = useCallback(() => {
+    setActiveModal(null);
+    refresh();
+  }, [refresh]);
 
   return (
     <>
@@ -338,7 +379,7 @@ export function ConsultantDetailModal({ consultant, open, onClose }: Props) {
           consultantId={consultant.id}
           open
           onClose={() => setActiveModal(null)}
-          onSuccess={onClose}
+          onSuccess={handleSubModalSuccess}
         />
       )}
       {activeModal === 'extend' && (
@@ -346,7 +387,7 @@ export function ConsultantDetailModal({ consultant, open, onClose }: Props) {
           consultantId={consultant.id}
           open
           onClose={() => setActiveModal(null)}
-          onSuccess={onClose}
+          onSuccess={handleSubModalSuccess}
         />
       )}
       {activeModal === 'rate' && (
@@ -354,7 +395,7 @@ export function ConsultantDetailModal({ consultant, open, onClose }: Props) {
           consultantId={consultant.id}
           open
           onClose={() => setActiveModal(null)}
-          onSuccess={onClose}
+          onSuccess={handleSubModalSuccess}
         />
       )}
       {activeModal === 'contract-attr' && (
@@ -363,10 +404,7 @@ export function ConsultantDetailModal({ consultant, open, onClose }: Props) {
           existing={consultant.contract_attribution}
           open
           onClose={() => setActiveModal(null)}
-          onSaved={() => {
-            setActiveModal(null);
-            onClose();
-          }}
+          onSaved={handleSubModalSuccess}
         />
       )}
     </>

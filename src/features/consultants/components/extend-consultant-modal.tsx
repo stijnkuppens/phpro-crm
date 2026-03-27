@@ -38,8 +38,8 @@ export function ExtendConsultantModal({ consultantId, open, onClose, onSuccess }
     }
 
     toast.success('Consultant verlengd');
-    onClose();
     onSuccess?.();
+    onClose();
   }
 
   return (

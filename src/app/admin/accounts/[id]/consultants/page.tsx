@@ -10,7 +10,7 @@ type Props = {
 export default async function ConsultantsPage({ params }: Props) {
   const { id } = await params;
   const [consultants, rolesRaw, account] = await Promise.all([
-    getConsultantsByAccount(id),
+    getConsultantsByAccount(id, true),
     getReferenceOptions('ref_consultant_roles'),
     getAccount(id),
   ]);

@@ -1,24 +1,20 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { SquarePen, Plus, Trash2 } from 'lucide-react';
+import { toast } from 'sonner';
 import { useEntity } from '@/lib/hooks/use-entity';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-} from '@/components/ui/select';
-import { FilterBar } from '@/components/admin/filter-bar';
-import { DateRangePicker } from '@/components/ui/date-range-picker';
+import DataTable from '@/components/admin/data-table';
+import { DataTableFilters, buildFilterQuery } from '@/components/admin/data-table-filters';
 import { CommunicationModal } from '@/features/communications/components/communication-modal';
+import { CommunicationDetailModal } from '@/features/communications/components/communication-detail-modal';
+import { communicationColumns, TYPE_CONFIG } from '@/features/communications/columns';
 import type { CommunicationWithDetails } from '@/features/communications/types';
-import type { DateRange } from 'react-day-picker';
-import { Mail, FileText, Users, Phone, ChevronDown, ChevronRight, Plus, Search } from 'lucide-react';
-import { escapeSearch } from '@/lib/utils/escape-search';
+import type { FilterOption } from '@/components/admin/data-table-filters';
+
+type CommType = keyof typeof TYPE_CONFIG;
 
 type Props = {
   accountId: string;
@@ -37,16 +33,7 @@ const COMM_SELECT = `
 
 const PAGE_SIZE = 25;
 
-const TYPE_CONFIG = {
-  email: { icon: Mail, bg: 'bg-blue-50 dark:bg-blue-950', color: 'text-blue-600 dark:text-blue-400', label: 'E-mail' },
-  note: { icon: FileText, bg: 'bg-amber-50 dark:bg-amber-950', color: 'text-amber-600 dark:text-amber-400', label: 'Notitie' },
-  meeting: { icon: Users, bg: 'bg-green-50 dark:bg-green-950', color: 'text-green-600 dark:text-green-400', label: 'Vergadering' },
-  call: { icon: Phone, bg: 'bg-purple-50 dark:bg-purple-950', color: 'text-purple-600 dark:text-purple-400', label: 'Call' },
-} as const;
-
-type CommType = keyof typeof TYPE_CONFIG;
-
-const FILTER_CHIPS: { value: CommType | null; label: string }[] = [
+const TYPE_PILLS: { value: CommType | null; label: string }[] = [
   { value: null, label: 'Alles' },
   { value: 'email', label: 'E-mail' },
   { value: 'note', label: 'Notitie' },
@@ -56,13 +43,13 @@ const FILTER_CHIPS: { value: CommType | null; label: string }[] = [
 
 export function AccountCommunicationsTab({ accountId, initialData, initialCount, contacts = [], deals = [] }: Props) {
   const router = useRouter();
-  const [expanded, setExpanded] = useState<Set<string>>(new Set());
   const [typeFilter, setTypeFilter] = useState<CommType | null>(null);
-  const [search, setSearch] = useState('');
-  const [ownerFilter, setOwnerFilter] = useState('all');
-  const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
-  const [modalOpen, setModalOpen] = useState(false);
+  const [filters, setFilters] = useState<Record<string, string | undefined>>({});
+  const [createOpen, setCreateOpen] = useState(false);
+  const [viewRow, setViewRow] = useState<CommunicationWithDetails | null>(null);
+  const [editRow, setEditRow] = useState<CommunicationWithDetails | null>(null);
   const [page, setPage] = useState(1);
+  const isInitialMount = useRef(true);
 
   const { data, total, loading, refreshing, fetchList } = useEntity<CommunicationWithDetails>({
     table: 'communications',
@@ -72,239 +59,176 @@ export function AccountCommunicationsTab({ accountId, initialData, initialCount,
     initialCount,
   });
 
-  // Derive unique owners from initialData (stable list unaffected by filters)
-  const owners = useMemo(() => {
-    const map = new Map<string, string>();
-    for (const c of initialData) {
-      if (c.owner?.id) {
-        map.set(c.owner.id, c.owner.full_name || 'Onbekend');
-      }
-    }
-    return Array.from(map, ([id, name]) => ({ id, name }));
-  }, [initialData]);
+  const filterOptions: Record<string, FilterOption[]> = {
+    contact_id: contacts.map((c) => ({
+      value: c.id,
+      label: `${c.first_name} ${c.last_name}`,
+    })),
+    deal_id: deals.map((d) => ({ value: d.id, label: d.title })),
+    owner_id: Array.from(
+      new Map(
+        initialData
+          .filter((c) => c.owner?.id)
+          .map((c) => [c.owner!.id, c.owner!.full_name ?? 'Onbekend']),
+      ),
+    ).map(([id, name]) => ({ value: id, label: name })),
+  };
 
   const load = useCallback(() => {
-    const eqFilters: Record<string, string | boolean> = { account_id: accountId };
+    const { orFilter, eqFilters: autoFilters } = buildFilterQuery(communicationColumns, filters);
+    const eqFilters: Record<string, string> = { ...autoFilters, account_id: accountId };
     if (typeFilter) eqFilters.type = typeFilter;
-    if (ownerFilter !== 'all') eqFilters.owner_id = ownerFilter;
-
-    const orFilter = search
-      ? `subject.ilike.%${escapeSearch(search)}%,to.ilike.%${escapeSearch(search)}%`
-      : undefined;
-
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const applyFilters = (query: any) => {
-      if (dateRange?.from) {
-        query = query.gte('date', dateRange.from.toISOString());
-      }
-      if (dateRange?.to) {
-        const to = new Date(dateRange.to);
-        to.setHours(23, 59, 59);
-        query = query.lte('date', to.toISOString());
-      }
-      return query;
-    };
 
     fetchList({
       page,
       sort: { column: 'date', direction: 'desc' },
       orFilter,
       eqFilters,
-      applyFilters: (dateRange?.from || dateRange?.to) ? applyFilters : undefined,
     });
-  }, [fetchList, page, accountId, typeFilter, search, ownerFilter, dateRange]);
+  }, [fetchList, page, accountId, typeFilter, filters]);
 
   useEffect(() => {
-    if (initialData && page === 1 && !typeFilter && !search && ownerFilter === 'all' && !dateRange) return;
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+      if (initialData && page === 1) return;
+    }
     load();
-  }, [load, initialData, page, typeFilter, search, ownerFilter, dateRange]);
+  }, [load, initialData, page, typeFilter, filters]);
+
+  const handleFilterChange = useCallback(
+    (newFilters: Record<string, string | undefined>) => {
+      setFilters(newFilters);
+      setPage(1);
+    },
+    [],
+  );
 
   useEffect(() => {
     setPage(1);
-  }, [typeFilter, search, ownerFilter, dateRange]);
+  }, [typeFilter]);
 
-  const toggleExpand = useCallback((id: string) => {
-    setExpanded((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
-    });
-  }, []);
-
-  const handleModalClose = useCallback(() => {
-    setModalOpen(false);
+  const handleClose = useCallback(() => {
+    setCreateOpen(false);
+    setEditRow(null);
+    setViewRow(null);
+    load();
     router.refresh();
-  }, [router]);
+  }, [load, router]);
+
+  const handleDelete = async (id: string) => {
+    const supabase = (await import('@/lib/supabase/client')).createBrowserClient();
+    const { error } = await supabase.from('communications').delete().eq('id', id);
+    if (error) {
+      toast.error('Verwijderen mislukt');
+    } else {
+      toast.success('Communicatie verwijderd');
+      load();
+    }
+  };
 
   return (
     <div className="space-y-4 mt-4">
-      {/* Search + filters bar */}
-      <FilterBar>
-        <div className="flex flex-col gap-3">
-          <div className="flex items-center gap-3 flex-wrap">
-            <div className="relative flex-1 min-w-[200px]">
-              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Zoek op onderwerp, inhoud..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="pl-9"
-              />
-            </div>
-            <Select value={ownerFilter} onValueChange={(v) => setOwnerFilter(v ?? 'all')}>
-              <SelectTrigger className="w-44">
-                {ownerFilter === 'all'
-                  ? 'Alle gebruikers'
-                  : owners.find((o) => o.id === ownerFilter)?.name ?? 'Alle gebruikers'}
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Alle gebruikers</SelectItem>
-                {owners.map((o) => (
-                  <SelectItem key={o.id} value={o.id}>{o.name}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <DateRangePicker
-              value={dateRange}
-              onChange={setDateRange}
-              placeholder="Datum bereik"
-              className="h-10"
-            />
-            <Button size="sm" onClick={() => setModalOpen(true)}>
-              <Plus className="h-4 w-4 mr-1" /> Nieuw
-            </Button>
-          </div>
-          {/* Type pills */}
-          <div className="flex gap-1.5">
-            {FILTER_CHIPS.map((chip) => (
-              <button
-                key={chip.label}
-                type="button"
-                onClick={() => setTypeFilter(chip.value)}
-                className={`px-3 py-1 text-xs font-medium rounded-full transition-colors ${
-                  typeFilter === chip.value
-                    ? 'bg-primary text-primary-foreground'
-                    : 'bg-muted/50 text-muted-foreground hover:bg-muted'
-                }`}
-              >
-                {chip.label}
-              </button>
-            ))}
-          </div>
-        </div>
-      </FilterBar>
-
-      {/* Timeline */}
-      {data.length === 0 && !loading ? (
-        <div className="py-8 text-center text-muted-foreground">Geen communicatie gevonden.</div>
-      ) : (
-        <div className="space-y-2">
-          {data.map((comm) => {
-            const config = TYPE_CONFIG[comm.type as CommType] ?? TYPE_CONFIG.note;
-            const Icon = config.icon;
-            const isExpanded = expanded.has(comm.id);
-            const contentObj = typeof comm.content === 'object' && comm.content ? (comm.content as { text?: string }) : null;
-            const contentStr = contentObj?.text ?? (typeof comm.content === 'string' ? comm.content : '');
-
-            return (
-              <div key={comm.id} className="border rounded-lg bg-card overflow-hidden">
-                <button
-                  type="button"
-                  onClick={() => toggleExpand(comm.id)}
-                  className="w-full flex items-start gap-3 p-3 text-left hover:bg-muted/30 transition-colors"
-                >
-                  {/* Color-coded icon */}
-                  <div className={`shrink-0 flex items-center justify-center h-8 w-8 rounded-md ${config.bg}`}>
-                    <Icon className={`h-4 w-4 ${config.color}`} />
-                  </div>
-
-                  {/* Content */}
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <span className="font-semibold text-sm truncate">{comm.subject}</span>
-                      {comm.deal && (
-                        <Badge className="bg-primary/15 text-primary-action border-0 text-xs shrink-0">
-                          {comm.deal.title}
-                        </Badge>
-                      )}
-                      {comm.contact && (
-                        <Badge variant="secondary" className="text-xs shrink-0">
-                          {comm.contact.first_name} {comm.contact.last_name}
-                        </Badge>
-                      )}
-                    </div>
-                    {contentStr && !isExpanded && (
-                      <p className="text-xs text-muted-foreground mt-1 line-clamp-1">{contentStr}</p>
-                    )}
-                  </div>
-
-                  {/* Date + owner + expand */}
-                  <div className="flex items-center gap-3 shrink-0">
-                    <div className="text-right">
-                      <div className="text-xs text-muted-foreground">
-                        {new Date(comm.date).toLocaleDateString('nl-BE', { day: 'numeric', month: 'short', year: 'numeric' })}
-                        {' '}
-                        {new Date(comm.date).toLocaleTimeString('nl-BE', { hour: '2-digit', minute: '2-digit' })}
-                      </div>
-                      {comm.owner?.full_name && (
-                        <div className="text-xs text-muted-foreground">{comm.owner.full_name}</div>
-                      )}
-                    </div>
-                    {comm.owner?.full_name && (
-                      <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-muted text-[10px] font-medium">
-                        {comm.owner.full_name.split(/\s+/).map(w => w[0] ?? '').join('').toUpperCase().slice(0, 2)}
-                      </div>
-                    )}
-                    {isExpanded ? (
-                      <ChevronDown className="h-4 w-4 text-muted-foreground" />
-                    ) : (
-                      <ChevronRight className="h-4 w-4 text-muted-foreground" />
-                    )}
-                  </div>
-                </button>
-
-                {/* Expanded content */}
-                {isExpanded && contentStr && (
-                  <div className="px-3 pb-3 pt-0 ml-11 border-t">
-                    <p className="text-sm text-foreground whitespace-pre-wrap mt-2">{contentStr}</p>
-                  </div>
-                )}
+      <DataTable
+        tableId="account-communications"
+        filterBar={
+          <div className="flex flex-col gap-3">
+            <div className="flex items-center gap-3">
+              <div className="flex flex-1 flex-wrap items-center gap-3">
+                <DataTableFilters
+                  columns={communicationColumns}
+                  filters={filters}
+                  onFilterChange={handleFilterChange}
+                  filterOptions={filterOptions}
+                />
               </div>
-            );
-          })}
-        </div>
+              <Button size="sm" onClick={() => setCreateOpen(true)}>
+                <Plus /> Nieuw
+              </Button>
+            </div>
+            <div className="flex gap-1.5">
+              {TYPE_PILLS.map((pill) => (
+                <button
+                  key={pill.label}
+                  type="button"
+                  onClick={() => setTypeFilter(pill.value)}
+                  className={`px-3 py-1 text-xs font-medium rounded-full transition-colors ${
+                    typeFilter === pill.value
+                      ? 'bg-primary text-primary-foreground'
+                      : 'bg-muted/50 text-muted-foreground hover:bg-muted'
+                  }`}
+                >
+                  {pill.label}
+                </button>
+              ))}
+            </div>
+          </div>
+        }
+        columns={communicationColumns}
+        data={data}
+        initialSorting={[{ id: 'date', desc: true }]}
+        onRowClick={(row) => setViewRow(row)}
+        pagination={{ page, pageSize: PAGE_SIZE, total }}
+        onPageChange={setPage}
+        loading={loading}
+        refreshing={refreshing}
+        rowActions={(row) => [
+          { icon: SquarePen, label: 'Bewerken', onClick: () => setEditRow(row) },
+          {
+            icon: Trash2,
+            label: 'Verwijderen',
+            variant: 'destructive' as const,
+            confirm: {
+              title: 'Communicatie verwijderen?',
+              description: 'Dit verwijdert de communicatie permanent.',
+            },
+            onClick: () => handleDelete(row.id),
+          },
+        ]}
+      />
+
+      {/* Detail modal — row click */}
+      {viewRow && (
+        <CommunicationDetailModal
+          key={viewRow.id}
+          communication={viewRow}
+          onClose={() => setViewRow(null)}
+          onEdit={() => {
+            setEditRow(viewRow);
+            setViewRow(null);
+          }}
+        />
       )}
 
-      {/* Pagination */}
-      {total > PAGE_SIZE && (
-        <div className="flex justify-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            disabled={page <= 1}
-            onClick={() => setPage((p) => p - 1)}
-          >
-            Vorige
-          </Button>
-          <span className="text-sm text-muted-foreground self-center">
-            Pagina {page} van {Math.ceil(total / PAGE_SIZE)}
-          </span>
-          <Button
-            variant="outline"
-            size="sm"
-            disabled={page >= Math.ceil(total / PAGE_SIZE)}
-            onClick={() => setPage((p) => p + 1)}
-          >
-            Volgende
-          </Button>
-        </div>
-      )}
-
-      {modalOpen && (
+      {/* Edit modal — from detail or row action */}
+      {editRow && (
         <CommunicationModal
-          open={modalOpen}
-          onClose={handleModalClose}
+          key={`edit-${editRow.id}`}
+          open
+          onClose={handleClose}
+          accountId={accountId}
+          contacts={contacts}
+          deals={deals}
+          defaultValues={{
+            id: editRow.id,
+            type: editRow.type as 'email' | 'note' | 'meeting' | 'call',
+            subject: editRow.subject,
+            to: editRow.to,
+            date: editRow.date,
+            duration_minutes: editRow.duration_minutes,
+            contact_id: editRow.contact_id,
+            deal_id: editRow.deal_id,
+            content: editRow.content,
+            is_done: editRow.is_done,
+          }}
+        />
+      )}
+
+      {/* Create modal */}
+      {createOpen && (
+        <CommunicationModal
+          key="new"
+          open
+          onClose={handleClose}
           accountId={accountId}
           contacts={contacts}
           deals={deals}

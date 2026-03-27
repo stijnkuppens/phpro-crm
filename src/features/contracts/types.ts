@@ -13,15 +13,18 @@ export type SlaRateWithTools = SlaRate & {
 export const contractFormSchema = z.object({
   has_framework_contract: z.boolean(),
   framework_pdf_url: z.string().optional().nullable(),
+  framework_doc_path: z.string().optional().nullable(),
   framework_start: z.string().optional().nullable(),
   framework_end: z.string().optional().nullable(),
   framework_indefinite: z.boolean().optional(),
   has_service_contract: z.boolean(),
   service_pdf_url: z.string().optional().nullable(),
+  service_doc_path: z.string().optional().nullable(),
   service_start: z.string().optional().nullable(),
   service_end: z.string().optional().nullable(),
   service_indefinite: z.boolean().optional(),
   purchase_orders_url: z.string().optional().nullable(),
+  purchase_orders_doc_path: z.string().optional().nullable(),
 });
 
 export type ContractFormValues = z.infer<typeof contractFormSchema>;

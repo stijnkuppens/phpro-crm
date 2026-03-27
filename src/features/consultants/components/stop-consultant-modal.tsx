@@ -46,15 +46,15 @@ export function StopConsultantModal({ consultantId, open, onClose, onSuccess }: 
         toast.error(typeof benchResult.error === 'string' ? benchResult.error : 'Kon niet naar bench verplaatsen');
       } else {
         toast.success('Consultant stopgezet en naar bench verplaatst');
-        onClose();
         onSuccess?.();
+        onClose();
         return;
       }
     }
 
     toast.success('Consultant stopgezet');
-    onClose();
     onSuccess?.();
+    onClose();
   }
 
   return (

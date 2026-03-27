@@ -37,6 +37,7 @@
   ],
   "exclude": [
     "node_modules",
-    "demo_crm"
+    "demo_crm",
+    "docker"
   ]
 }

@@ -997,6 +997,7 @@ export type Database = {
         Row: {
           account_id: string
           created_at: string
+          framework_doc_path: string | null
           framework_end: string | null
           framework_indefinite: boolean
           framework_pdf_url: string | null
@@ -1004,7 +1005,9 @@ export type Database = {
           has_framework_contract: boolean
           has_service_contract: boolean
           id: string
+          purchase_orders_doc_path: string | null
           purchase_orders_url: string | null
+          service_doc_path: string | null
           service_end: string | null
           service_indefinite: boolean
           service_pdf_url: string | null
@@ -1014,6 +1017,7 @@ export type Database = {
         Insert: {
           account_id: string
           created_at?: string
+          framework_doc_path?: string | null
           framework_end?: string | null
           framework_indefinite?: boolean
           framework_pdf_url?: string | null
@@ -1021,7 +1025,9 @@ export type Database = {
           has_framework_contract?: boolean
           has_service_contract?: boolean
           id?: string
+          purchase_orders_doc_path?: string | null
           purchase_orders_url?: string | null
+          service_doc_path?: string | null
           service_end?: string | null
           service_indefinite?: boolean
           service_pdf_url?: string | null
@@ -1031,6 +1037,7 @@ export type Database = {
         Update: {
           account_id?: string
           created_at?: string
+          framework_doc_path?: string | null
           framework_end?: string | null
           framework_indefinite?: boolean
           framework_pdf_url?: string | null
@@ -1038,7 +1045,9 @@ export type Database = {
           has_framework_contract?: boolean
           has_service_contract?: boolean
           id?: string
+          purchase_orders_doc_path?: string | null
           purchase_orders_url?: string | null
+          service_doc_path?: string | null
           service_end?: string | null
           service_indefinite?: boolean
           service_pdf_url?: string | null

@@ -4,14 +4,19 @@ import { logger } from '@/lib/logger';
 import { CONSULTANT_SELECT, type ConsultantWithDetails } from '../types';
 
 export const getConsultantsByAccount = cache(
-  async (accountId: string): Promise<ConsultantWithDetails[]> => {
+  async (accountId: string, includeArchived = false): Promise<ConsultantWithDetails[]> => {
     const supabase = await createServerClient();
-    const { data, error } = await supabase
+    let query = supabase
       .from('consultants')
       .select(CONSULTANT_SELECT)
       .eq('account_id', accountId)
-      .eq('status', 'actief')
       .order('last_name', { ascending: true });
+
+    if (!includeArchived) {
+      query = query.eq('is_archived', false);
+    }
+
+    const { data, error } = await query;
 
     if (error) {
       logger.error({ err: error, entity: 'consultants' }, 'Failed to fetch consultants by account');

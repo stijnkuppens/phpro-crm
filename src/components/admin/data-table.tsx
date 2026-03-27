@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import {
   flexRender,
   getCoreRowModel,
@@ -13,6 +13,7 @@ import {
 import { useTableSettings } from '@/lib/hooks/use-table-settings';
 import { ColumnSettings } from '@/components/admin/column-settings';
 import { FilterBar } from '@/components/admin/filter-bar';
+import { DataTableFilters, type FilterOption } from '@/components/admin/data-table-filters';
 import {
   Table,
   TableBody,
@@ -54,11 +55,20 @@ type BulkAction = {
 
 type DataTableProps<T> = {
   tableId?: string;
+  /** Custom filter bar (overrides auto-generated filters) */
   filterBar?: React.ReactNode;
+  /** Auto-generated filters: current filter state keyed by column accessorKey */
+  filters?: Record<string, string | undefined>;
+  /** Auto-generated filters: called when any filter changes */
+  onFilterChange?: (filters: Record<string, string | undefined>) => void;
+  /** Auto-generated filters: dynamic options keyed by column accessorKey */
+  filterOptions?: Record<string, FilterOption[]>;
   columns: ColumnDef<T>[];
   data: T[];
   pagination?: { page: number; pageSize: number; total: number };
   onPageChange?: (page: number) => void;
+  initialSorting?: SortingState;
+  onRowClick?: (row: T) => void;
   rowActions?: (row: T) => RowAction<T>[];
   bulkActions?: BulkAction[];
   loading?: boolean;
@@ -111,26 +121,34 @@ function RowActionButton<T extends Record<string, any>>({ action, row }: { actio
 export default function DataTable<T extends Record<string, any>>({
   tableId,
   filterBar,
+  filters,
+  onFilterChange,
+  filterOptions,
   columns,
   data,
   pagination,
   onPageChange,
+  initialSorting,
+  onRowClick,
   rowActions,
   bulkActions,
   loading,
   refreshing,
 }: DataTableProps<T>) {
   const [rowSelection, setRowSelection] = useState<Record<string, boolean>>({});
-  const [sorting, setSorting] = useState<SortingState>([]);
+  const [sorting, setSorting] = useState<SortingState>(initialSorting ?? []);
 
   const { settings, updateVisibility, updateOrder, reset } = useTableSettings(tableId ?? '');
 
-  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>(
-    () => settings?.visibility ?? {},
-  );
-  const [columnOrder, setColumnOrder] = useState<string[]>(
-    () => settings?.order ?? [],
-  );
+  // Initialize with defaults to avoid hydration mismatch — localStorage
+  // settings are applied in useEffect after hydration.
+  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
+  const [columnOrder, setColumnOrder] = useState<string[]>([]);
+
+  useEffect(() => {
+    if (settings?.visibility) setColumnVisibility(settings.visibility);
+    if (settings?.order?.length) setColumnOrder(settings.order);
+  }, [settings]);
 
   const allColumns: ColumnDef<T>[] = bulkActions
     ? [
@@ -143,10 +161,13 @@ export default function DataTable<T extends Record<string, any>>({
             />
           ),
           cell: ({ row }) => (
-            <Checkbox
-              checked={row.getIsSelected()}
-              onCheckedChange={(value) => row.toggleSelected(!!value)}
-            />
+            // eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions
+            <div onClick={(e) => e.stopPropagation()}>
+              <Checkbox
+                checked={row.getIsSelected()}
+                onCheckedChange={(value) => row.toggleSelected(!!value)}
+              />
+            </div>
           ),
           enableSorting: false,
         },
@@ -226,11 +247,18 @@ export default function DataTable<T extends Record<string, any>>({
         )}
       </div>
 
-      {(filterBar || tableId) && (
+      {(filterBar || (filters && onFilterChange) || tableId) && (
         <FilterBar>
           <div className="flex items-center gap-3">
             <div className="flex flex-1 flex-wrap items-center gap-3">
-              {filterBar}
+              {filterBar ?? (filters && onFilterChange && (
+                <DataTableFilters
+                  columns={columns}
+                  filters={filters}
+                  onFilterChange={onFilterChange}
+                  filterOptions={filterOptions}
+                />
+              ))}
             </div>
             {tableId && (
               <ColumnSettings
@@ -287,6 +315,8 @@ export default function DataTable<T extends Record<string, any>>({
                 <TableRow
                   key={row.id}
                   data-state={row.getIsSelected() && 'selected'}
+                  className={onRowClick ? 'cursor-pointer' : ''}
+                  onClick={() => onRowClick?.(row.original)}
                 >
                   {row.getVisibleCells().map((cell) => (
                     <TableCell key={cell.id}>

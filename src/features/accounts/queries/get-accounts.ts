@@ -2,7 +2,7 @@ import { cache } from 'react';
 import { createServerClient } from '@/lib/supabase/server';
 import { logger } from '@/lib/logger';
 import { escapeSearch } from '@/lib/utils/escape-search';
-import type { Account, AccountFilters } from '../types';
+import type { Account, AccountFilters, AccountListItem } from '../types';
 
 type GetAccountsParams = {
   filters?: AccountFilters;
@@ -15,7 +15,7 @@ export const getAccounts = cache(
     filters,
     page = 1,
     pageSize = 25,
-  }: GetAccountsParams = {}): Promise<{ data: Account[]; count: number }> => {
+  }: GetAccountsParams = {}): Promise<{ data: AccountListItem[]; count: number }> => {
     const supabase = await createServerClient();
     const from = (page - 1) * pageSize;
     const to = from + pageSize - 1;
@@ -50,6 +50,6 @@ export const getAccounts = cache(
       return { data: [], count: 0 };
     }
 
-    return { data: (data as Account[]) ?? [], count: count ?? 0 };
+    return { data: (data as unknown as AccountListItem[]) ?? [], count: count ?? 0 };
   },
 );

@@ -1,13 +1,13 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import {
-  Eye,
   Plus,
-  Pencil,
+  SquarePen,
   Link2,
   Archive,
+  ArchiveRestore,
   CalendarPlus,
   DollarSign,
   Square,
@@ -58,16 +58,17 @@ type Props = {
 const PAGE_SIZE = 25;
 
 
-const statusPills: { value: ConsultantStatus; label: string }[] = [
+const statusPills: { value: ConsultantStatus | 'archived'; label: string }[] = [
   { value: 'bench', label: 'Bench' },
   { value: 'actief', label: 'Actief' },
   { value: 'stopgezet', label: 'Stopgezet' },
+  { value: 'archived', label: 'Gearchiveerd' },
 ];
 
 export function ConsultantListView({ initialData, initialCount, stats, accounts, roles }: Props) {
   const router = useRouter();
   const [search, setSearch] = useState('');
-  const [selectedStatuses, setSelectedStatuses] = useState<ConsultantStatus[]>(['bench', 'actief']);
+  const [selectedStatuses, setSelectedStatuses] = useState<(ConsultantStatus | 'archived')[]>(['bench', 'actief']);
   const [page, setPage] = useState(1);
   const [selected, setSelected] = useState<ConsultantWithDetails | null>(null);
   const [editTarget, setEditTarget] = useState<ConsultantWithDetails | null>(null);
@@ -90,20 +91,37 @@ export function ConsultantListView({ initialData, initialCount, stats, accounts,
       ? `first_name.ilike.%${escapeSearch(search)}%,last_name.ilike.%${escapeSearch(search)}%,role.ilike.%${escapeSearch(search)}%,client_name.ilike.%${escapeSearch(search)}%`
       : undefined;
 
+    const showArchived = selectedStatuses.includes('archived');
+    const realStatuses = selectedStatuses.filter((s) => s !== 'archived') as ConsultantStatus[];
+
     fetchList({
       page,
       sort: { column: 'last_name', direction: 'asc' },
       orFilter,
-      applyFilters: selectedStatuses.length > 0
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        ? (q: any) => q.in('status', selectedStatuses).eq('is_archived', false)
-        : // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          (q: any) => q.eq('is_archived', false),
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      applyFilters: (q: any) => {
+        if (showArchived && realStatuses.length === 0) {
+          return q.eq('is_archived', true);
+        }
+        if (showArchived) {
+          // Show archived + selected statuses (non-archived)
+          const statusConditions = realStatuses.map((s) => `and(is_archived.eq.false,status.eq.${s})`).join(',');
+          return q.or(`is_archived.eq.true,${statusConditions}`);
+        }
+        if (realStatuses.length > 0) {
+          return q.eq('is_archived', false).in('status', realStatuses);
+        }
+        return q.eq('is_archived', false);
+      },
     });
   }, [fetchList, page, search, selectedStatuses]);
 
+  const isInitialMount = useRef(true);
   useEffect(() => {
-    if (page === 1 && !search && selectedStatuses.length === 2 && selectedStatuses.includes('bench') && selectedStatuses.includes('actief')) return;
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+      return;
+    }
     load();
   }, [load, page, search, selectedStatuses]);
 
@@ -111,7 +129,7 @@ export function ConsultantListView({ initialData, initialCount, stats, accounts,
     setPage(1);
   }, [search, selectedStatuses]);
 
-  function toggleStatus(s: ConsultantStatus) {
+  function toggleStatus(s: ConsultantStatus | 'archived') {
     setSelectedStatuses((prev) =>
       prev.includes(s) ? prev.filter((v) => v !== s) : [...prev, s],
     );
@@ -132,6 +150,16 @@ export function ConsultantListView({ initialData, initialCount, stats, accounts,
     }
   }
 
+  async function handleUnarchive(c: ConsultantWithDetails) {
+    const result = await archiveConsultant(c.id, false);
+    if ('error' in result && result.error) {
+      toast.error(typeof result.error === 'string' ? result.error : 'Er ging iets mis');
+    } else {
+      toast.success('Consultant hersteld uit archief');
+      handleRefresh();
+    }
+  }
+
   async function handleMoveToBench(c: ConsultantWithDetails) {
     const result = await moveToBench(c.id);
     if ('error' in result && result.error) {
@@ -143,23 +171,26 @@ export function ConsultantListView({ initialData, initialCount, stats, accounts,
   }
 
   function getRowActions(row: ConsultantWithDetails) {
+    if (row.is_archived) {
+      return [
+        { icon: ArchiveRestore, label: 'Herstellen', onClick: () => handleUnarchive(row) },
+      ];
+    }
     switch (row.status) {
       case 'bench':
         return [
           { icon: Link2, label: 'Koppel', onClick: () => setWizardTarget(row) },
-          { icon: Pencil, label: 'Bewerk', onClick: () => setEditTarget(row) },
+          { icon: SquarePen, label: 'Bewerk', onClick: () => setEditTarget(row) },
           { icon: Archive, label: 'Archiveer', onClick: () => handleArchive(row), variant: 'destructive' as const, confirm: { title: 'Consultant archiveren?', description: 'Deze consultant wordt gearchiveerd en is niet meer zichtbaar in de lijst.' } },
         ];
       case 'actief':
         return [
-          { icon: Eye, label: 'Bekijken', onClick: () => setSelected(row) },
           { icon: CalendarPlus, label: 'Verlengen', onClick: () => setExtendTarget(row) },
           { icon: DollarSign, label: 'Tariefwijziging', onClick: () => setRateTarget(row) },
           { icon: Square, label: 'Stopzetten', onClick: () => setStopTarget(row), variant: 'destructive' as const },
         ];
       case 'stopgezet':
         return [
-          { icon: Eye, label: 'Bekijken', onClick: () => setSelected(row) },
           { icon: RotateCcw, label: 'Naar bench', onClick: () => handleMoveToBench(row) },
         ];
       default:
@@ -249,6 +280,7 @@ export function ConsultantListView({ initialData, initialCount, stats, accounts,
           }
           columns={consultantColumns}
           data={data}
+          onRowClick={(row) => setSelected(row)}
           pagination={{ page, pageSize: PAGE_SIZE, total }}
           onPageChange={setPage}
           rowActions={(row) => getRowActions(row)}

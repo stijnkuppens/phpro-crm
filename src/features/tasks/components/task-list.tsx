@@ -1,19 +1,13 @@
 'use client';
 
-import { useState, useCallback, useEffect } from 'react';
-import { Pencil, Trash2 } from 'lucide-react';
+import { useState, useCallback, useEffect, useRef } from 'react';
+import { SquarePen, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useEntity } from '@/lib/hooks/use-entity';
 import DataTable from '@/components/admin/data-table';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+import { buildFilterQuery, type FilterOption } from '@/components/admin/data-table-filters';
 import { taskColumns } from '../columns';
-import type { Task, TaskFilters } from '../types';
+import type { Task } from '../types';
 import { deleteTask } from '../actions/delete-task';
 
 const PAGE_SIZE = 25;
@@ -21,9 +15,10 @@ const PAGE_SIZE = 25;
 type Props = {
   initialData: Task[];
   initialCount: number;
+  filterOptions?: Record<string, FilterOption[]>;
 };
 
-export function TaskList({ initialData, initialCount }: Props) {
+export function TaskList({ initialData, initialCount, filterOptions }: Props) {
   const { data, total, loading, refreshing, fetchList } = useEntity<Task>({
     table: 'tasks',
     pageSize: PAGE_SIZE,
@@ -32,18 +27,21 @@ export function TaskList({ initialData, initialCount }: Props) {
   });
 
   const [page, setPage] = useState(1);
-  const [filters, setFilters] = useState<TaskFilters>({});
+  const [filters, setFilters] = useState<Record<string, string | undefined>>({});
+  const isInitialMount = useRef(true);
 
   const load = useCallback(() => {
-    const eqFilters: Record<string, string> = {};
-    if (filters.status) eqFilters.status = filters.status;
-    if (filters.priority) eqFilters.priority = filters.priority;
-
-    fetchList({
-      page,
-      eqFilters: Object.keys(eqFilters).length > 0 ? eqFilters : undefined,
-    });
+    const { orFilter, eqFilters } = buildFilterQuery(taskColumns, filters);
+    fetchList({ page, orFilter, eqFilters });
   }, [fetchList, page, filters]);
+
+  const handleFilterChange = useCallback(
+    (newFilters: Record<string, string | undefined>) => {
+      setFilters(newFilters);
+      setPage(1);
+    },
+    [],
+  );
 
   const handleDelete = async (id: string) => {
     const result = await deleteTask(id);
@@ -56,7 +54,10 @@ export function TaskList({ initialData, initialCount }: Props) {
   };
 
   useEffect(() => {
-    if (initialData && page === 1 && !filters.status && !filters.priority) return;
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+      if (initialData && page === 1) return;
+    }
     load();
   }, [load, initialData, page, filters]);
 
@@ -64,46 +65,17 @@ export function TaskList({ initialData, initialCount }: Props) {
     <div className="space-y-4">
       <DataTable
         tableId="tasks"
-        filterBar={
-          <div className="flex flex-wrap gap-4">
-            <Select
-              value={filters.status ?? 'all'}
-              onValueChange={(v) => setFilters({ ...filters, status: !v || v === 'all' ? undefined : v })}
-            >
-              <SelectTrigger className="w-32">
-                <SelectValue placeholder="Status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Alle</SelectItem>
-                <SelectItem value="Open">Open</SelectItem>
-                <SelectItem value="In Progress">In Progress</SelectItem>
-                <SelectItem value="Done">Done</SelectItem>
-              </SelectContent>
-            </Select>
-            <Select
-              value={filters.priority ?? 'all'}
-              onValueChange={(v) => setFilters({ ...filters, priority: !v || v === 'all' ? undefined : v })}
-            >
-              <SelectTrigger className="w-32">
-                <SelectValue placeholder="Prioriteit" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Alle</SelectItem>
-                <SelectItem value="High">High</SelectItem>
-                <SelectItem value="Medium">Medium</SelectItem>
-                <SelectItem value="Low">Low</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        }
         columns={taskColumns as any}
         data={data}
+        filters={filters}
+        onFilterChange={handleFilterChange}
+        filterOptions={filterOptions}
         pagination={{ page, pageSize: PAGE_SIZE, total }}
         onPageChange={setPage}
         loading={loading}
         refreshing={refreshing}
         rowActions={(row) => [
-          { icon: Pencil, label: 'Bewerken', onClick: () => { /* TODO: open edit modal when available */ } },
+          { icon: SquarePen, label: 'Bewerken', onClick: () => { /* TODO: open edit modal when available */ } },
           { icon: Trash2, label: 'Verwijderen', variant: 'destructive' as const, confirm: { title: 'Taak verwijderen?', description: 'Dit verwijdert de taak permanent.' }, onClick: () => handleDelete(row.id) },
         ]}
         bulkActions={[

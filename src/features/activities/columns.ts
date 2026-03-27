@@ -7,13 +7,30 @@ export const activityColumns: ColumnDef<ActivityWithRelations>[] = [
   {
     accessorKey: 'type',
     id: 'type',
-    meta: { label: 'Type' },
+    meta: {
+      label: 'Type',
+      filter: {
+        type: 'select',
+        options: [
+          { value: 'Meeting', label: 'Meeting' },
+          { value: 'Demo', label: 'Demo' },
+          { value: 'Call', label: 'Call' },
+          { value: 'E-mail', label: 'E-mail' },
+          { value: 'Lunch', label: 'Lunch' },
+          { value: 'Event', label: 'Event' },
+        ],
+        placeholder: 'Alle types',
+      },
+    },
     header: 'Type',
   },
   {
     accessorKey: 'subject',
     id: 'subject',
-    meta: { label: 'Onderwerp' },
+    meta: {
+      label: 'Onderwerp',
+      filter: { type: 'search', placeholder: 'Zoek activiteiten...' },
+    },
     header: 'Onderwerp',
   },
   {
@@ -39,7 +56,10 @@ export const activityColumns: ColumnDef<ActivityWithRelations>[] = [
   {
     accessorFn: (row) => row.account?.name ?? '',
     id: 'account',
-    meta: { label: 'Account' },
+    meta: {
+      label: 'Account',
+      filter: { type: 'select', filterKey: 'account_id', placeholder: 'Alle accounts' },
+    },
     header: 'Account',
   },
   {
@@ -51,7 +71,17 @@ export const activityColumns: ColumnDef<ActivityWithRelations>[] = [
   {
     accessorKey: 'is_done',
     id: 'is_done',
-    meta: { label: 'Status' },
+    meta: {
+      label: 'Status',
+      filter: {
+        type: 'select',
+        options: [
+          { value: 'true', label: 'Afgerond' },
+          { value: 'false', label: 'Gepland' },
+        ],
+        placeholder: 'Alle statussen',
+      },
+    },
     header: 'Status',
     cell: ({ getValue }) => getValue<boolean>() ? 'Afgerond' : 'Gepland',
   },

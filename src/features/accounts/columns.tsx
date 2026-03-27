@@ -8,7 +8,10 @@ export const accountColumns: ColumnDef<AccountListItem>[] = [
   {
     accessorKey: 'name',
     id: 'name',
-    meta: { label: 'Account' },
+    meta: {
+      label: 'Account',
+      filter: { type: 'search', placeholder: 'Zoek accounts...', searchColumns: ['name', 'domain'] },
+    },
     header: 'Account',
     cell: ({ row }) => {
       const name = row.original.name;
@@ -34,7 +37,18 @@ export const accountColumns: ColumnDef<AccountListItem>[] = [
   {
     accessorKey: 'type',
     id: 'type',
-    meta: { label: 'Type' },
+    meta: {
+      label: 'Type',
+      filter: {
+        type: 'select',
+        options: [
+          { value: 'Klant', label: 'Klant' },
+          { value: 'Prospect', label: 'Prospect' },
+          { value: 'Partner', label: 'Partner' },
+        ],
+        placeholder: 'Alle types',
+      },
+    },
     header: 'Type',
     cell: ({ row }) => {
       const type = row.original.type;
@@ -53,7 +67,17 @@ export const accountColumns: ColumnDef<AccountListItem>[] = [
   {
     accessorKey: 'status',
     id: 'status',
-    meta: { label: 'Status' },
+    meta: {
+      label: 'Status',
+      filter: {
+        type: 'select',
+        options: [
+          { value: 'Actief', label: 'Actief' },
+          { value: 'Inactief', label: 'Inactief' },
+        ],
+        placeholder: 'Alle statussen',
+      },
+    },
     header: 'Status',
     cell: ({ row }) => {
       const isActive = row.original.status === 'Actief';
@@ -68,7 +92,18 @@ export const accountColumns: ColumnDef<AccountListItem>[] = [
   },
   {
     id: 'raamcontract',
-    meta: { label: 'Raamcontract' },
+    meta: {
+      label: 'Raamcontract',
+      filter: {
+        type: 'select',
+        options: [
+          { value: 'true', label: 'Ja' },
+          { value: 'false', label: 'Nee' },
+        ],
+        filterKey: 'has_framework_contract',
+        placeholder: 'Raamcontract',
+      },
+    },
     header: 'Raamcontract',
     cell: ({ row }) => {
       const has = row.original.has_framework_contract;
@@ -83,7 +118,18 @@ export const accountColumns: ColumnDef<AccountListItem>[] = [
   },
   {
     id: 'sla',
-    meta: { label: 'SLA' },
+    meta: {
+      label: 'SLA',
+      filter: {
+        type: 'select',
+        options: [
+          { value: 'true', label: 'Ja' },
+          { value: 'false', label: 'Nee' },
+        ],
+        filterKey: 'has_service_contract',
+        placeholder: 'SLA',
+      },
+    },
     header: 'SLA',
     cell: ({ row }) => {
       const has = row.original.has_service_contract;
@@ -113,7 +159,14 @@ export const accountColumns: ColumnDef<AccountListItem>[] = [
   },
   {
     id: 'owner',
-    meta: { label: 'Owner' },
+    meta: {
+      label: 'Owner',
+      filter: {
+        type: 'select',
+        filterKey: 'owner_id',
+        placeholder: 'Alle owners',
+      },
+    },
     header: 'Owner',
     cell: ({ row }) => {
       const owner = row.original.owner;

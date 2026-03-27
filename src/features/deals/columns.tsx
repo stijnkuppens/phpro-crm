@@ -14,7 +14,10 @@ export const dealColumns: ColumnDef<DealWithRelations>[] = [
   {
     accessorKey: 'title',
     id: 'title',
-    meta: { label: 'Titel' },
+    meta: {
+      label: 'Titel',
+      filter: { type: 'search', placeholder: 'Zoek deals...' },
+    },
     header: 'Titel',
     cell: ({ row }) => {
       const origin = row.original.origin;
@@ -34,7 +37,10 @@ export const dealColumns: ColumnDef<DealWithRelations>[] = [
   {
     accessorFn: (row) => row.account?.name ?? '',
     id: 'account',
-    meta: { label: 'Account' },
+    meta: {
+      label: 'Account',
+      filter: { type: 'select', filterKey: 'account_id', placeholder: 'Alle accounts' },
+    },
     header: 'Account',
   },
   {
@@ -50,7 +56,10 @@ export const dealColumns: ColumnDef<DealWithRelations>[] = [
   {
     accessorFn: (row) => row.stage?.name ?? '',
     id: 'stage',
-    meta: { label: 'Stage' },
+    meta: {
+      label: 'Stage',
+      filter: { type: 'select', filterKey: 'stage_id', placeholder: 'Alle stages' },
+    },
     header: 'Stage',
   },
   {
@@ -73,13 +82,22 @@ export const dealColumns: ColumnDef<DealWithRelations>[] = [
   {
     accessorFn: (row) => row.owner?.full_name ?? '',
     id: 'owner',
-    meta: { label: 'Owner' },
+    meta: {
+      label: 'Owner',
+      filter: { type: 'select', filterKey: 'owner_id', placeholder: 'Alle owners' },
+    },
     header: 'Owner',
   },
   {
     accessorKey: 'forecast_category',
     id: 'forecast_category',
-    meta: { label: 'Forecast' },
+    meta: {
+      label: 'Forecast',
+      filter: {
+        type: 'select',
+        placeholder: 'Alle forecasts',
+      },
+    },
     header: 'Forecast',
   },
 ];
