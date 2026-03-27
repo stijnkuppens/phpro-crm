@@ -28,7 +28,7 @@ export function AuditList({ initialData, initialCount }: AuditListProps) {
   const load = useCallback(() => {
     const eqFilters: Record<string, string> = {};
     if (filters.action) eqFilters.action = filters.action;
-    if (filters.entityType) eqFilters.entity_type = filters.entityType;
+    if (filters.entityType) eqFilters.entity = filters.entityType;
 
     fetchList({
       page,

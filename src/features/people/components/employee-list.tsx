@@ -14,6 +14,7 @@ import {
 import { employeeColumns } from '../columns';
 import { deleteEmployee } from '../actions/delete-employee';
 import type { Employee } from '../types';
+import { escapeSearch } from '@/lib/utils/escape-search';
 
 const PAGE_SIZE = 25;
 
@@ -38,7 +39,7 @@ export function EmployeeList({ initialData, initialCount }: Props) {
   const load = useCallback(() => {
     fetchList({
       page,
-      orFilter: search ? `first_name.ilike.%${search}%,last_name.ilike.%${search}%,email.ilike.%${search}%` : undefined,
+      orFilter: search ? `first_name.ilike.%${escapeSearch(search)}%,last_name.ilike.%${escapeSearch(search)}%,email.ilike.%${escapeSearch(search)}%` : undefined,
       eqFilters: status !== 'all' ? { status } : undefined,
     });
   }, [fetchList, page, search, status]);

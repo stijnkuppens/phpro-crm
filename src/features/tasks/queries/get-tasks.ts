@@ -1,5 +1,6 @@
 import { cache } from 'react';
 import { createServerClient } from '@/lib/supabase/server';
+import { logger } from '@/lib/logger';
 import type { TaskWithRelations, TaskFilters } from '../types';
 
 type GetTasksParams = {
@@ -45,7 +46,7 @@ export const getTasks = cache(
     const { data, count, error } = await query;
 
     if (error) {
-      console.error('Failed to fetch tasks:', error.message);
+      logger.error({ err: error, entity: 'tasks' }, 'Failed to fetch tasks');
       return { data: [], count: 0 };
     }
 

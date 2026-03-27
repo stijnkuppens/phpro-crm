@@ -1,5 +1,6 @@
 import { cache } from 'react';
 import { createServerClient } from '@/lib/supabase/server';
+import { logger } from '@/lib/logger';
 
 export type AccountBannerStats = {
   consultantCount: number;
@@ -16,7 +17,7 @@ export const getAccountBannerStats = cache(async (accountId: string): Promise<Ac
   const { data, error } = await (supabase.rpc as any)('get_account_banner_stats', { p_account_id: accountId }).single();
 
   if (error || !data) {
-    console.error('getAccountBannerStats error:', error?.message);
+    logger.error({ err: error, entity: 'accounts' }, 'Failed to fetch account banner stats');
     return { consultantCount: 0, contactCount: 0, dealCount: 0, activityCount: 0, pipelineValue: 0, monthlyRevenue: 0 };
   }
   return {

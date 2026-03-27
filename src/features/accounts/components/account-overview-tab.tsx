@@ -56,7 +56,7 @@ export function AccountOverviewTab({ account, contract, contacts, internalPeople
         <CardContent className="space-y-3 text-sm">
           <PersonRow label="Mng. Partner" value={account.managing_partner} person={personLookup.get(account.managing_partner ?? '')} />
           <PersonRow label="Acc. Director" value={account.account_director} person={personLookup.get(account.account_director ?? '')} />
-          <PersonRow label="Project Manager" value={account.project_manager} person={personLookup.get(account.project_manager ?? '')} />
+          <PersonRow label="Project Manager" value={account.project_manager_id} person={personLookup.get(account.project_manager_id ?? '')} />
           <InfoRow label="Owner" value={account.owner?.full_name} />
           <InfoRow label="Team" value={account.team} />
           <InfoRow label="Contract" value={account.phpro_contract} />

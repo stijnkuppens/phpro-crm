@@ -1,8 +1,9 @@
 import { cache } from 'react';
+import { unstable_cache } from 'next/cache';
 import { createServerClient } from '@/lib/supabase/server';
 import type { SettingsValues } from '../types';
 
-export const getSettings = cache(async (): Promise<SettingsValues> => {
+const fetchSettings = async (): Promise<SettingsValues> => {
   const supabase = await createServerClient();
   const { data } = await supabase
     .from('app_settings')
@@ -16,4 +17,11 @@ export const getSettings = cache(async (): Promise<SettingsValues> => {
     }
   }
   return settings;
+};
+
+const getCachedSettings = unstable_cache(fetchSettings, ['settings'], {
+  revalidate: 300,
+  tags: ['settings'],
 });
+
+export const getSettings = cache(getCachedSettings);

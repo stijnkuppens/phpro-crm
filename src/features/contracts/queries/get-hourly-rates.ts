@@ -1,5 +1,6 @@
 import { cache } from 'react';
 import { createServerClient } from '@/lib/supabase/server';
+import { logger } from '@/lib/logger';
 import type { HourlyRate } from '../types';
 
 export const getHourlyRates = cache(
@@ -20,7 +21,7 @@ export const getHourlyRates = cache(
     const { data, error } = await query;
 
     if (error) {
-      console.error('Failed to fetch hourly rates:', error.message);
+      logger.error({ err: error, entity: 'hourly_rates' }, 'Failed to fetch hourly rates');
       return [];
     }
 

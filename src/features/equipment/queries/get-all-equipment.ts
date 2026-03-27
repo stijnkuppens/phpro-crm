@@ -1,5 +1,6 @@
 import { cache } from 'react';
 import { createServerClient } from '@/lib/supabase/server';
+import { logger } from '@/lib/logger';
 import type { EquipmentWithEmployee } from '../types';
 
 export const getAllEquipment = cache(
@@ -10,7 +11,7 @@ export const getAllEquipment = cache(
       .select(`*, employee:employees!employee_id(id, first_name, last_name)`)
       .order('date_issued', { ascending: false })
       .limit(200);
-    if (error) { console.error('Failed to fetch equipment:', error.message); return []; }
+    if (error) { logger.error({ err: error, entity: 'equipment' }, 'Failed to fetch equipment'); return []; }
     return (data as unknown as EquipmentWithEmployee[]) ?? [];
   },
 );

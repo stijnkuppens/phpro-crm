@@ -2,22 +2,28 @@ version: "3"
 
 dotenv: ['.env']
 
+vars:
+  DB_URL: "postgresql://postgres.{{.POOLER_TENANT_ID}}:{{.POSTGRES_PASSWORD}}@127.0.0.1:{{.POOLER_SESSION_PORT}}/postgres"
+  DB_CONTAINER: supabase-db
+
 tasks:
   setup:
     desc: "Run the full interactive project setup"
     cmds:
       - bash setup.sh
 
+  # ── Development ────────────────────────────────────
+
   dev:
-    desc: "Start Supabase and Next.js dev server"
+    desc: "Start Supabase (Docker Compose) and Next.js dev server"
     cmds:
       - task: dev:supabase
       - task: dev:next
 
   dev:supabase:
-    desc: "Start Supabase local dev via CLI"
+    desc: "Start Supabase via Docker Compose"
     cmds:
-      - npx supabase start
+      - docker compose up -d
 
   dev:next:
     desc: "Start Next.js development server"
@@ -25,14 +31,42 @@ tasks:
       - npm run dev
 
   dev:stop:
-    desc: "Stop Supabase local dev"
+    desc: "Stop Supabase containers"
     cmds:
-      - npx supabase stop
+      - docker compose down
+
+  dev:restart:
+    desc: "Restart all Supabase containers"
+    cmds:
+      - docker compose down
+      - docker compose up -d
+
+  dev:logs:
+    desc: "Tail logs from all Supabase containers"
+    cmds:
+      - docker compose logs -f --tail=50
+
+  dev:status:
+    desc: "Show status of all containers"
+    cmds:
+      - docker compose ps
+
+  dev:studio:
+    desc: "Open Supabase Studio in the browser"
+    cmds:
+      - open http://localhost:8000
+
+  # ── Database ───────────────────────────────────────
 
   db:migrate:
-    desc: "Apply pending migrations to local database"
+    desc: "Apply pending migrations to the database"
     cmds:
-      - npx supabase db push --local
+      - npx supabase db push --db-url "{{.DB_URL}}"
+
+  db:migrate:dry:
+    desc: "Dry-run migrations (show what would be applied)"
+    cmds:
+      - npx supabase db push --dry-run --db-url "{{.DB_URL}}"
 
   db:new-migration:
     desc: "Create a new migration file (usage: task db:new-migration -- <name>)"
@@ -45,9 +79,15 @@ tasks:
         echo "Created $FILE"
 
   db:reset:
-    desc: "Drop and recreate database, re-run migrations and seed"
+    desc: "Drop and recreate database, re-run init scripts"
     cmds:
-      - npx supabase db reset
+      - docker compose down -v
+      - docker compose up -d
+      - echo "Waiting for DB to be healthy..."
+      - sleep 10
+      - task: db:migrate
+      - task: db:data
+      - task: db:fixtures
 
   db:data:
     desc: "Apply production data only"
@@ -55,7 +95,7 @@ tasks:
       - |
         for f in supabase/data/*.sql; do
           echo "  $(basename $f)"
-          docker exec -i supabase_db_phpro-crm psql -U postgres -q < "$f"
+          docker exec -i {{.DB_CONTAINER}} psql -U postgres -q < "$f"
         done
 
   db:fixtures:
@@ -64,7 +104,7 @@ tasks:
       - |
         for f in supabase/fixtures/*.sql; do
           echo "  $(basename $f)"
-          docker exec -i supabase_db_phpro-crm psql -U postgres -q < "$f"
+          docker exec -i {{.DB_CONTAINER}} psql -U postgres -q < "$f"
         done
 
   db:backup:
@@ -79,23 +119,29 @@ tasks:
         FILE={{.CLI_ARGS}}
         if [ -z "$FILE" ]; then echo "Usage: task db:restore -- supabase/backups/<file>.sql.gz"; exit 1; fi
         echo "Restoring from $FILE..."
-        gunzip -c "$FILE" | psql postgresql://postgres:postgres@127.0.0.1:54322/postgres
+        gunzip -c "$FILE" | docker exec -i {{.DB_CONTAINER}} psql -U postgres
         echo "Restored."
 
-  db:studio:
-    desc: "Open Supabase Studio in the browser"
+  db:psql:
+    desc: "Open psql shell"
     cmds:
-      - open http://localhost:54323
+      - docker exec -it {{.DB_CONTAINER}} psql -U postgres
+
+  # ── Types ──────────────────────────────────────────
 
   types:generate:
     desc: "Generate TypeScript types from the database schema"
     cmds:
-      - npx supabase gen types typescript --local --schema public 2>/dev/null > src/types/database.ts
+      - npx supabase gen types typescript --db-url "{{.DB_URL}}" --schema public 2>/dev/null > src/types/database.ts
+
+  # ── Scaffolding ────────────────────────────────────
 
   entity:new:
     desc: "Scaffold a new entity (usage: task entity:new -- <name>)"
     cmds:
       - bash scripts/entity-new.sh {{.CLI_ARGS}}
+
+  # ── Quality ────────────────────────────────────────
 
   lint:
     desc: "Run ESLint"
@@ -112,27 +158,22 @@ tasks:
     cmds:
       - npm run build
 
+  # ── Production ─────────────────────────────────────
+
   prod:up:
-    desc: "Start production stack"
+    desc: "Start full production stack (Supabase + Next.js in Docker)"
     cmds:
-      - docker compose -f docker-compose.prod.yml up -d --build
+      - docker compose --profile prod up -d --build
 
   prod:down:
     desc: "Stop production stack"
     cmds:
-      - docker compose -f docker-compose.prod.yml down
+      - docker compose --profile prod down
+
+  # ── Cleanup ────────────────────────────────────────
 
   clean:
-    desc: "Stop Supabase and remove all local data"
+    desc: "Stop all containers and remove volumes (DESTROYS DATA)"
     cmds:
-      - npx supabase stop --no-backup
-
-  logs:
-    desc: "Tail Supabase logs"
-    cmds:
-      - npx supabase logs
-
-  status:
-    desc: "Show Supabase service status and URLs"
-    cmds:
-      - npx supabase status
+      - docker compose down -v
+      - echo "All containers stopped and volumes removed."

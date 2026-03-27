@@ -1,5 +1,7 @@
 import { cache } from 'react';
 import { createServerClient } from '@/lib/supabase/server';
+import { logger } from '@/lib/logger';
+import { escapeSearch } from '@/lib/utils/escape-search';
 import type { Employee, EmployeeFilters } from '../types';
 
 type GetEmployeesParams = {
@@ -17,13 +19,14 @@ export const getEmployees = cache(
     let query = supabase.from('employees').select('*', { count: 'exact' }).order('last_name', { ascending: true }).range(from, to);
 
     if (filters?.search) {
-      query = query.or(`first_name.ilike.%${filters.search}%,last_name.ilike.%${filters.search}%,email.ilike.%${filters.search}%`);
+      const s = escapeSearch(filters.search);
+      query = query.or(`first_name.ilike.%${s}%,last_name.ilike.%${s}%,email.ilike.%${s}%`);
     }
     if (filters?.status) query = query.eq('status', filters.status);
     if (filters?.department) query = query.eq('department', filters.department);
 
     const { data, count, error } = await query;
-    if (error) { console.error('Failed to fetch employees:', error.message); return { data: [], count: 0 }; }
+    if (error) { logger.error({ err: error, entity: 'employees' }, 'Failed to fetch employees'); return { data: [], count: 0 }; }
     return { data: data ?? [], count: count ?? 0 };
   },
 );

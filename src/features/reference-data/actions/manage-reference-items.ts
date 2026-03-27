@@ -10,6 +10,12 @@ function isValidTable(table: string): table is RefTableKey {
   return REF_TABLES.some((t) => t.key === table);
 }
 
+/** Map form values (is_active) to DB column (active) */
+function toDbRow(values: RefItemFormValues) {
+  const { is_active, ...rest } = values;
+  return { ...rest, active: is_active };
+}
+
 export async function createReferenceItem(
   table: RefTableKey,
   values: RefItemFormValues,
@@ -28,7 +34,7 @@ export async function createReferenceItem(
   const supabase = await createServerClient();
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { data, error } = await (supabase.from(table) as any)
-    .insert(parsed.data)
+    .insert(toDbRow(parsed.data))
     .select('id')
     .single();
 
@@ -57,7 +63,7 @@ export async function updateReferenceItem(
   const supabase = await createServerClient();
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { error } = await (supabase.from(table) as any)
-    .update(parsed.data)
+    .update(toDbRow(parsed.data))
     .eq('id', id);
 
   if (error) return err(error.message);

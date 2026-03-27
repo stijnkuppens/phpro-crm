@@ -1,5 +1,6 @@
 import { cache } from 'react';
 import { createServerClient } from '@/lib/supabase/server';
+import { logger } from '@/lib/logger';
 
 export type ConsultantStats = {
   benchCount: number;
@@ -14,7 +15,7 @@ export const getConsultantStats = cache(async (): Promise<ConsultantStats> => {
   const { data, error } = await (supabase.rpc as any)('get_consultant_stats').single();
 
   if (error || !data) {
-    console.error('getConsultantStats error:', error?.message);
+    logger.error({ err: error, entity: 'consultants' }, 'Failed to fetch consultant stats');
     return { benchCount: 0, activeCount: 0, stoppedCount: 0, maxRevenue: 0 };
   }
   return {

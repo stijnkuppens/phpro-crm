@@ -42,9 +42,12 @@ export function ReferenceDataPage({ initialTable, initialData }: Props) {
 
   async function fetchItems(table: RefTableKey) {
     const supabase = createBrowserClient();
+    const columns = table === 'ref_internal_people'
+      ? 'id, name, sort_order, is_active:active, avatar_url, created_at, updated_at'
+      : 'id, name, sort_order, is_active:active, created_at, updated_at';
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { data, error } = await (supabase.from(table) as any)
-      .select('id, name, sort_order, is_active, avatar_url, created_at, updated_at')
+      .select(columns)
       .order('sort_order', { ascending: true })
       .order('name', { ascending: true });
 

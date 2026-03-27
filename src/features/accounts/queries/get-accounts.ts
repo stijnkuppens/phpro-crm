@@ -1,5 +1,7 @@
 import { cache } from 'react';
 import { createServerClient } from '@/lib/supabase/server';
+import { logger } from '@/lib/logger';
+import { escapeSearch } from '@/lib/utils/escape-search';
 import type { Account, AccountFilters } from '../types';
 
 type GetAccountsParams = {
@@ -25,7 +27,8 @@ export const getAccounts = cache(
       .range(from, to);
 
     if (filters?.search) {
-      query = query.or(`name.ilike.%${filters.search}%,domain.ilike.%${filters.search}%`);
+      const s = escapeSearch(filters.search);
+      query = query.or(`name.ilike.%${s}%,domain.ilike.%${s}%`);
     }
     if (filters?.type) {
       query = query.eq('type', filters.type as Account['type']);
@@ -43,7 +46,7 @@ export const getAccounts = cache(
     const { data, count, error } = await query;
 
     if (error) {
-      console.error('Failed to fetch accounts:', error.message);
+      logger.error({ err: error, entity: 'accounts' }, 'Failed to fetch accounts');
       return { data: [], count: 0 };
     }
 

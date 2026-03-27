@@ -174,6 +174,10 @@ DECLARE
     'account_services',
     'account_manual_services'
   ];
+  v_cols  text;
+  v_vals  text;
+  v_keys  text[];
+  v_key   text;
 BEGIN
   -- Auth guard: only admin and sales_manager may call this function
   SELECT role INTO v_role FROM user_profiles WHERE id = (SELECT auth.uid());
@@ -192,12 +196,33 @@ BEGIN
     p_table
   ) USING p_account_id;
 
-  -- Insert new rows
+  -- Insert new rows using only the keys present in the JSON objects,
+  -- so that columns with DEFAULT values (id, created_at, updated_at) are omitted
+  -- and their defaults fire correctly.
   IF jsonb_array_length(p_rows) > 0 THEN
+    -- Extract column names from the first JSON object
+    SELECT array_agg(k ORDER BY k) INTO v_keys FROM jsonb_object_keys(p_rows->0) AS k;
+
+    -- Build column list and value extraction expressions
+    SELECT
+      string_agg(format('%I', k), ', ' ORDER BY k),
+      string_agg(format('(elem->>%L)::%s', k, col.data_type_cast), ', ' ORDER BY k)
+    INTO v_cols, v_vals
+    FROM unnest(v_keys) AS k
+    LEFT JOIN LATERAL (
+      SELECT CASE c.udt_name
+        WHEN 'uuid' THEN 'uuid'
+        WHEN 'timestamptz' THEN 'timestamptz'
+        WHEN 'timestamp' THEN 'timestamp'
+        ELSE 'text'
+      END AS data_type_cast
+      FROM information_schema.columns c
+      WHERE c.table_schema = 'public' AND c.table_name = p_table AND c.column_name = k
+    ) col ON true;
+
     EXECUTE format(
-      'INSERT INTO %I SELECT * FROM jsonb_populate_recordset(null::%I, $1)',
-      p_table,
-      p_table
+      'INSERT INTO %I (%s) SELECT %s FROM jsonb_array_elements($1) AS elem',
+      p_table, v_cols, v_vals
     ) USING p_rows;
   END IF;
 END;

@@ -1,35 +1,30 @@
 'use client';
 
-import { useState } from 'react';
+import { useActionState } from 'react';
 import { useRouter } from 'next/navigation';
 import { createBrowserClient } from '@/lib/supabase/client';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { SubmitButton } from '@/components/ui/submit-button';
 import { toast } from 'sonner';
-import { Loader2 } from 'lucide-react';
 
 export function ResetPasswordForm() {
   const router = useRouter();
-  const [password, setPassword] = useState('');
-  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-
+  const [, formAction] = useActionState(async (_prev: null, formData: FormData) => {
+    const password = formData.get('password') as string;
     const supabase = createBrowserClient();
     const { error } = await supabase.auth.updateUser({ password });
 
     if (error) {
       toast.error(error.message);
-      setLoading(false);
-      return;
+      return null;
     }
 
     toast.success('Password updated successfully');
     router.push('/admin');
-  };
+    return null;
+  }, null);
 
   return (
     <Card>
@@ -37,25 +32,23 @@ export function ResetPasswordForm() {
         <CardTitle>Reset password</CardTitle>
         <CardDescription>Enter your new password</CardDescription>
       </CardHeader>
-      <form onSubmit={handleSubmit}>
+      <form action={formAction}>
         <CardContent>
           <div className="space-y-2">
             <label htmlFor="password" className="text-sm font-medium">New password</label>
             <Input
               id="password"
+              name="password"
               type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
               required
               minLength={6}
             />
           </div>
         </CardContent>
         <CardFooter>
-          <Button type="submit" className="w-full" disabled={loading}>
-            {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+          <SubmitButton className="w-full">
             Update password
-          </Button>
+          </SubmitButton>
         </CardFooter>
       </form>
     </Card>

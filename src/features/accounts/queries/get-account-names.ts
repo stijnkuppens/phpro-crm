@@ -1,5 +1,6 @@
 import { cache } from 'react';
 import { createServerClient } from '@/lib/supabase/server';
+import { logger } from '@/lib/logger';
 
 export type AccountOption = {
   id: string;
@@ -17,7 +18,7 @@ export const getAccountNames = cache(async (): Promise<AccountOption[]> => {
     .limit(500);
 
   if (error) {
-    console.error('Failed to fetch account names:', error.message);
+    logger.error({ err: error, entity: 'accounts' }, 'Failed to fetch account names');
     return [];
   }
   return data ?? [];

@@ -1,5 +1,6 @@
 import { cache } from 'react';
 import { createServerClient } from '@/lib/supabase/server';
+import { logger } from '@/lib/logger';
 import type { SlaRateWithTools } from '../types';
 
 export const getSlaRates = cache(
@@ -19,7 +20,7 @@ export const getSlaRates = cache(
     const { data, error } = await query;
 
     if (error) {
-      console.error('Failed to fetch SLA rates:', error.message);
+      logger.error({ err: error, entity: 'sla_rates' }, 'Failed to fetch SLA rates');
       return [];
     }
 

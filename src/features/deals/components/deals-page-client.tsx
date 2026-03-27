@@ -8,7 +8,9 @@ import { LayoutGrid, List, Archive } from 'lucide-react';
 import { createBrowserClient } from '@/lib/supabase/client';
 import { DealKanban } from './deal-kanban';
 import { DealList } from './deal-list';
-import { QuickDealModal } from './quick-deal-modal';
+import dynamic from 'next/dynamic';
+
+const QuickDealModal = dynamic(() => import('./quick-deal-modal').then(m => ({ default: m.QuickDealModal })), { ssr: false });
 import type { DealCard, DealWithRelations } from '../types';
 
 type Pipeline = {

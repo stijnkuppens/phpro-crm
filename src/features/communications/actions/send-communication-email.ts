@@ -4,6 +4,7 @@ import { z } from 'zod';
 import { sendEmail } from '@/lib/email';
 import { ok, err, type ActionResult } from '@/lib/action-result';
 import { requirePermission } from '@/lib/require-permission';
+import { logger } from '@/lib/logger';
 
 const schema = z.object({
   to: z.string().email('Ongeldig e-mailadres'),
@@ -28,7 +29,7 @@ export async function sendCommunicationEmail(
     const result = await sendEmail(parsed.data);
     return ok(result);
   } catch (e) {
-    console.error('Failed to send email:', e);
+    logger.error({ err: e, entity: 'communications' }, 'Failed to send email');
     return err('E-mail kon niet worden verstuurd');
   }
 }

@@ -1,5 +1,6 @@
 import { cache } from 'react';
 import { createServerClient } from '@/lib/supabase/server';
+import { logger } from '@/lib/logger';
 
 export const getRecentActivities = cache(async () => {
   const supabase = await createServerClient();
@@ -9,7 +10,7 @@ export const getRecentActivities = cache(async () => {
     .order('date', { ascending: false })
     .limit(10);
   if (error) {
-    console.error('getRecentActivities error:', error.message);
+    logger.error({ err: error, entity: 'activities' }, 'Failed to fetch recent activities');
     return [];
   }
   return data;

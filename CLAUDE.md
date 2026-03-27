@@ -217,18 +217,18 @@ supabase/
 **Commands:**
 | Command | What it runs | When to use |
 |---------|-------------|-------------|
-| `task db:reset` | `supabase db reset` — drops, migrates, seeds | Full local rebuild |
-| `task db:data` | `supabase/data/*.sql` | Production deploy, CI/CD |
-| `task db:fixtures` | `supabase/fixtures/*.sql` | Dev/staging setup |
-| `task types:generate` | `supabase gen types` | After schema changes |
+| `task db:reset` | `docker compose down -v` + up + migrate + seed | Full local rebuild |
+| `task db:migrate` | `supabase db push --db-url` | Apply pending migrations |
+| `task db:data` | `supabase/data/*.sql` via psql | Production deploy, CI/CD |
+| `task db:fixtures` | `supabase/fixtures/*.sql` via psql | Dev/staging setup |
+| `task types:generate` | `supabase gen types --db-url` | After schema changes |
 
-All commands use the Supabase CLI against the local `supabase start` instance.
+All commands use the Supabase CLI with `--db-url` against the Docker Compose Postgres instance. See `docs/DOCKER.md` for full setup.
 
 **Rules:**
 - **Migrations contain schema only** — `CREATE TABLE`, `ALTER`, `CREATE FUNCTION`, `CREATE TRIGGER`, `ENABLE ROW LEVEL SECURITY`, `CREATE POLICY`, `GRANT`. Never `INSERT` data.
 - **Production data goes in `supabase/data/`** — pipelines, stages, reference indices, default settings. Must be idempotent (`ON CONFLICT DO NOTHING`). Run in every environment including production.
 - **Demo/test data goes in `supabase/fixtures/`** — fake users, sample accounts, contacts. Must be idempotent. Never runs in production.
-- **Seeding** is configured in `supabase/config.toml` via `[db.seed] sql_paths` — runs `data/*.sql` then `fixtures/*.sql` during `supabase db reset`.
 - **New tables MUST include `GRANT` statements** in the migration — without table-level grants, RLS policies are useless. Use `GRANT SELECT, INSERT, UPDATE, DELETE ON <table> TO authenticated;` as appropriate.
 - **Files are numbered** — `001_`, `002_`, etc. for execution order within each directory.
 
@@ -236,7 +236,6 @@ All commands use the Supabase CLI against the local `supabase start` instance.
 1. Create migration: `CREATE TABLE`, indexes, triggers, `ENABLE ROW LEVEL SECURITY`, `CREATE POLICY`, `GRANT`
 2. If the table needs default production data, add a file in `supabase/data/`
 3. If the table needs demo data, add a file in `supabase/fixtures/`
-4. Update `seed.sql` if new data/fixture files were added
 
 ## Supabase Patterns
 
@@ -368,3 +367,52 @@ Base UI's `SelectValue` renders the matched `SelectItem` children as the trigger
 ```
 
 Always explicitly render the label in `SelectTrigger` by looking up the selected value in the options array. This prevents UUIDs from ever appearing in the UI.
+
+### Base UI Input: Always remount forms when editing different entities
+
+Base UI's `<Input>` wraps an internal `FieldControl` that tracks `defaultValue` as uncontrolled state. If a component re-renders with a different `defaultValue` after mount, Base UI warns: *"A component is changing the default value state of an uncontrolled FieldControl after being initialized."*
+
+This happens when an edit modal is **always mounted** and receives a new entity ID — the form's `defaultValue` props change without the component remounting.
+
+**Bad** (modal stays mounted, stale state carries over):
+```tsx
+<ContactFormModal
+  contactId={editId}
+  open={editId !== null}
+  onClose={() => setEditId(null)}
+/>
+```
+
+**Good** (conditional render + key forces clean remount):
+```tsx
+{editId && (
+  <ContactFormModal
+    key={editId}
+    contactId={editId}
+    open
+    onClose={() => setEditId(null)}
+  />
+)}
+```
+
+The `{editId && (` guard fully unmounts the modal when closed (no stale state). The `key={editId}` ensures switching directly between entities (A → B) also remounts. This pattern applies to **all modals that fetch data by ID** — both form modals and view/detail modals.
+
+### Postgres: `jsonb_populate_recordset` bypasses column DEFAULT values
+
+`jsonb_populate_recordset(null::some_table, jsonb_data)` maps JSON to **all columns** of the table type. If the JSON omits a column (e.g. `id`), the result is `NULL` — not the column's `DEFAULT`. An `INSERT INTO ... SELECT *` then inserts explicit `NULL`, bypassing `DEFAULT gen_random_uuid()`.
+
+**Bad** (NULL overrides DEFAULT):
+```sql
+INSERT INTO account_tech_stacks
+SELECT * FROM jsonb_populate_recordset(null::account_tech_stacks, p_rows);
+-- p_rows only has {account_id, technology_id} → id gets NULL → NOT NULL violation
+```
+
+**Good** (explicit column list, defaults fire):
+```sql
+INSERT INTO account_tech_stacks (account_id, technology_id)
+SELECT (elem->>'account_id')::uuid, (elem->>'technology_id')::uuid
+FROM jsonb_array_elements(p_rows) AS elem;
+```
+
+Always use explicit column lists in dynamic SQL INSERT statements. Never rely on `SELECT *` from JSON set-returning functions.

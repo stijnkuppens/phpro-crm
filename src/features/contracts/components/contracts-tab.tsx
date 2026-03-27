@@ -10,11 +10,13 @@ import { ContractsSummaryCards } from './contracts-summary-cards';
 import { HourlyRatesSubTab } from './hourly-rates-sub-tab';
 import { SlaRatesSubTab } from './sla-rates-sub-tab';
 import { IndexationSubTab } from './indexation-sub-tab';
-import { ContractEditModal } from './contract-edit-modal';
-import { HourlyRatesEditModal } from './hourly-rates-edit-modal';
-import { SlaRatesEditModal } from './sla-rates-edit-modal';
-import { IndexationWizard } from '@/features/indexation/components/indexation-wizard';
+import dynamic from 'next/dynamic';
 import type { Contract, HourlyRate, SlaRateWithTools } from '../types';
+
+const ContractEditModal = dynamic(() => import('./contract-edit-modal').then(m => ({ default: m.ContractEditModal })), { ssr: false });
+const HourlyRatesEditModal = dynamic(() => import('./hourly-rates-edit-modal').then(m => ({ default: m.HourlyRatesEditModal })), { ssr: false });
+const SlaRatesEditModal = dynamic(() => import('./sla-rates-edit-modal').then(m => ({ default: m.SlaRatesEditModal })), { ssr: false });
+const IndexationWizard = dynamic(() => import('@/features/indexation/components/indexation-wizard').then(m => ({ default: m.IndexationWizard })), { ssr: false });
 import type { IndexationConfig } from '@/features/indexation/types';
 import type { IndexationDraftFull } from '@/features/indexation/types';
 import type { IndexationHistoryFull } from '@/features/indexation/queries/get-indexation-history';

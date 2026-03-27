@@ -1,5 +1,7 @@
 import { cache } from 'react';
 import { createServerClient } from '@/lib/supabase/server';
+import { logger } from '@/lib/logger';
+import { escapeSearch } from '@/lib/utils/escape-search';
 import type { Contact, ContactWithDetails, ContactFilters } from '../types';
 
 type GetContactsParams = {
@@ -29,7 +31,8 @@ export const getContacts = cache(
       .range(from, to);
 
     if (filters?.search) {
-      query = query.or(`first_name.ilike.%${filters.search}%,last_name.ilike.%${filters.search}%,email.ilike.%${filters.search}%`);
+      const s = escapeSearch(filters.search);
+      query = query.or(`first_name.ilike.%${s}%,last_name.ilike.%${s}%,email.ilike.%${s}%`);
     }
     if (filters?.account_id) {
       query = query.eq('account_id', filters.account_id);
@@ -44,7 +47,7 @@ export const getContacts = cache(
     const { data, count, error } = await query;
 
     if (error) {
-      console.error('Failed to fetch contacts:', error.message);
+      logger.error({ err: error, entity: 'contacts' }, 'Failed to fetch contacts');
       return { data: [], count: 0 };
     }
 

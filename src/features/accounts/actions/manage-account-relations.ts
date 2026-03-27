@@ -40,13 +40,6 @@ export async function addAccountRelation(
     return err(error.message);
   }
 
-  await logAction({
-    action: `${table}.created`,
-    entityType: table,
-    entityId: data.id,
-    metadata: { account_id: accountId },
-  });
-
   return ok(data);
 }
 
@@ -71,12 +64,6 @@ export async function updateAccountRelation(
     return err(error.message);
   }
 
-  await logAction({
-    action: `${table}.updated`,
-    entityType: table,
-    entityId: id,
-  });
-
   return ok();
 }
 
@@ -99,12 +86,6 @@ export async function deleteAccountRelation(
   if (error) {
     return err(error.message);
   }
-
-  await logAction({
-    action: `${table}.deleted`,
-    entityType: table,
-    entityId: id,
-  });
 
   return ok();
 }

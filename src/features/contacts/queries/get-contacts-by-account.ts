@@ -1,5 +1,6 @@
 import { cache } from 'react';
 import { createServerClient } from '@/lib/supabase/server';
+import { logger } from '@/lib/logger';
 import type { ContactWithDetails } from '../types';
 
 export const getContactsByAccount = cache(
@@ -17,7 +18,7 @@ export const getContactsByAccount = cache(
       .order('last_name', { ascending: true });
 
     if (error) {
-      console.error('Failed to fetch contacts by account:', error.message);
+      logger.error({ err: error, entity: 'contacts' }, 'Failed to fetch contacts by account');
       return [];
     }
 

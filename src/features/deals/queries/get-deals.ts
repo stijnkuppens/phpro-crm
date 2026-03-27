@@ -1,5 +1,6 @@
 import { cache } from 'react';
 import { createServerClient } from '@/lib/supabase/server';
+import { logger } from '@/lib/logger';
 import type { DealWithRelations, DealFilters } from '../types';
 
 type GetDealsParams = {
@@ -55,7 +56,7 @@ export const getDeals = cache(
     const { data, count, error } = await query;
 
     if (error) {
-      console.error('Failed to fetch deals:', error.message);
+      logger.error({ err: error, entity: 'deals' }, 'Failed to fetch deals');
       return { data: [], count: 0 };
     }
 

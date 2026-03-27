@@ -1,5 +1,6 @@
 import { cache } from 'react';
 import { createServerClient } from '@/lib/supabase/server';
+import { logger } from '@/lib/logger';
 import type { DealCard } from '../types';
 
 export const getDealsByPipeline = cache(
@@ -18,7 +19,7 @@ export const getDealsByPipeline = cache(
       .order('created_at', { ascending: false });
 
     if (error) {
-      console.error('Failed to fetch deals by pipeline:', error.message);
+      logger.error({ err: error, entity: 'deals' }, 'Failed to fetch deals by pipeline');
       return [];
     }
 

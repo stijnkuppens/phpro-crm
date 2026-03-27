@@ -1,5 +1,6 @@
 import { cache } from 'react';
 import { createServerClient } from '@/lib/supabase/server';
+import { logger } from '@/lib/logger';
 import type { IndexationConfig } from '../types';
 
 export const getIndexationConfig = cache(
@@ -13,7 +14,7 @@ export const getIndexationConfig = cache(
       .maybeSingle();
 
     if (error) {
-      console.error('Failed to fetch indexation config:', error.message);
+      logger.error({ err: error, entity: 'indexation_config' }, 'Failed to fetch indexation config');
       return null;
     }
 

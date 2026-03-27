@@ -10,6 +10,7 @@ import { FilterBar } from '@/components/admin/filter-bar';
 import { AccountFiltersBar, type OwnerOption } from './account-filters';
 import { accountColumns } from '../columns';
 import { deleteAccount } from '../actions/delete-account';
+import { escapeSearch } from '@/lib/utils/escape-search';
 import type { Account, AccountFilters } from '../types';
 
 const PAGE_SIZE = 25;
@@ -35,7 +36,7 @@ export function AccountList({ initialData, initialCount, owners, countries }: Ac
 
   const load = useCallback(() => {
     const orFilter = filters.search
-      ? `name.ilike.%${filters.search}%,domain.ilike.%${filters.search}%`
+      ? `name.ilike.%${escapeSearch(filters.search)}%,domain.ilike.%${escapeSearch(filters.search)}%`
       : undefined;
     const eqFilters: Record<string, string> = {};
     if (filters.type) eqFilters.type = filters.type;

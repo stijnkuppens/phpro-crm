@@ -18,9 +18,12 @@ import { ComboboxFilter } from '@/components/admin/combobox-filter';
 import { FilterBar } from '@/components/admin/filter-bar';
 import { contactColumns } from '../columns';
 import type { Contact } from '../types';
+import dynamic from 'next/dynamic';
 import { deleteContact } from '../actions/delete-contact';
-import { ContactViewModal } from './contact-view-modal';
-import { ContactFormModal } from './contact-form-modal';
+
+const ContactViewModal = dynamic(() => import('./contact-view-modal').then(m => ({ default: m.ContactViewModal })), { ssr: false });
+const ContactFormModal = dynamic(() => import('./contact-form-modal').then(m => ({ default: m.ContactFormModal })), { ssr: false });
+import { escapeSearch } from '@/lib/utils/escape-search';
 
 const PAGE_SIZE = 25;
 
@@ -66,7 +69,8 @@ export function ContactList({ initialData, initialCount, accounts = [] }: Contac
     const applyFilters = search ? (query: any) => {
       const words = search.trim().split(/\s+/).filter(Boolean);
       for (const word of words) {
-        query = query.or(`first_name.ilike.%${word}%,last_name.ilike.%${word}%,email.ilike.%${word}%`);
+        const w = escapeSearch(word);
+        query = query.or(`first_name.ilike.%${w}%,last_name.ilike.%${w}%,email.ilike.%${w}%`);
       }
       return query;
     } : undefined;
@@ -147,18 +151,24 @@ export function ContactList({ initialData, initialCount, accounts = [] }: Contac
           { label: 'Verwijderen', variant: 'destructive' as const, confirm: { title: 'Contacten verwijderen?', description: 'Dit verwijdert de geselecteerde contacten permanent.' }, action: (ids) => ids.forEach((id) => handleDelete(id)) },
         ]}
       />
-      <ContactViewModal
-        contactId={viewId}
-        onClose={() => setViewId(null)}
-        onEdit={(id) => { setViewId(null); setEditId(id); setEditFromView(true); }}
-      />
-      <ContactFormModal
-        contactId={editId}
-        accountId={data.find((r) => r.id === editId)?.account_id ?? ''}
-        open={editId !== null}
-        onClose={() => { const id = editId; setEditId(null); if (editFromView) { setViewId(id); setEditFromView(false); } }}
-        onSaved={() => { const id = editId; setEditId(null); if (editFromView) { setViewId(id); setEditFromView(false); } load(); }}
-      />
+      {viewId && (
+        <ContactViewModal
+          key={viewId}
+          contactId={viewId}
+          onClose={() => setViewId(null)}
+          onEdit={(id) => { setViewId(null); setEditId(id); setEditFromView(true); }}
+        />
+      )}
+      {editId && (
+        <ContactFormModal
+          key={editId}
+          contactId={editId}
+          accountId={data.find((r) => r.id === editId)?.account_id ?? ''}
+          open
+          onClose={() => { const id = editId; setEditId(null); if (editFromView) { setViewId(id); setEditFromView(false); } }}
+          onSaved={() => { const id = editId; setEditId(null); if (editFromView) { setViewId(id); setEditFromView(false); } load(); }}
+        />
+      )}
     </div>
   );
 }

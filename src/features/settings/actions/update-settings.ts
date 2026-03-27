@@ -1,11 +1,18 @@
 'use server';
 
-import { revalidatePath } from 'next/cache';
+import { revalidatePath, updateTag } from 'next/cache';
 import { createServerClient } from '@/lib/supabase/server';
+import { requirePermission } from '@/lib/require-permission';
 import { ok, err, type ActionResult } from '@/lib/action-result';
 import { settingsSchema } from '../types';
 
 export async function updateSettings(values: { app_name: string; logo_url: string }): Promise<ActionResult<null>> {
+  try {
+    await requirePermission('settings.write');
+  } catch {
+    return err('Onvoldoende rechten');
+  }
+
   const parsed = settingsSchema.safeParse(values);
   if (!parsed.success) return err('Ongeldige invoer');
 
@@ -19,5 +26,6 @@ export async function updateSettings(values: { app_name: string; logo_url: strin
   if (error) return err(error.message);
 
   revalidatePath('/admin/settings');
+  updateTag('settings');
   return ok(null);
 }

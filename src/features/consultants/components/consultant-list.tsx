@@ -26,15 +26,18 @@ import {
   type ConsultantStatus,
   CONSULTANT_SELECT,
 } from '../types';
-import { ConsultantDetailModal } from './consultant-detail-modal';
-import { BenchFormModal } from './bench-form-modal';
-import { LinkConsultantWizard } from './link-consultant-wizard';
-import { StopConsultantModal } from './stop-consultant-modal';
-import { ExtendConsultantModal } from './extend-consultant-modal';
-import { RateChangeModal } from './rate-change-modal';
+import dynamic from 'next/dynamic';
 import { archiveConsultant } from '../actions/archive-consultant';
+
+const ConsultantDetailModal = dynamic(() => import('./consultant-detail-modal').then(m => ({ default: m.ConsultantDetailModal })), { ssr: false });
+const BenchFormModal = dynamic(() => import('./bench-form-modal').then(m => ({ default: m.BenchFormModal })), { ssr: false });
+const LinkConsultantWizard = dynamic(() => import('./link-consultant-wizard').then(m => ({ default: m.LinkConsultantWizard })), { ssr: false });
+const StopConsultantModal = dynamic(() => import('./stop-consultant-modal').then(m => ({ default: m.StopConsultantModal })), { ssr: false });
+const ExtendConsultantModal = dynamic(() => import('./extend-consultant-modal').then(m => ({ default: m.ExtendConsultantModal })), { ssr: false });
+const RateChangeModal = dynamic(() => import('./rate-change-modal').then(m => ({ default: m.RateChangeModal })), { ssr: false });
 import { moveToBench } from '../actions/move-to-bench';
 import { formatEUR } from '@/lib/format';
+import { escapeSearch } from '@/lib/utils/escape-search';
 
 type Stats = {
   benchCount: number;
@@ -85,7 +88,7 @@ export function ConsultantListView({ initialData, initialCount, stats, accounts,
 
   const load = useCallback(() => {
     const orFilter = search
-      ? `first_name.ilike.%${search}%,last_name.ilike.%${search}%,role.ilike.%${search}%,client_name.ilike.%${search}%`
+      ? `first_name.ilike.%${escapeSearch(search)}%,last_name.ilike.%${escapeSearch(search)}%,role.ilike.%${escapeSearch(search)}%,client_name.ilike.%${escapeSearch(search)}%`
       : undefined;
 
     fetchList({

@@ -1,5 +1,6 @@
 import { cache } from 'react';
 import { createServerClient } from '@/lib/supabase/server';
+import { logger } from '@/lib/logger';
 import type { DealWithRelations } from '../types';
 
 export const getDeal = cache(
@@ -20,7 +21,7 @@ export const getDeal = cache(
       .single();
 
     if (error) {
-      console.error('Failed to fetch deal:', error.message);
+      logger.error({ err: error, entity: 'deals' }, 'Failed to fetch deal');
       return null;
     }
 

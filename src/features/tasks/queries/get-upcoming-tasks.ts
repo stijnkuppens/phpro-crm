@@ -1,5 +1,6 @@
 import { cache } from 'react';
 import { createServerClient } from '@/lib/supabase/server';
+import { logger } from '@/lib/logger';
 
 export const getUpcomingTasks = cache(async () => {
   const supabase = await createServerClient();
@@ -10,7 +11,7 @@ export const getUpcomingTasks = cache(async () => {
     .order('due_date', { ascending: true, nullsFirst: false })
     .limit(10);
   if (error) {
-    console.error('getUpcomingTasks error:', error.message);
+    logger.error({ err: error, entity: 'tasks' }, 'Failed to fetch upcoming tasks');
     return [];
   }
   return data;

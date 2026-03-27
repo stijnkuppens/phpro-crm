@@ -1,5 +1,7 @@
 import { cache } from 'react';
 import { createServerClient } from '@/lib/supabase/server';
+import { logger } from '@/lib/logger';
+import { escapeSearch } from '@/lib/utils/escape-search';
 import { CONSULTANT_SELECT, type ConsultantWithDetails, type ConsultantStatus } from '../types';
 
 type GetConsultantsParams = {
@@ -38,15 +40,16 @@ export const getConsultants = cache(
     }
 
     if (search) {
+      const s = escapeSearch(search);
       query = query.or(
-        `first_name.ilike.%${search}%,last_name.ilike.%${search}%,role.ilike.%${search}%,client_name.ilike.%${search}%`,
+        `first_name.ilike.%${s}%,last_name.ilike.%${s}%,role.ilike.%${s}%,client_name.ilike.%${s}%`,
       );
     }
 
     const { data, count, error } = await query;
 
     if (error) {
-      console.error('Failed to fetch consultants:', error.message);
+      logger.error({ err: error, entity: 'consultants' }, 'Failed to fetch consultants');
       return { data: [], count: 0 };
     }
 

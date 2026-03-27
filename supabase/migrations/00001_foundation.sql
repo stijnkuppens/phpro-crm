@@ -18,8 +18,8 @@ CREATE EXTENSION IF NOT EXISTS moddatetime SCHEMA extensions;
 -- User profiles (extends auth.users)
 CREATE TABLE public.user_profiles (
   id         uuid PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
-  role       text NOT NULL DEFAULT 'viewer'
-             CHECK (role IN ('admin', 'sales_manager', 'sales_rep', 'marketing', 'viewer')),
+  role       text NOT NULL DEFAULT 'sales_rep'
+             CHECK (role IN ('admin', 'sales_manager', 'sales_rep', 'customer_success', 'marketing')),
   full_name  text NOT NULL DEFAULT '',
   avatar_url text NOT NULL DEFAULT '',
   created_at timestamptz NOT NULL DEFAULT now(),
@@ -92,11 +92,12 @@ $$ LANGUAGE sql SECURITY DEFINER STABLE SET search_path = public;
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS trigger AS $$
 BEGIN
-  INSERT INTO public.user_profiles (id, full_name, avatar_url)
+  INSERT INTO public.user_profiles (id, full_name, avatar_url, role)
   VALUES (
     NEW.id,
     COALESCE(NEW.raw_user_meta_data->>'full_name', ''),
-    COALESCE(NEW.raw_user_meta_data->>'avatar_url', '')
+    COALESCE(NEW.raw_user_meta_data->>'avatar_url', ''),
+    'sales_rep'
   );
   RETURN NEW;
 END;

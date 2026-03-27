@@ -59,18 +59,23 @@ type UseFileBrowserReturn = {
   treeKey: number;
 };
 
-export function useFileBrowser(): UseFileBrowserReturn {
+export function useFileBrowser(initialFiles?: StorageFile[]): UseFileBrowserReturn {
   const supabase = createBrowserClient();
   const [currentPath, setCurrentPath] = useState('');
-  const [files, setFiles] = useState<StorageFile[]>([]);
-  const [folders, setFolders] = useState<string[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [files, setFiles] = useState<StorageFile[]>(
+    initialFiles?.filter((f) => f.id !== null) ?? [],
+  );
+  const [folders, setFolders] = useState<string[]>(
+    initialFiles?.filter((f) => f.id === null).map((f) => f.name) ?? [],
+  );
+  const [loading, setLoading] = useState(!initialFiles);
   const [search, setSearchRaw] = useState('');
   const [selectedFiles, setSelectedFiles] = useState<Set<string>>(new Set());
   const [activeFile, setActiveFile] = useState<StorageFile | null>(null);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [treeKey, setTreeKey] = useState(0);
   const debounceRef = useRef<ReturnType<typeof setTimeout>>(null);
+  const skipInitialFetch = useRef(!!initialFiles);
 
   const fetchFolder = useCallback(
     async (path: string, searchQuery: string) => {
@@ -98,6 +103,10 @@ export function useFileBrowser(): UseFileBrowserReturn {
   );
 
   useEffect(() => {
+    if (skipInitialFetch.current) {
+      skipInitialFetch.current = false;
+      return;
+    }
     fetchFolder(currentPath, search);
   }, [currentPath, search, fetchFolder]);
 

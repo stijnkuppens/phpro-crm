@@ -3,13 +3,23 @@ import { createServerClient } from '@/lib/supabase/server';
 import { createServiceRoleClient } from '@/lib/supabase/admin';
 import { logAction } from '@/features/audit/actions/log-action';
 
+/**
+ * POST /api/admin/invite
+ *
+ * Invites a new user to the CRM by email.
+ * Requires admin authentication via session cookie.
+ *
+ * @body {{ email: string }} - Email address to invite
+ * @returns {{ success: true }} on success
+ * @returns {{ error: string }} with 400/401/500 status on failure
+ */
 export async function POST(request: Request) {
   const supabase = await createServerClient();
 
   // Verify the caller is authenticated
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401, headers: { 'Cache-Control': 'no-store' } });
   }
 
   // Verify the caller is an admin
@@ -20,12 +30,12 @@ export async function POST(request: Request) {
     .single();
 
   if (profile?.role !== 'admin') {
-    return NextResponse.json({ error: 'Forbidden — admin only' }, { status: 403 });
+    return NextResponse.json({ error: 'Forbidden — admin only' }, { status: 403, headers: { 'Cache-Control': 'no-store' } });
   }
 
   const { email } = await request.json();
   if (!email || typeof email !== 'string') {
-    return NextResponse.json({ error: 'Email is required' }, { status: 400 });
+    return NextResponse.json({ error: 'Email is required' }, { status: 400, headers: { 'Cache-Control': 'no-store' } });
   }
 
   // Use the service role client to invite
@@ -33,7 +43,7 @@ export async function POST(request: Request) {
   const { error } = await admin.auth.admin.inviteUserByEmail(email);
 
   if (error) {
-    return NextResponse.json({ error: error.message }, { status: 400 });
+    return NextResponse.json({ error: error.message }, { status: 400, headers: { 'Cache-Control': 'no-store' } });
   }
 
   await logAction({
@@ -42,5 +52,5 @@ export async function POST(request: Request) {
     metadata: { email },
   });
 
-  return NextResponse.json({ success: true });
+  return NextResponse.json({ success: true }, { headers: { 'Cache-Control': 'no-store' } });
 }

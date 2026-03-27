@@ -1,54 +1,34 @@
-import { createServerClient } from '@/lib/supabase/server';
-import { StatCard } from '@/components/admin/stat-card';
 import { PageHeader } from '@/components/admin/page-header';
-import { Users, Contact, HardDrive, TrendingUp } from 'lucide-react';
+import { getDashboardStats } from '@/features/dashboard/queries/get-dashboard-stats';
+import { DashboardView } from '@/features/dashboard/components/dashboard-view';
+import { createServerClient } from '@/lib/supabase/server';
 
 export default async function DashboardPage() {
   const supabase = await createServerClient();
 
-  const weekAgo = new Date();
-  weekAgo.setDate(weekAgo.getDate() - 7);
-
-  // Parallel fetches — async-parallel best practice
-  const [totalContacts, weekContacts, activeUsers] = await Promise.all([
-    supabase.from('contacts').select('*', { count: 'exact', head: true }),
+  const [stats, activitiesResult, tasksResult] = await Promise.all([
+    getDashboardStats(),
     supabase
-      .from('contacts')
-      .select('*', { count: 'exact', head: true })
-      .gte('created_at', weekAgo.toISOString()),
-    supabase.from('user_profiles').select('*', { count: 'exact', head: true }),
+      .from('activities')
+      .select('id, type, subject, date')
+      .order('date', { ascending: false })
+      .limit(5),
+    supabase
+      .from('tasks')
+      .select('id, title, priority, due_date')
+      .neq('status', 'Done')
+      .order('due_date', { ascending: true })
+      .limit(5),
   ]);
 
   return (
     <div className="space-y-6">
       <PageHeader title="Dashboard" />
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <StatCard
-          title="Total Contacts"
-          value={totalContacts.count ?? 0}
-          icon={Contact}
-        />
-        <StatCard
-          title="New This Week"
-          value={weekContacts.count ?? 0}
-          trend={{
-            value: weekContacts.count ?? 0,
-            label: 'this week',
-            direction: 'up',
-          }}
-          icon={TrendingUp}
-        />
-        <StatCard
-          title="Team Members"
-          value={activeUsers.count ?? 0}
-          icon={Users}
-        />
-        <StatCard
-          title="Storage"
-          value="—"
-          icon={HardDrive}
-        />
-      </div>
+      <DashboardView
+        stats={stats}
+        recentActivities={activitiesResult.data ?? []}
+        upcomingTasks={tasksResult.data ?? []}
+      />
     </div>
   );
 }

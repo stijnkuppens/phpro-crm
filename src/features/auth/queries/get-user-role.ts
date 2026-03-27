@@ -1,5 +1,6 @@
 import { cache } from 'react';
 import { createServerClient } from '@/lib/supabase/server';
+import { logger } from '@/lib/logger';
 import { getUser } from './get-current-user';
 
 // One server client per request — shared by all cached queries below.
@@ -14,6 +15,6 @@ export const getUserRole = cache(async () => {
     .select('role')
     .eq('id', user.id)
     .single();
-  if (error) console.error('Failed to fetch user role:', error.message);
+  if (error) logger.error({ err: error, entity: 'user_profiles' }, 'Failed to fetch user role');
   return data?.role ?? null;
 });

@@ -1,13 +1,6 @@
 # PHPro CRM
 
-Next.js 16 + Supabase CRM application.
-
-## Prerequisites
-
-- [Node.js](https://nodejs.org/) 20+
-- [Docker](https://www.docker.com/) (for Supabase local dev)
-- [Supabase CLI](https://supabase.com/docs/guides/local-development/cli/getting-started) (`npm i -g supabase` or `brew install supabase/tap/supabase`)
-- [Task](https://taskfile.dev/) (`brew install go-task`)
+Internal CRM built with Next.js 16, React 19, Supabase, and Tailwind CSS.
 
 ## Quick Start
 
@@ -15,23 +8,38 @@ Next.js 16 + Supabase CRM application.
 # 1. Install dependencies
 npm install
 
-# 2. Copy env and fill in keys after step 3
-cp .env.example .env
+# 2. Start Supabase (Docker Compose)
+docker compose up -d
 
-# 3. Start everything (Supabase + Next.js)
-task dev
-# On first run, paste the anon key and service_role key from the output into .env
+# 3. Wait for services to be healthy (~60s)
+docker compose ps
+
+# 4. Apply database migrations + seed data
+task db:migrate
+task db:data
+task db:fixtures
+
+# 5. Start Next.js
+npm run dev
 ```
+
+Open http://localhost:3000 for the app, http://localhost:8000 for Supabase Studio (`supabase` / `supabase`).
+
+## Prerequisites
+
+- [Docker Desktop](https://docs.docker.com/desktop/) (or Docker Engine + Compose on Linux)
+- [Node.js](https://nodejs.org/) 20+
+- [Task](https://taskfile.dev/) runner — `brew install go-task`
 
 ## Access
 
-| Service | URL |
-|---------|-----|
-| App | http://localhost:3000 |
-| Supabase Studio | http://127.0.0.1:54323 |
-| Supabase API | http://127.0.0.1:54321 |
-| Database | postgresql://postgres:postgres@127.0.0.1:54322/postgres |
-| Inbucket (email UI) | http://127.0.0.1:54324 |
+| Service | URL | Credentials |
+|---------|-----|-------------|
+| App | http://localhost:3000 | See demo users below |
+| Supabase Studio | http://localhost:8000 | `supabase` / `supabase` |
+| Supabase API | http://localhost:8000/rest/v1/ | Pass `apikey` header |
+| Database (session) | `localhost:54322` | `postgres` / (see .env) |
+| Database (pooled) | `localhost:6543` | `postgres.phpro-crm` / (see .env) |
 
 ### Demo Users
 
@@ -41,113 +49,88 @@ task dev
 | `manager@example.com` | `manager123456` | `sales_manager` |
 | `marketing@example.com` | `marketing123456` | `marketing` |
 
-## Environment Variables
-
-After `supabase start`, copy the output keys to `.env`:
-
-| Variable | Source |
-|----------|--------|
-| `NEXT_PUBLIC_SUPABASE_URL` | `supabase status` → API URL |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | `supabase status` → anon key |
-| `SUPABASE_URL` | Same as above |
-| `SUPABASE_SERVICE_ROLE_KEY` | `supabase status` → service_role key |
-| `NEXT_PUBLIC_APP_NAME` | Display name in the UI |
-| `SMTP_HOST` / `SMTP_PORT` | Inbucket SMTP (default: localhost:54325) |
-
-## Task Commands
+## Commands
 
 Run `task --list` for all commands.
 
-### Development
-
 | Command | Description |
 |---------|-------------|
-| `task dev` | Start Supabase + Next.js dev server |
-| `task dev:supabase` | Start Supabase only |
-| `task dev:next` | Start Next.js only |
+| `task dev` | Start Supabase + Next.js |
 | `task dev:stop` | Stop Supabase |
-| `task status` | Show Supabase URLs and keys |
+| `task dev:restart` | Restart Supabase |
+| `task dev:logs` | Tail container logs |
+| `task dev:studio` | Open Studio in browser |
+| `task db:migrate` | Apply pending migrations |
+| `task db:reset` | Full rebuild (destroys data) |
+| `task db:new-migration -- <name>` | Create a new migration file |
+| `task db:data` | Apply production data |
+| `task db:fixtures` | Load demo fixtures |
+| `task db:psql` | Open psql shell |
+| `task db:backup` | Backup database |
+| `task db:restore -- <file>` | Restore from backup |
+| `task types:generate` | Regenerate TypeScript types |
+| `task build` | Production build |
+| `task prod:up` | Start full prod stack (with Next.js in Docker) |
 
-### Database
+## Stack
 
-| Command | Description |
-|---------|-------------|
-| `task db:reset` | Full rebuild: drop, migrate, seed |
-| `task db:new-migration -- <name>` | Create a new numbered migration file |
-| `task db:data` | Apply production data only |
-| `task db:fixtures` | Load demo fixtures only |
-| `task db:studio` | Open Supabase Studio in browser |
-| `task db:backup` | Backup local database to `supabase/backups/` |
-| `task db:backup -- --prod` | Backup production database |
-| `task db:restore -- <file>` | Restore from a backup file |
+- **Next.js 16** — App Router, Turbopack, Server Components
+- **React 19** — Server-first data flow
+- **Supabase** — Postgres, Auth (GoTrue), Storage, Realtime
+- **Tailwind CSS v4** + **shadcn/ui** — Styling
+- **TypeScript** — Strict mode
 
-### Code
+## Project Structure
 
-| Command | Description |
-|---------|-------------|
-| `task types:generate` | Generate TypeScript types from the DB schema |
-| `task entity:new -- <name>` | Scaffold a new entity |
-| `task lint` | Run ESLint |
-| `task typecheck` | Run TypeScript type checking |
-| `task build` | Build the Next.js application |
-
-### Production
-
-| Command | Description |
-|---------|-------------|
-| `task prod:up` | Start production stack (Docker Compose) |
-| `task prod:down` | Stop production stack |
-
-## Database Backups
-
-Backups are stored in `supabase/backups/` (gitignored). The last 30 backups are retained automatically.
-
-### Manual backup
-
-```bash
-task db:backup            # local dev
-task db:backup -- --prod  # production
 ```
+src/
+├── app/admin/          # Route pages (thin wrappers)
+├── features/           # Feature modules (accounts, contacts, deals, ...)
+│   └── <name>/
+│       ├── actions/    # Server actions (mutations)
+│       ├── queries/    # Server queries (React.cache)
+│       ├── components/ # Client components
+│       └── types.ts    # Zod schemas, types
+├── components/         # Shared UI (admin, layout, shadcn/ui)
+└── lib/                # Hooks, Supabase clients, utilities
 
-### Restore
+supabase/
+├── migrations/         # Schema migrations (DDL, RLS, grants)
+├── data/               # Production seed data
+└── fixtures/           # Demo data (dev/staging only)
 
-```bash
-task db:restore -- supabase/backups/local_20260322_060000.sql.gz
+docker/
+├── volumes/            # Supabase service configs (Kong, DB init, Vector, Pooler)
+└── nextjs/Dockerfile   # Production Next.js build
 ```
-
-### Automated daily backup (macOS)
-
-```bash
-# Install the launchd plist (runs daily at 6:00 AM)
-cp scripts/be.phpro.crm.db-backup.plist ~/Library/LaunchAgents/
-launchctl load ~/Library/LaunchAgents/be.phpro.crm.db-backup.plist
-
-# Verify it's loaded
-launchctl list | grep phpro
-
-# Uninstall
-launchctl unload ~/Library/LaunchAgents/be.phpro.crm.db-backup.plist
-rm ~/Library/LaunchAgents/be.phpro.crm.db-backup.plist
-```
-
-Logs are written to `supabase/backups/cron.log`. The backup only succeeds if Supabase is running locally.
 
 ## Database Architecture
 
 ```
 supabase/
-  config.toml      # Supabase CLI configuration
   migrations/      # Schema only (DDL, triggers, RLS, grants)
   data/            # Production data (pipelines, indices, settings)
   fixtures/        # Demo data (fake users, sample accounts)
 ```
-
-Seeding is configured in `config.toml` — runs `data/*.sql` then `fixtures/*.sql` on `supabase db reset`.
 
 ### Deploy pipeline
 
 ```
 production:   migrations → data/
 staging:      migrations → data/ → fixtures/
-local dev:    supabase db reset (all of the above)
+local dev:    docker compose up → db:migrate → db:data → db:fixtures
 ```
+
+## Database Backups
+
+Backups are stored in `supabase/backups/` (gitignored).
+
+```bash
+task db:backup                           # local
+task db:restore -- supabase/backups/local_20260322_060000.sql.gz
+```
+
+## Documentation
+
+- **[docs/DOCKER.md](docs/DOCKER.md)** — Full Docker setup, all environment variables, production deployment, HTTPS, OAuth, SMTP, backups, security checklist
+- **[CLAUDE.md](CLAUDE.md)** — Architecture rules, coding conventions, feature module structure

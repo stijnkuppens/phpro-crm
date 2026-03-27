@@ -1,5 +1,6 @@
 import { cache } from 'react';
 import { createServerClient } from '@/lib/supabase/server';
+import { logger } from '@/lib/logger';
 import type { AccountWithRelations } from '../types';
 
 export const getAccount = cache(
@@ -22,7 +23,7 @@ export const getAccount = cache(
       .single();
 
     if (error) {
-      console.error('Failed to fetch account:', error.message);
+      logger.error({ err: error, entity: 'accounts' }, 'Failed to fetch account');
       return null;
     }
 

@@ -1,5 +1,6 @@
 import { cache } from 'react';
 import { createServerClient } from '@/lib/supabase/server';
+import { logger } from '@/lib/logger';
 import type { RevenueEntry } from '../types';
 
 type GetRevenueEntriesParams = {
@@ -19,7 +20,7 @@ export const getRevenueEntries = cache(
     if (params.divisionId) query = query.eq('division_id', params.divisionId);
     if (params.revenueClientId) query = query.eq('revenue_client_id', params.revenueClientId);
     const { data, error } = await query;
-    if (error) { console.error('Failed to fetch revenue entries:', error.message); return []; }
+    if (error) { logger.error({ err: error, entity: 'revenue_entries' }, 'Failed to fetch revenue entries'); return []; }
     return data ?? [];
   },
 );

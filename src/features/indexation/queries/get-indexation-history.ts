@@ -1,5 +1,6 @@
 import { cache } from 'react';
 import { createServerClient } from '@/lib/supabase/server';
+import { logger } from '@/lib/logger';
 import type { IndexationHistory } from '../types';
 import type { Database } from '@/types/database';
 
@@ -26,7 +27,7 @@ export const getIndexationHistory = cache(
       .limit(20);
 
     if (error) {
-      console.error('Failed to fetch indexation history:', error.message);
+      logger.error({ err: error, entity: 'indexation_history' }, 'Failed to fetch indexation history');
       return [];
     }
 

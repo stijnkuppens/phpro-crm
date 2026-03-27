@@ -1,5 +1,6 @@
 import { cache } from 'react';
 import { createServerClient } from '@/lib/supabase/server';
+import { logger } from '@/lib/logger';
 import type { Contract } from '../types';
 
 export const getContract = cache(
@@ -13,7 +14,7 @@ export const getContract = cache(
       .maybeSingle();
 
     if (error) {
-      console.error('Failed to fetch contract:', error.message);
+      logger.error({ err: error, entity: 'contracts' }, 'Failed to fetch contract');
       return null;
     }
 

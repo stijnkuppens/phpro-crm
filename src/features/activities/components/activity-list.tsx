@@ -15,6 +15,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { activityColumns } from '../columns';
+import { escapeSearch } from '@/lib/utils/escape-search';
 import type { Activity, ActivityFilters } from '../types';
 import { deleteActivity } from '../actions/delete-activity';
 
@@ -38,7 +39,7 @@ export function ActivityList({ initialData, initialCount }: Props) {
 
   const load = useCallback(() => {
     const orFilter = filters.search
-      ? `subject.ilike.%${filters.search}%`
+      ? `subject.ilike.%${escapeSearch(filters.search)}%`
       : undefined;
     const eqFilters: Record<string, string> = {};
     if (filters.type) eqFilters.type = filters.type;

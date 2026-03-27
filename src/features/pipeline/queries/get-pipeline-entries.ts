@@ -1,5 +1,6 @@
 import { cache } from 'react';
 import { createServerClient } from '@/lib/supabase/server';
+import { logger } from '@/lib/logger';
 import type { PipelineEntryWithDivision } from '../types';
 
 export const getPipelineEntries = cache(
@@ -10,7 +11,7 @@ export const getPipelineEntries = cache(
       .select(`*, division:divisions!division_id(id, name, color)`)
       .eq('year', year)
       .order('client', { ascending: true });
-    if (error) { console.error('Failed to fetch pipeline entries:', error.message); return []; }
+    if (error) { logger.error({ err: error, entity: 'pipeline_entries' }, 'Failed to fetch pipeline entries'); return []; }
     return (data as unknown as PipelineEntryWithDivision[]) ?? [];
   },
 );

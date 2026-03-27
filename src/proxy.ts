@@ -79,7 +79,7 @@ export async function proxy(request: NextRequest) {
       request.nextUrl.pathname.startsWith(prefix),
     );
     if (match && !can(role, match[1])) {
-      return NextResponse.redirect(new URL('/admin', request.url));
+      return NextResponse.redirect(new URL('/forbidden', request.url));
     }
   }
 
@@ -91,5 +91,5 @@ export async function proxy(request: NextRequest) {
 }
 
 export const proxyConfig = {
-  matcher: ['/admin/:path*', '/login', '/register', '/forgot-password', '/reset-password', '/auth/callback'],
+  matcher: ['/admin/:path*', '/login', '/register', '/forgot-password', '/reset-password', '/auth/callback', '/forbidden'],
 };

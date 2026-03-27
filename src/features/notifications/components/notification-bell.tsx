@@ -22,7 +22,7 @@ export function NotificationBell() {
   const { user } = useAuth();
   const router = useRouter();
   const [notifications, setNotifications] = useState<Notification[]>([]);
-  const unreadCount = notifications.filter((n) => !n.is_read).length;
+  const unreadCount = notifications.filter((n) => !n.read).length;
 
   // Initial fetch
   useEffect(() => {
@@ -72,14 +72,15 @@ export function NotificationBell() {
 
   const handleClick = useCallback(
     async (notification: Notification) => {
-      if (!notification.is_read) {
+      if (!notification.read) {
         await markAsRead(notification.id);
         setNotifications((prev) =>
-          prev.map((n) => (n.id === notification.id ? { ...n, is_read: true } : n)),
+          prev.map((n) => (n.id === notification.id ? { ...n, read: true } : n)),
         );
       }
-      if (notification.link) {
-        router.push(notification.link);
+      const link = (notification.metadata as Record<string, unknown> | null)?.link as string | undefined;
+      if (link) {
+        router.push(link);
       }
     },
     [router],
@@ -87,7 +88,7 @@ export function NotificationBell() {
 
   const handleMarkAllRead = useCallback(async () => {
     await markAllAsRead();
-    setNotifications((prev) => prev.map((n) => ({ ...n, is_read: true })));
+    setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
   }, []);
 
   return (
@@ -119,7 +120,7 @@ export function NotificationBell() {
         ) : (
           notifications.slice(0, 5).map((n) => (
             <DropdownMenuItem key={n.id} onClick={() => handleClick(n)} className="flex flex-col items-start gap-1 p-3">
-              <span className={n.is_read ? 'text-muted-foreground' : 'font-medium'}>{n.title}</span>
+              <span className={n.read ? 'text-muted-foreground' : 'font-medium'}>{n.title}</span>
               {n.message && <span className="text-xs text-muted-foreground">{n.message}</span>}
               <span className="text-xs text-muted-foreground">
                 {n.created_at ? new Date(n.created_at).toLocaleDateString() : '—'}

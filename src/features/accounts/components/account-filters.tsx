@@ -65,7 +65,7 @@ export function AccountFiltersBar({ filters, onFilterChange, owners = [], countr
           onValueChange={(v) => onFilterChange({ ...filters, owner_id: !v || v === 'all' ? undefined : v })}
         >
           <SelectTrigger className="w-44">
-            <SelectValue placeholder="Alle owners" />
+            {owners.find((o) => o.id === filters.owner_id)?.full_name ?? 'Alle owners'}
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">Alle owners</SelectItem>

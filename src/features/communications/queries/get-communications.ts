@@ -1,5 +1,6 @@
 import { cache } from 'react';
 import { createServerClient } from '@/lib/supabase/server';
+import { logger } from '@/lib/logger';
 import type { Communication, CommunicationWithDetails, CommunicationFilters } from '../types';
 
 type GetCommunicationsParams = {
@@ -45,7 +46,7 @@ export const getCommunications = cache(
     const { data, count, error } = await query;
 
     if (error) {
-      console.error('Failed to fetch communications:', error.message);
+      logger.error({ err: error, entity: 'communications' }, 'Failed to fetch communications');
       return { data: [], count: 0 };
     }
 

@@ -1,5 +1,6 @@
 import { cache } from 'react';
 import { createServerClient } from '@/lib/supabase/server';
+import { logger } from '@/lib/logger';
 import type { AuditLog, AuditLogFilters } from '../types';
 
 type GetAuditLogsParams = {
@@ -28,7 +29,7 @@ export const getAuditLogs = cache(
       query = query.eq('action', filters.action);
     }
     if (filters?.entityType) {
-      query = query.eq('entity_type', filters.entityType);
+      query = query.eq('entity', filters.entityType);
     }
     if (filters?.userId) {
       query = query.eq('user_id', filters.userId);
@@ -43,7 +44,7 @@ export const getAuditLogs = cache(
     const { data, count, error } = await query;
 
     if (error) {
-      console.error('Failed to fetch audit logs:', error.message);
+      logger.error({ err: error, entity: 'audit_logs' }, 'Failed to fetch audit logs');
       return { data: [], count: 0 };
     }
 

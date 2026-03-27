@@ -13,7 +13,7 @@ import type { AuditLog } from '../types';
 type AuditDetailProps = {
   log: AuditLog | null;
   open: boolean;
-  onClose: () => void;
+  onCloseAction: () => void;
 };
 
 function isRecord(val: unknown): val is Record<string, unknown> {
@@ -62,20 +62,20 @@ function MetadataDiff({ metadata }: { metadata: Record<string, unknown> }) {
   );
 }
 
-export function AuditDetail({ log, open, onClose }: AuditDetailProps) {
+export function AuditDetail({ log, open, onCloseAction }: AuditDetailProps) {
   if (!log) return null;
 
   const metadata = isRecord(log.metadata) ? log.metadata : {};
   const hasDiff = isRecord(metadata.old) && isRecord(metadata.new);
 
   return (
-    <Sheet open={open} onOpenChange={(val) => !val && onClose()}>
+    <Sheet open={open} onOpenChange={(val) => !val && onCloseAction()}>
       <SheetContent side="right" className="overflow-y-auto sm:max-w-lg">
         <SheetHeader>
           <SheetTitle>Audit Log Detail</SheetTitle>
           <SheetDescription>
             <Badge variant="secondary">{log.action}</Badge>
-            {' '}on {log.entity_type ?? 'unknown'} at{' '}
+            {' '}on {log.entity ?? 'unknown'} at{' '}
             {log.created_at ? new Date(log.created_at).toLocaleString() : '—'}
           </SheetDescription>
         </SheetHeader>
@@ -92,7 +92,7 @@ export function AuditDetail({ log, open, onClose }: AuditDetailProps) {
             <dd className="font-mono text-xs">{log.entity_id ?? '\u2014'}</dd>
 
             <dt className="font-medium text-muted-foreground">IP Address</dt>
-            <dd className="font-mono text-xs">{log.ip_address ?? '\u2014'}</dd>
+            <dd className="font-mono text-xs">{(isRecord(log.metadata) ? (log.metadata as Record<string, unknown>).ip_address as string : null) ?? '\u2014'}</dd>
           </dl>
 
           <div>

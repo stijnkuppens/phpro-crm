@@ -1,5 +1,6 @@
 import { cache } from 'react';
 import { createServerClient } from '@/lib/supabase/server';
+import { logger } from '@/lib/logger';
 
 export const getUser = cache(async (id: string) => {
   const supabase = await createServerClient();
@@ -10,7 +11,7 @@ export const getUser = cache(async (id: string) => {
     .single();
 
   if (error) {
-    console.error('getUser error:', error.message);
+    logger.error({ err: error, entity: 'users' }, 'Failed to fetch user');
     return null;
   }
   return data;

@@ -1,5 +1,6 @@
 import { cache } from 'react';
 import { createServerClient } from '@/lib/supabase/server';
+import { logger } from '@/lib/logger';
 import type { IndexationIndex } from '../types';
 
 export const getIndexationIndices = cache(
@@ -12,7 +13,7 @@ export const getIndexationIndices = cache(
       .order('name', { ascending: true });
 
     if (error) {
-      console.error('Failed to fetch indexation indices:', error.message);
+      logger.error({ err: error, entity: 'indexation_indices' }, 'Failed to fetch indexation indices');
       return [];
     }
 

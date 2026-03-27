@@ -1,5 +1,6 @@
 import { cache } from 'react';
 import { createServerClient } from '@/lib/supabase/server';
+import { logger } from '@/lib/logger';
 import { CONSULTANT_SELECT, type ConsultantWithDetails } from '../types';
 
 export const getConsultant = cache(
@@ -12,7 +13,7 @@ export const getConsultant = cache(
       .single();
 
     if (error) {
-      console.error('Failed to fetch consultant:', error.message);
+      logger.error({ err: error, entity: 'consultants' }, 'Failed to fetch consultant');
       return null;
     }
 

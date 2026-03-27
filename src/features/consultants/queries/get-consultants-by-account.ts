@@ -1,5 +1,6 @@
 import { cache } from 'react';
 import { createServerClient } from '@/lib/supabase/server';
+import { logger } from '@/lib/logger';
 import { CONSULTANT_SELECT, type ConsultantWithDetails } from '../types';
 
 export const getConsultantsByAccount = cache(
@@ -13,7 +14,7 @@ export const getConsultantsByAccount = cache(
       .order('last_name', { ascending: true });
 
     if (error) {
-      console.error('Failed to fetch consultants by account:', error.message);
+      logger.error({ err: error, entity: 'consultants' }, 'Failed to fetch consultants by account');
       return [];
     }
 

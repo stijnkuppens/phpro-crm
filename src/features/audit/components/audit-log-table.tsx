@@ -61,9 +61,9 @@ export function AuditLogTable({
       ),
     },
     {
-      accessorKey: 'entity_type',
+      accessorKey: 'entity',
       header: 'Entity Type',
-      cell: ({ row }) => row.original.entity_type ?? '\u2014',
+      cell: ({ row }) => row.original.entity ?? '\u2014',
     },
     {
       accessorKey: 'entity_id',
@@ -104,7 +104,7 @@ export function AuditLogTable({
       <AuditDetail
         log={selectedLog}
         open={selectedLog !== null}
-        onClose={() => setSelectedLog(null)}
+        onCloseAction={() => setSelectedLog(null)}
       />
     </>
   );

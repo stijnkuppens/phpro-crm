@@ -16,14 +16,15 @@ export function NotificationList({ initialData }: Props) {
 
   const handleClick = useCallback(
     async (notification: Notification) => {
-      if (!notification.is_read) {
+      if (!notification.read) {
         await markAsRead(notification.id);
         setNotifications((prev) =>
-          prev.map((n) => (n.id === notification.id ? { ...n, is_read: true } : n)),
+          prev.map((n) => (n.id === notification.id ? { ...n, read: true } : n)),
         );
       }
-      if (notification.link) {
-        router.push(notification.link);
+      const link = (notification.metadata as Record<string, unknown> | null)?.link as string | undefined;
+      if (link) {
+        router.push(link);
       }
     },
     [router],
@@ -31,10 +32,10 @@ export function NotificationList({ initialData }: Props) {
 
   const handleMarkAllRead = useCallback(async () => {
     await markAllAsRead();
-    setNotifications((prev) => prev.map((n) => ({ ...n, is_read: true })));
+    setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
   }, []);
 
-  const hasUnread = notifications.some((n) => !n.is_read);
+  const hasUnread = notifications.some((n) => !n.read);
 
   return (
     <div className="space-y-4">
@@ -53,10 +54,10 @@ export function NotificationList({ initialData }: Props) {
           {notifications.map((n) => (
             <li
               key={n.id}
-              className={`flex cursor-pointer flex-col gap-1 p-4 hover:bg-muted/50 ${!n.is_read ? 'bg-muted/30' : ''}`}
+              className={`flex cursor-pointer flex-col gap-1 p-4 hover:bg-muted/50 ${!n.read ? 'bg-muted/30' : ''}`}
               onClick={() => handleClick(n)}
             >
-              <span className={n.is_read ? 'text-muted-foreground' : 'font-medium'}>
+              <span className={n.read ? 'text-muted-foreground' : 'font-medium'}>
                 {n.title}
               </span>
               {n.message && (

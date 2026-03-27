@@ -1,33 +1,31 @@
 'use client';
 
-import { useState } from 'react';
+import { useActionState, useRef } from 'react';
 import { createBrowserClient } from '@/lib/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Button } from '@/components/ui/button';
+import { SubmitButton } from '@/components/ui/submit-button';
+import { Save } from 'lucide-react';
 import { toast } from 'sonner';
-import { Loader2, Save } from 'lucide-react';
 
 export function ChangePasswordForm() {
-  const [newPassword, setNewPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [saving, setSaving] = useState(false);
+  const formRef = useRef<HTMLFormElement>(null);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const [, formAction] = useActionState(async (_prev: null, formData: FormData) => {
+    const newPassword = formData.get('newPassword') as string;
+    const confirmPassword = formData.get('confirmPassword') as string;
 
     if (newPassword.length < 6) {
       toast.error('Wachtwoord moet minstens 6 tekens bevatten');
-      return;
+      return null;
     }
 
     if (newPassword !== confirmPassword) {
       toast.error('Wachtwoorden komen niet overeen');
-      return;
+      return null;
     }
 
-    setSaving(true);
     const supabase = createBrowserClient();
     const { error } = await supabase.auth.updateUser({ password: newPassword });
 
@@ -35,26 +33,24 @@ export function ChangePasswordForm() {
       toast.error(error.message);
     } else {
       toast.success('Wachtwoord gewijzigd');
-      setNewPassword('');
-      setConfirmPassword('');
+      formRef.current?.reset();
     }
-    setSaving(false);
-  };
+    return null;
+  }, null);
 
   return (
     <Card>
       <CardHeader>
         <CardTitle>Wachtwoord wijzigen</CardTitle>
       </CardHeader>
-      <form onSubmit={handleSubmit}>
+      <form action={formAction} ref={formRef}>
         <CardContent className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="newPassword">Nieuw wachtwoord</Label>
             <Input
               id="newPassword"
+              name="newPassword"
               type="password"
-              value={newPassword}
-              onChange={(e) => setNewPassword(e.target.value)}
               required
               minLength={6}
               autoComplete="new-password"
@@ -64,18 +60,16 @@ export function ChangePasswordForm() {
             <Label htmlFor="confirmPassword">Bevestig wachtwoord</Label>
             <Input
               id="confirmPassword"
+              name="confirmPassword"
               type="password"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
               required
               minLength={6}
               autoComplete="new-password"
             />
           </div>
-          <Button type="submit" disabled={saving}>
-            {saving ? <Loader2 className="animate-spin" /> : <Save />}
+          <SubmitButton icon={<Save />}>
             Wachtwoord opslaan
-          </Button>
+          </SubmitButton>
         </CardContent>
       </form>
     </Card>

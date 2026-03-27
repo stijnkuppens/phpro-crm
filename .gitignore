@@ -33,11 +33,20 @@ Thumbs.db
 # supabase local
 supabase/.temp/
 
+# docker volumes (runtime data, not committed)
+docker/volumes/db/data/
+docker/volumes/storage/
+
 # playwright mcp
 .playwright-mcp/
+
+# docs (generated/local only)
+docs/
 
 # claude worktrees
 .claude/worktrees/
 
 # debug
 npm-debug.log*
+
+demo_crm/

@@ -49,7 +49,23 @@
       "Bash(supabase start:*)",
       "Bash(curl:*)",
       "Bash(docker exec:*)",
-      "Bash(git status:*)"
+      "Bash(git status:*)",
+      "Bash(supabase --version)",
+      "Bash(supabase status:*)",
+      "Bash(brew list:*)",
+      "Bash(find /Users/stijnkuppens/phpro/ai-projects/phpro_crm -type d -name *mail* -o -type d -name *email*)",
+      "Bash(psql:*)",
+      "Bash(grep -r ref_internal_people /Users/stijnkuppens/phpro/ai-projects/phpro_crm/src --include=*.ts --include=*.tsx -l)",
+      "Bash(cp /Users/stijnkuppens/phpro/ai-projects/phpro_crm/scripts/be.phpro.crm.db-backup.plist ~/Library/LaunchAgents/)",
+      "Bash(launchctl load:*)",
+      "Bash(npx tailwindcss:*)",
+      "Bash(kill 54106)",
+      "Bash(lsof -ti:3000)",
+      "Bash(xargs kill:*)",
+      "Bash(rm -f /Users/stijnkuppens/phpro/ai-projects/phpro_crm/.next/dev/lock)",
+      "Bash(task db:reset)",
+      "Bash(grep -c 'a0000000\\\\|b0000000\\\\|c0000000\\\\|d0000000\\\\|e0000000\\\\|f0000000' /Users/stijnkuppens/phpro/ai-projects/phpro_crm/supabase/fixtures/*.sql)",
+      "Bash(grep -v ':0$')"
     ]
   }
 }

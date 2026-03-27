@@ -108,12 +108,17 @@ export function MoveFileDialog({ open, onOpenChange, fileName, onMove }: MoveFil
 
   useEffect(() => {
     if (!open) return;
+    let cancelled = false;
     setSelected('');
     const supabase = createBrowserClient();
     supabase.storage
       .from('documents')
       .list('')
-      .then(({ data }) => setRootFolders(parseFolders(data as StorageFile[] | null)));
+      .then(({ data }) => {
+        if (cancelled) return;
+        setRootFolders(parseFolders(data as StorageFile[] | null));
+      });
+    return () => { cancelled = true; };
   }, [open]);
 
   const handleMove = async () => {

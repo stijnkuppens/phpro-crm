@@ -74,19 +74,25 @@ export function AccountContactsTab({ accountId, initialData, initialCount }: Pro
         onSaved={() => { setCreateOpen(false); load(); }}
       />
 
-      <ContactViewModal
-        contactId={viewId}
-        onClose={() => setViewId(null)}
-        onEdit={(id) => { setViewId(null); setEditId(id); }}
-      />
+      {viewId && (
+        <ContactViewModal
+          key={viewId}
+          contactId={viewId}
+          onClose={() => setViewId(null)}
+          onEdit={(id) => { setViewId(null); setEditId(id); }}
+        />
+      )}
 
-      <ContactFormModal
-        contactId={editId}
-        accountId={accountId}
-        open={editId !== null}
-        onClose={() => setEditId(null)}
-        onSaved={() => { setEditId(null); load(); }}
-      />
+      {editId && (
+        <ContactFormModal
+          key={editId}
+          contactId={editId}
+          accountId={accountId}
+          open
+          onClose={() => setEditId(null)}
+          onSaved={() => { setEditId(null); load(); }}
+        />
+      )}
     </div>
   );
 }

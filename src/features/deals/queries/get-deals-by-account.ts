@@ -1,5 +1,6 @@
 import { cache } from 'react';
 import { createServerClient } from '@/lib/supabase/server';
+import { logger } from '@/lib/logger';
 import type { DealWithRelations } from '../types';
 
 export const getDealsByAccount = cache(async (accountId: string): Promise<DealWithRelations[]> => {
@@ -18,7 +19,7 @@ export const getDealsByAccount = cache(async (accountId: string): Promise<DealWi
     .order('created_at', { ascending: false })
     .limit(50);
   if (error) {
-    console.error('Failed to fetch deals by account:', error.message);
+    logger.error({ err: error, entity: 'deals' }, 'Failed to fetch deals by account');
     return [];
   }
   return (data as unknown as DealWithRelations[]) ?? [];

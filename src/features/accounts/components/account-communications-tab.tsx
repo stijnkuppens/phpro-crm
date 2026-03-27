@@ -18,6 +18,7 @@ import { CommunicationModal } from '@/features/communications/components/communi
 import type { CommunicationWithDetails } from '@/features/communications/types';
 import type { DateRange } from 'react-day-picker';
 import { Mail, FileText, Users, Phone, ChevronDown, ChevronRight, Plus, Search } from 'lucide-react';
+import { escapeSearch } from '@/lib/utils/escape-search';
 
 type Props = {
   accountId: string;
@@ -88,7 +89,7 @@ export function AccountCommunicationsTab({ accountId, initialData, initialCount,
     if (ownerFilter !== 'all') eqFilters.owner_id = ownerFilter;
 
     const orFilter = search
-      ? `subject.ilike.%${search}%,to.ilike.%${search}%`
+      ? `subject.ilike.%${escapeSearch(search)}%,to.ilike.%${escapeSearch(search)}%`
       : undefined;
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any

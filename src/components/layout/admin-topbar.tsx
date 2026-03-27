@@ -24,10 +24,11 @@ import { NotificationBell } from '@/features/notifications/components/notificati
 
 function LocaleSwitcher() {
   const locale = useLocale();
+  const router = useRouter();
 
   const switchLocale = (newLocale: string) => {
     document.cookie = `locale=${newLocale};path=/;max-age=31536000`;
-    window.location.reload();
+    router.refresh();
   };
 
   return (

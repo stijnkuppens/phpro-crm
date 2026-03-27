@@ -1,5 +1,6 @@
 import { cache } from 'react';
 import { createServerClient } from '@/lib/supabase/server';
+import { logger } from '@/lib/logger';
 
 // One server client per request — shared by all cached queries below.
 const getServerClient = cache(() => createServerClient());
@@ -20,6 +21,6 @@ export const getUserProfile = cache(async () => {
     .select('*')
     .eq('id', user.id)
     .single();
-  if (error) console.error('Failed to fetch user profile:', error.message);
+  if (error) logger.error({ err: error, entity: 'user_profiles' }, 'Failed to fetch user profile');
   return data;
 });

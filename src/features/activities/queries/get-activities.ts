@@ -1,5 +1,6 @@
 import { cache } from 'react';
 import { createServerClient } from '@/lib/supabase/server';
+import { logger } from '@/lib/logger';
 import type { ActivityWithRelations, ActivityFilters } from '../types';
 
 type GetActivitiesParams = {
@@ -48,7 +49,7 @@ export const getActivities = cache(
     const { data, count, error } = await query;
 
     if (error) {
-      console.error('Failed to fetch activities:', error.message);
+      logger.error({ err: error, entity: 'activities' }, 'Failed to fetch activities');
       return { data: [], count: 0 };
     }
 

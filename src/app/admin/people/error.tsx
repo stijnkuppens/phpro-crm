@@ -3,9 +3,10 @@
 import { useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { AlertCircle } from 'lucide-react';
+import { logger } from '@/lib/logger';
 
 export default function Error({ error, reset }: { error: Error & { digest?: string }; reset: () => void }) {
-  useEffect(() => { console.error(error); }, [error]);
+  useEffect(() => { logger.error({ err: error }, 'People page error'); }, [error]);
 
   return (
     <div className="flex flex-col items-center justify-center gap-4 py-20">

@@ -7,6 +7,31 @@ export type Json =
   | Json[]
 
 export type Database = {
+  graphql_public: {
+    Tables: {
+      [_ in never]: never
+    }
+    Views: {
+      [_ in never]: never
+    }
+    Functions: {
+      graphql: {
+        Args: {
+          extensions?: Json
+          operationName?: string
+          query?: string
+          variables?: Json
+        }
+        Returns: Json
+      }
+    }
+    Enums: {
+      [_ in never]: never
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
+  }
   public: {
     Tables: {
       account_cc_services: {
@@ -358,7 +383,7 @@ export type Database = {
           owner_id: string | null
           phone: string | null
           phpro_contract: string | null
-          project_manager: string | null
+          project_manager_id: string | null
           revenue: number | null
           size: string | null
           status: string
@@ -384,7 +409,7 @@ export type Database = {
           owner_id?: string | null
           phone?: string | null
           phpro_contract?: string | null
-          project_manager?: string | null
+          project_manager_id?: string | null
           revenue?: number | null
           size?: string | null
           status?: string
@@ -410,7 +435,7 @@ export type Database = {
           owner_id?: string | null
           phone?: string | null
           phpro_contract?: string | null
-          project_manager?: string | null
+          project_manager_id?: string | null
           revenue?: number | null
           size?: string | null
           status?: string
@@ -424,6 +449,13 @@ export type Database = {
           {
             foreignKeyName: "accounts_owner_id_fkey"
             columns: ["owner_id"]
+            isOneToOne: false
+            referencedRelation: "user_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "accounts_project_manager_id_fkey"
+            columns: ["project_manager_id"]
             isOneToOne: false
             referencedRelation: "user_profiles"
             referencedColumns: ["id"]
@@ -499,16 +531,22 @@ export type Database = {
       }
       app_settings: {
         Row: {
+          created_at: string
+          id: string
           key: string
           updated_at: string
           value: Json
         }
         Insert: {
+          created_at?: string
+          id?: string
           key: string
           updated_at?: string
           value?: Json
         }
         Update: {
+          created_at?: string
+          id?: string
           key?: string
           updated_at?: string
           value?: Json
@@ -518,31 +556,28 @@ export type Database = {
       audit_logs: {
         Row: {
           action: string
-          created_at: string | null
+          created_at: string
+          entity: string | null
           entity_id: string | null
-          entity_type: string | null
           id: string
-          ip_address: string | null
           metadata: Json | null
           user_id: string | null
         }
         Insert: {
           action: string
-          created_at?: string | null
+          created_at?: string
+          entity?: string | null
           entity_id?: string | null
-          entity_type?: string | null
           id?: string
-          ip_address?: string | null
           metadata?: Json | null
           user_id?: string | null
         }
         Update: {
           action?: string
-          created_at?: string | null
+          created_at?: string
+          entity?: string | null
           entity_id?: string | null
-          entity_type?: string | null
           id?: string
-          ip_address?: string | null
           metadata?: Json | null
           user_id?: string | null
         }
@@ -2003,30 +2038,33 @@ export type Database = {
       }
       notifications: {
         Row: {
-          created_at: string | null
+          created_at: string
           id: string
-          is_read: boolean | null
-          link: string | null
           message: string | null
+          metadata: Json | null
+          read: boolean
           title: string
+          type: string | null
           user_id: string
         }
         Insert: {
-          created_at?: string | null
+          created_at?: string
           id?: string
-          is_read?: boolean | null
-          link?: string | null
           message?: string | null
+          metadata?: Json | null
+          read?: boolean
           title: string
+          type?: string | null
           user_id: string
         }
         Update: {
-          created_at?: string | null
+          created_at?: string
           id?: string
-          is_read?: boolean | null
-          link?: string | null
           message?: string | null
+          metadata?: Json | null
+          read?: boolean
           title?: string
+          type?: string | null
           user_id?: string
         }
         Relationships: []
@@ -2170,462 +2208,465 @@ export type Database = {
       }
       ref_cc_services: {
         Row: {
+          active: boolean
           created_at: string
           id: string
-          is_active: boolean
           name: string
-          sort_order: number | null
+          sort_order: number
           updated_at: string
         }
         Insert: {
+          active?: boolean
           created_at?: string
           id?: string
-          is_active?: boolean
           name: string
-          sort_order?: number | null
+          sort_order?: number
           updated_at?: string
         }
         Update: {
+          active?: boolean
           created_at?: string
           id?: string
-          is_active?: boolean
           name?: string
-          sort_order?: number | null
+          sort_order?: number
           updated_at?: string
         }
         Relationships: []
       }
       ref_collaboration_types: {
         Row: {
+          active: boolean
           created_at: string
           id: string
-          is_active: boolean
           name: string
-          sort_order: number | null
+          sort_order: number
           updated_at: string
         }
         Insert: {
+          active?: boolean
           created_at?: string
           id?: string
-          is_active?: boolean
           name: string
-          sort_order?: number | null
+          sort_order?: number
           updated_at?: string
         }
         Update: {
+          active?: boolean
           created_at?: string
           id?: string
-          is_active?: boolean
           name?: string
-          sort_order?: number | null
+          sort_order?: number
           updated_at?: string
         }
         Relationships: []
       }
       ref_competence_centers: {
         Row: {
+          active: boolean
           created_at: string
           id: string
-          is_active: boolean
           name: string
-          sort_order: number | null
+          sort_order: number
           updated_at: string
         }
         Insert: {
+          active?: boolean
           created_at?: string
           id?: string
-          is_active?: boolean
           name: string
-          sort_order?: number | null
+          sort_order?: number
           updated_at?: string
         }
         Update: {
+          active?: boolean
           created_at?: string
           id?: string
-          is_active?: boolean
           name?: string
-          sort_order?: number | null
+          sort_order?: number
           updated_at?: string
         }
         Relationships: []
       }
       ref_consultant_roles: {
         Row: {
+          active: boolean
           created_at: string
           id: string
-          is_active: boolean
           name: string
-          sort_order: number | null
+          sort_order: number
           updated_at: string
         }
         Insert: {
+          active?: boolean
           created_at?: string
           id?: string
-          is_active?: boolean
           name: string
-          sort_order?: number | null
+          sort_order?: number
           updated_at?: string
         }
         Update: {
+          active?: boolean
           created_at?: string
           id?: string
-          is_active?: boolean
           name?: string
-          sort_order?: number | null
+          sort_order?: number
           updated_at?: string
         }
         Relationships: []
       }
       ref_contact_roles: {
         Row: {
+          active: boolean
           created_at: string
           id: string
-          is_active: boolean
           name: string
-          sort_order: number | null
+          sort_order: number
           updated_at: string
         }
         Insert: {
+          active?: boolean
           created_at?: string
           id?: string
-          is_active?: boolean
           name: string
-          sort_order?: number | null
+          sort_order?: number
           updated_at?: string
         }
         Update: {
+          active?: boolean
           created_at?: string
           id?: string
-          is_active?: boolean
           name?: string
-          sort_order?: number | null
+          sort_order?: number
           updated_at?: string
         }
         Relationships: []
       }
       ref_distribution_types: {
         Row: {
+          active: boolean
           created_at: string
           id: string
-          is_active: boolean
           name: string
-          sort_order: number | null
+          sort_order: number
           updated_at: string
         }
         Insert: {
+          active?: boolean
           created_at?: string
           id?: string
-          is_active?: boolean
           name: string
-          sort_order?: number | null
+          sort_order?: number
           updated_at?: string
         }
         Update: {
+          active?: boolean
           created_at?: string
           id?: string
-          is_active?: boolean
           name?: string
-          sort_order?: number | null
+          sort_order?: number
           updated_at?: string
         }
         Relationships: []
       }
       ref_hobbies: {
         Row: {
+          active: boolean
           created_at: string
           id: string
-          is_active: boolean
           name: string
-          sort_order: number | null
+          sort_order: number
           updated_at: string
         }
         Insert: {
+          active?: boolean
           created_at?: string
           id?: string
-          is_active?: boolean
           name: string
-          sort_order?: number | null
+          sort_order?: number
           updated_at?: string
         }
         Update: {
+          active?: boolean
           created_at?: string
           id?: string
-          is_active?: boolean
           name?: string
-          sort_order?: number | null
+          sort_order?: number
           updated_at?: string
         }
         Relationships: []
       }
       ref_hosting_environments: {
         Row: {
+          active: boolean
           created_at: string
           id: string
-          is_active: boolean
           name: string
-          sort_order: number | null
+          sort_order: number
           updated_at: string
         }
         Insert: {
+          active?: boolean
           created_at?: string
           id?: string
-          is_active?: boolean
           name: string
-          sort_order?: number | null
+          sort_order?: number
           updated_at?: string
         }
         Update: {
+          active?: boolean
           created_at?: string
           id?: string
-          is_active?: boolean
           name?: string
-          sort_order?: number | null
+          sort_order?: number
           updated_at?: string
         }
         Relationships: []
       }
       ref_hosting_providers: {
         Row: {
+          active: boolean
           created_at: string
           id: string
-          is_active: boolean
           name: string
-          sort_order: number | null
+          sort_order: number
           updated_at: string
         }
         Insert: {
+          active?: boolean
           created_at?: string
           id?: string
-          is_active?: boolean
           name: string
-          sort_order?: number | null
+          sort_order?: number
           updated_at?: string
         }
         Update: {
+          active?: boolean
           created_at?: string
           id?: string
-          is_active?: boolean
           name?: string
-          sort_order?: number | null
+          sort_order?: number
           updated_at?: string
         }
         Relationships: []
       }
       ref_internal_people: {
         Row: {
+          active: boolean
           avatar_url: string | null
           created_at: string
+          email: string | null
           id: string
-          is_active: boolean
           name: string
-          sort_order: number | null
+          sort_order: number
           updated_at: string
         }
         Insert: {
+          active?: boolean
           avatar_url?: string | null
           created_at?: string
+          email?: string | null
           id?: string
-          is_active?: boolean
           name: string
-          sort_order?: number | null
+          sort_order?: number
           updated_at?: string
         }
         Update: {
+          active?: boolean
           avatar_url?: string | null
           created_at?: string
+          email?: string | null
           id?: string
-          is_active?: boolean
           name?: string
-          sort_order?: number | null
+          sort_order?: number
           updated_at?: string
         }
         Relationships: []
       }
       ref_language_levels: {
         Row: {
+          active: boolean
           created_at: string
           id: string
-          is_active: boolean
           name: string
-          sort_order: number | null
+          sort_order: number
           updated_at: string
         }
         Insert: {
+          active?: boolean
           created_at?: string
           id?: string
-          is_active?: boolean
           name: string
-          sort_order?: number | null
+          sort_order?: number
           updated_at?: string
         }
         Update: {
+          active?: boolean
           created_at?: string
           id?: string
-          is_active?: boolean
           name?: string
-          sort_order?: number | null
+          sort_order?: number
           updated_at?: string
         }
         Relationships: []
       }
       ref_languages: {
         Row: {
+          active: boolean
           created_at: string
           id: string
-          is_active: boolean
           name: string
-          sort_order: number | null
+          sort_order: number
           updated_at: string
         }
         Insert: {
+          active?: boolean
           created_at?: string
           id?: string
-          is_active?: boolean
           name: string
-          sort_order?: number | null
+          sort_order?: number
           updated_at?: string
         }
         Update: {
+          active?: boolean
           created_at?: string
           id?: string
-          is_active?: boolean
           name?: string
-          sort_order?: number | null
+          sort_order?: number
           updated_at?: string
         }
         Relationships: []
       }
       ref_lead_sources: {
         Row: {
+          active: boolean
           created_at: string
           id: string
-          is_active: boolean
           name: string
-          sort_order: number | null
+          sort_order: number
           updated_at: string
         }
         Insert: {
+          active?: boolean
           created_at?: string
           id?: string
-          is_active?: boolean
           name: string
-          sort_order?: number | null
+          sort_order?: number
           updated_at?: string
         }
         Update: {
+          active?: boolean
           created_at?: string
           id?: string
-          is_active?: boolean
           name?: string
-          sort_order?: number | null
+          sort_order?: number
           updated_at?: string
         }
         Relationships: []
       }
       ref_sla_tools: {
         Row: {
+          active: boolean
           created_at: string
           id: string
-          is_active: boolean
           name: string
-          sort_order: number | null
+          sort_order: number
           updated_at: string
         }
         Insert: {
+          active?: boolean
           created_at?: string
           id?: string
-          is_active?: boolean
           name: string
-          sort_order?: number | null
+          sort_order?: number
           updated_at?: string
         }
         Update: {
+          active?: boolean
           created_at?: string
           id?: string
-          is_active?: boolean
           name?: string
-          sort_order?: number | null
+          sort_order?: number
           updated_at?: string
         }
         Relationships: []
       }
       ref_stop_reasons: {
         Row: {
+          active: boolean
           created_at: string
           id: string
-          is_active: boolean
           name: string
-          sort_order: number | null
+          sort_order: number
           updated_at: string
         }
         Insert: {
+          active?: boolean
           created_at?: string
           id?: string
-          is_active?: boolean
           name: string
-          sort_order?: number | null
+          sort_order?: number
           updated_at?: string
         }
         Update: {
+          active?: boolean
           created_at?: string
           id?: string
-          is_active?: boolean
           name?: string
-          sort_order?: number | null
+          sort_order?: number
           updated_at?: string
         }
         Relationships: []
       }
       ref_teams: {
         Row: {
+          active: boolean
           created_at: string
           id: string
-          is_active: boolean
           name: string
-          sort_order: number | null
+          sort_order: number
           updated_at: string
         }
         Insert: {
+          active?: boolean
           created_at?: string
           id?: string
-          is_active?: boolean
           name: string
-          sort_order?: number | null
+          sort_order?: number
           updated_at?: string
         }
         Update: {
+          active?: boolean
           created_at?: string
           id?: string
-          is_active?: boolean
           name?: string
-          sort_order?: number | null
+          sort_order?: number
           updated_at?: string
         }
         Relationships: []
       }
       ref_technologies: {
         Row: {
+          active: boolean
           created_at: string
           id: string
-          is_active: boolean
           name: string
-          sort_order: number | null
+          sort_order: number
           updated_at: string
         }
         Insert: {
+          active?: boolean
           created_at?: string
           id?: string
-          is_active?: boolean
           name: string
-          sort_order?: number | null
+          sort_order?: number
           updated_at?: string
         }
         Update: {
+          active?: boolean
           created_at?: string
           id?: string
-          is_active?: boolean
           name?: string
-          sort_order?: number | null
+          sort_order?: number
           updated_at?: string
         }
         Relationships: []
@@ -3012,6 +3053,33 @@ export type Database = {
         Args: { p_approved_by: string; p_draft_id: string }
         Returns: undefined
       }
+      get_account_banner_stats: {
+        Args: { p_account_id: string }
+        Returns: {
+          activity_count: number
+          consultant_count: number
+          contact_count: number
+          deal_count: number
+          monthly_revenue: number
+          pipeline_value: number
+        }[]
+      }
+      get_consultant_stats: {
+        Args: never
+        Returns: {
+          active_count: number
+          bench_count: number
+          max_revenue: number
+          stopped_count: number
+        }[]
+      }
+      get_distinct_account_countries: {
+        Args: never
+        Returns: {
+          country: string
+        }[]
+      }
+      get_open_deal_value: { Args: never; Returns: number }
       get_user_role: { Args: never; Returns: string }
       link_consultant_to_account: {
         Args: {
@@ -3032,6 +3100,8 @@ export type Database = {
         Args: { p_rows: Json; p_year: number }
         Returns: undefined
       }
+      show_limit: { Args: never; Returns: number }
+      show_trgm: { Args: { "": string }; Returns: string[] }
       sync_account_fk_relation: {
         Args: { p_account_id: string; p_rows: Json; p_table: string }
         Returns: undefined
@@ -3168,6 +3238,9 @@ export type CompositeTypes<
     : never
 
 export const Constants = {
+  graphql_public: {
+    Enums: {},
+  },
   public: {
     Enums: {},
   },

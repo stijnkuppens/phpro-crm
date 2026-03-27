@@ -1,5 +1,6 @@
 import { cache } from 'react';
 import { createServerClient } from '@/lib/supabase/server';
+import { logger } from '@/lib/logger';
 
 export const getPipelines = cache(async () => {
   const supabase = await createServerClient();
@@ -11,7 +12,7 @@ export const getPipelines = cache(async () => {
     `)
     .order('sort_order', { ascending: true });
   if (error) {
-    console.error('getPipelines error:', error.message);
+    logger.error({ err: error, entity: 'pipelines' }, 'Failed to fetch pipelines');
     return [];
   }
   return data ?? [];

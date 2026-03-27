@@ -1,12 +1,13 @@
 'use client';
 
-import { useState, useTransition } from 'react';
+import { useActionState, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
-import { Loader2, Send } from 'lucide-react';
+import { Send } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
+import { SubmitButton } from '@/components/ui/submit-button';
 import {
   Select,
   SelectContent,
@@ -26,32 +27,29 @@ const ROLE_LABELS: Record<string, string> = {
 
 export function InviteForm() {
   const router = useRouter();
-  const [isPending, startTransition] = useTransition();
-  const [email, setEmail] = useState('');
-  const [fullName, setFullName] = useState('');
   const [role, setRole] = useState('sales_rep');
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    startTransition(async () => {
-      const result = await inviteUser({ email, fullName, role: role as typeof roles[number] });
-      if (result.error) {
-        toast.error(typeof result.error === 'string' ? result.error : 'Uitnodiging mislukt');
-        return;
-      }
-      toast.success(`Uitnodiging verstuurd naar ${email}`);
-      router.push('/admin/users');
-    });
-  };
+  const [, formAction] = useActionState(async (_prev: null, formData: FormData) => {
+    const email = formData.get('email') as string;
+    const fullName = formData.get('fullName') as string;
+
+    const result = await inviteUser({ email, fullName, role: role as typeof roles[number] });
+    if (result.error) {
+      toast.error(typeof result.error === 'string' ? result.error : 'Uitnodiging mislukt');
+      return null;
+    }
+    toast.success(`Uitnodiging verstuurd naar ${email}`);
+    router.push('/admin/users');
+    return null;
+  }, null);
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-5">
+    <form action={formAction} className="space-y-5">
       <div className="space-y-2">
         <Label htmlFor="fullName">Naam</Label>
         <Input
           id="fullName"
-          value={fullName}
-          onChange={(e) => setFullName(e.target.value)}
+          name="fullName"
           placeholder="Jan Janssens"
           required
         />
@@ -61,9 +59,8 @@ export function InviteForm() {
         <Label htmlFor="email">E-mailadres</Label>
         <Input
           id="email"
+          name="email"
           type="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
           placeholder="jan@phpro.be"
           required
         />
@@ -86,15 +83,13 @@ export function InviteForm() {
       </div>
 
       <div className="flex gap-3 pt-2">
-        <Button type="submit" disabled={isPending}>
-          {isPending ? <Loader2 className="animate-spin" /> : <Send />}
+        <SubmitButton icon={<Send />}>
           Uitnodiging versturen
-        </Button>
+        </SubmitButton>
         <Button
           type="button"
           variant="outline"
           onClick={() => router.push('/admin/users')}
-          disabled={isPending}
         >
           Annuleren
         </Button>

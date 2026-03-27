@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { createBrowserClient } from '@/lib/supabase/client';
+import { logger } from '@/lib/logger';
 import type { User } from '@supabase/supabase-js';
 import type { Role } from '@/types/acl';
 
@@ -38,7 +39,7 @@ export function useAuth() {
             .single()
             .then(({ data, error }) => {
               if (error) {
-                console.error('Failed to fetch user role:', error.message);
+                logger.error({ err: error, entity: 'user_profiles' }, 'Failed to fetch user role');
               }
               setState((prev) => ({ ...prev, role: (data?.role as Role) ?? null }));
             });

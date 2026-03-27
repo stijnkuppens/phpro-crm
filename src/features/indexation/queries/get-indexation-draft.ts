@@ -1,5 +1,6 @@
 import { cache } from 'react';
 import { createServerClient } from '@/lib/supabase/server';
+import { logger } from '@/lib/logger';
 import type { IndexationDraftFull } from '../types';
 
 export const getIndexationDraft = cache(
@@ -21,7 +22,7 @@ export const getIndexationDraft = cache(
       .maybeSingle();
 
     if (error) {
-      console.error('Failed to fetch indexation draft:', error.message);
+      logger.error({ err: error, entity: 'indexation_drafts' }, 'Failed to fetch indexation draft');
       return null;
     }
 

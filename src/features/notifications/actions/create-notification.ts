@@ -1,5 +1,6 @@
 'use server';
 
+import { createServerClient } from '@/lib/supabase/server';
 import { createServiceRoleClient } from '@/lib/supabase/admin';
 import { ok, err, type ActionResult } from '@/lib/action-result';
 
@@ -9,12 +10,16 @@ export async function createNotification(params: {
   message?: string;
   link?: string;
 }): Promise<ActionResult> {
+  const supabaseAuth = await createServerClient();
+  const { data: { user } } = await supabaseAuth.auth.getUser();
+  if (!user) return err('Niet ingelogd');
+
   const admin = createServiceRoleClient();
   const { error } = await admin.from('notifications').insert({
     user_id: params.userId,
     title: params.title,
     message: params.message ?? null,
-    link: params.link ?? null,
+    metadata: params.link ? { link: params.link } : {},
   });
 
   if (error) {
