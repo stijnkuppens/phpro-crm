@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import {
   flexRender,
   getCoreRowModel,
@@ -8,7 +8,10 @@ import {
   useReactTable,
   type ColumnDef,
   type SortingState,
+  type VisibilityState,
 } from '@tanstack/react-table';
+import { useTableSettings } from '@/lib/hooks/use-table-settings';
+import { ColumnSettings } from '@/components/admin/column-settings';
 import {
   Table,
   TableBody,
@@ -49,6 +52,7 @@ type BulkAction = {
 };
 
 type DataTableProps<T> = {
+  tableId?: string;
   columns: ColumnDef<T>[];
   data: T[];
   pagination?: { page: number; pageSize: number; total: number };
@@ -103,6 +107,7 @@ function RowActionButton<T extends Record<string, any>>({ action, row }: { actio
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export default function DataTable<T extends Record<string, any>>({
+  tableId,
   columns,
   data,
   pagination,
@@ -114,6 +119,15 @@ export default function DataTable<T extends Record<string, any>>({
 }: DataTableProps<T>) {
   const [rowSelection, setRowSelection] = useState<Record<string, boolean>>({});
   const [sorting, setSorting] = useState<SortingState>([]);
+
+  const { settings, updateVisibility, updateOrder, reset } = useTableSettings(tableId ?? '');
+
+  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>(
+    () => settings?.visibility ?? {},
+  );
+  const [columnOrder, setColumnOrder] = useState<string[]>(
+    () => settings?.order ?? [],
+  );
 
   const allColumns: ColumnDef<T>[] = bulkActions
     ? [
@@ -144,9 +158,31 @@ export default function DataTable<T extends Record<string, any>>({
     getSortedRowModel: getSortedRowModel(),
     onSortingChange: setSorting,
     onRowSelectionChange: setRowSelection,
-    state: { rowSelection, sorting },
+    onColumnVisibilityChange: (updater) => {
+      setColumnVisibility((prev) => {
+        const next = typeof updater === 'function' ? updater(prev) : updater;
+        if (tableId) updateVisibility(next);
+        return next;
+      });
+    },
+    onColumnOrderChange: setColumnOrder,
+    state: { rowSelection, sorting, columnVisibility, columnOrder },
     getRowId: (row) => row.id ?? '',
   });
+
+  const handleOrderChange = useCallback(
+    (order: string[]) => {
+      setColumnOrder(order);
+      if (tableId) updateOrder(order);
+    },
+    [tableId, updateOrder],
+  );
+
+  const handleReset = useCallback(() => {
+    setColumnVisibility({});
+    setColumnOrder([]);
+    reset();
+  }, [reset]);
 
   const selectedIds = Object.keys(rowSelection).filter((k) => rowSelection[k]);
   const totalPages = pagination ? Math.ceil(pagination.total / pagination.pageSize) : 1;
@@ -188,6 +224,15 @@ export default function DataTable<T extends Record<string, any>>({
       </div>
 
       <div className="rounded-xl border bg-card shadow-sm">
+        {tableId && (
+          <div className="flex justify-end border-b px-4 py-2">
+            <ColumnSettings
+              table={table}
+              onOrderChange={handleOrderChange}
+              onReset={handleReset}
+            />
+          </div>
+        )}
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
