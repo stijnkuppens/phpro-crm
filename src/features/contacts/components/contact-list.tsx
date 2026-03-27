@@ -15,7 +15,6 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { ComboboxFilter } from '@/components/admin/combobox-filter';
-import { FilterBar } from '@/components/admin/filter-bar';
 import { contactColumns } from '../columns';
 import type { Contact } from '../types';
 import dynamic from 'next/dynamic';
@@ -99,44 +98,44 @@ export function ContactList({ initialData, initialCount, accounts = [] }: Contac
 
   return (
     <div className="space-y-4">
-      <FilterBar>
-        <div className="flex items-center gap-3 flex-wrap">
-          <Input
-            placeholder="Zoeken op naam of e-mail..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="w-64"
-          />
-          {accounts.length > 0 && (
-            <ComboboxFilter
-              options={accounts.map((a) => ({ value: a.id, label: a.name }))}
-              value={accountFilter}
-              onValueChange={setAccountFilter}
-              placeholder="Alle accounts"
-              searchPlaceholder="Zoek account..."
-              className="w-48"
-            />
-          )}
-          <Select value={roleFilter} onValueChange={(v) => setRoleFilter(v ?? 'all')}>
-            <SelectTrigger className="w-48"><SelectValue /></SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Alle rollen</SelectItem>
-              {ROLES.map((r) => (
-                <SelectItem key={r} value={r}>{r}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <Button
-            variant={steercoOnly ? 'default' : 'outline'}
-            size="sm"
-            onClick={() => setSteercoOnly((prev) => !prev)}
-          >
-            Steerco
-          </Button>
-        </div>
-      </FilterBar>
       <DataTable
         tableId="contacts"
+        filterBar={
+          <div className="flex items-center gap-3 flex-wrap">
+            <Input
+              placeholder="Zoeken op naam of e-mail..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="w-64"
+            />
+            {accounts.length > 0 && (
+              <ComboboxFilter
+                options={accounts.map((a) => ({ value: a.id, label: a.name }))}
+                value={accountFilter}
+                onValueChange={setAccountFilter}
+                placeholder="Alle accounts"
+                searchPlaceholder="Zoek account..."
+                className="w-48"
+              />
+            )}
+            <Select value={roleFilter} onValueChange={(v) => setRoleFilter(v ?? 'all')}>
+              <SelectTrigger className="w-48"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Alle rollen</SelectItem>
+                {ROLES.map((r) => (
+                  <SelectItem key={r} value={r}>{r}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Button
+              variant={steercoOnly ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setSteercoOnly((prev) => !prev)}
+            >
+              Steerco
+            </Button>
+          </div>
+        }
         columns={contactColumns as any}
         data={data}
         pagination={{ page, pageSize: PAGE_SIZE, total }}

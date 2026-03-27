@@ -5,7 +5,6 @@ import { Pencil, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useEntity } from '@/lib/hooks/use-entity';
 import DataTable from '@/components/admin/data-table';
-import { FilterBar } from '@/components/admin/filter-bar';
 import {
   Select,
   SelectContent,
@@ -63,40 +62,40 @@ export function TaskList({ initialData, initialCount }: Props) {
 
   return (
     <div className="space-y-4">
-      <FilterBar>
-        <div className="flex flex-wrap gap-4">
-          <Select
-            value={filters.status ?? 'all'}
-            onValueChange={(v) => setFilters({ ...filters, status: !v || v === 'all' ? undefined : v })}
-          >
-            <SelectTrigger className="w-32">
-              <SelectValue placeholder="Status" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Alle</SelectItem>
-              <SelectItem value="Open">Open</SelectItem>
-              <SelectItem value="In Progress">In Progress</SelectItem>
-              <SelectItem value="Done">Done</SelectItem>
-            </SelectContent>
-          </Select>
-          <Select
-            value={filters.priority ?? 'all'}
-            onValueChange={(v) => setFilters({ ...filters, priority: !v || v === 'all' ? undefined : v })}
-          >
-            <SelectTrigger className="w-32">
-              <SelectValue placeholder="Prioriteit" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Alle</SelectItem>
-              <SelectItem value="High">High</SelectItem>
-              <SelectItem value="Medium">Medium</SelectItem>
-              <SelectItem value="Low">Low</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-      </FilterBar>
       <DataTable
         tableId="tasks"
+        filterBar={
+          <div className="flex flex-wrap gap-4">
+            <Select
+              value={filters.status ?? 'all'}
+              onValueChange={(v) => setFilters({ ...filters, status: !v || v === 'all' ? undefined : v })}
+            >
+              <SelectTrigger className="w-32">
+                <SelectValue placeholder="Status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Alle</SelectItem>
+                <SelectItem value="Open">Open</SelectItem>
+                <SelectItem value="In Progress">In Progress</SelectItem>
+                <SelectItem value="Done">Done</SelectItem>
+              </SelectContent>
+            </Select>
+            <Select
+              value={filters.priority ?? 'all'}
+              onValueChange={(v) => setFilters({ ...filters, priority: !v || v === 'all' ? undefined : v })}
+            >
+              <SelectTrigger className="w-32">
+                <SelectValue placeholder="Prioriteit" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Alle</SelectItem>
+                <SelectItem value="High">High</SelectItem>
+                <SelectItem value="Medium">Medium</SelectItem>
+                <SelectItem value="Low">Low</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        }
         columns={taskColumns as any}
         data={data}
         pagination={{ page, pageSize: PAGE_SIZE, total }}

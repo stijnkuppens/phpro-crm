@@ -17,7 +17,6 @@ import { toast } from 'sonner';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { FilterBar } from '@/components/admin/filter-bar';
 import DataTable from '@/components/admin/data-table';
 import { useEntity } from '@/lib/hooks/use-entity';
 import { consultantColumns } from '../columns';
@@ -211,45 +210,43 @@ export function ConsultantListView({ initialData, initialCount, stats, accounts,
           </Card>
         </div>
 
-        {/* Filter bar */}
-        <FilterBar>
-          <div className="flex flex-wrap items-center gap-3">
-            <Input
-              placeholder="Zoek consultant..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="w-64"
-            />
-            <div className="flex gap-1.5">
-              {statusPills.map((pill) => {
-                const active = selectedStatuses.includes(pill.value);
-                return (
-                  <button
-                    key={pill.value}
-                    type="button"
-                    onClick={() => toggleStatus(pill.value)}
-                    className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
-                      active
-                        ? 'bg-primary text-primary-foreground'
-                        : 'bg-muted text-muted-foreground hover:bg-muted/80'
-                    }`}
-                  >
-                    {pill.label}
-                  </button>
-                );
-              })}
-            </div>
-            <div className="flex-1" />
-            <Button size="sm" onClick={() => setShowNewBench(true)}>
-              <Plus />
-              Nieuwe consultant
-            </Button>
-          </div>
-        </FilterBar>
-
         {/* Data table */}
         <DataTable
           tableId="consultants"
+          filterBar={
+            <div className="flex flex-wrap items-center gap-3">
+              <Input
+                placeholder="Zoek consultant..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="w-64"
+              />
+              <div className="flex gap-1.5">
+                {statusPills.map((pill) => {
+                  const active = selectedStatuses.includes(pill.value);
+                  return (
+                    <button
+                      key={pill.value}
+                      type="button"
+                      onClick={() => toggleStatus(pill.value)}
+                      className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
+                        active
+                          ? 'bg-primary text-primary-foreground'
+                          : 'bg-muted text-muted-foreground hover:bg-muted/80'
+                      }`}
+                    >
+                      {pill.label}
+                    </button>
+                  );
+                })}
+              </div>
+              <div className="flex-1" />
+              <Button size="sm" onClick={() => setShowNewBench(true)}>
+                <Plus />
+                Nieuwe consultant
+              </Button>
+            </div>
+          }
           columns={consultantColumns}
           data={data}
           pagination={{ page, pageSize: PAGE_SIZE, total }}

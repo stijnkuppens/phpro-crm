@@ -6,7 +6,6 @@ import { toast } from 'sonner';
 import { Eye, Pencil, Trash2 } from 'lucide-react';
 import { useEntity } from '@/lib/hooks/use-entity';
 import DataTable from '@/components/admin/data-table';
-import { FilterBar } from '@/components/admin/filter-bar';
 import { AccountFiltersBar, type OwnerOption } from './account-filters';
 import { accountColumns } from '../columns';
 import { deleteAccount } from '../actions/delete-account';
@@ -69,11 +68,9 @@ export function AccountList({ initialData, initialCount, owners, countries }: Ac
 
   return (
     <div className="space-y-4">
-      <FilterBar>
-        <AccountFiltersBar filters={filters} onFilterChange={setFilters} owners={owners} countries={countries} />
-      </FilterBar>
       <DataTable
         tableId="accounts"
+        filterBar={<AccountFiltersBar filters={filters} onFilterChange={setFilters} owners={owners} countries={countries} />}
         columns={accountColumns}
         data={data}
         pagination={{ page, pageSize: PAGE_SIZE, total }}
