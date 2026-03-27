@@ -4,7 +4,6 @@ import { useState, useCallback, useEffect } from 'react';
 import { useEntity } from '@/lib/hooks/use-entity';
 import { AuditLogTable } from './audit-log-table';
 import { AuditFilters } from './audit-filters';
-import { FilterBar } from '@/components/admin/filter-bar';
 import type { AuditLog, AuditLogFilters } from '../types';
 
 const PAGE_SIZE = 20;
@@ -43,10 +42,8 @@ export function AuditList({ initialData, initialCount }: AuditListProps) {
 
   return (
     <div className="space-y-4">
-      <FilterBar>
-        <AuditFilters filters={filters} onFilterChange={setFilters} />
-      </FilterBar>
       <AuditLogTable
+        filterBar={<AuditFilters filters={filters} onFilterChange={setFilters} />}
         data={data}
         pagination={{ page, pageSize: PAGE_SIZE, total }}
         onPageChange={setPage}

@@ -12,6 +12,7 @@ import {
 } from '@tanstack/react-table';
 import { useTableSettings } from '@/lib/hooks/use-table-settings';
 import { ColumnSettings } from '@/components/admin/column-settings';
+import { FilterBar } from '@/components/admin/filter-bar';
 import {
   Table,
   TableBody,
@@ -53,6 +54,7 @@ type BulkAction = {
 
 type DataTableProps<T> = {
   tableId?: string;
+  filterBar?: React.ReactNode;
   columns: ColumnDef<T>[];
   data: T[];
   pagination?: { page: number; pageSize: number; total: number };
@@ -108,6 +110,7 @@ function RowActionButton<T extends Record<string, any>>({ action, row }: { actio
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export default function DataTable<T extends Record<string, any>>({
   tableId,
+  filterBar,
   columns,
   data,
   pagination,
@@ -223,16 +226,24 @@ export default function DataTable<T extends Record<string, any>>({
         )}
       </div>
 
-      <div className="rounded-xl border bg-card shadow-sm">
-        {tableId && (
-          <div className="flex justify-end border-b px-4 py-2">
-            <ColumnSettings
-              table={table}
-              onOrderChange={handleOrderChange}
-              onReset={handleReset}
-            />
+      {(filterBar || tableId) && (
+        <FilterBar>
+          <div className="flex items-center gap-3">
+            <div className="flex flex-1 flex-wrap items-center gap-3">
+              {filterBar}
+            </div>
+            {tableId && (
+              <ColumnSettings
+                table={table}
+                onOrderChange={handleOrderChange}
+                onReset={handleReset}
+              />
+            )}
           </div>
-        )}
+        </FilterBar>
+      )}
+
+      <div className="rounded-xl border bg-card shadow-sm">
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (

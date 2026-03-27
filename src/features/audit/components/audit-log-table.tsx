@@ -23,6 +23,7 @@ type AuditLogTableProps = {
   onPageChange: (page: number) => void;
   loading?: boolean;
   refreshing?: boolean;
+  filterBar?: React.ReactNode;
 };
 
 export function AuditLogTable({
@@ -31,6 +32,7 @@ export function AuditLogTable({
   onPageChange,
   loading,
   refreshing,
+  filterBar,
 }: AuditLogTableProps) {
   const [selectedLog, setSelectedLog] = useState<AuditLog | null>(null);
 
@@ -105,6 +107,7 @@ export function AuditLogTable({
     <>
       <DataTable
         tableId="audit-logs"
+        filterBar={filterBar}
         columns={columns}
         data={data}
         pagination={pagination}
