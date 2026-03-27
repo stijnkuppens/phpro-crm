@@ -86,7 +86,6 @@ export function AuditLogTable({
     },
     {
       id: 'detail',
-      meta: { label: 'Detail' },
       header: '',
       cell: ({ row }) => (
         <Button

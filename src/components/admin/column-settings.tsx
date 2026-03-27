@@ -32,9 +32,14 @@ export function ColumnSettings<T>({ table, onOrderChange, onReset }: ColumnSetti
     currentOrder[index] = currentOrder[targetIndex];
     currentOrder[targetIndex] = temp;
 
-    // Re-add excluded columns at their positions
-    const selectCol = table.getAllLeafColumns().find((c) => c.id === 'select' || c.id === '_select');
-    if (selectCol) currentOrder.unshift(selectCol.id);
+    // Prepend excluded columns that exist on this table (select, etc.)
+    const allLeaf = table.getAllLeafColumns();
+    for (let i = allLeaf.length - 1; i >= 0; i--) {
+      const col = allLeaf[i];
+      if (EXCLUDED_IDS.has(col.id) && !currentOrder.includes(col.id)) {
+        currentOrder.unshift(col.id);
+      }
+    }
 
     onOrderChange(currentOrder);
   };
