@@ -18,9 +18,6 @@ const rolePermissions: Record<Role, Permission[] | 'all'> = {
     'bench.read', 'bench.write',
     'contracts.read', 'contracts.write',
     'indexation.read', 'indexation.write', 'indexation.approve',
-    'revenue.read', 'revenue.write',
-    'pipeline.read', 'prognose.read',
-    'files.read', 'files.write',
     'users.read',
     'settings.read',
     'audit.read',
@@ -39,9 +36,6 @@ const rolePermissions: Record<Role, Permission[] | 'all'> = {
     'bench.read',
     'contracts.read',
     'indexation.read',
-    'revenue.read',
-    'pipeline.read', 'prognose.read',
-    'files.read',
     'notifications.read',
   ],
 
@@ -56,9 +50,6 @@ const rolePermissions: Record<Role, Permission[] | 'all'> = {
     'consultants.read',
     'bench.read',
     'contracts.read',
-    'revenue.read',
-    'pipeline.read', 'prognose.read',
-    'files.read',
     'notifications.read',
   ],
 
@@ -70,8 +61,6 @@ const rolePermissions: Record<Role, Permission[] | 'all'> = {
     'activities.read',
     'tasks.read',
     'communications.read',
-    'pipeline.read',
-    'files.read',
     'notifications.read',
   ],
 };

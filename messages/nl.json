@@ -36,20 +36,12 @@
     "tasks": "Taken",
     "bench": "Bench",
     "consultants": "Consultants",
-    "people": "People",
-    "materials": "Materiaal",
-    "revenue": "Revenue",
-    "prognose": "Prognose",
-    "pipeline": "Pipeline",
     "settings": "Instellingen",
-    "files": "Bestanden",
     "notifications": "Meldingen",
     "audit": "Audit Log",
     "users": "Gebruikers",
     "crm": "CRM",
-    "consultancy": "Consultancy",
-    "hr": "HR",
-    "analyse": "Analyse"
+    "consultancy": "Consultancy"
   },
   "auth": {
     "login": "Inloggen",

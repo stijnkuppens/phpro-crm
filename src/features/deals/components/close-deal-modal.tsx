@@ -14,6 +14,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Save } from 'lucide-react';
+import { z } from 'zod';
 import { closeDealSchema, type CloseDealValues } from '../types';
 import { closeDeal } from '../actions/close-deal';
 
@@ -44,7 +45,7 @@ export function CloseDealModal({ dealId, open, onOpenChange, onSuccess }: Props)
 
     const parsed = closeDealSchema.safeParse(values);
     if (!parsed.success) {
-      const messages = Object.values(parsed.error.flatten().fieldErrors).flat();
+      const messages = Object.values(z.flattenError(parsed.error).fieldErrors).flat();
       toast.error(messages[0] ?? 'Controleer de verplichte velden');
       setLoading(false);
       return;

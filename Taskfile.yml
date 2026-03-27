@@ -3,7 +3,7 @@ version: "3"
 dotenv: ['.env']
 
 vars:
-  DB_URL: "postgresql://postgres.{{.POOLER_TENANT_ID}}:{{.POSTGRES_PASSWORD}}@127.0.0.1:{{.POOLER_SESSION_PORT}}/postgres"
+  DB_URL: "postgresql://postgres.{{.POOLER_TENANT_ID}}:{{.POSTGRES_PASSWORD}}@localhost:{{.POOLER_SESSION_PORT}}/postgres"
   DB_CONTAINER: supabase-db
 
 tasks:

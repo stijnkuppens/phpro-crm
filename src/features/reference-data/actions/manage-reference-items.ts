@@ -1,5 +1,6 @@
 'use server';
 
+import { z } from 'zod';
 import { revalidatePath } from 'next/cache';
 import { createServerClient } from '@/lib/supabase/server';
 import { ok, err, type ActionResult } from '@/lib/action-result';
@@ -29,7 +30,7 @@ export async function createReferenceItem(
   if (!isValidTable(table)) return err('Invalid table');
 
   const parsed = refItemSchema.safeParse(values);
-  if (!parsed.success) return err(parsed.error.flatten().fieldErrors);
+  if (!parsed.success) return err(z.flattenError(parsed.error).fieldErrors);
 
   const supabase = await createServerClient();
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -58,7 +59,7 @@ export async function updateReferenceItem(
   if (!isValidTable(table)) return err('Invalid table');
 
   const parsed = refItemSchema.safeParse(values);
-  if (!parsed.success) return err(parsed.error.flatten().fieldErrors);
+  if (!parsed.success) return err(z.flattenError(parsed.error).fieldErrors);
 
   const supabase = await createServerClient();
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

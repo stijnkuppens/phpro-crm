@@ -45,5 +45,3 @@ ALTER TABLE tasks
 -- ── duplicate index cleanup ─────────────────────────────────────────────────
 
 DROP INDEX IF EXISTS idx_consultant_contract_attributions_contact_id;
-DROP INDEX IF EXISTS idx_pipeline_entries_deal_id;
-DROP INDEX IF EXISTS idx_revenue_client_services_division_id;

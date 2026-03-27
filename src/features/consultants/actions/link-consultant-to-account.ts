@@ -32,7 +32,7 @@ export async function linkConsultantToAccount(
   }
 
   const parsed = linkSchema.safeParse(values);
-  if (!parsed.success) return err(parsed.error.flatten().fieldErrors);
+  if (!parsed.success) return err(z.flattenError(parsed.error).fieldErrors);
 
   const supabase = await createServerClient();
 

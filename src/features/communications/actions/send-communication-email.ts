@@ -23,7 +23,7 @@ export async function sendCommunicationEmail(
   }
 
   const parsed = schema.safeParse(values);
-  if (!parsed.success) return err(parsed.error.flatten().fieldErrors);
+  if (!parsed.success) return err(z.flattenError(parsed.error).fieldErrors);
 
   try {
     const result = await sendEmail(parsed.data);

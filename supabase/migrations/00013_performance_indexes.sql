@@ -62,15 +62,6 @@ CREATE INDEX IF NOT EXISTS idx_consultant_contract_attributions_contact_id
 -- idx_indexation_drafts_approved_by and idx_indexation_drafts_created_by
 -- are already created in 00010_indexation.sql
 
-CREATE INDEX IF NOT EXISTS idx_revenue_client_services_division_id
-  ON revenue_client_services (division_id);
-
-CREATE INDEX IF NOT EXISTS idx_pipeline_entries_deal_id
-  ON pipeline_entries (deal_id);
-
--- idx_salary_history_recorded_by and idx_evaluations_recorded_by
--- are already created in 00011_employees.sql
-
 CREATE INDEX IF NOT EXISTS idx_account_cc_services_service_id
   ON account_cc_services (service_id);
 

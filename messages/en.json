@@ -36,20 +36,12 @@
     "tasks": "Tasks",
     "bench": "Bench",
     "consultants": "Consultants",
-    "people": "People",
-    "materials": "Materials",
-    "revenue": "Revenue",
-    "prognose": "Forecast",
-    "pipeline": "Pipeline",
     "settings": "Settings",
-    "files": "Files",
     "notifications": "Notifications",
     "audit": "Audit Log",
     "users": "Users",
     "crm": "CRM",
-    "consultancy": "Consultancy",
-    "hr": "HR",
-    "analyse": "Analytics"
+    "consultancy": "Consultancy"
   },
   "auth": {
     "login": "Login",

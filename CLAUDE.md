@@ -397,6 +397,21 @@ This happens when an edit modal is **always mounted** and receives a new entity 
 
 The `{editId && (` guard fully unmounts the modal when closed (no stale state). The `key={editId}` ensures switching directly between entities (A → B) also remounts. This pattern applies to **all modals that fetch data by ID** — both form modals and view/detail modals.
 
+### Supabase CLI: `types:generate` requires `localhost` not `127.0.0.1`
+
+The Supabase CLI `gen types` command (v2.84.x) has an internal check for `supabase start` that triggers when connecting via `127.0.0.1`. Using `localhost` in the DB URL bypasses this check. The Taskfile `DB_URL` uses `localhost` for this reason.
+
+```bash
+# BAD — triggers "supabase start is not running" error
+npx supabase gen types typescript --db-url "postgresql://...@127.0.0.1:54322/postgres"
+
+# GOOD
+npx supabase gen types typescript --db-url "postgresql://...@localhost:54322/postgres"
+
+# BEST — just use the task
+task types:generate
+```
+
 ### Postgres: `jsonb_populate_recordset` bypasses column DEFAULT values
 
 `jsonb_populate_recordset(null::some_table, jsonb_data)` maps JSON to **all columns** of the table type. If the JSON omits a column (e.g. `id`), the result is `NULL` — not the column's `DEFAULT`. An `INSERT INTO ... SELECT *` then inserts explicit `NULL`, bypassing `DEFAULT gen_random_uuid()`.

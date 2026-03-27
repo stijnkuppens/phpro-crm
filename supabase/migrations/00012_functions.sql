@@ -93,66 +93,7 @@ BEGIN
 END;
 $$;
 
--- ── 2. save_prognose ────────────────────────────────────────────────────────
--- Atomic delete-then-insert for pipeline_entries by account+year.
-
-CREATE OR REPLACE FUNCTION public.save_prognose(
-  p_year    integer,
-  p_rows    jsonb
-)
-RETURNS void
-LANGUAGE plpgsql
-SECURITY DEFINER
-SET search_path = public
-AS $$
-DECLARE
-  v_role       text;
-  v_client_ids uuid[];
-BEGIN
-  -- Auth guard: only admin and sales_manager may call this function
-  SELECT role INTO v_role FROM user_profiles WHERE id = (SELECT auth.uid());
-  IF v_role NOT IN ('admin', 'sales_manager') THEN
-    RAISE EXCEPTION 'Insufficient permissions';
-  END IF;
-
-  -- Extract distinct client IDs from the input rows
-  SELECT ARRAY(
-    SELECT DISTINCT (elem->>'revenue_client_id')::uuid
-    FROM jsonb_array_elements(p_rows) AS elem
-    WHERE elem->>'revenue_client_id' IS NOT NULL
-  )
-  INTO v_client_ids;
-
-  -- Delete existing rows for those clients + year
-  IF array_length(v_client_ids, 1) > 0 THEN
-    DELETE FROM revenue_entries
-    WHERE revenue_client_id = ANY(v_client_ids)
-      AND year = p_year;
-  END IF;
-
-  -- Insert new rows (caller skips zero-amount entries before calling)
-  IF jsonb_array_length(p_rows) > 0 THEN
-    INSERT INTO revenue_entries (
-      revenue_client_id,
-      division_id,
-      service_name,
-      year,
-      month,
-      amount
-    )
-    SELECT
-      (elem->>'revenue_client_id')::uuid,
-      (elem->>'division_id')::uuid,
-      elem->>'service_name',
-      (elem->>'year')::integer,
-      (elem->>'month')::integer,
-      (elem->>'amount')::numeric
-    FROM jsonb_array_elements(p_rows) AS elem;
-  END IF;
-END;
-$$;
-
--- ── 3. sync_account_fk_relation ─────────────────────────────────────────────
+-- ── 2. sync_account_fk_relation ─────────────────────────────────────────────
 -- Generic delete-then-insert for account junction tables.
 -- Validates table name against an explicit allow-list to prevent SQL injection.
 
@@ -480,7 +421,6 @@ $$;
 -- ── Grants ──────────────────────────────────────────────────────────────────
 
 GRANT EXECUTE ON FUNCTION public.link_consultant_to_account TO authenticated;
-GRANT EXECUTE ON FUNCTION public.save_prognose(integer, jsonb) TO authenticated;
 GRANT EXECUTE ON FUNCTION public.sync_account_fk_relation(uuid, text, jsonb) TO authenticated;
 GRANT EXECUTE ON FUNCTION public.upsert_hourly_rates(UUID, INTEGER, JSONB) TO authenticated;
 GRANT EXECUTE ON FUNCTION public.approve_indexation(UUID, UUID) TO authenticated;

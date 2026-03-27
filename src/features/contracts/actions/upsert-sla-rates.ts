@@ -1,5 +1,6 @@
 'use server';
 
+import { z } from 'zod';
 import { createServerClient } from '@/lib/supabase/server';
 import { requirePermission } from '@/lib/require-permission';
 import { logAction } from '@/features/audit/actions/log-action';
@@ -20,7 +21,7 @@ export async function upsertSlaRates(
 
   const parsed = slaRateFormSchema.safeParse(values);
   if (!parsed.success) {
-    return err(parsed.error.flatten().fieldErrors);
+    return err(z.flattenError(parsed.error).fieldErrors);
   }
 
   const supabase = await createServerClient();

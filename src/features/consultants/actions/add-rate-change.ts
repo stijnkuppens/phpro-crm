@@ -27,7 +27,7 @@ export async function addRateChange(
 
   const parsed = rateChangeSchema.safeParse(values);
   if (!parsed.success) {
-    return err(parsed.error.flatten().fieldErrors);
+    return err(z.flattenError(parsed.error).fieldErrors);
   }
 
   const supabase = await createServerClient();

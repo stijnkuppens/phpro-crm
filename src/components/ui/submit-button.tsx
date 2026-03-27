@@ -1,11 +1,11 @@
 'use client';
 
 import { useFormStatus } from 'react-dom';
-import { Button, type ButtonProps } from '@/components/ui/button';
+import { Button } from '@/components/ui/button';
 import { Loader2 } from 'lucide-react';
-import type { ReactNode } from 'react';
+import type { ComponentProps, ReactNode } from 'react';
 
-type SubmitButtonProps = Omit<ButtonProps, 'type'> & {
+type SubmitButtonProps = Omit<ComponentProps<typeof Button>, 'type'> & {
   icon?: ReactNode;
 };
 

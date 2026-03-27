@@ -16,12 +16,9 @@
 \ir data/002_pipelines.sql
 \ir data/003_indexation_indices.sql
 \ir data/004_reference_data.sql
-\ir data/005_divisions.sql
 
 -- ── Layer 2: Demo fixtures (remove for production) ──────────────────────────
 \ir fixtures/001_users.sql
 \ir fixtures/002_crm_data.sql
 \ir fixtures/003_sales.sql
 \ir fixtures/004_consultancy.sql
-\ir fixtures/005_finance.sql
-\ir fixtures/006_hr.sql

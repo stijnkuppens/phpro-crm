@@ -25,7 +25,7 @@ export async function stopConsultant(
 
   const parsed = stopSchema.safeParse(values);
   if (!parsed.success) {
-    return err(parsed.error.flatten().fieldErrors);
+    return err(z.flattenError(parsed.error).fieldErrors);
   }
 
   const supabase = await createServerClient();

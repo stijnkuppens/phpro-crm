@@ -40,22 +40,6 @@ export type Permission =
   | 'indexation.read'
   | 'indexation.write'
   | 'indexation.approve'
-  // Revenue
-  | 'revenue.read'
-  | 'revenue.write'
-  // Pipeline & Prognose
-  | 'pipeline.read'
-  | 'prognose.read'
-  // HR
-  | 'hr.read'
-  | 'hr.write'
-  // Equipment
-  | 'equipment.read'
-  | 'equipment.write'
-  // Files (existing)
-  | 'files.read'
-  | 'files.write'
-  | 'files.delete'
   // Users (existing)
   | 'users.read'
   | 'users.write'

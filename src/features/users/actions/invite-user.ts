@@ -35,7 +35,7 @@ export async function inviteUser(
   }
 
   const parsed = inviteSchema.safeParse(values);
-  if (!parsed.success) return err(parsed.error.flatten().fieldErrors);
+  if (!parsed.success) return err(z.flattenError(parsed.error).fieldErrors);
 
   const { email, fullName, role } = parsed.data;
   const admin = createServiceRoleClient();

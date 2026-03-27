@@ -22,7 +22,7 @@ export async function closeDeal(dealId: string, values: CloseDealValues): Promis
 
   const parsed = closeDealSchema.safeParse(values);
   if (!parsed.success) {
-    return err(parsed.error.flatten().fieldErrors);
+    return err(z.flattenError(parsed.error).fieldErrors);
   }
 
   const supabase = await createServerClient();

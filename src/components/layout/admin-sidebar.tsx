@@ -24,16 +24,10 @@ import {
   TrendingUp,
   Activity,
   CheckSquare,
-  FileText,
   Settings,
   Bell,
   ScrollText,
   Database,
-  UserPlus,
-  Wrench,
-  DollarSign,
-  Target,
-  Layers,
   Contact,
 } from 'lucide-react';
 
@@ -66,24 +60,8 @@ export function AdminSidebar() {
       ],
     },
     {
-      section: t('hr'),
-      items: [
-        { label: t('people'), href: '/admin/people', icon: UserPlus },
-        { label: t('materials'), href: '/admin/materials', icon: Wrench },
-      ],
-    },
-    {
-      section: t('analyse'),
-      items: [
-        { label: t('revenue'), href: '/admin/revenue', icon: DollarSign },
-        { label: t('prognose'), href: '/admin/prognose', icon: Target },
-        { label: t('pipeline'), href: '/admin/pipeline', icon: Layers },
-      ],
-    },
-    {
       section: null, // no label, separator group
       items: [
-        { label: t('files'), href: '/admin/files', icon: FileText },
         { label: t('notifications'), href: '/admin/notifications', icon: Bell },
         { label: t('audit'), href: '/admin/audit', icon: ScrollText },
         { label: t('users'), href: '/admin/users', icon: Users },

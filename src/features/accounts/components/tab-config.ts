@@ -1,6 +1,6 @@
 import {
   Building2, MessageSquare, FileText, Users, Contact,
-  Handshake, Activity, TrendingUp, type LucideIcon,
+  Handshake, Activity, type LucideIcon,
 } from 'lucide-react';
 
 export type TabMeta = {
@@ -18,5 +18,4 @@ export const tabMeta: TabMeta[] = [
   { key: 'contacts',      label: 'Contacts',      icon: Contact,     countKey: 'contactCount' },
   { key: 'deals',         label: 'Deals',         icon: Handshake,   countKey: 'dealCount' },
   { key: 'activiteiten',  label: 'Activiteiten',  icon: Activity,    countKey: 'activityCount' },
-  { key: 'omzet',         label: 'Omzet',         icon: TrendingUp },
 ];
