@@ -13,6 +13,8 @@ const ORIGIN_BADGE: Record<string, { label: string; className: string }> = {
 export const dealColumns: ColumnDef<DealWithRelations>[] = [
   {
     accessorKey: 'title',
+    id: 'title',
+    meta: { label: 'Titel' },
     header: 'Titel',
     cell: ({ row }) => {
       const origin = row.original.origin;
@@ -32,10 +34,13 @@ export const dealColumns: ColumnDef<DealWithRelations>[] = [
   {
     accessorFn: (row) => row.account?.name ?? '',
     id: 'account',
+    meta: { label: 'Account' },
     header: 'Account',
   },
   {
     accessorKey: 'amount',
+    id: 'amount',
+    meta: { label: 'Bedrag' },
     header: 'Bedrag',
     cell: ({ getValue }) => {
       const n = Number(getValue<number>() ?? 0);
@@ -45,15 +50,20 @@ export const dealColumns: ColumnDef<DealWithRelations>[] = [
   {
     accessorFn: (row) => row.stage?.name ?? '',
     id: 'stage',
+    meta: { label: 'Stage' },
     header: 'Stage',
   },
   {
     accessorKey: 'probability',
+    id: 'probability',
+    meta: { label: 'Kans' },
     header: 'Kans',
     cell: ({ getValue }) => `${getValue<number>()}%`,
   },
   {
     accessorKey: 'close_date',
+    id: 'close_date',
+    meta: { label: 'Close Date' },
     header: 'Close Date',
     cell: ({ getValue }) => {
       const d = getValue<string | null>();
@@ -63,10 +73,13 @@ export const dealColumns: ColumnDef<DealWithRelations>[] = [
   {
     accessorFn: (row) => row.owner?.full_name ?? '',
     id: 'owner',
+    meta: { label: 'Owner' },
     header: 'Owner',
   },
   {
     accessorKey: 'forecast_category',
+    id: 'forecast_category',
+    meta: { label: 'Forecast' },
     header: 'Forecast',
   },
 ];

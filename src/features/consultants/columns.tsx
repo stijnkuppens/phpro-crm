@@ -25,6 +25,7 @@ const statusLabels: Record<ConsultantStatus, string> = {
 export const consultantColumns: ColumnDef<ConsultantWithDetails>[] = [
   {
     id: 'status',
+    meta: { label: 'Status' },
     header: 'Status',
     cell: ({ row }) => {
       const c = row.original;
@@ -53,6 +54,8 @@ export const consultantColumns: ColumnDef<ConsultantWithDetails>[] = [
   },
   {
     accessorKey: 'last_name',
+    id: 'consultant',
+    meta: { label: 'Consultant' },
     header: 'Consultant',
     cell: ({ row }) => {
       const c = row.original;
@@ -75,6 +78,7 @@ export const consultantColumns: ColumnDef<ConsultantWithDetails>[] = [
   },
   {
     id: 'role',
+    meta: { label: 'Rol' },
     header: 'Rol',
     cell: ({ row }) => {
       const c = row.original;
@@ -87,6 +91,7 @@ export const consultantColumns: ColumnDef<ConsultantWithDetails>[] = [
   },
   {
     id: 'account',
+    meta: { label: 'Klant' },
     header: 'Klant',
     cell: ({ row }) => (
       <span className="text-sm">{row.original.account?.name ?? '-'}</span>
@@ -94,6 +99,7 @@ export const consultantColumns: ColumnDef<ConsultantWithDetails>[] = [
   },
   {
     id: 'rate',
+    meta: { label: 'Uurtarief' },
     header: 'Uurtarief',
     cell: ({ row }) => {
       const c = row.original;
@@ -121,6 +127,7 @@ export const consultantColumns: ColumnDef<ConsultantWithDetails>[] = [
   },
   {
     id: 'period',
+    meta: { label: 'Periode' },
     header: 'Periode',
     cell: ({ row }) => {
       const c = row.original;

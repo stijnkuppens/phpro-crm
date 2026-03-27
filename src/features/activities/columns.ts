@@ -6,14 +6,20 @@ import type { ActivityWithRelations } from './types';
 export const activityColumns: ColumnDef<ActivityWithRelations>[] = [
   {
     accessorKey: 'type',
+    id: 'type',
+    meta: { label: 'Type' },
     header: 'Type',
   },
   {
     accessorKey: 'subject',
+    id: 'subject',
+    meta: { label: 'Onderwerp' },
     header: 'Onderwerp',
   },
   {
     accessorKey: 'date',
+    id: 'date',
+    meta: { label: 'Datum' },
     header: 'Datum',
     cell: ({ getValue }) => {
       const d = getValue<string>();
@@ -22,6 +28,8 @@ export const activityColumns: ColumnDef<ActivityWithRelations>[] = [
   },
   {
     accessorKey: 'duration_minutes',
+    id: 'duration_minutes',
+    meta: { label: 'Duur' },
     header: 'Duur',
     cell: ({ getValue }) => {
       const m = getValue<number | null>();
@@ -31,15 +39,19 @@ export const activityColumns: ColumnDef<ActivityWithRelations>[] = [
   {
     accessorFn: (row) => row.account?.name ?? '',
     id: 'account',
+    meta: { label: 'Account' },
     header: 'Account',
   },
   {
     accessorFn: (row) => row.deal?.title ?? '',
     id: 'deal',
+    meta: { label: 'Deal' },
     header: 'Deal',
   },
   {
     accessorKey: 'is_done',
+    id: 'is_done',
+    meta: { label: 'Status' },
     header: 'Status',
     cell: ({ getValue }) => getValue<boolean>() ? 'Afgerond' : 'Gepland',
   },

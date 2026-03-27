@@ -7,6 +7,8 @@ import type { AccountListItem } from './types';
 export const accountColumns: ColumnDef<AccountListItem>[] = [
   {
     accessorKey: 'name',
+    id: 'name',
+    meta: { label: 'Account' },
     header: 'Account',
     cell: ({ row }) => {
       const name = row.original.name;
@@ -31,6 +33,8 @@ export const accountColumns: ColumnDef<AccountListItem>[] = [
   },
   {
     accessorKey: 'type',
+    id: 'type',
+    meta: { label: 'Type' },
     header: 'Type',
     cell: ({ row }) => {
       const type = row.original.type;
@@ -48,6 +52,8 @@ export const accountColumns: ColumnDef<AccountListItem>[] = [
   },
   {
     accessorKey: 'status',
+    id: 'status',
+    meta: { label: 'Status' },
     header: 'Status',
     cell: ({ row }) => {
       const isActive = row.original.status === 'Actief';
@@ -62,6 +68,7 @@ export const accountColumns: ColumnDef<AccountListItem>[] = [
   },
   {
     id: 'raamcontract',
+    meta: { label: 'Raamcontract' },
     header: 'Raamcontract',
     cell: ({ row }) => {
       const has = row.original.has_framework_contract;
@@ -76,6 +83,7 @@ export const accountColumns: ColumnDef<AccountListItem>[] = [
   },
   {
     id: 'sla',
+    meta: { label: 'SLA' },
     header: 'SLA',
     cell: ({ row }) => {
       const has = row.original.has_service_contract;
@@ -90,6 +98,7 @@ export const accountColumns: ColumnDef<AccountListItem>[] = [
   },
   {
     id: 'consultants',
+    meta: { label: 'Consultants' },
     header: 'Consultants',
     cell: ({ row }) => {
       const count = row.original.active_consultant_count;
@@ -104,6 +113,7 @@ export const accountColumns: ColumnDef<AccountListItem>[] = [
   },
   {
     id: 'owner',
+    meta: { label: 'Owner' },
     header: 'Owner',
     cell: ({ row }) => {
       const owner = row.original.owner;

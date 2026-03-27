@@ -17,6 +17,8 @@ function getInitials(name: string): string {
 export const userColumns: ColumnDef<UserWithEmail>[] = [
   {
     accessorKey: 'full_name',
+    id: 'full_name',
+    meta: { label: 'Naam' },
     header: 'Name',
     cell: ({ row }) => (
       <Link href={`/admin/users/${row.original.id}`} className="flex items-center gap-3 hover:underline">
@@ -32,10 +34,14 @@ export const userColumns: ColumnDef<UserWithEmail>[] = [
   },
   {
     accessorKey: 'email',
+    id: 'email',
+    meta: { label: 'E-mail' },
     header: 'Email',
   },
   {
     accessorKey: 'role',
+    id: 'role',
+    meta: { label: 'Rol' },
     header: 'Role',
     cell: ({ row }) => (
       <Badge variant={row.original.role === 'admin' ? 'default' : 'secondary'}>

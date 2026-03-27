@@ -37,6 +37,8 @@ export function AuditLogTable({
   const columns: ColumnDef<AuditLog>[] = [
     {
       accessorKey: 'created_at',
+      id: 'created_at',
+      meta: { label: 'Tijdstip' },
       header: 'Timestamp',
       cell: ({ row }) => (
         <span className="whitespace-nowrap text-muted-foreground">
@@ -46,6 +48,8 @@ export function AuditLogTable({
     },
     {
       accessorKey: 'user_id',
+      id: 'user_id',
+      meta: { label: 'Gebruiker' },
       header: 'User',
       cell: ({ row }) => (
         <span className="font-mono text-xs">
@@ -55,6 +59,8 @@ export function AuditLogTable({
     },
     {
       accessorKey: 'action',
+      id: 'action',
+      meta: { label: 'Actie' },
       header: 'Action',
       cell: ({ row }) => (
         <Badge variant="secondary">{row.original.action}</Badge>
@@ -62,11 +68,15 @@ export function AuditLogTable({
     },
     {
       accessorKey: 'entity',
+      id: 'entity',
+      meta: { label: 'Entiteit' },
       header: 'Entity Type',
       cell: ({ row }) => row.original.entity ?? '\u2014',
     },
     {
       accessorKey: 'entity_id',
+      id: 'entity_id',
+      meta: { label: 'Entiteit ID' },
       header: 'Entity ID',
       cell: ({ row }) => (
         <span className="font-mono text-xs">
@@ -76,6 +86,7 @@ export function AuditLogTable({
     },
     {
       id: 'detail',
+      meta: { label: 'Detail' },
       header: '',
       cell: ({ row }) => (
         <Button

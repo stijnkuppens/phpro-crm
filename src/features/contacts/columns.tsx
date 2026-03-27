@@ -9,6 +9,7 @@ export const contactColumns: ColumnDef<ContactWithDetails>[] = [
   {
     accessorFn: (row) => `${row.first_name} ${row.last_name}`,
     id: 'name',
+    meta: { label: 'Naam' },
     header: 'Naam',
     cell: ({ row }) => {
       const initials = `${row.original.first_name[0] ?? ''}${row.original.last_name[0] ?? ''}`.toUpperCase();
@@ -25,23 +26,32 @@ export const contactColumns: ColumnDef<ContactWithDetails>[] = [
   },
   {
     accessorKey: 'email',
+    id: 'email',
+    meta: { label: 'E-mail' },
     header: 'E-mail',
   },
   {
     accessorKey: 'phone',
+    id: 'phone',
+    meta: { label: 'Telefoon' },
     header: 'Telefoon',
   },
   {
     accessorKey: 'title',
+    id: 'title',
+    meta: { label: 'Functie' },
     header: 'Functie',
   },
   {
     accessorKey: 'role',
+    id: 'role',
+    meta: { label: 'Rol' },
     header: 'Rol',
   },
   {
     accessorFn: (row) => row.account?.name ?? '',
     id: 'account',
+    meta: { label: 'Account' },
     header: 'Account',
   },
 ];
