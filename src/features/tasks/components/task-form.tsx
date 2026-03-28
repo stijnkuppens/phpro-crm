@@ -12,7 +12,6 @@ import {
   SelectContent,
   SelectItem,
   SelectTrigger,
-  SelectValue,
 } from '@/components/ui/select';
 import { Save } from 'lucide-react';
 import { taskFormSchema, type TaskFormValues } from '../types';
@@ -21,13 +20,15 @@ import { updateTask } from '../actions/update-task';
 
 type Props = {
   defaultValues?: Partial<TaskFormValues> & { id?: string };
+  owners?: { id: string; name: string }[];
   onSuccess?: (id: string) => void;
   onCancel?: () => void;
 };
 
-export function TaskForm({ defaultValues, onSuccess, onCancel }: Props) {
+export function TaskForm({ defaultValues, owners = [], onSuccess, onCancel }: Props) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+  const [assignedTo, setAssignedTo] = useState(defaultValues?.assigned_to ?? '');
   const isEdit = !!defaultValues?.id;
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
@@ -40,9 +41,9 @@ export function TaskForm({ defaultValues, onSuccess, onCancel }: Props) {
       due_date: (formData.get('due_date') as string) || undefined,
       priority: formData.get('priority') as TaskFormValues['priority'],
       status: formData.get('status') as TaskFormValues['status'],
-      account_id: (formData.get('account_id') as string) || undefined,
-      deal_id: (formData.get('deal_id') as string) || undefined,
-      assigned_to: (formData.get('assigned_to') as string) || undefined,
+      account_id: defaultValues?.account_id || (formData.get('account_id') as string) || undefined,
+      deal_id: defaultValues?.deal_id || (formData.get('deal_id') as string) || undefined,
+      assigned_to: assignedTo || undefined,
     };
 
     const parsed = taskFormSchema.safeParse(values);
@@ -82,7 +83,7 @@ export function TaskForm({ defaultValues, onSuccess, onCancel }: Props) {
         <div className="space-y-2">
           <Label htmlFor="priority">Prioriteit *</Label>
           <Select name="priority" defaultValue={defaultValues?.priority ?? 'Medium'}>
-            <SelectTrigger><SelectValue /></SelectTrigger>
+            <SelectTrigger>{defaultValues?.priority ?? 'Medium'}</SelectTrigger>
             <SelectContent>
               <SelectItem value="High">Hoog</SelectItem>
               <SelectItem value="Medium">Gemiddeld</SelectItem>
@@ -93,7 +94,7 @@ export function TaskForm({ defaultValues, onSuccess, onCancel }: Props) {
         <div className="space-y-2">
           <Label htmlFor="status">Status *</Label>
           <Select name="status" defaultValue={defaultValues?.status ?? 'Open'}>
-            <SelectTrigger><SelectValue /></SelectTrigger>
+            <SelectTrigger>{defaultValues?.status ?? 'Open'}</SelectTrigger>
             <SelectContent>
               <SelectItem value="Open">Open</SelectItem>
               <SelectItem value="In Progress">In uitvoering</SelectItem>
@@ -106,17 +107,21 @@ export function TaskForm({ defaultValues, onSuccess, onCancel }: Props) {
           <DatePicker name="due_date" value={defaultValues?.due_date ?? ''} />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="assigned_to">Toegewezen aan (ID)</Label>
-          <Input id="assigned_to" name="assigned_to" defaultValue={defaultValues?.assigned_to ?? ''} />
+          <Label>Toegewezen aan</Label>
+          <Select value={assignedTo} onValueChange={(v) => setAssignedTo(v ?? '')}>
+            <SelectTrigger>
+              {owners.find((o) => o.id === assignedTo)?.name ?? '— niemand —'}
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="">— niemand —</SelectItem>
+              {owners.map((o) => (
+                <SelectItem key={o.id} value={o.id}>{o.name}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
-        <div className="space-y-2">
-          <Label htmlFor="account_id">Account ID</Label>
-          <Input id="account_id" name="account_id" defaultValue={defaultValues?.account_id ?? ''} />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="deal_id">Deal ID</Label>
-          <Input id="deal_id" name="deal_id" defaultValue={defaultValues?.deal_id ?? ''} />
-        </div>
+        {defaultValues?.account_id && <input type="hidden" name="account_id" value={defaultValues.account_id} />}
+        {defaultValues?.deal_id && <input type="hidden" name="deal_id" value={defaultValues.deal_id} />}
       </div>
       <div className="flex gap-2">
         <Button type="submit" disabled={loading}>
