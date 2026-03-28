@@ -14,8 +14,10 @@ import { Plus, Trash2, CheckCircle2, Circle } from 'lucide-react';
 
 type Props = {
   accountId: string;
+  accountName?: string;
   initialData: ActivityWithRelations[];
   initialCount: number;
+  deals?: { id: string; title: string }[];
 };
 
 const TYPE_CONFIG: Record<string, { label: string; className: string }> = {
@@ -27,7 +29,7 @@ const TYPE_CONFIG: Record<string, { label: string; className: string }> = {
   Event: { label: 'Event', className: 'bg-pink-50 text-pink-700 border-pink-200' },
 };
 
-export function AccountActivitiesTab({ accountId, initialData, initialCount }: Props) {
+export function AccountActivitiesTab({ accountId, accountName, initialData, initialCount, deals = [] }: Props) {
   const router = useRouter();
   const [data, setData] = useState(initialData);
   const [modalOpen, setModalOpen] = useState(false);
@@ -88,6 +90,8 @@ export function AccountActivitiesTab({ accountId, initialData, initialCount }: P
         <Modal open={modalOpen} onClose={() => setModalOpen(false)} title="Nieuwe activiteit" size="wide">
           <ActivityForm
             defaultValues={{ account_id: accountId }}
+            accounts={accountName ? [{ id: accountId, name: accountName }] : []}
+            deals={deals}
             onSuccess={handleCreateSuccess}
             onCancel={() => setModalOpen(false)}
           />

@@ -1,13 +1,22 @@
 'use client';
 
 import type { ColumnDef } from '@tanstack/react-table';
-import { Badge } from '@/components/ui/badge';
 import type { DealWithRelations } from './types';
 import { formatEUR } from '@/lib/format';
 
-const ORIGIN_BADGE: Record<string, { label: string; className: string }> = {
-  rechtstreeks: { label: 'Direct', className: 'bg-green-100 text-green-800 border-green-200' },
-  cronos: { label: 'Cronos', className: 'bg-blue-100 text-blue-800 border-blue-200' },
+function getInitials(name: string): string {
+  return name
+    .split(' ')
+    .filter(Boolean)
+    .map((w) => w[0])
+    .join('')
+    .toUpperCase()
+    .slice(0, 2);
+}
+
+const ORIGIN_LABEL: Record<string, string> = {
+  rechtstreeks: 'Direct',
+  cronos: 'Cronos',
 };
 
 export const dealColumns: ColumnDef<DealWithRelations>[] = [
@@ -16,41 +25,38 @@ export const dealColumns: ColumnDef<DealWithRelations>[] = [
     id: 'title',
     meta: {
       label: 'Titel',
-      filter: { type: 'search', placeholder: 'Zoek deals...' },
+      filter: { type: 'search', placeholder: 'Zoek op titel of account...' },
     },
     header: 'Titel',
-    cell: ({ row }) => {
-      const origin = row.original.origin;
-      const badge = origin ? ORIGIN_BADGE[origin] : null;
-      return (
-        <div className="flex items-center gap-2">
-          <span>{row.original.title}</span>
-          {badge && (
-            <Badge variant="outline" className={`text-[10px] ${badge.className}`}>
-              {badge.label}
-            </Badge>
-          )}
-        </div>
-      );
-    },
   },
   {
     accessorFn: (row) => row.account?.name ?? '',
     id: 'account',
     meta: {
       label: 'Account',
-      filter: { type: 'select', filterKey: 'account_id', placeholder: 'Alle accounts' },
     },
     header: 'Account',
   },
   {
-    accessorKey: 'amount',
-    id: 'amount',
-    meta: { label: 'Bedrag' },
-    header: 'Bedrag',
-    cell: ({ getValue }) => {
-      const n = Number(getValue<number>() ?? 0);
-      return formatEUR(n);
+    accessorFn: (row) => row.pipeline?.name ?? '',
+    id: 'pipeline_id',
+    meta: {
+      label: 'Type',
+      filter: { type: 'pills', filterKey: 'pipeline_id', allLabel: 'Alle' },
+    },
+    header: 'Type',
+  },
+  {
+    accessorFn: (row) => row.origin ?? '',
+    id: 'origin',
+    meta: {
+      label: 'Herkomst',
+      filter: { type: 'select', filterKey: 'origin', placeholder: 'Alle herkomst' },
+    },
+    header: 'Herkomst',
+    cell: ({ row }) => {
+      const origin = row.original.origin;
+      return origin ? ORIGIN_LABEL[origin] ?? origin : <span className="text-muted-foreground">–</span>;
     },
   },
   {
@@ -61,22 +67,58 @@ export const dealColumns: ColumnDef<DealWithRelations>[] = [
       filter: { type: 'select', filterKey: 'stage_id', placeholder: 'Alle stages' },
     },
     header: 'Stage',
+    cell: ({ row }) => {
+      const stage = row.original.stage;
+      if (!stage) return '';
+      return (
+        <div className="flex items-center gap-2">
+          <span
+            className="inline-block h-2.5 w-2.5 shrink-0 rounded-full"
+            style={{ backgroundColor: stage.color || '#9ca3af' }}
+          />
+          <span>{stage.name}</span>
+        </div>
+      );
+    },
   },
   {
-    accessorKey: 'probability',
-    id: 'probability',
-    meta: { label: 'Kans' },
-    header: 'Kans',
-    cell: ({ getValue }) => `${getValue<number>()}%`,
+    accessorKey: 'amount',
+    id: 'amount',
+    meta: { label: 'Bedrag' },
+    header: 'Bedrag',
+    cell: ({ getValue }) => {
+      const n = Number(getValue<number>() ?? 0);
+      return n ? <span className="font-medium">{formatEUR(n)}</span> : <span className="text-muted-foreground">–</span>;
+    },
   },
   {
     accessorKey: 'close_date',
     id: 'close_date',
-    meta: { label: 'Close Date' },
-    header: 'Close Date',
+    meta: { label: 'Sluitdatum' },
+    header: 'Sluitdatum',
     cell: ({ getValue }) => {
       const d = getValue<string | null>();
-      return d ? new Date(d).toLocaleDateString('nl-BE') : '';
+      return d ? new Date(d).toLocaleDateString('nl-BE', { day: 'numeric', month: 'short', year: 'numeric' }) : '';
+    },
+  },
+  {
+    accessorKey: 'probability',
+    id: 'probability',
+    meta: { label: 'Kans%' },
+    header: 'Kans%',
+    cell: ({ getValue }) => `${getValue<number>()}%`,
+  },
+  {
+    accessorKey: 'lead_source',
+    id: 'lead_source',
+    meta: {
+      label: 'Lead Bron',
+      filter: { type: 'select', placeholder: 'Alle lead bronnen' },
+    },
+    header: 'Lead Bron',
+    cell: ({ getValue }) => {
+      const v = getValue<string | null>();
+      return v || <span className="text-muted-foreground">–</span>;
     },
   },
   {
@@ -87,6 +129,19 @@ export const dealColumns: ColumnDef<DealWithRelations>[] = [
       filter: { type: 'select', filterKey: 'owner_id', placeholder: 'Alle owners' },
     },
     header: 'Owner',
+    cell: ({ row }) => {
+      const name = row.original.owner?.full_name;
+      if (!name) return '';
+      const initials = getInitials(name);
+      return (
+        <div className="flex items-center gap-2">
+          <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary/15 text-[10px] font-medium text-primary-action">
+            {initials}
+          </span>
+          <span>{name}</span>
+        </div>
+      );
+    },
   },
   {
     accessorKey: 'forecast_category',

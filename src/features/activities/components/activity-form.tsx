@@ -8,14 +8,13 @@ import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { DateTimePicker } from '@/components/ui/date-time-picker';
 import { Textarea } from '@/components/ui/textarea';
-import { Checkbox } from '@/components/ui/checkbox';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
 } from '@/components/ui/select';
-import { Save, Calendar, Monitor, Phone, Mail, UtensilsCrossed, PartyPopper } from 'lucide-react';
+import { Calendar, Activity, Phone, Mail, FileText, Zap, CalendarCheck, Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { activityFormSchema, type ActivityFormValues } from '../types';
 import { createActivity } from '../actions/create-activity';
@@ -31,12 +30,22 @@ type Props = {
   onCancel?: () => void;
 };
 
+const ACTIVITY_TYPES = [
+  { value: 'Meeting', label: 'Meeting', icon: Calendar },
+  { value: 'Call', label: 'Opbellen', icon: Phone },
+  { value: 'E-mail', label: 'Mailen', icon: Mail },
+  { value: 'Demo', label: 'Demo', icon: Activity },
+  { value: 'Lunch', label: 'Voorstel', icon: FileText },
+  { value: 'Event', label: 'Andere', icon: Zap },
+] as const;
+
 export function ActivityForm({ defaultValues, accounts = [], deals = [], onSuccess, onCancel }: Props) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [type, setType] = useState<string>(defaultValues?.type ?? 'Meeting');
   const [accountId, setAccountId] = useState(defaultValues?.account_id ?? '');
   const [dealId, setDealId] = useState(defaultValues?.deal_id ?? '');
+  const [isDone, setIsDone] = useState(defaultValues?.is_done ?? false);
   const isEdit = !!defaultValues?.id;
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
@@ -52,7 +61,7 @@ export function ActivityForm({ defaultValues, accounts = [], deals = [], onSucce
       account_id: accountId,
       deal_id: dealId || undefined,
       notes: (formData.get('notes') as string) || undefined,
-      is_done: formData.get('is_done') === 'on',
+      is_done: isDone,
     };
 
     const parsed = activityFormSchema.safeParse(values);
@@ -83,69 +92,102 @@ export function ActivityForm({ defaultValues, accounts = [], deals = [], onSucce
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4 max-w-2xl">
+    <form onSubmit={handleSubmit} className="space-y-4">
+      {/* Type toggle buttons */}
+      <div className="space-y-2">
+        <Label>Type</Label>
+        <input type="hidden" name="type" value={type} />
+        <div className="flex flex-wrap gap-2">
+          {ACTIVITY_TYPES.map(({ value, label, icon: Icon }) => (
+            <button
+              key={value}
+              type="button"
+              onClick={() => setType(value)}
+              className={cn(
+                'flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-lg border transition-all',
+                type === value
+                  ? 'bg-primary text-primary-foreground border-primary'
+                  : 'border-border text-muted-foreground hover:border-muted-foreground/40 bg-card'
+              )}
+            >
+              <Icon className="h-4 w-4" />
+              {label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Onderwerp */}
+      <div className="space-y-2">
+        <Label htmlFor="subject">Onderwerp <span className="text-red-500">*</span></Label>
+        <Input id="subject" name="subject" defaultValue={defaultValues?.subject ?? ''} required placeholder="bv. Discovery call, Demo platform..." />
+      </div>
+
+      {/* Datum & tijd + Duur */}
       <div className="grid grid-cols-2 gap-4">
-        <div className="col-span-2 space-y-2">
-          <Label>Type *</Label>
-          <input type="hidden" name="type" value={type} />
-          <div className="flex flex-wrap gap-2">
-            {([
-              { value: 'Meeting', label: 'Meeting', icon: Calendar },
-              { value: 'Demo', label: 'Demo', icon: Monitor },
-              { value: 'Call', label: 'Call', icon: Phone },
-              { value: 'E-mail', label: 'E-mail', icon: Mail },
-              { value: 'Lunch', label: 'Lunch', icon: UtensilsCrossed },
-              { value: 'Event', label: 'Event', icon: PartyPopper },
-            ] as const).map(({ value, label, icon: Icon }) => (
-              <button
-                key={value}
-                type="button"
-                onClick={() => setType(value)}
-                className={cn(
-                  'flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-lg border-2 transition-all',
-                  type === value
-                    ? 'bg-primary/10 border-primary text-primary'
-                    : 'border-gray-200 text-gray-600 hover:border-gray-300'
-                )}
-              >
-                <Icon className="h-4 w-4" />
-                {label}
-              </button>
-            ))}
-          </div>
-        </div>
         <div className="space-y-2">
-          <Label htmlFor="subject">Onderwerp *</Label>
-          <Input id="subject" name="subject" defaultValue={defaultValues?.subject ?? ''} required />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="date">Datum *</Label>
+          <Label htmlFor="date">Datum &amp; tijd</Label>
           <DateTimePicker name="date" value={defaultValues?.date ?? ''} required />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="duration_minutes">Duur (minuten)</Label>
-          <Input id="duration_minutes" name="duration_minutes" type="number" min="0" defaultValue={defaultValues?.duration_minutes ?? ''} />
+          <Label htmlFor="duration_minutes">Duur (min)</Label>
+          <Input id="duration_minutes" name="duration_minutes" type="number" min="0" defaultValue={defaultValues?.duration_minutes ?? '60'} />
         </div>
-        {/* Only show account selector when no account is pre-selected */}
-        {!defaultValues?.account_id && (
-          <div className="space-y-2">
-            <Label>Account *</Label>
-            {accounts.length > 0 ? (
-              <Select value={accountId} onValueChange={(v) => setAccountId(v ?? '')}>
-                <SelectTrigger>
-                  {accounts.find((a) => a.id === accountId)?.name ?? 'Selecteer account...'}
-                </SelectTrigger>
-                <SelectContent>
-                  {accounts.map((a) => (
-                    <SelectItem key={a.id} value={a.id}>{a.name}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            ) : (
-              <Input value={accountId} onChange={(e) => setAccountId(e.target.value)} required placeholder="Account ID" />
-            )}
-          </div>
-        )}
+      </div>
+
+      {/* Gepland / Gedaan toggle */}
+      <div className="grid grid-cols-2 gap-2">
+        <button
+          type="button"
+          onClick={() => setIsDone(false)}
+          className={cn(
+            'flex items-center justify-center gap-2 py-2 text-sm font-medium rounded-lg border-2 transition-all',
+            !isDone
+              ? 'bg-primary/10 border-primary text-primary'
+              : 'border-muted-foreground/25 text-muted-foreground hover:border-muted-foreground/40'
+          )}
+        >
+          <CalendarCheck className="h-4 w-4" />
+          Gepland
+        </button>
+        <button
+          type="button"
+          onClick={() => setIsDone(true)}
+          className={cn(
+            'flex items-center justify-center gap-2 py-2 text-sm font-medium rounded-lg border-2 transition-all',
+            isDone
+              ? 'bg-primary/10 border-primary text-primary'
+              : 'border-muted-foreground/25 text-muted-foreground hover:border-muted-foreground/40'
+          )}
+        >
+          <Check className="h-4 w-4" />
+          Gedaan
+        </button>
+      </div>
+
+      {/* Account selector — only when no account pre-selected */}
+      {!defaultValues?.account_id && (
+        <div className="space-y-2">
+          <Label>Account *</Label>
+          {accounts.length > 0 ? (
+            <Select value={accountId} onValueChange={(v) => setAccountId(v ?? '')}>
+              <SelectTrigger>
+                {accounts.find((a) => a.id === accountId)?.name ?? 'Selecteer account...'}
+              </SelectTrigger>
+              <SelectContent>
+                {accounts.map((a) => (
+                  <SelectItem key={a.id} value={a.id}>{a.name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          ) : (
+            <Input value={accountId} onChange={(e) => setAccountId(e.target.value)} required placeholder="Account ID" />
+          )}
+        </div>
+      )}
+
+      {/* Deal selector — only when no deal pre-selected */}
+      {!defaultValues?.deal_id && deals.length > 0 && (
         <div className="space-y-2">
           <Label>Deal</Label>
           <Select value={dealId} onValueChange={(v) => setDealId(v ?? '')}>
@@ -160,25 +202,26 @@ export function ActivityForm({ defaultValues, accounts = [], deals = [], onSucce
             </SelectContent>
           </Select>
         </div>
-      </div>
+      )}
+
+      {/* Notitie */}
       <div className="space-y-2">
-        <Label htmlFor="notes">Notities</Label>
+        <Label htmlFor="notes">Notitie</Label>
         <Textarea id="notes" name="notes" rows={4} defaultValue={typeof defaultValues?.notes === 'string' ? defaultValues.notes : ''} />
       </div>
-      <div className="flex items-center gap-2">
-        <Checkbox id="is_done" name="is_done" defaultChecked={defaultValues?.is_done ?? false} />
-        <Label htmlFor="is_done">Afgerond</Label>
-      </div>
-      <div className="flex gap-2">
+
+      {/* Footer: Annuleren left, Submit right */}
+      <div className="flex justify-between pt-2">
+        <div>
+          {onCancel && (
+            <Button type="button" variant="outline" onClick={onCancel}>
+              Annuleren
+            </Button>
+          )}
+        </div>
         <Button type="submit" disabled={loading}>
-          <Save />
-          {loading ? 'Opslaan...' : isEdit ? 'Bijwerken' : 'Aanmaken'}
+          {loading ? 'Opslaan...' : isEdit ? 'Bijwerken' : 'Activiteit toevoegen'}
         </Button>
-        {onCancel && (
-          <Button type="button" variant="outline" onClick={onCancel}>
-            Annuleren
-          </Button>
-        )}
       </div>
     </form>
   );

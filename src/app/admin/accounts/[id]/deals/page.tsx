@@ -1,5 +1,7 @@
-import { getDealsByAccount } from '@/features/deals/queries/get-deals-by-account';
-import { AccountDealsTab } from '@/features/deals/components/account-deals-tab';
+import { getDeals } from '@/features/deals/queries/get-deals';
+import { getPipelines } from '@/features/deals/queries/get-pipelines';
+import { DealsPageClient } from '@/features/deals/components/deals-page-client';
+import { createServerClient } from '@/lib/supabase/server';
 
 type Props = {
   params: Promise<{ id: string }>;
@@ -7,6 +9,21 @@ type Props = {
 
 export default async function DealsPage({ params }: Props) {
   const { id } = await params;
-  const deals = await getDealsByAccount(id);
-  return <AccountDealsTab deals={deals} />;
+  const supabase = await createServerClient();
+
+  const [pipelines, { data: initialDeals, count: initialCount }, { data: ownerRows }] = await Promise.all([
+    getPipelines(),
+    getDeals({ filters: { account_id: id } }),
+    supabase.from('user_profiles').select('id, full_name').order('full_name'),
+  ]);
+
+  return (
+    <DealsPageClient
+      pipelines={(pipelines as unknown as Parameters<typeof DealsPageClient>[0]['pipelines']) ?? []}
+      initialDeals={initialDeals}
+      initialCount={initialCount}
+      owners={(ownerRows ?? []).map((o) => ({ id: o.id, name: o.full_name ?? '' }))}
+      accountId={id}
+    />
+  );
 }
