@@ -25,11 +25,13 @@ type Props = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSuccess?: () => void;
+  initialType?: 'won' | 'lost' | 'longterm';
 };
 
-export function CloseDealModal({ dealId, open, onOpenChange, onSuccess }: Props) {
+export function CloseDealModal({ dealId, open, onOpenChange, onSuccess, initialType }: Props) {
   const [loading, setLoading] = useState(false);
-  const [closedType, setClosedType] = useState<ClosedType>('won');
+  const [closedType, setClosedType] = useState<ClosedType>(initialType ?? 'won');
+  const [reason, setReason] = useState('');
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -97,8 +99,8 @@ export function CloseDealModal({ dealId, open, onOpenChange, onSuccess }: Props)
         <form onSubmit={handleSubmit} className="space-y-4">
           {(closedType === 'won' || closedType === 'lost') && (
             <div className="space-y-2">
-              <Label htmlFor="closed_reason">Reden</Label>
-              <Input id="closed_reason" name="closed_reason" />
+              <Label htmlFor="closed_reason">Reden{closedType === 'lost' && <span className="text-red-500 ml-0.5">*</span>}</Label>
+              <Input id="closed_reason" name="closed_reason" value={reason} onChange={(e) => setReason(e.target.value)} />
             </div>
           )}
           {(closedType === 'lost' || closedType === 'longterm') && (
@@ -117,7 +119,7 @@ export function CloseDealModal({ dealId, open, onOpenChange, onSuccess }: Props)
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
               Annuleren
             </Button>
-            <Button type="submit" disabled={loading}>
+            <Button type="submit" disabled={loading || (closedType === 'lost' && !reason.trim())}>
               <Save />
               {loading ? 'Opslaan...' : 'Bevestigen'}
             </Button>
