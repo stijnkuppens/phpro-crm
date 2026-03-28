@@ -12,7 +12,7 @@ import { DealKanban } from './deal-kanban';
 import { DealList } from './deal-list';
 import dynamic from 'next/dynamic';
 
-const QuickDealModal = dynamic(() => import('./quick-deal-modal').then(m => ({ default: m.QuickDealModal })), { ssr: false });
+const DealEditModal = dynamic(() => import('./deal-edit-modal').then(m => ({ default: m.DealEditModal })), { ssr: false });
 import type { DealCard, DealWithRelations } from '../types';
 
 const DEAL_SELECT = `
@@ -219,12 +219,12 @@ export function DealsPageClient({ pipelines, initialDeals, initialCount, owners,
         />
       )}
 
-      {!accountId && (
-        <QuickDealModal
-          open={showQuickDeal}
-          onClose={() => setShowQuickDeal(false)}
+      {!accountId && showQuickDeal && (
+        <DealEditModal
+          open
+          onClose={() => { setShowQuickDeal(false); load(); }}
           pipelines={pipelines}
-          onSuccess={() => load()}
+          owners={owners}
         />
       )}
     </div>

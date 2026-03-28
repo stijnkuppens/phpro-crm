@@ -108,7 +108,7 @@ export function DealKanban({ stages, deals, onRefresh }: Props) {
 
   return (
     <DndContext sensors={sensors} collisionDetection={closestCorners} onDragEnd={handleDragEnd}>
-      <div className="flex gap-4 overflow-x-auto pb-4">
+      <div className="flex gap-4 overflow-x-auto pb-4 mt-4">
         {openStages.map((stage) => (
           <DroppableColumn key={stage.id} stage={stage}>
             {deals
