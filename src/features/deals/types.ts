@@ -22,6 +22,7 @@ export type DealCard = {
   stage_id: string;
   forecast_category: string | null;
   origin: string | null;
+  lead_source: string | null;
 };
 
 export const dealFormSchema = z.object({

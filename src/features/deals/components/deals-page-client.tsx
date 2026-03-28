@@ -66,6 +66,7 @@ export function DealsPageClient({ pipelines, initialDeals, initialCount, owners,
   const [filters, setFilters] = useState<Record<string, string | undefined>>({});
   const [page, setPage] = useState(1);
   const [showQuickDeal, setShowQuickDeal] = useState(false);
+  const [kanbanCreateStageId, setKanbanCreateStageId] = useState<string | null>(null);
   const isInitialMount = useRef(true);
 
   const { data, total, loading, refreshing, fetchList } = useEntity<DealWithRelations>({
@@ -164,6 +165,7 @@ export function DealsPageClient({ pipelines, initialDeals, initialCount, owners,
     stage_id: d.stage_id,
     forecast_category: d.forecast_category,
     origin: d.origin,
+    lead_source: d.lead_source ?? null,
   })), [data]);
 
   return (
@@ -201,6 +203,7 @@ export function DealsPageClient({ pipelines, initialDeals, initialCount, owners,
           stages={kanbanPipeline.stages}
           deals={dealCards}
           onRefresh={() => load()}
+          onCreateDeal={(stageId) => setKanbanCreateStageId(stageId)}
         />
       ) : (
         <DealList
@@ -225,6 +228,17 @@ export function DealsPageClient({ pipelines, initialDeals, initialCount, owners,
           onClose={() => { setShowQuickDeal(false); load(); }}
           pipelines={pipelines}
           owners={owners}
+        />
+      )}
+
+      {kanbanCreateStageId && (
+        <DealEditModal
+          key={kanbanCreateStageId}
+          open
+          onClose={() => { setKanbanCreateStageId(null); load(); }}
+          pipelines={pipelines}
+          owners={owners}
+          initialStageId={kanbanCreateStageId}
         />
       )}
     </div>

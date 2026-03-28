@@ -10,7 +10,7 @@ export const getDealsByPipeline = cache(
     const { data, error } = await supabase
       .from('deals')
       .select(`
-        id, title, amount, probability, close_date, stage_id, forecast_category, origin,
+        id, title, amount, probability, close_date, stage_id, forecast_category, origin, lead_source,
         account:accounts!account_id(name),
         owner:user_profiles!owner_id(full_name)
       `)
@@ -35,6 +35,7 @@ export const getDealsByPipeline = cache(
       stage_id: d.stage_id,
       forecast_category: d.forecast_category,
       origin: d.origin ?? null,
+      lead_source: d.lead_source ?? null,
     }));
   },
 );
