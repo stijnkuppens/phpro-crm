@@ -5,7 +5,7 @@ export type Deal = Database['public']['Tables']['deals']['Row'];
 
 export type DealWithRelations = Deal & {
   account: { id: string; name: string } | null;
-  contact: { id: string; first_name: string; last_name: string } | null;
+  contact: { id: string; first_name: string; last_name: string; title: string | null } | null;
   owner: { id: string; full_name: string | null } | null;
   stage: { id: string; name: string; color: string; probability: number; is_closed: boolean; is_won: boolean; is_longterm: boolean } | null;
   pipeline: { id: string; name: string; type: string } | null;
@@ -43,6 +43,9 @@ export const dealFormSchema = z.object({
   consultant_id: z.string().optional().nullable(),
   consultant_role: z.string().optional(),
   forecast_category: z.enum(['Commit', 'Best Case', 'Pipeline', 'Omit']).optional().nullable(),
+  tags: z.array(z.string()).optional(),
+  tarief_gewenst: z.coerce.number().min(0).optional().nullable(),
+  tarief_aangeboden: z.coerce.number().min(0).optional().nullable(),
 });
 
 export type DealFormValues = z.infer<typeof dealFormSchema>;
@@ -60,6 +63,7 @@ export const closeDealSchema = z.object({
 export type CloseDealValues = z.infer<typeof closeDealSchema>;
 
 export type DealFilters = {
+  account_id?: string;
   pipeline_id?: string;
   search?: string;
   owner_id?: string;

@@ -1090,6 +1090,9 @@ export type Database = {
           pipeline_id: string
           probability: number | null
           stage_id: string
+          tags: string[] | null
+          tarief_aangeboden: number | null
+          tarief_gewenst: number | null
           title: string
           updated_at: string
         }
@@ -1118,6 +1121,9 @@ export type Database = {
           pipeline_id: string
           probability?: number | null
           stage_id: string
+          tags?: string[] | null
+          tarief_aangeboden?: number | null
+          tarief_gewenst?: number | null
           title: string
           updated_at?: string
         }
@@ -1146,6 +1152,9 @@ export type Database = {
           pipeline_id?: string
           probability?: number | null
           stage_id?: string
+          tags?: string[] | null
+          tarief_aangeboden?: number | null
+          tarief_gewenst?: number | null
           title?: string
           updated_at?: string
         }
