@@ -17,12 +17,12 @@ export default function UsersError({
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <AlertTriangle className="h-5 w-5 text-destructive" />
-            Failed to load users
+            Fout bij laden van gebruikers
           </CardTitle>
         </CardHeader>
         <CardContent>
           <p className="text-sm text-muted-foreground">
-            An unexpected error occurred loading users.
+            Er is een onverwachte fout opgetreden bij het laden van gebruikers.
           </p>
           {process.env.NODE_ENV === 'development' && (
             <pre className="mt-4 max-h-40 overflow-auto rounded bg-muted p-3 text-xs">
@@ -31,7 +31,7 @@ export default function UsersError({
           )}
         </CardContent>
         <CardFooter>
-          <Button onClick={reset}>Try again</Button>
+          <Button onClick={reset}>Opnieuw proberen</Button>
         </CardFooter>
       </Card>
     </div>

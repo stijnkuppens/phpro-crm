@@ -3,6 +3,7 @@
 import type { ColumnDef } from '@tanstack/react-table';
 import type { DealWithRelations } from './types';
 import { formatEUR } from '@/lib/format';
+import { Avatar } from '@/components/admin/avatar';
 
 function getInitials(name: string): string {
   return name
@@ -135,9 +136,7 @@ export const dealColumns: ColumnDef<DealWithRelations>[] = [
       const initials = getInitials(name);
       return (
         <div className="flex items-center gap-2">
-          <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary/15 text-[10px] font-medium text-primary-action">
-            {initials}
-          </span>
+          <Avatar fallback={initials} size="xs" />
           <span>{name}</span>
         </div>
       );

@@ -120,11 +120,11 @@ export function AccountActivitiesTab({ accountId, accountName, initialData, init
               <button
                 type="button"
                 onClick={() => handleToggleDone(activity)}
-                className="shrink-0 text-muted-foreground hover:text-green-600 transition-colors"
+                className="shrink-0 text-muted-foreground hover:text-primary-action transition-colors"
                 title={activity.is_done ? 'Markeer als niet afgerond' : 'Markeer als afgerond'}
               >
                 {activity.is_done ? (
-                  <CheckCircle2 className="h-5 w-5 text-green-600" />
+                  <CheckCircle2 className="h-5 w-5 text-primary-action" />
                 ) : (
                   <Circle className="h-5 w-5" />
                 )}

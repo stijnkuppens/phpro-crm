@@ -20,6 +20,7 @@ import { consultantColumns } from '../columns';
 import { type ConsultantWithDetails, type ConsultantStatus } from '../types';
 import { archiveConsultant } from '../actions/archive-consultant';
 import { moveToBench } from '../actions/move-to-bench';
+import { FilterPill } from '@/components/admin/filter-pill';
 import dynamic from 'next/dynamic';
 
 const ConsultantDetailModal = dynamic(() => import('./consultant-detail-modal').then(m => ({ default: m.ConsultantDetailModal })), { ssr: false });
@@ -147,18 +148,12 @@ export function AccountConsultantsTab({ accountId, accountName, consultants, rol
                 {STATUS_PILLS.map((pill) => {
                   const active = selectedStatuses.has(pill.value);
                   return (
-                    <button
+                    <FilterPill
                       key={pill.value}
-                      type="button"
+                      label={pill.label}
+                      active={active}
                       onClick={() => toggleStatus(pill.value)}
-                      className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
-                        active
-                          ? 'bg-primary text-primary-foreground'
-                          : 'bg-muted text-muted-foreground hover:bg-muted/80'
-                      }`}
-                    >
-                      {pill.label}
-                    </button>
+                    />
                   );
                 })}
               </div>

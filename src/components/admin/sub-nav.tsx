@@ -1,6 +1,7 @@
 'use client';
 
 import type { LucideIcon } from 'lucide-react';
+import Link from 'next/link';
 import { Badge } from '@/components/ui/badge';
 
 export type SubNavItem = {
@@ -42,9 +43,9 @@ export function SubNav({ items, activeKey, onSelect, getHref }: Props) {
 
         if (getHref) {
           return (
-            <a key={item.key} href={getHref(item.key)} className={className}>
+            <Link key={item.key} href={getHref(item.key)} scroll={false} className={className}>
               {content}
-            </a>
+            </Link>
           );
         }
 

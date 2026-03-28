@@ -4,12 +4,13 @@ import { cn } from '@/lib/utils';
 type InfoRowProps = {
   label: string;
   value?: React.ReactNode;
+  children?: React.ReactNode;
   icon?: LucideIcon;
   href?: string;
   mono?: boolean;
 };
 
-export function InfoRow({ label, value, icon: Icon, href, mono }: InfoRowProps) {
+export function InfoRow({ label, value, children, icon: Icon, href, mono }: InfoRowProps) {
   return (
     <div className="flex items-start gap-2.5 border-b border-muted/50 py-2 last:border-0">
       {Icon && <Icon className="mt-0.5 h-3.5 w-3.5 flex-shrink-0 text-muted-foreground" />}
@@ -24,10 +25,10 @@ export function InfoRow({ label, value, icon: Icon, href, mono }: InfoRowProps) 
             rel="noopener noreferrer"
             className="truncate text-primary hover:underline"
           >
-            {value}
+            {children ?? value}
           </a>
         ) : (
-          value ?? <span className="text-muted-foreground/40">—</span>
+          (children ?? value) ?? <span className="text-muted-foreground/40">—</span>
         )}
       </span>
     </div>

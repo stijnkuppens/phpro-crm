@@ -1,11 +1,12 @@
 'use client';
 
-import { useState } from 'react';
+import { useActionState, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
+import { SubmitButton } from '@/components/ui/submit-button';
 import { DateTimePicker } from '@/components/ui/date-time-picker';
 import { Textarea } from '@/components/ui/textarea';
 import {
@@ -41,18 +42,13 @@ const ACTIVITY_TYPES = [
 
 export function ActivityForm({ defaultValues, accounts = [], deals = [], onSuccess, onCancel }: Props) {
   const router = useRouter();
-  const [loading, setLoading] = useState(false);
   const [type, setType] = useState<string>(defaultValues?.type ?? 'Meeting');
   const [accountId, setAccountId] = useState(defaultValues?.account_id ?? '');
   const [dealId, setDealId] = useState(defaultValues?.deal_id ?? '');
   const [isDone, setIsDone] = useState(defaultValues?.is_done ?? false);
   const isEdit = !!defaultValues?.id;
 
-  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    setLoading(true);
-
-    const formData = new FormData(e.currentTarget);
+  const [, formAction] = useActionState(async (_prev: null, formData: FormData) => {
     const values: ActivityFormValues = {
       type: type as ActivityFormValues['type'],
       subject: formData.get('subject') as string,
@@ -67,19 +63,16 @@ export function ActivityForm({ defaultValues, accounts = [], deals = [], onSucce
     const parsed = activityFormSchema.safeParse(values);
     if (!parsed.success) {
       toast.error('Controleer de verplichte velden');
-      setLoading(false);
-      return;
+      return null;
     }
 
     const result = isEdit
       ? await updateActivity(defaultValues!.id!, parsed.data)
       : await createActivity(parsed.data);
 
-    setLoading(false);
-
     if ('error' in result && result.error) {
       toast.error(typeof result.error === 'string' ? result.error : 'Er ging iets mis');
-      return;
+      return null;
     }
 
     toast.success(isEdit ? 'Activiteit bijgewerkt' : 'Activiteit aangemaakt');
@@ -89,10 +82,11 @@ export function ActivityForm({ defaultValues, accounts = [], deals = [], onSucce
     } else {
       router.push('/admin/activities');
     }
-  }
+    return null;
+  }, null);
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <form action={formAction} className="space-y-4">
       {/* Type toggle buttons */}
       <div className="space-y-2">
         <Label>Type</Label>
@@ -219,9 +213,9 @@ export function ActivityForm({ defaultValues, accounts = [], deals = [], onSucce
             </Button>
           )}
         </div>
-        <Button type="submit" disabled={loading}>
-          {loading ? 'Opslaan...' : isEdit ? 'Bijwerken' : 'Activiteit toevoegen'}
-        </Button>
+        <SubmitButton>
+          {isEdit ? 'Bijwerken' : 'Activiteit toevoegen'}
+        </SubmitButton>
       </div>
     </form>
   );

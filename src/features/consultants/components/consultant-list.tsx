@@ -14,8 +14,9 @@ import {
   RotateCcw,
 } from 'lucide-react';
 import { toast } from 'sonner';
-import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import { StatCard } from '@/components/admin/stat-card';
+import { FilterPill } from '@/components/admin/filter-pill';
 import { Button } from '@/components/ui/button';
 import DataTable from '@/components/admin/data-table';
 import { useEntity } from '@/lib/hooks/use-entity';
@@ -203,42 +204,10 @@ export function ConsultantListView({ initialData, initialCount, stats, accounts,
       <div className="space-y-4">
         {/* Stat cards */}
         <div className="grid grid-cols-4 gap-4">
-          <Card>
-            <CardContent className="pt-4">
-              <div className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-                Bench
-              </div>
-              <div className="text-2xl font-bold mt-1">{stats.benchCount}</div>
-              <div className="text-xs text-muted-foreground">consultants</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="pt-4">
-              <div className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-                Actief
-              </div>
-              <div className="text-2xl font-bold mt-1">{stats.activeCount}</div>
-              <div className="text-xs text-muted-foreground">consultants</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="pt-4">
-              <div className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-                Max maandomzet
-              </div>
-              <div className="text-2xl font-bold mt-1">{formatEUR(stats.maxRevenue)}</div>
-              <div className="text-xs text-muted-foreground">op basis van uurtarieven</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="pt-4">
-              <div className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-                Stopgezet
-              </div>
-              <div className="text-2xl font-bold mt-1">{stats.stoppedCount}</div>
-              <div className="text-xs text-muted-foreground">consultants</div>
-            </CardContent>
-          </Card>
+          <StatCard title="Bench" value={stats.benchCount} subtitle="consultants" />
+          <StatCard title="Actief" value={stats.activeCount} subtitle="consultants" />
+          <StatCard title="Max maandomzet" value={formatEUR(stats.maxRevenue)} subtitle="op basis van uurtarieven" />
+          <StatCard title="Stopgezet" value={stats.stoppedCount} subtitle="consultants" />
         </div>
 
         {/* Data table */}
@@ -256,18 +225,12 @@ export function ConsultantListView({ initialData, initialCount, stats, accounts,
                 {statusPills.map((pill) => {
                   const active = selectedStatuses.includes(pill.value);
                   return (
-                    <button
+                    <FilterPill
                       key={pill.value}
-                      type="button"
+                      label={pill.label}
+                      active={active}
                       onClick={() => toggleStatus(pill.value)}
-                      className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
-                        active
-                          ? 'bg-primary text-primary-foreground'
-                          : 'bg-muted text-muted-foreground hover:bg-muted/80'
-                      }`}
-                    >
-                      {pill.label}
-                    </button>
+                    />
                   );
                 })}
               </div>

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useActionState, useState } from 'react';
 import { toast } from 'sonner';
 import { Modal } from '@/components/admin/modal';
 import { Input } from '@/components/ui/input';
@@ -8,6 +8,7 @@ import { DatePicker } from '@/components/ui/date-picker';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
+import { SubmitButton } from '@/components/ui/submit-button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { stopConsultant } from '../actions/stop-consultant';
 import { moveToBench as moveToBenchAction } from '../actions/move-to-bench';
@@ -20,24 +21,17 @@ type Props = {
 };
 
 export function StopConsultantModal({ consultantId, open, onClose, onSuccess }: Props) {
-  const [loading, setLoading] = useState(false);
   const [moveToBench, setMoveToBench] = useState(false);
 
-  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    setLoading(true);
-
-    const formData = new FormData(e.currentTarget);
+  const [, formAction] = useActionState(async (_prev: null, formData: FormData) => {
     const result = await stopConsultant(consultantId, {
       stop_date: formData.get('stop_date') as string,
       stop_reason: (formData.get('stop_reason') as string) || undefined,
     });
 
-    setLoading(false);
-
     if ('error' in result && result.error) {
       toast.error(typeof result.error === 'string' ? result.error : 'Er ging iets mis');
-      return;
+      return null;
     }
 
     if (moveToBench) {
@@ -48,18 +42,19 @@ export function StopConsultantModal({ consultantId, open, onClose, onSuccess }: 
         toast.success('Consultant stopgezet en naar bench verplaatst');
         onSuccess?.();
         onClose();
-        return;
+        return null;
       }
     }
 
     toast.success('Consultant stopgezet');
     onSuccess?.();
     onClose();
-  }
+    return null;
+  }, null);
 
   return (
     <Modal open={open} onClose={onClose} title="Consultant stopzetten">
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form action={formAction} className="space-y-4">
         <div className="space-y-2">
           <Label htmlFor="stop_date">Stopdatum *</Label>
           <DatePicker name="stop_date" required />
@@ -78,9 +73,7 @@ export function StopConsultantModal({ consultantId, open, onClose, onSuccess }: 
         </div>
         <div className="flex gap-2 justify-end">
           <Button type="button" variant="outline" onClick={onClose}>Annuleren</Button>
-          <Button type="submit" variant="destructive" disabled={loading}>
-            {loading ? 'Verwerken...' : 'Stopzetten'}
-          </Button>
+          <SubmitButton variant="destructive">Stopzetten</SubmitButton>
         </div>
       </form>
     </Modal>

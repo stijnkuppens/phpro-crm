@@ -18,6 +18,7 @@ import { moveDealStage } from '../actions/move-deal-stage';
 import { CloseDealModal } from './close-deal-modal';
 import type { DealCard } from '../types';
 import { formatEUR } from '@/lib/format';
+import { Avatar } from '@/components/admin/avatar';
 
 type Stage = {
   id: string;
@@ -116,9 +117,7 @@ function DraggableDealCard({ deal, onNavigate }: { deal: DealCard; onNavigate: (
         <div className="flex items-center gap-1.5">
           <span className="text-muted-foreground">{deal.probability}%</span>
           {deal.owner_name && (
-            <span className="flex h-5 w-5 items-center justify-center rounded-full bg-primary/15 text-[9px] font-medium text-primary-action">
-              {deal.owner_name.split(' ').filter(Boolean).map(w => w[0]).join('').toUpperCase().slice(0, 2)}
-            </span>
+            <Avatar fallback={deal.owner_name.split(' ').filter(Boolean).map((w) => w[0]).join('').toUpperCase().slice(0, 2)} size="xs" />
           )}
         </div>
       </div>

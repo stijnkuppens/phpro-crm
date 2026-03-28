@@ -4,6 +4,7 @@ import type { LucideIcon } from 'lucide-react';
 type StatCardProps = {
   title: string;
   value: string | number;
+  subtitle?: string;
   trend?: {
     value: number;
     label: string;
@@ -12,7 +13,7 @@ type StatCardProps = {
   icon?: LucideIcon;
 };
 
-export function StatCard({ title, value, trend, icon: Icon }: StatCardProps) {
+export function StatCard({ title, value, subtitle, trend, icon: Icon }: StatCardProps) {
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between pb-2">
@@ -23,6 +24,9 @@ export function StatCard({ title, value, trend, icon: Icon }: StatCardProps) {
       </CardHeader>
       <CardContent>
         <div className="text-2xl font-bold">{value}</div>
+        {subtitle && (
+          <p className="text-xs text-muted-foreground">{subtitle}</p>
+        )}
         {trend && (
           <p className="text-xs text-muted-foreground">
             <span className={trend.direction === 'up' ? 'text-green-600' : 'text-red-600'}>

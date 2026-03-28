@@ -8,6 +8,7 @@ import type { ContactWithDetails } from '@/features/contacts/types';
 import { FileText, Shield, Users } from 'lucide-react';
 import { Avatar } from '@/components/admin/avatar';
 import type { ReferenceOption } from '../types';
+import { InfoRow } from '@/components/admin/info-row';
 
 type Props = {
   account: AccountWithRelations;
@@ -195,9 +196,7 @@ export function AccountOverviewTab({ account, contract, contacts, internalPeople
             <div className="space-y-3">
               {steercoContacts.map((c) => (
                 <div key={c.id} className="flex items-center gap-3">
-                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-muted text-xs font-medium">
-                    {(c.first_name?.[0] ?? '').toUpperCase()}{(c.last_name?.[0] ?? '').toUpperCase()}
-                  </div>
+                  <Avatar fallback={`${(c.first_name?.[0] ?? '').toUpperCase()}${(c.last_name?.[0] ?? '').toUpperCase()}`} size="sm" />
                   <div className="min-w-0">
                     <div className="flex items-center gap-2">
                       <span className="font-medium text-sm">{c.first_name} {c.last_name}</span>
@@ -218,16 +217,6 @@ export function AccountOverviewTab({ account, contract, contacts, internalPeople
         </CardContent>
       </Card>
 
-    </div>
-  );
-}
-
-function InfoRow({ label, value }: { label: string; value?: string | null }) {
-  if (!value) return null;
-  return (
-    <div className="flex">
-      <span className="text-muted-foreground w-32 shrink-0">{label}</span>
-      <span>{value}</span>
     </div>
   );
 }

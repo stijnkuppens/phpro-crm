@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { AlertTriangle } from 'lucide-react';
 
-export default function NotificationsError({
+export default function UserError({
   error,
   reset,
 }: {
@@ -17,12 +17,12 @@ export default function NotificationsError({
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <AlertTriangle className="h-5 w-5 text-destructive" />
-            Fout bij laden van meldingen
+            Fout bij laden van gebruiker
           </CardTitle>
         </CardHeader>
         <CardContent>
           <p className="text-sm text-muted-foreground">
-            Er is een onverwachte fout opgetreden bij het laden van meldingen.
+            Er is een onverwachte fout opgetreden bij het laden van gebruiker.
           </p>
           {process.env.NODE_ENV === 'development' && (
             <pre className="mt-4 max-h-40 overflow-auto rounded bg-muted p-3 text-xs">

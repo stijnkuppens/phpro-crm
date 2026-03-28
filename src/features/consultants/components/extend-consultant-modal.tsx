@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useActionState } from 'react';
 import { toast } from 'sonner';
 import { Modal } from '@/components/admin/modal';
 import { Input } from '@/components/ui/input';
@@ -8,6 +8,7 @@ import { DatePicker } from '@/components/ui/date-picker';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
+import { SubmitButton } from '@/components/ui/submit-button';
 import { extendConsultant } from '../actions/extend-consultant';
 
 type Props = {
@@ -18,33 +19,26 @@ type Props = {
 };
 
 export function ExtendConsultantModal({ consultantId, open, onClose, onSuccess }: Props) {
-  const [loading, setLoading] = useState(false);
-
-  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    setLoading(true);
-
-    const formData = new FormData(e.currentTarget);
+  const [, formAction] = useActionState(async (_prev: null, formData: FormData) => {
     const result = await extendConsultant(consultantId, {
       new_end_date: formData.get('new_end_date') as string,
       notes: (formData.get('notes') as string) || undefined,
     });
 
-    setLoading(false);
-
     if ('error' in result && result.error) {
       toast.error(typeof result.error === 'string' ? result.error : 'Er ging iets mis');
-      return;
+      return null;
     }
 
     toast.success('Consultant verlengd');
     onSuccess?.();
     onClose();
-  }
+    return null;
+  }, null);
 
   return (
     <Modal open={open} onClose={onClose} title="Consultant verlengen">
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form action={formAction} className="space-y-4">
         <div className="space-y-2">
           <Label htmlFor="new_end_date">Nieuwe einddatum *</Label>
           <DatePicker name="new_end_date" required />
@@ -55,9 +49,7 @@ export function ExtendConsultantModal({ consultantId, open, onClose, onSuccess }
         </div>
         <div className="flex gap-2 justify-end">
           <Button type="button" variant="outline" onClick={onClose}>Annuleren</Button>
-          <Button type="submit" disabled={loading}>
-            {loading ? 'Verwerken...' : 'Verlengen'}
-          </Button>
+          <SubmitButton>Verlengen</SubmitButton>
         </div>
       </form>
     </Modal>

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useActionState, useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { Plus, Trash2, X } from 'lucide-react';
@@ -68,8 +68,6 @@ type Props = {
   onSuccess?: () => void;
   /** External form ref — when provided, the form doesn't render its own FormActions */
   formRef?: React.RefObject<HTMLFormElement | null>;
-  /** Called when loading state changes — used to sync with external FormActions */
-  onLoadingChange?: (loading: boolean) => void;
 };
 
 // ── ChipInput component (inline) ────────────────────────────────────────────
@@ -227,10 +225,8 @@ function StringChipInput({
 
 // ── Main form ────────────────────────────────────────────────────────────────
 
-export function AccountForm({ referenceData, defaultValues, onSuccess, formRef: externalFormRef, onLoadingChange }: Props) {
+export function AccountForm({ referenceData, defaultValues, onSuccess, formRef: externalFormRef }: Props) {
   const router = useRouter();
-  const [loading, setLoadingState] = useState(false);
-  const setLoading = (v: boolean) => { setLoadingState(v); onLoadingChange?.(v); };
   const internalFormRef = useRef<HTMLFormElement>(null);
   const formRef = externalFormRef ?? internalFormRef;
   const isEdit = !!defaultValues?.id;
@@ -320,11 +316,7 @@ export function AccountForm({ referenceData, defaultValues, onSuccess, formRef: 
     );
   }
 
-  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    setLoading(true);
-
-    const formData = new FormData(e.currentTarget);
+  const [, formAction] = useActionState(async (_prev: null, formData: FormData) => {
     const values: AccountFormValues = {
       name: formData.get('name') as string,
       type: (formData.get('type') as AccountFormValues['type']) ?? 'Prospect',
@@ -349,8 +341,7 @@ export function AccountForm({ referenceData, defaultValues, onSuccess, formRef: 
     const parsed = accountFormSchema.safeParse(values);
     if (!parsed.success) {
       toast.error('Controleer de verplichte velden');
-      setLoading(false);
-      return;
+      return null;
     }
 
     // 1. Save main account
@@ -360,8 +351,7 @@ export function AccountForm({ referenceData, defaultValues, onSuccess, formRef: 
 
     if ('error' in result && result.error) {
       toast.error(typeof result.error === 'string' ? result.error : 'Er ging iets mis');
-      setLoading(false);
-      return;
+      return null;
     }
 
     const accountId = isEdit
@@ -370,8 +360,7 @@ export function AccountForm({ referenceData, defaultValues, onSuccess, formRef: 
 
     if (!accountId) {
       toast.error('Kon account ID niet ophalen');
-      setLoading(false);
-      return;
+      return null;
     }
 
     // 2. Sync FK relations
@@ -435,7 +424,6 @@ export function AccountForm({ referenceData, defaultValues, onSuccess, formRef: 
       }
     }
 
-    setLoading(false);
     toast.success(isEdit ? 'Account bijgewerkt' : 'Account aangemaakt');
 
     const shouldClose = formRef.current?.dataset.closeAfterSave === 'true';
@@ -450,10 +438,11 @@ export function AccountForm({ referenceData, defaultValues, onSuccess, formRef: 
     } else {
       router.push('/admin/accounts');
     }
-  }
+    return null;
+  }, null);
 
   return (
-    <form id="account-form" ref={formRef} onSubmit={handleSubmit}>
+    <form id="account-form" ref={formRef} action={formAction}>
       <div className="rounded-xl border bg-card p-6 shadow-sm grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* -- Left Column: Bedrijfsinformatie -- */}
         <div className="space-y-4">

@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { getAccount } from '@/features/accounts/queries/get-account';
 import { getAccountBannerStats } from '@/features/accounts/queries/get-account-banner-stats';
 import { AccountBanner } from '@/features/accounts/components/account-banner';
-import { AccountTabNav } from '@/features/accounts/components/account-tab-nav';
+import { AccountSubNav } from '@/features/accounts/components/account-sub-nav';
 
 type Props = {
   params: Promise<{ id: string }>;
@@ -47,7 +47,7 @@ export default async function AccountDetailLayout({ params, children }: Props) {
         }
       />
       <AccountBanner account={account} stats={stats} />
-      <AccountTabNav accountId={id} stats={stats} />
+      <AccountSubNav accountId={id} stats={stats} />
       {children}
     </div>
   );

@@ -1,10 +1,10 @@
 'use client';
 
-import { useRef, useState } from 'react';
+import { useRef } from 'react';
 import { PageHeader } from '@/components/admin/page-header';
 import { FormActions } from '@/components/admin/form-actions';
 import { AccountForm } from './account-form';
-import type { AccountReferenceData, AccountFormValues } from '../types';
+import type { AccountReferenceData } from '../types';
 
 type Props = {
   account: { id: string; name: string };
@@ -15,7 +15,6 @@ type Props = {
 
 export function AccountEditPageClient({ account, referenceData, defaultValues, breadcrumbs }: Props) {
   const formRef = useRef<HTMLFormElement>(null);
-  const [loading, setLoading] = useState(false);
 
   return (
     <div className="space-y-6">
@@ -25,7 +24,7 @@ export function AccountEditPageClient({ account, referenceData, defaultValues, b
         actions={
           <FormActions
             isEdit={true}
-            loading={loading}
+            loading={false}
             formRef={formRef}
             formId="account-form"
             onSaveAndClose={() => {
@@ -40,7 +39,6 @@ export function AccountEditPageClient({ account, referenceData, defaultValues, b
         referenceData={referenceData}
         defaultValues={defaultValues}
         formRef={formRef}
-        onLoadingChange={setLoading}
       />
     </div>
   );

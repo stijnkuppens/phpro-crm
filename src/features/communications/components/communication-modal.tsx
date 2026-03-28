@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useActionState, useState } from 'react';
 import { toast } from 'sonner';
 import { Modal } from '@/components/admin/modal';
 import { Input } from '@/components/ui/input';
@@ -15,6 +15,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Mail, FileText, Users, Phone, Save, Send } from 'lucide-react';
+import { SubmitButton } from '@/components/ui/submit-button';
 import { DateTimePicker } from '@/components/ui/date-time-picker';
 import { useBrandTheme } from '@/lib/hooks/use-brand-theme';
 import { communicationFormSchema, type CommunicationFormValues } from '../types';
@@ -43,7 +44,6 @@ type Props = {
 
 export function CommunicationModal({ open, onClose, accountId, contacts = [], deals = [], defaultValues }: Props) {
   const { brand } = useBrandTheme();
-  const [loading, setLoading] = useState(false);
   const [sending, setSending] = useState(false);
   const [type, setType] = useState<CommunicationFormValues['type']>(defaultValues?.type ?? 'email');
   const [toValue, setToValue] = useState(defaultValues?.to ?? '');
@@ -59,11 +59,7 @@ export function CommunicationModal({ open, onClose, accountId, contacts = [], de
   const isEdit = !!defaultValues?.id;
   const canSendEmail = type === 'email' && toValue.includes('@') && subjectValue.length > 0 && contentValue.length > 0;
 
-  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    setLoading(true);
-
-    const fd = new FormData(e.currentTarget);
+  const [, formAction] = useActionState(async (_prev: null, fd: FormData) => {
     const contentText = (fd.get('content_text') as string) || '';
     const values: CommunicationFormValues = {
       account_id: accountId,
@@ -81,24 +77,22 @@ export function CommunicationModal({ open, onClose, accountId, contacts = [], de
     const parsed = communicationFormSchema.safeParse(values);
     if (!parsed.success) {
       toast.error('Controleer de verplichte velden');
-      setLoading(false);
-      return;
+      return null;
     }
 
     const result = isEdit
       ? await updateCommunication(defaultValues!.id!, parsed.data)
       : await createCommunication(parsed.data);
 
-    setLoading(false);
-
     if ('error' in result && result.error) {
       toast.error(typeof result.error === 'string' ? result.error : 'Er ging iets mis');
-      return;
+      return null;
     }
 
     toast.success(isEdit ? 'Communicatie bijgewerkt' : 'Communicatie aangemaakt');
     onClose();
-  }
+    return null;
+  }, null);
 
   async function handleSendEmail() {
     setSending(true);
@@ -118,7 +112,7 @@ export function CommunicationModal({ open, onClose, accountId, contacts = [], de
 
   return (
     <Modal open={open} onClose={onClose} title={isEdit ? 'Communicatie bewerken' : 'Nieuwe communicatie'} size="wide">
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form action={formAction} className="space-y-4">
         {/* Type pills */}
         <div className="flex gap-2">
           {TYPES.map((t) => (
@@ -214,22 +208,21 @@ export function CommunicationModal({ open, onClose, accountId, contacts = [], de
 
         {/* Actions */}
         <div className="flex justify-end gap-2 pt-2">
-          <Button type="button" variant="outline" onClick={onClose} disabled={loading || sending}>Annuleer</Button>
+          <Button type="button" variant="outline" onClick={onClose} disabled={sending}>Annuleer</Button>
           {type === 'email' && (
             <Button
               type="button"
               variant="outline"
-              disabled={loading || sending || !canSendEmail}
+              disabled={sending || !canSendEmail}
               onClick={handleSendEmail}
             >
               <Send className="h-4 w-4 mr-1.5" />
               {sending ? 'Versturen...' : 'Verstuur via mail'}
             </Button>
           )}
-          <Button type="submit" disabled={loading || sending}>
-            <Save />
-            {loading ? 'Opslaan...' : isEdit ? 'Bijwerken' : 'Opslaan'}
-          </Button>
+          <SubmitButton icon={<Save />} disabled={sending}>
+            {isEdit ? 'Bijwerken' : 'Opslaan'}
+          </SubmitButton>
         </div>
       </form>
     </Modal>

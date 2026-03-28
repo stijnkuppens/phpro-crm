@@ -1,3 +1,4 @@
+import { notFound } from 'next/navigation';
 import { getAccount } from '@/features/accounts/queries/get-account';
 import { getContract } from '@/features/contracts/queries/get-contract';
 import { getContactsByAccount } from '@/features/contacts/queries/get-contacts-by-account';
@@ -16,6 +17,6 @@ export default async function AccountOverviewPage({ params }: Props) {
     getContactsByAccount(id),
     getReferenceOptions('ref_internal_people'),
   ]);
-  if (!account) return null;
+  if (!account) notFound();
   return <AccountOverviewTab account={account} contract={contract} contacts={contacts} internalPeople={internalPeople} />;
 }

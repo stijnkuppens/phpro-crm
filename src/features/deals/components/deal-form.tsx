@@ -1,12 +1,13 @@
 'use client';
 
-import { useState } from 'react';
+import { useActionState, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { Input } from '@/components/ui/input';
 import { DatePicker } from '@/components/ui/date-picker';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
+import { SubmitButton } from '@/components/ui/submit-button';
 import { Textarea } from '@/components/ui/textarea';
 import {
   Select,
@@ -28,15 +29,10 @@ type Props = {
 
 export function DealForm({ defaultValues, onSuccess, onCancel }: Props) {
   const router = useRouter();
-  const [loading, setLoading] = useState(false);
   const [origin, setOrigin] = useState<string>(defaultValues?.origin ?? 'rechtstreeks');
   const isEdit = !!defaultValues?.id;
 
-  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    setLoading(true);
-
-    const formData = new FormData(e.currentTarget);
+  const [, formAction] = useActionState(async (_prev: null, formData: FormData) => {
     const values: DealFormValues = {
       title: formData.get('title') as string,
       account_id: formData.get('account_id') as string,
@@ -59,19 +55,16 @@ export function DealForm({ defaultValues, onSuccess, onCancel }: Props) {
     const parsed = dealFormSchema.safeParse(values);
     if (!parsed.success) {
       toast.error('Controleer de verplichte velden');
-      setLoading(false);
-      return;
+      return null;
     }
 
     const result = isEdit
       ? await updateDeal(defaultValues!.id!, parsed.data)
       : await createDeal(parsed.data);
 
-    setLoading(false);
-
     if ('error' in result && result.error) {
       toast.error(typeof result.error === 'string' ? result.error : 'Er ging iets mis');
-      return;
+      return null;
     }
 
     toast.success(isEdit ? 'Deal bijgewerkt' : 'Deal aangemaakt');
@@ -81,10 +74,11 @@ export function DealForm({ defaultValues, onSuccess, onCancel }: Props) {
     } else {
       router.push('/admin/deals');
     }
-  }
+    return null;
+  }, null);
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4 max-w-2xl">
+    <form action={formAction} className="space-y-4 max-w-2xl">
       <div className="grid grid-cols-2 gap-4">
         <div className="col-span-2 space-y-2">
           <Label htmlFor="title">Titel *</Label>
@@ -170,10 +164,9 @@ export function DealForm({ defaultValues, onSuccess, onCancel }: Props) {
         <Textarea id="description" name="description" rows={4} defaultValue={defaultValues?.description ?? ''} />
       </div>
       <div className="flex gap-2">
-        <Button type="submit" disabled={loading}>
-          <Save />
-          {loading ? 'Opslaan...' : isEdit ? 'Bijwerken' : 'Aanmaken'}
-        </Button>
+        <SubmitButton icon={<Save />}>
+          {isEdit ? 'Bijwerken' : 'Aanmaken'}
+        </SubmitButton>
         {onCancel && (
           <Button type="button" variant="outline" onClick={onCancel}>
             Annuleren

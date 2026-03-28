@@ -1,12 +1,13 @@
 'use client';
 
-import { useState } from 'react';
+import { useActionState, useState } from 'react';
 import { toast } from 'sonner';
 import { Modal } from '@/components/admin/modal';
 import { Input } from '@/components/ui/input';
 import { DatePicker } from '@/components/ui/date-picker';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
+import { SubmitButton } from '@/components/ui/submit-button';
 import { Switch } from '@/components/ui/switch';
 import {
   Select,
@@ -40,7 +41,6 @@ type Props = {
 };
 
 export function ContractEditModal({ accountId, contract, indexationConfig, open, onClose, onSaved }: Props) {
-  const [loading, setLoading] = useState(false);
   const [hasFramework, setHasFramework] = useState(contract?.has_framework_contract ?? false);
   const [hasService, setHasService] = useState(contract?.has_service_contract ?? false);
   const [indexType, setIndexType] = useState(indexationConfig?.indexation_type ?? '');
@@ -49,11 +49,7 @@ export function ContractEditModal({ accountId, contract, indexationConfig, open,
   const [frameworkPdf, setFrameworkPdf] = useState(contract?.framework_pdf_url ?? '');
   const [servicePdf, setServicePdf] = useState(contract?.service_pdf_url ?? '');
 
-  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    setLoading(true);
-
-    const fd = new FormData(e.currentTarget);
+  const [, formAction] = useActionState(async (_prev: null, fd: FormData) => {
     const values: ContractFormValues = {
       has_framework_contract: hasFramework,
       framework_pdf_url: frameworkPdf || null,
@@ -71,8 +67,7 @@ export function ContractEditModal({ accountId, contract, indexationConfig, open,
     const contractResult = await upsertContract(accountId, values);
     if (!contractResult.success) {
       toast.error(typeof contractResult.error === 'string' ? contractResult.error : 'Opslaan mislukt');
-      setLoading(false);
-      return;
+      return null;
     }
 
     // Save indexation config
@@ -85,14 +80,14 @@ export function ContractEditModal({ accountId, contract, indexationConfig, open,
       });
     }
 
-    setLoading(false);
     toast.success('Contract bijgewerkt');
     onSaved();
-  }
+    return null;
+  }, null);
 
   return (
     <Modal open={open} onClose={onClose} title="Contract & Indexering bewerken" size="wide">
-      <form onSubmit={handleSubmit} className="space-y-6">
+      <form action={formAction} className="space-y-6">
         {/* Indexation config */}
         <div className="rounded-lg bg-amber-50 dark:bg-amber-950/30 p-4 space-y-3 [&_input]:bg-white [&_[data-slot=select-trigger]]:bg-white [&_button[data-slot=button]]:bg-white dark:[&_input]:bg-background dark:[&_[data-slot=select-trigger]]:bg-background dark:[&_button[data-slot=button]]:bg-background">
           <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Indexering</h3>
@@ -207,11 +202,8 @@ export function ContractEditModal({ accountId, contract, indexationConfig, open,
         </div>
 
         <div className="flex justify-end gap-2 pt-2">
-          <Button type="button" variant="outline" onClick={onClose} disabled={loading}>Annuleer</Button>
-          <Button type="submit" disabled={loading}>
-            <Save />
-            {loading ? 'Opslaan...' : 'Opslaan'}
-          </Button>
+          <Button type="button" variant="outline" onClick={onClose}>Annuleer</Button>
+          <SubmitButton icon={<Save />}>Opslaan</SubmitButton>
         </div>
       </form>
     </Modal>

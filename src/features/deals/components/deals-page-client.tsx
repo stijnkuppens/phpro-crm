@@ -171,7 +171,7 @@ export function DealsPageClient({ pipelines, initialDeals, initialCount, owners,
   return (
     <div>
       {!accountId && (
-        <div className="space-y-3">
+        <div className="space-y-6">
           <PageHeader
             title="Deals"
             breadcrumbs={[

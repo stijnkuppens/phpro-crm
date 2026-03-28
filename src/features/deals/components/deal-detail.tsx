@@ -7,16 +7,20 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Modal } from '@/components/admin/modal';
+import { InfoRow } from '@/components/admin/info-row';
+import { Avatar } from '@/components/admin/avatar';
+import { EmptyState } from '@/components/admin/empty-state';
+import { ConfirmDialog } from '@/components/admin/confirm-dialog';
 import {
   CheckCircle2, Pencil, Building2, User, Calendar, TrendingUp, Sparkles,
-  ClipboardList, Plus, Check, Monitor, Phone, Mail, UtensilsCrossed,
-  PartyPopper, Trash2, ChevronDown, ChevronUp, RotateCcw,
+  ClipboardList, Plus, Check, Trash2, ChevronDown, ChevronUp, RotateCcw,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { formatEUR } from '@/lib/format';
 import type { ActivityWithRelations } from '@/features/activities/types';
 import type { TaskWithRelations } from '@/features/tasks/types';
 import type { CommunicationWithDetails } from '@/features/communications/types';
+import { GROUP_ORDER, GROUP_COLORS, ACTIVITY_TYPE_ICONS, getActivityGroup } from '@/features/activities/utils/activity-constants';
 import { ActivityForm } from '@/features/activities/components/activity-form';
 import { TaskForm } from '@/features/tasks/components/task-form';
 import { toggleActivityDone } from '@/features/activities/actions/toggle-activity-done';
@@ -53,9 +57,9 @@ const ORIGIN_LABEL: Record<string, string> = {
 };
 
 const PRIORITY_COLORS: Record<string, string> = {
-  High: 'bg-red-100 text-red-700',
-  Medium: 'bg-yellow-100 text-yellow-700',
-  Low: 'bg-gray-100 text-gray-600',
+  High: 'bg-destructive/15 text-destructive',
+  Medium: 'bg-primary/15 text-primary-action',
+  Low: 'bg-muted text-muted-foreground',
 };
 
 const CLOSED_TYPE_COLORS: Record<string, string> = {
@@ -69,43 +73,6 @@ const CLOSED_TYPE_LABELS: Record<string, string> = {
   lost: 'Verloren',
   longterm: 'Longterm',
 };
-
-const GROUP_ORDER = ['Vandaag', 'Morgen', 'Deze week', 'Later', 'Verstreken', 'Gedaan'] as const;
-
-const GROUP_COLORS: Record<string, string> = {
-  Vandaag: 'text-indigo-600',
-  Morgen: 'text-blue-500',
-  'Deze week': 'text-teal-500',
-  Later: 'text-gray-500',
-  Verstreken: 'text-red-500',
-  Gedaan: 'text-gray-400',
-};
-
-const ACTIVITY_TYPE_ICONS: Record<string, typeof Calendar> = {
-  Meeting: Calendar,
-  Demo: Monitor,
-  Call: Phone,
-  'E-mail': Mail,
-  Lunch: UtensilsCrossed,
-  Event: PartyPopper,
-};
-
-function getActivityGroup(dateStr: string, isDone: boolean): string {
-  if (isDone) return 'Gedaan';
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  const tomorrow = new Date(today);
-  tomorrow.setDate(tomorrow.getDate() + 1);
-  const weekEnd = new Date(today);
-  weekEnd.setDate(weekEnd.getDate() + 7);
-  const actDate = new Date(dateStr);
-  actDate.setHours(0, 0, 0, 0);
-  if (actDate.getTime() === today.getTime()) return 'Vandaag';
-  if (actDate.getTime() === tomorrow.getTime()) return 'Morgen';
-  if (actDate > today && actDate <= weekEnd) return 'Deze week';
-  if (actDate > weekEnd) return 'Later';
-  return 'Verstreken';
-}
 
 function getInitials(name: string): string {
   return name.split(' ').filter(Boolean).map((w) => w[0]).join('').toUpperCase().slice(0, 2);
@@ -121,6 +88,7 @@ export function DealDetail({ deal, activities, tasks, communications, pipelines,
   const [activityModal, setActivityModal] = useState<{ mode: 'new' } | { mode: 'edit'; activity: ActivityWithRelations } | null>(null);
   const [taskModal, setTaskModal] = useState<{ mode: 'new' } | { mode: 'edit'; task: TaskWithRelations } | null>(null);
   const [expandedNotes, setExpandedNotes] = useState<Set<string>>(new Set());
+  const [confirmDelete, setConfirmDelete] = useState<{ type: 'activity' | 'task'; id: string } | null>(null);
 
   const contactName = deal.contact
     ? `${deal.contact.first_name} ${deal.contact.last_name}${deal.contact.title ? ` \u00B7 ${deal.contact.title}` : ''}`
@@ -152,12 +120,8 @@ export function DealDetail({ deal, activities, tasks, communications, pipelines,
     router.refresh();
   }
 
-  async function handleDeleteActivity(id: string) {
-    if (!confirm('Activiteit verwijderen?')) return;
-    const result = await deleteActivity(id);
-    if (result.success) toast.success('Activiteit verwijderd');
-    else toast.error(typeof result.error === 'string' ? result.error : 'Er ging iets mis');
-    router.refresh();
+  function handleDeleteActivity(id: string) {
+    setConfirmDelete({ type: 'activity', id });
   }
 
   async function handleToggleTaskDone(id: string) {
@@ -166,11 +130,22 @@ export function DealDetail({ deal, activities, tasks, communications, pipelines,
     router.refresh();
   }
 
-  async function handleDeleteTask(id: string) {
-    if (!confirm('Taak verwijderen?')) return;
-    const result = await deleteTask(id);
-    if (result.success) toast.success('Taak verwijderd');
-    else toast.error(typeof result.error === 'string' ? result.error : 'Er ging iets mis');
+  function handleDeleteTask(id: string) {
+    setConfirmDelete({ type: 'task', id });
+  }
+
+  async function handleConfirmDelete() {
+    if (!confirmDelete) return;
+    if (confirmDelete.type === 'activity') {
+      const result = await deleteActivity(confirmDelete.id);
+      if (result.success) toast.success('Activiteit verwijderd');
+      else toast.error(typeof result.error === 'string' ? result.error : 'Er ging iets mis');
+    } else {
+      const result = await deleteTask(confirmDelete.id);
+      if (result.success) toast.success('Taak verwijderd');
+      else toast.error(typeof result.error === 'string' ? result.error : 'Er ging iets mis');
+    }
+    setConfirmDelete(null);
     router.refresh();
   }
 
@@ -247,11 +222,11 @@ export function DealDetail({ deal, activities, tasks, communications, pipelines,
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4 text-sm">
-            <InfoRow icon={<Building2 className="h-4 w-4" />} label="Account" value={deal.account?.name} />
-            <InfoRow icon={<User className="h-4 w-4" />} label="Contactpersoon" value={contactName} />
+            <InfoRow icon={Building2} label="Account" value={deal.account?.name} />
+            <InfoRow icon={User} label="Contactpersoon" value={contactName} />
             {isConsultancy && consultant && (
               <InfoRow
-                icon={<User className="h-4 w-4" />}
+                icon={User}
                 label="Consultant"
                 value={`${consultant.first_name} ${consultant.last_name}${consultant.city ? ` \u00B7 ${consultant.city}` : ''}`}
               />
@@ -265,7 +240,7 @@ export function DealDetail({ deal, activities, tasks, communications, pipelines,
             {isConsultancy && deal.tarief_aangeboden != null && (
               <InfoRow label="Aangeboden tarief" value={`\u20AC${deal.tarief_aangeboden}/u`} />
             )}
-            <InfoRow icon={<Calendar className="h-4 w-4" />} label="Sluitdatum" value={deal.close_date ? fmtDate(deal.close_date) : null} />
+            <InfoRow icon={Calendar} label="Sluitdatum" value={deal.close_date ? fmtDate(deal.close_date) : null} />
             <InfoRow label="Leadbron" value={deal.lead_source} />
             <InfoRow label="Herkomst" value={deal.origin ? ORIGIN_LABEL[deal.origin] ?? deal.origin : null} />
             {deal.origin === 'cronos' && (
@@ -356,9 +331,7 @@ export function DealDetail({ deal, activities, tasks, communications, pipelines,
             <Card>
               <CardContent className="py-4">
                 <div className="flex items-center gap-3">
-                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/15 text-sm font-medium text-primary-action">
-                    {getInitials(deal.owner.full_name ?? '')}
-                  </div>
+                  <Avatar fallback={getInitials(deal.owner.full_name ?? '')} size="md" round />
                   <div>
                     <p className="text-xs text-muted-foreground">Owner</p>
                     <p className="text-sm font-medium">{deal.owner.full_name}</p>
@@ -378,9 +351,7 @@ export function DealDetail({ deal, activities, tasks, communications, pipelines,
               </CardHeader>
               <CardContent>
                 <div className="flex items-center gap-3">
-                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/15 text-sm font-medium text-primary-action">
-                    {getInitials(`${consultant.first_name} ${consultant.last_name}`)}
-                  </div>
+                  <Avatar fallback={getInitials(`${consultant.first_name} ${consultant.last_name}`)} size="md" round />
                   <div>
                     <p className="text-sm font-semibold">{consultant.first_name} {consultant.last_name}</p>
                     {consultant.city && <p className="text-xs text-muted-foreground">{consultant.city}</p>}
@@ -433,22 +404,18 @@ export function DealDetail({ deal, activities, tasks, communications, pipelines,
           </CardHeader>
           <CardContent>
             {activities.length === 0 ? (
-              <div className="py-12 text-center">
-                <div className="p-3 bg-muted rounded-xl inline-block mb-3">
-                  <Sparkles className="h-6 w-6 text-muted-foreground" />
-                </div>
-                <p className="text-sm text-muted-foreground">Nog geen activiteiten</p>
-                <Button variant="outline" size="sm" className="mt-3" onClick={() => setActivityModal({ mode: 'new' })}>
-                  <Plus /> Eerste activiteit toevoegen
-                </Button>
-              </div>
+              <EmptyState
+                icon={Sparkles}
+                title="Nog geen activiteiten"
+                action={{ label: 'Eerste activiteit toevoegen', onClick: () => setActivityModal({ mode: 'new' }) }}
+              />
             ) : (
               <div className="space-y-6">
                 {GROUP_ORDER.filter((g) => grouped[g] && grouped[g].length > 0).map((group) => (
                   <div key={group}>
                     {/* Group label */}
                     <div className="flex items-center gap-2 mb-3">
-                      <span className={cn('text-xs font-semibold uppercase tracking-wide', GROUP_COLORS[group] ?? 'text-gray-500')}>
+                      <span className={cn('text-xs font-semibold uppercase tracking-wide', GROUP_COLORS[group] ?? 'text-muted-foreground')}>
                         {group}
                       </span>
                       <div className="flex-1 h-px bg-border" />
@@ -466,16 +433,16 @@ export function DealDetail({ deal, activities, tasks, communications, pipelines,
                             className={cn(
                               'rounded-xl border p-4 transition-all',
                               a.is_done
-                                ? 'border-gray-200 bg-gray-50'
+                                ? 'border-border bg-muted/50'
                                 : group === 'Verstreken'
-                                  ? 'border-red-200 bg-red-50'
-                                  : 'border-amber-200 bg-amber-50',
+                                  ? 'border-destructive/30 bg-destructive/5'
+                                  : 'border-primary/20 bg-primary/5',
                             )}
                           >
                             <div className="flex items-start gap-3">
                               <div className={cn(
                                 'p-1.5 rounded-lg shrink-0 mt-0.5',
-                                a.is_done ? 'bg-gray-200 text-gray-500' : 'bg-amber-100 text-amber-600',
+                                a.is_done ? 'bg-muted text-muted-foreground' : 'bg-primary/15 text-primary-action',
                               )}>
                                 <Icon className="h-3.5 w-3.5" />
                               </div>
@@ -484,14 +451,14 @@ export function DealDetail({ deal, activities, tasks, communications, pipelines,
                                   <div>
                                     <p className={cn(
                                       'text-sm font-semibold',
-                                      a.is_done ? 'text-gray-500 line-through' : group === 'Verstreken' ? 'text-red-800' : 'text-foreground',
+                                      a.is_done ? 'text-muted-foreground line-through' : group === 'Verstreken' ? 'text-destructive' : 'text-foreground',
                                     )}>
                                       {a.subject}
                                     </p>
                                     <div className="flex items-center gap-2 mt-0.5 flex-wrap">
                                       <span className={cn(
                                         'text-xs',
-                                        a.is_done ? 'text-gray-400' : group === 'Verstreken' ? 'text-red-500' : 'text-amber-600',
+                                        a.is_done ? 'text-muted-foreground' : group === 'Verstreken' ? 'text-destructive' : 'text-primary-action',
                                       )}>
                                         {fmtDate(a.date)}
                                       </span>
@@ -501,7 +468,7 @@ export function DealDetail({ deal, activities, tasks, communications, pipelines,
                                       <Badge
                                         className={cn(
                                           'text-[10px] py-0 border-0',
-                                          a.is_done ? 'bg-gray-200 text-gray-500' : group === 'Verstreken' ? 'bg-red-200 text-red-700' : 'bg-amber-200 text-amber-700',
+                                          a.is_done ? 'bg-muted text-muted-foreground' : group === 'Verstreken' ? 'bg-destructive/15 text-destructive' : 'bg-primary/15 text-primary-action',
                                         )}
                                       >
                                         {a.type}
@@ -515,7 +482,7 @@ export function DealDetail({ deal, activities, tasks, communications, pipelines,
                                       onClick={() => handleToggleActivityDone(a.id)}
                                       className={cn(
                                         'p-1.5 rounded-lg transition-colors text-xs',
-                                        a.is_done ? 'hover:bg-gray-200 text-gray-400' : 'hover:bg-green-100 text-green-600',
+                                        a.is_done ? 'text-muted-foreground hover:bg-muted' : 'text-primary-action hover:bg-primary/10',
                                       )}
                                     >
                                       <Check className="h-3.5 w-3.5" />
@@ -523,14 +490,14 @@ export function DealDetail({ deal, activities, tasks, communications, pipelines,
                                     <button
                                       title="Bewerken"
                                       onClick={() => setActivityModal({ mode: 'edit', activity: a })}
-                                      className="p-1.5 rounded-lg hover:bg-gray-200 text-gray-400 transition-colors"
+                                      className="p-1.5 rounded-lg text-muted-foreground hover:text-primary-action hover:bg-primary/10 transition-colors"
                                     >
                                       <Pencil className="h-3.5 w-3.5" />
                                     </button>
                                     <button
                                       title="Verwijderen"
                                       onClick={() => handleDeleteActivity(a.id)}
-                                      className="p-1.5 rounded-lg hover:bg-red-100 text-gray-400 hover:text-red-500 transition-colors"
+                                      className="p-1.5 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
                                     >
                                       <Trash2 className="h-3.5 w-3.5" />
                                     </button>
@@ -584,15 +551,11 @@ export function DealDetail({ deal, activities, tasks, communications, pipelines,
           </CardHeader>
           <CardContent>
             {tasks.length === 0 ? (
-              <div className="py-12 text-center">
-                <div className="p-3 bg-muted rounded-xl inline-block mb-3">
-                  <ClipboardList className="h-6 w-6 text-muted-foreground" />
-                </div>
-                <p className="text-sm text-muted-foreground">Nog geen taken voor deze deal</p>
-                <Button variant="outline" size="sm" className="mt-3" onClick={() => setTaskModal({ mode: 'new' })}>
-                  <Plus /> Eerste taak toevoegen
-                </Button>
-              </div>
+              <EmptyState
+                icon={ClipboardList}
+                title="Nog geen taken voor deze deal"
+                action={{ label: 'Eerste taak toevoegen', onClick: () => setTaskModal({ mode: 'new' }) }}
+              />
             ) : (
               <div className="space-y-2">
                 {tasks.map((t) => {
@@ -603,14 +566,14 @@ export function DealDetail({ deal, activities, tasks, communications, pipelines,
                       key={t.id}
                       className={cn(
                         'flex items-center gap-3 p-3 rounded-xl border transition-all',
-                        isDone ? 'border-gray-200 bg-gray-50' : isOverdue ? 'border-red-200 bg-red-50' : 'border-indigo-100 bg-indigo-50',
+                        isDone ? 'border-border bg-muted/50' : isOverdue ? 'border-destructive/30 bg-destructive/5' : 'border-primary/20 bg-primary/5',
                       )}
                     >
                       <button
                         onClick={() => handleToggleTaskDone(t.id)}
                         className={cn(
                           'w-5 h-5 rounded border-2 flex items-center justify-center shrink-0 transition-colors',
-                          isDone ? 'bg-green-500 border-green-500' : 'border-gray-400 hover:border-indigo-400',
+                          isDone ? 'bg-primary border-primary' : 'border-muted-foreground hover:border-primary',
                         )}
                       >
                         {isDone && <Check className="h-3 w-3 text-white" />}
@@ -618,7 +581,7 @@ export function DealDetail({ deal, activities, tasks, communications, pipelines,
                       <div className="flex-1 min-w-0">
                         <p className={cn(
                           'text-sm font-medium truncate',
-                          isDone ? 'line-through text-gray-400' : isOverdue ? 'text-red-800' : 'text-foreground',
+                          isDone ? 'line-through text-muted-foreground' : isOverdue ? 'text-destructive' : 'text-foreground',
                         )}>
                           {t.title}
                         </p>
@@ -626,7 +589,7 @@ export function DealDetail({ deal, activities, tasks, communications, pipelines,
                           {t.due_date && (
                             <span className={cn(
                               'text-xs',
-                              isDone ? 'text-gray-400' : isOverdue ? 'text-red-500' : 'text-indigo-500',
+                              isDone ? 'text-muted-foreground' : isOverdue ? 'text-destructive' : 'text-primary-action',
                             )}>
                               {fmtDate(t.due_date)}
                             </span>
@@ -643,14 +606,14 @@ export function DealDetail({ deal, activities, tasks, communications, pipelines,
                         <button
                           title="Bewerken"
                           onClick={() => setTaskModal({ mode: 'edit', task: t })}
-                          className="p-1.5 rounded-lg hover:bg-gray-200 text-gray-400 transition-colors"
+                          className="p-1.5 rounded-lg text-muted-foreground hover:text-primary-action hover:bg-primary/10 transition-colors"
                         >
                           <Pencil className="h-3.5 w-3.5" />
                         </button>
                         <button
                           title="Verwijderen"
                           onClick={() => handleDeleteTask(t.id)}
-                          className="p-1.5 rounded-lg hover:bg-red-100 text-gray-400 hover:text-red-500 transition-colors"
+                          className="p-1.5 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
                         >
                           <Trash2 className="h-3.5 w-3.5" />
                         </button>
@@ -754,17 +717,18 @@ export function DealDetail({ deal, activities, tasks, communications, pipelines,
           />
         </Modal>
       )}
-    </div>
-  );
-}
 
-function InfoRow({ icon, label, value }: { icon?: React.ReactNode; label: string; value?: string | null }) {
-  if (!value) return null;
-  return (
-    <div className="flex items-center gap-3">
-      {icon && <span className="text-muted-foreground shrink-0">{icon}</span>}
-      <span className="text-muted-foreground w-28 shrink-0">{label}</span>
-      <span className="font-medium">{value}</span>
+      {confirmDelete && (
+        <ConfirmDialog
+          open
+          onOpenChange={(open) => { if (!open) setConfirmDelete(null); }}
+          title={confirmDelete.type === 'activity' ? 'Activiteit verwijderen?' : 'Taak verwijderen?'}
+          description={confirmDelete.type === 'activity'
+            ? 'Deze activiteit wordt permanent verwijderd.'
+            : 'Deze taak wordt permanent verwijderd.'}
+          onConfirm={handleConfirmDelete}
+        />
+      )}
     </div>
   );
 }

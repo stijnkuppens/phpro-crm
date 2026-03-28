@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useActionState } from 'react';
 import { toast } from 'sonner';
 import { Modal } from '@/components/admin/modal';
 import { Input } from '@/components/ui/input';
@@ -8,6 +8,7 @@ import { DatePicker } from '@/components/ui/date-picker';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
+import { SubmitButton } from '@/components/ui/submit-button';
 import { Save } from 'lucide-react';
 import { addRateChange } from '../actions/add-rate-change';
 
@@ -19,13 +20,7 @@ type Props = {
 };
 
 export function RateChangeModal({ consultantId, open, onClose, onSuccess }: Props) {
-  const [loading, setLoading] = useState(false);
-
-  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    setLoading(true);
-
-    const formData = new FormData(e.currentTarget);
+  const [, formAction] = useActionState(async (_prev: null, formData: FormData) => {
     const result = await addRateChange(consultantId, {
       date: formData.get('date') as string,
       rate: Number(formData.get('rate')),
@@ -33,21 +28,20 @@ export function RateChangeModal({ consultantId, open, onClose, onSuccess }: Prop
       notes: (formData.get('notes') as string) || undefined,
     });
 
-    setLoading(false);
-
     if ('error' in result && result.error) {
       toast.error(typeof result.error === 'string' ? result.error : 'Er ging iets mis');
-      return;
+      return null;
     }
 
     toast.success('Tarief gewijzigd');
     onSuccess?.();
     onClose();
-  }
+    return null;
+  }, null);
 
   return (
     <Modal open={open} onClose={onClose} title="Tarief wijzigen">
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form action={formAction} className="space-y-4">
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-2">
             <Label htmlFor="date">Datum *</Label>
@@ -68,10 +62,7 @@ export function RateChangeModal({ consultantId, open, onClose, onSuccess }: Prop
         </div>
         <div className="flex gap-2 justify-end">
           <Button type="button" variant="outline" onClick={onClose}>Annuleren</Button>
-          <Button type="submit" disabled={loading}>
-            <Save />
-            {loading ? 'Verwerken...' : 'Opslaan'}
-          </Button>
+          <SubmitButton icon={<Save />}>Opslaan</SubmitButton>
         </div>
       </form>
     </Modal>

@@ -11,6 +11,7 @@ import { createBrowserClient } from '@/lib/supabase/client';
 import { AvatarUpload } from '@/components/admin/avatar-upload';
 import { updateContactAvatar } from '../actions/update-contact-avatar';
 import type { ContactWithDetails } from '../types';
+import { InfoRow } from '@/components/admin/info-row';
 
 type Props = {
   contactId: string | null;
@@ -172,11 +173,3 @@ export function ContactViewModal({ contactId, onClose, onEdit }: Props) {
   );
 }
 
-function InfoRow({ label, children }: { label: string; children: React.ReactNode }) {
-  return (
-    <div>
-      <p className="font-medium text-muted-foreground">{label}</p>
-      <div className="mt-0.5">{children}</div>
-    </div>
-  );
-}

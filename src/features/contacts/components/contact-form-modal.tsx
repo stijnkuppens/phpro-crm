@@ -1,9 +1,10 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useActionState, useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import { Modal } from '@/components/admin/modal';
 import { Button } from '@/components/ui/button';
+import { SubmitButton } from '@/components/ui/submit-button';
 import { ContactFormFields } from './contact-form-fields';
 import { createContact } from '../actions/create-contact';
 import { updateContact } from '../actions/update-contact';
@@ -23,7 +24,6 @@ type Props = {
 };
 
 export function ContactFormModal({ contactId, accountId, open, onClose, onSaved }: Props) {
-  const [loading, setLoading] = useState(false);
   const [contact, setContact] = useState<ContactWithDetails | null>(null);
   const [fieldErrors, setFieldErrors] = useState<Record<string, boolean>>({});
   const isEdit = !!contactId;
@@ -43,12 +43,7 @@ export function ContactFormModal({ contactId, accountId, open, onClose, onSaved 
     return () => { cancelled = true; };
   }, [contactId, open]);
 
-  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    setLoading(true);
-
-    const fd = new FormData(e.currentTarget);
-
+  const [, formAction] = useActionState(async (_prev: null, fd: FormData) => {
     const contactValues: ContactFormValues = {
       account_id: accountId,
       first_name: fd.get('first_name') as string,
@@ -65,8 +60,7 @@ export function ContactFormModal({ contactId, accountId, open, onClose, onSaved 
     if (!parsedContact.success) {
       setFieldErrors(zodFieldErrors(parsedContact.error));
       toast.error('Controleer de verplichte velden');
-      setLoading(false);
-      return;
+      return null;
     }
     setFieldErrors({});
 
@@ -90,38 +84,34 @@ export function ContactFormModal({ contactId, accountId, open, onClose, onSaved 
       const result = await updateContact(contactId, parsedContact.data);
       if (!result.success) {
         toast.error(typeof result.error === 'string' ? result.error : 'Er ging iets mis');
-        setLoading(false);
-        return;
+        return null;
       }
       const piResult = await updatePersonalInfo(contactId, personalValues);
       if (!piResult.success) {
         toast.error('Contact bijgewerkt, maar persoonlijke info kon niet worden opgeslagen');
-        setLoading(false);
-        return;
+        return null;
       }
       toast.success('Contact bijgewerkt');
     } else {
       const result = await createContact(parsedContact.data);
       if (!result.success) {
         toast.error(typeof result.error === 'string' ? result.error : 'Er ging iets mis');
-        setLoading(false);
-        return;
+        return null;
       }
       if (result.data?.id) {
         const piResult = await updatePersonalInfo(result.data.id, personalValues);
         if (!piResult.success) {
           toast.error('Contact aangemaakt, maar persoonlijke info kon niet worden opgeslagen');
-          setLoading(false);
-          return;
+          return null;
         }
       }
       toast.success('Contact aangemaakt');
     }
 
-    setLoading(false);
     onSaved?.();
     onClose();
-  }
+    return null;
+  }, null);
 
   if (isEdit && !contact && open) {
     return (
@@ -138,7 +128,7 @@ export function ContactFormModal({ contactId, accountId, open, onClose, onSaved 
           Account: {contact.account?.name ?? accountId}
         </p>
       )}
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form action={formAction} className="space-y-4">
         <ContactFormFields
           key={contactId ?? 'new'}
           defaultValues={contact as Partial<ContactFormValues> | undefined ?? undefined}
@@ -146,8 +136,8 @@ export function ContactFormModal({ contactId, accountId, open, onClose, onSaved 
           errors={fieldErrors}
         />
         <div className="flex justify-end gap-2 pt-2">
-          <Button type="button" variant="outline" onClick={onClose} disabled={loading}>Annuleren</Button>
-          <Button type="submit" disabled={loading}><Save />{loading ? 'Opslaan...' : 'Opslaan'}</Button>
+          <Button type="button" variant="outline" onClick={onClose}>Annuleren</Button>
+          <SubmitButton icon={<Save />}>Opslaan</SubmitButton>
         </div>
       </form>
     </Modal>

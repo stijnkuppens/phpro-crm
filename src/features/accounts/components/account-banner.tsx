@@ -1,6 +1,7 @@
 'use client';
 
 import { AvatarUpload } from '@/components/admin/avatar-upload';
+import { Badge } from '@/components/ui/badge';
 import { updateAccountAvatar } from '../actions/update-account-avatar';
 import { formatNumber } from '@/lib/format';
 import type { AccountWithRelations } from '../types';
@@ -38,12 +39,12 @@ export function AccountBanner({ account, stats }: Props) {
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
             <h2 className="text-lg font-semibold truncate">{account.name}</h2>
-            <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium ${typeStyles[account.type] ?? 'bg-muted text-muted-foreground'}`}>
+            <Badge className={`${typeStyles[account.type] ?? 'bg-muted text-muted-foreground'} border-0 text-[11px]`}>
               {account.type}
-            </span>
-            <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium ${account.status === 'Actief' ? 'bg-primary/15 text-primary-action' : 'bg-muted text-muted-foreground'}`}>
+            </Badge>
+            <Badge className={`${account.status === 'Actief' ? 'bg-primary/15 text-primary-action' : 'bg-muted text-muted-foreground'} border-0 text-[11px]`}>
               {account.status}
-            </span>
+            </Badge>
           </div>
           <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 text-sm text-muted-foreground mt-0.5">
             {account.industry && <span>{account.industry}</span>}

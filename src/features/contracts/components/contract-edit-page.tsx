@@ -7,6 +7,7 @@ import { ArrowLeft, ChevronLeft, ChevronRight, Plus, Save, Trash2 } from 'lucide
 import Link from 'next/link';
 import { PageHeader } from '@/components/admin/page-header';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
@@ -278,128 +279,137 @@ export function ContractEditPage({ accountId, contract, hourlyRates, slaRates, i
       {/* ── Top row: contracts side by side ───────────────────────── */}
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
         {/* Left: Raamcontract */}
-        <div className="rounded-xl border bg-card p-5 space-y-4 shadow-sm">
-          <div className="flex items-center justify-between">
-            <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Raamcontract</h2>
-            <Switch checked={hasFramework} onCheckedChange={setHasFramework} />
-          </div>
-          {hasFramework && (
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-1.5">
-                  <Label>Start</Label>
-                  <DatePicker name="framework_start" value={contract?.framework_start ?? ''} />
-                </div>
-                <div className="space-y-1.5">
-                  <Label>Einde</Label>
-                  <DatePicker name="framework_end" value={contract?.framework_end ?? ''} />
-                </div>
-              </div>
-              <div className="space-y-1.5">
-                <Label>Document uploaden</Label>
-                <PdfUploadField value={frameworkDoc} onChange={setFrameworkDoc} folder={`contracts/${accountId}`} />
-              </div>
-              <div className="space-y-1.5">
-                <Label>Link naar document (URL)</Label>
-                <Input
-                  value={frameworkUrl}
-                  onChange={(e) => setFrameworkUrl(e.target.value)}
-                  placeholder="https://confluence.phpro.be/..."
-                />
-              </div>
-              <div className="flex items-center gap-2">
-                <input type="checkbox" id="framework_indefinite" defaultChecked={contract?.framework_indefinite ?? false} />
-                <Label htmlFor="framework_indefinite">Onbepaalde duur</Label>
-              </div>
+        <Card>
+          <CardContent className="p-5 space-y-4">
+            <div className="flex items-center justify-between">
+              <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Raamcontract</h2>
+              <Switch checked={hasFramework} onCheckedChange={setHasFramework} />
             </div>
-          )}
-        </div>
+            {hasFramework && (
+              <div className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-1.5">
+                    <Label>Start</Label>
+                    <DatePicker name="framework_start" value={contract?.framework_start ?? ''} />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label>Einde</Label>
+                    <DatePicker name="framework_end" value={contract?.framework_end ?? ''} />
+                  </div>
+                </div>
+                <div className="space-y-1.5">
+                  <Label>Document uploaden</Label>
+                  <PdfUploadField value={frameworkDoc} onChange={setFrameworkDoc} folder={`contracts/${accountId}`} />
+                </div>
+                <div className="space-y-1.5">
+                  <Label>Link naar document (URL)</Label>
+                  <Input
+                    value={frameworkUrl}
+                    onChange={(e) => setFrameworkUrl(e.target.value)}
+                    placeholder="https://confluence.phpro.be/..."
+                  />
+                </div>
+                <div className="flex items-center gap-2">
+                  <input type="checkbox" id="framework_indefinite" defaultChecked={contract?.framework_indefinite ?? false} />
+                  <Label htmlFor="framework_indefinite">Onbepaalde duur</Label>
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
 
         {/* Right: Dienstencontract */}
-        <div className="rounded-xl border bg-card p-5 space-y-4 shadow-sm">
-          <div className="flex items-center justify-between">
-            <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Dienstencontract (SLA)</h2>
-            <Switch checked={hasService} onCheckedChange={setHasService} />
-          </div>
-          {hasService && (
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-1.5">
-                  <Label>Start</Label>
-                  <DatePicker name="service_start" value={contract?.service_start ?? ''} />
-                </div>
-                <div className="space-y-1.5">
-                  <Label>Einde</Label>
-                  <DatePicker name="service_end" value={contract?.service_end ?? ''} />
-                </div>
-              </div>
-              <div className="space-y-1.5">
-                <Label>Document uploaden</Label>
-                <PdfUploadField value={serviceDoc} onChange={setServiceDoc} folder={`contracts/${accountId}`} />
-              </div>
-              <div className="space-y-1.5">
-                <Label>Link naar document (URL)</Label>
-                <Input
-                  value={serviceUrl}
-                  onChange={(e) => setServiceUrl(e.target.value)}
-                  placeholder="https://confluence.phpro.be/..."
-                />
-              </div>
-              <div className="flex items-center gap-2">
-                <input type="checkbox" id="service_indefinite" defaultChecked={contract?.service_indefinite ?? false} />
-                <Label htmlFor="service_indefinite">Onbepaalde duur</Label>
-              </div>
+        <Card>
+          <CardContent className="p-5 space-y-4">
+            <div className="flex items-center justify-between">
+              <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Dienstencontract (SLA)</h2>
+              <Switch checked={hasService} onCheckedChange={setHasService} />
             </div>
-          )}
-        </div>
+            {hasService && (
+              <div className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-1.5">
+                    <Label>Start</Label>
+                    <DatePicker name="service_start" value={contract?.service_start ?? ''} />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label>Einde</Label>
+                    <DatePicker name="service_end" value={contract?.service_end ?? ''} />
+                  </div>
+                </div>
+                <div className="space-y-1.5">
+                  <Label>Document uploaden</Label>
+                  <PdfUploadField value={serviceDoc} onChange={setServiceDoc} folder={`contracts/${accountId}`} />
+                </div>
+                <div className="space-y-1.5">
+                  <Label>Link naar document (URL)</Label>
+                  <Input
+                    value={serviceUrl}
+                    onChange={(e) => setServiceUrl(e.target.value)}
+                    placeholder="https://confluence.phpro.be/..."
+                  />
+                </div>
+                <div className="flex items-center gap-2">
+                  <input type="checkbox" id="service_indefinite" defaultChecked={contract?.service_indefinite ?? false} />
+                  <Label htmlFor="service_indefinite">Onbepaalde duur</Label>
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
       </div>
 
       {/* ── Second row: Indexering + Bestelbonnen side by side ─────── */}
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
-        <div className="rounded-xl border bg-card p-5 space-y-4 shadow-sm">
-          <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Indexering</h2>
-          <div className="grid grid-cols-3 gap-3">
-            <div className="space-y-1.5">
-              <Label>Type</Label>
-              <Select value={indexType} onValueChange={(v) => setIndexType(v ?? '')}>
-                <SelectTrigger>{indexType || 'Niet ingesteld'}</SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="">Niet ingesteld</SelectItem>
-                  {INDEX_TYPES.map((t) => <SelectItem key={t} value={t}>{t}</SelectItem>)}
-                </SelectContent>
-              </Select>
+        <Card>
+          <CardContent className="p-5 space-y-4">
+            <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Indexering</h2>
+            <div className="grid grid-cols-3 gap-3">
+              <div className="space-y-1.5">
+                <Label>Type</Label>
+                <Select value={indexType} onValueChange={(v) => setIndexType(v ?? '')}>
+                  <SelectTrigger>{indexType || 'Niet ingesteld'}</SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="">Niet ingesteld</SelectItem>
+                    {INDEX_TYPES.map((t) => <SelectItem key={t} value={t}>{t}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-1.5">
+                <Label>Vanaf maand</Label>
+                <Select value={indexMonth} onValueChange={(v) => setIndexMonth(v ?? '')}>
+                  <SelectTrigger>{indexMonth ? MONTHS.find((m) => m.value === indexMonth)?.label : 'Selecteer...'}</SelectTrigger>
+                  <SelectContent>
+                    {MONTHS.map((m) => <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-1.5">
+                <Label>Vanaf jaar</Label>
+                <Input type="number" value={indexYear} onChange={(e) => setIndexYear(e.target.value)} placeholder={String(currentYear)} />
+              </div>
             </div>
-            <div className="space-y-1.5">
-              <Label>Vanaf maand</Label>
-              <Select value={indexMonth} onValueChange={(v) => setIndexMonth(v ?? '')}>
-                <SelectTrigger>{indexMonth ? MONTHS.find((m) => m.value === indexMonth)?.label : 'Selecteer...'}</SelectTrigger>
-                <SelectContent>
-                  {MONTHS.map((m) => <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>)}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-1.5">
-              <Label>Vanaf jaar</Label>
-              <Input type="number" value={indexYear} onChange={(e) => setIndexYear(e.target.value)} placeholder={String(currentYear)} />
-            </div>
-          </div>
-        </div>
+          </CardContent>
+        </Card>
 
-        <div className="rounded-xl border bg-card p-5 space-y-4 shadow-sm">
-          <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Bestelbonnen</h2>
-          <div className="space-y-1.5">
-            <Label>Link (Confluence URL)</Label>
-            <Input value={purchaseOrdersUrl} onChange={(e) => setPurchaseOrdersUrl(e.target.value)} placeholder="https://confluence.phpro.be/..." />
-          </div>
-          <div className="space-y-1.5">
-            <Label>Document uploaden</Label>
-            <PdfUploadField value={purchaseOrdersDoc} onChange={setPurchaseOrdersDoc} folder={`contracts/${accountId}`} />
-          </div>
-        </div>
+        <Card>
+          <CardContent className="p-5 space-y-4">
+            <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Bestelbonnen</h2>
+            <div className="space-y-1.5">
+              <Label>Link (Confluence URL)</Label>
+              <Input value={purchaseOrdersUrl} onChange={(e) => setPurchaseOrdersUrl(e.target.value)} placeholder="https://confluence.phpro.be/..." />
+            </div>
+            <div className="space-y-1.5">
+              <Label>Document uploaden</Label>
+              <PdfUploadField value={purchaseOrdersDoc} onChange={setPurchaseOrdersDoc} folder={`contracts/${accountId}`} />
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
       {/* ── Uurtarieven (full width table) ────────────────────────── */}
-      <div className="rounded-xl border bg-card p-5 space-y-4 shadow-sm">
+      <Card>
+        <CardContent className="p-5 space-y-4">
         <div className="flex items-center justify-between">
           <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Uurtarieven</h2>
           <div className="flex items-center gap-2">
@@ -474,7 +484,8 @@ export function ContractEditPage({ accountId, contract, hourlyRates, slaRates, i
             </tbody>
           </table>
         </div>
-      </div>
+        </CardContent>
+      </Card>
 
       {/* ── SLA Tarieven (per-year cards in grid) ─────────────────── */}
       <div className="space-y-4">
@@ -581,15 +592,17 @@ export function ContractEditPage({ accountId, contract, hourlyRates, slaRates, i
       </div>
 
       {/* ── Acties ─────────────────────────────────────────────────── */}
-      <div className="rounded-xl border bg-card p-5 shadow-sm flex justify-end gap-2">
-        <Button variant="outline" nativeButton={false} render={<Link href={`/admin/accounts/${accountId}/contracten`} />}>
-          Annuleren
-        </Button>
-        <Button onClick={handleSave} disabled={saving}>
-          <Save />
-          {saving ? 'Opslaan...' : 'Alles opslaan'}
-        </Button>
-      </div>
+      <Card>
+        <CardContent className="p-5 flex justify-end gap-2">
+          <Button variant="outline" nativeButton={false} render={<Link href={`/admin/accounts/${accountId}/contracten`} />}>
+            Annuleren
+          </Button>
+          <Button onClick={handleSave} disabled={saving}>
+            <Save />
+            {saving ? 'Opslaan...' : 'Alles opslaan'}
+          </Button>
+        </CardContent>
+      </Card>
     </div>
   );
 }

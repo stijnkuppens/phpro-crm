@@ -7,12 +7,7 @@ import { Input } from '@/components/ui/input';
 import { DatePicker } from '@/components/ui/date-picker';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
+import { Modal } from '@/components/admin/modal';
 import { Save } from 'lucide-react';
 import { z } from 'zod';
 import { closeDealSchema, type CloseDealValues } from '../types';
@@ -78,12 +73,8 @@ export function CloseDealModal({ dealId, open, onOpenChange, onSuccess, initialT
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md">
-        <DialogHeader>
-          <DialogTitle>Deal sluiten</DialogTitle>
-        </DialogHeader>
-        <div className="flex gap-2 mb-4">
+    <Modal open={open} onClose={() => onOpenChange(false)} title="Deal sluiten">
+      <div className="flex gap-2 mb-4">
           {(['won', 'lost', 'longterm'] as ClosedType[]).map((type) => (
             <Button
               key={type}
@@ -125,7 +116,6 @@ export function CloseDealModal({ dealId, open, onOpenChange, onSuccess, initialT
             </Button>
           </div>
         </form>
-      </DialogContent>
-    </Dialog>
+    </Modal>
   );
 }

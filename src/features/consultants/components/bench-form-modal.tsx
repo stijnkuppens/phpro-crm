@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useActionState, useState } from 'react';
 import { toast } from 'sonner';
 import { Save } from 'lucide-react';
 import { Modal } from '@/components/admin/modal';
@@ -10,6 +10,7 @@ import { Input } from '@/components/ui/input';
 import { DatePicker } from '@/components/ui/date-picker';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
+import { SubmitButton } from '@/components/ui/submit-button';
 import { Textarea } from '@/components/ui/textarea';
 import {
   Select,
@@ -29,7 +30,6 @@ type Props = {
 
 export function BenchFormModal({ open, onClose, consultant }: Props) {
   const isEdit = !!consultant;
-  const [loading, setLoading] = useState(false);
   const [cvUrl, setCvUrl] = useState(consultant?.cv_pdf_url ?? '');
   const [avatarPath, setAvatarPath] = useState(consultant?.avatar_path ?? null);
   const [priority, setPriority] = useState(consultant?.priority ?? 'Medium');
@@ -49,11 +49,7 @@ export function BenchFormModal({ open, onClose, consultant }: Props) {
     setLanguages((prev) => prev.map((l, i) => (i === index ? { ...l, [field]: value } : l)));
   }
 
-  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    setLoading(true);
-
-    const formData = new FormData(e.currentTarget);
+  const [, formAction] = useActionState(async (_prev: null, formData: FormData) => {
     const rolesRaw = (formData.get('roles') as string) || '';
     const techsRaw = (formData.get('technologies') as string) || '';
 
@@ -74,8 +70,7 @@ export function BenchFormModal({ open, onClose, consultant }: Props) {
     const parsed = benchConsultantFormSchema.safeParse(values);
     if (!parsed.success) {
       toast.error('Controleer de verplichte velden');
-      setLoading(false);
-      return;
+      return null;
     }
 
     const validLanguages = languages.filter((l) => l.language.trim().length > 0);
@@ -84,16 +79,15 @@ export function BenchFormModal({ open, onClose, consultant }: Props) {
       ? await updateConsultant(consultant!.id, parsed.data, validLanguages)
       : await createBenchConsultant(parsed.data);
 
-    setLoading(false);
-
     if (result.error) {
       toast.error(typeof result.error === 'string' ? result.error : 'Er ging iets mis');
-      return;
+      return null;
     }
 
     toast.success(isEdit ? 'Consultant bijgewerkt' : 'Consultant aangemaakt');
     onClose();
-  }
+    return null;
+  }, null);
 
   return (
     <Modal
@@ -102,7 +96,7 @@ export function BenchFormModal({ open, onClose, consultant }: Props) {
       title={isEdit ? 'Consultant bewerken' : 'Nieuwe consultant'}
       size="wide"
     >
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form action={formAction} className="space-y-4">
         {/* Avatar — only for edit (need ID for storage path) */}
         {isEdit && (
           <div className="flex items-center gap-3">
@@ -226,10 +220,9 @@ export function BenchFormModal({ open, onClose, consultant }: Props) {
           ))}
         </div>
 
-        <Button type="submit" disabled={loading} className="w-full">
-          <Save />
-          {loading ? 'Opslaan...' : isEdit ? 'Bijwerken' : 'Aanmaken'}
-        </Button>
+        <SubmitButton icon={<Save />} className="w-full">
+          {isEdit ? 'Bijwerken' : 'Aanmaken'}
+        </SubmitButton>
       </form>
     </Modal>
   );

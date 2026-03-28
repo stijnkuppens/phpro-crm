@@ -1,12 +1,13 @@
 'use client';
 
-import { useState } from 'react';
+import { useActionState, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { Input } from '@/components/ui/input';
 import { DatePicker } from '@/components/ui/date-picker';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
+import { SubmitButton } from '@/components/ui/submit-button';
 import {
   Select,
   SelectContent,
@@ -27,15 +28,10 @@ type Props = {
 
 export function TaskForm({ defaultValues, owners = [], onSuccess, onCancel }: Props) {
   const router = useRouter();
-  const [loading, setLoading] = useState(false);
   const [assignedTo, setAssignedTo] = useState(defaultValues?.assigned_to ?? '');
   const isEdit = !!defaultValues?.id;
 
-  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    setLoading(true);
-
-    const formData = new FormData(e.currentTarget);
+  const [, formAction] = useActionState(async (_prev: null, formData: FormData) => {
     const values: TaskFormValues = {
       title: formData.get('title') as string,
       due_date: (formData.get('due_date') as string) || undefined,
@@ -49,19 +45,16 @@ export function TaskForm({ defaultValues, owners = [], onSuccess, onCancel }: Pr
     const parsed = taskFormSchema.safeParse(values);
     if (!parsed.success) {
       toast.error('Controleer de verplichte velden');
-      setLoading(false);
-      return;
+      return null;
     }
 
     const result = isEdit
       ? await updateTask(defaultValues!.id!, parsed.data)
       : await createTask(parsed.data);
 
-    setLoading(false);
-
     if ('error' in result && result.error) {
       toast.error(typeof result.error === 'string' ? result.error : 'Er ging iets mis');
-      return;
+      return null;
     }
 
     toast.success(isEdit ? 'Taak bijgewerkt' : 'Taak aangemaakt');
@@ -71,10 +64,11 @@ export function TaskForm({ defaultValues, owners = [], onSuccess, onCancel }: Pr
     } else {
       router.push('/admin/tasks');
     }
-  }
+    return null;
+  }, null);
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4 max-w-2xl">
+    <form action={formAction} className="space-y-4 max-w-2xl">
       <div className="grid grid-cols-2 gap-4">
         <div className="col-span-2 space-y-2">
           <Label htmlFor="title">Titel *</Label>
@@ -124,10 +118,9 @@ export function TaskForm({ defaultValues, owners = [], onSuccess, onCancel }: Pr
         {defaultValues?.deal_id && <input type="hidden" name="deal_id" value={defaultValues.deal_id} />}
       </div>
       <div className="flex gap-2">
-        <Button type="submit" disabled={loading}>
-          <Save />
-          {loading ? 'Opslaan...' : isEdit ? 'Bijwerken' : 'Aanmaken'}
-        </Button>
+        <SubmitButton icon={<Save />}>
+          {isEdit ? 'Bijwerken' : 'Aanmaken'}
+        </SubmitButton>
         {onCancel && (
           <Button type="button" variant="outline" onClick={onCancel}>
             Annuleren
