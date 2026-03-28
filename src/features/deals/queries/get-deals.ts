@@ -24,7 +24,7 @@ export const getDeals = cache(
       .select(`
         *,
         account:accounts!account_id(id, name),
-        contact:contacts!contact_id(id, first_name, last_name),
+        contact:contacts!contact_id(id, first_name, last_name, title),
         owner:user_profiles!owner_id(id, full_name),
         stage:pipeline_stages!stage_id(id, name, color, probability, is_closed, is_won, is_longterm),
         pipeline:pipelines!pipeline_id(id, name, type)
@@ -32,6 +32,9 @@ export const getDeals = cache(
       .order('created_at', { ascending: false })
       .range(from, to);
 
+    if (filters?.account_id) {
+      query = query.eq('account_id', filters.account_id);
+    }
     if (filters?.pipeline_id) {
       query = query.eq('pipeline_id', filters.pipeline_id);
     }

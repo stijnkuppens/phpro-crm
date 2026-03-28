@@ -1,17 +1,41 @@
 'use client';
 
 import { useState, useCallback, useEffect, useMemo, useRef } from 'react';
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { LayoutGrid, List, Archive } from 'lucide-react';
-import { createBrowserClient } from '@/lib/supabase/client';
+import { LayoutGrid, List, Archive, Plus } from 'lucide-react';
+import { useEntity } from '@/lib/hooks/use-entity';
+import { buildFilterQuery, type FilterOption } from '@/components/admin/data-table-filters';
+import { PageHeader } from '@/components/admin/page-header';
+import { SubNav, type SubNavItem } from '@/components/admin/sub-nav';
+import { dealColumns } from '../columns';
 import { DealKanban } from './deal-kanban';
 import { DealList } from './deal-list';
 import dynamic from 'next/dynamic';
 
 const QuickDealModal = dynamic(() => import('./quick-deal-modal').then(m => ({ default: m.QuickDealModal })), { ssr: false });
 import type { DealCard, DealWithRelations } from '../types';
+
+const DEAL_SELECT = `
+  *,
+  account:accounts!account_id(id, name),
+  contact:contacts!contact_id(id, first_name, last_name, title),
+  owner:user_profiles!owner_id(id, full_name),
+  stage:pipeline_stages!stage_id(id, name, color, probability, is_closed, is_won, is_longterm),
+  pipeline:pipelines!pipeline_id(id, name, type)
+`;
+
+const PAGE_SIZE = 50;
+
+const VIEW_MODES: SubNavItem[] = [
+  { key: 'list', label: 'Deals', icon: List },
+  { key: 'kanban', label: 'Pipeline', icon: LayoutGrid },
+  { key: 'archief', label: 'Archief', icon: Archive },
+];
+
+const ORIGIN_OPTIONS: FilterOption[] = [
+  { value: 'rechtstreeks', label: 'Direct' },
+  { value: 'cronos', label: 'Cronos' },
+];
 
 type Pipeline = {
   id: string;
@@ -33,83 +57,103 @@ type Props = {
   pipelines: Pipeline[];
   initialDeals: DealWithRelations[];
   initialCount: number;
-  initialPipelineId: string;
+  owners: { id: string; name: string }[];
+  accountId?: string;
 };
 
-export function DealsPageClient({ pipelines, initialDeals, initialCount, initialPipelineId }: Props) {
-  const [activePipeline, setActivePipeline] = useState(initialPipelineId);
-  const [viewMode, setViewMode] = useState<'list' | 'kanban' | 'archief'>('kanban');
-  const [deals, setDeals] = useState(initialDeals);
-  const [total, setTotal] = useState(initialCount);
+export function DealsPageClient({ pipelines, initialDeals, initialCount, owners, accountId }: Props) {
+  const [viewMode, setViewMode] = useState<'list' | 'kanban' | 'archief'>('list');
+  const [filters, setFilters] = useState<Record<string, string | undefined>>({});
   const [page, setPage] = useState(1);
-  const [loading, setLoading] = useState(false);
-  const [originFilter, setOriginFilter] = useState<string>('all');
   const [showQuickDeal, setShowQuickDeal] = useState(false);
+  const isInitialMount = useRef(true);
 
-  const fetchDeals = useCallback(async (signal?: { cancelled: boolean }) => {
-    setLoading(true);
-    const supabase = createBrowserClient();
-    const from = (page - 1) * 50;
-    const to = from + 49;
+  const { data, total, loading, refreshing, fetchList } = useEntity<DealWithRelations>({
+    table: 'deals',
+    select: DEAL_SELECT,
+    pageSize: PAGE_SIZE,
+    initialData: initialDeals,
+    initialCount,
+  });
 
-    let query = supabase
-      .from('deals')
-      .select(`
-        *,
-        account:accounts!account_id(id, name),
-        contact:contacts!contact_id(id, first_name, last_name),
-        owner:user_profiles!owner_id(id, full_name),
-        stage:pipeline_stages!stage_id(id, name, color, probability, is_closed, is_won, is_longterm),
-        pipeline:pipelines!pipeline_id(id, name, type)
-      `, { count: 'exact' })
-      .eq('pipeline_id', activePipeline)
-      .order('created_at', { ascending: false })
-      .range(from, to);
+  // Build filter options from pipelines + current data
+  const filterOptions = useMemo<Record<string, FilterOption[]>>(() => {
+    const pipelineOpts: FilterOption[] = pipelines.map((p) => ({ value: p.id, label: p.name }));
 
-    // Server-side closed filter: kanban shows active only, archief shows closed only, list shows all
+    const activePipelineId = filters.pipeline_id;
+    const relevantPipelines = activePipelineId
+      ? pipelines.filter((p) => p.id === activePipelineId)
+      : pipelines;
+    const stageOpts: FilterOption[] = relevantPipelines
+      .flatMap((p) => p.stages)
+      .filter((s) => !s.is_closed)
+      .map((s) => ({ value: s.id, label: s.name }));
+
+    const ownerMap = new Map<string, string>();
+    for (const d of data) {
+      if (d.owner?.id && d.owner.full_name) ownerMap.set(d.owner.id, d.owner.full_name);
+    }
+    const ownerOpts: FilterOption[] = [...ownerMap.entries()].map(([id, name]) => ({ value: id, label: name }));
+
+    const leadSources = new Set<string>();
+    for (const d of data) {
+      if (d.lead_source) leadSources.add(d.lead_source);
+    }
+    const leadSourceOpts: FilterOption[] = [...leadSources].sort().map((s) => ({ value: s, label: s }));
+
+    return {
+      pipeline_id: pipelineOpts,
+      stage_id: stageOpts,
+      owner_id: ownerOpts,
+      lead_source: leadSourceOpts,
+      origin: ORIGIN_OPTIONS,
+    };
+  }, [pipelines, data, filters.pipeline_id]);
+
+  const load = useCallback(() => {
+    const { orFilter, eqFilters: autoFilters } = buildFilterQuery(dealColumns, filters);
+    const eqFilters: Record<string, string> = { ...autoFilters };
+
+    // Hard-filter by account when embedded in account page
+    if (accountId) {
+      eqFilters.account_id = accountId;
+    }
+
+    // View mode filter: kanban = active only, archief = closed only
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let applyFilters: ((query: any) => any) | undefined;
     if (viewMode === 'kanban') {
-      query = query.is('closed_at', null);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      applyFilters = (q: any) => q.is('closed_at', null);
     } else if (viewMode === 'archief') {
-      query = query.not('closed_at', 'is', null);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      applyFilters = (q: any) => q.not('closed_at', 'is', null);
     }
 
-    // Origin filter
-    if (originFilter !== 'all') {
-      query = query.eq('origin', originFilter as 'rechtstreeks' | 'cronos');
-    }
+    fetchList({ page, orFilter, eqFilters, applyFilters });
+  }, [fetchList, page, filters, viewMode, accountId]);
 
-    const { data, count } = await query;
-
-    if (signal?.cancelled) return;
-    setDeals((data as unknown as DealWithRelations[]) ?? []);
-    setTotal(count ?? 0);
-    setLoading(false);
-  }, [page, activePipeline, viewMode, originFilter]);
-
-  const prevFilters = useRef({ activePipeline, viewMode, originFilter });
-  const isInitialLoad = useRef(true);
+  const handleFilterChange = useCallback(
+    (newFilters: Record<string, string | undefined>) => {
+      setFilters(newFilters);
+      setPage(1);
+    },
+    [],
+  );
 
   useEffect(() => {
-    if (isInitialLoad.current) {
-      isInitialLoad.current = false;
-      return;
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+      if (initialDeals && page === 1) return;
     }
-    const filtersChanged =
-      prevFilters.current.activePipeline !== activePipeline ||
-      prevFilters.current.viewMode !== viewMode ||
-      prevFilters.current.originFilter !== originFilter;
-    if (filtersChanged) {
-      prevFilters.current = { activePipeline, viewMode, originFilter };
-      if (page !== 1) { setPage(1); return; }
-    }
-    const signal = { cancelled: false };
-    fetchDeals(signal);
-    return () => { signal.cancelled = true; };
-  }, [fetchDeals, page, activePipeline, viewMode, originFilter]);
+    load();
+  }, [load, initialDeals, page, filters, viewMode]);
 
-  const pipeline = pipelines.find((p) => p.id === activePipeline);
+  // For kanban: use first pipeline or the filtered one
+  const kanbanPipelineId = filters.pipeline_id || pipelines[0]?.id;
+  const kanbanPipeline = pipelines.find((p) => p.id === kanbanPipelineId);
 
-  const dealCards: DealCard[] = useMemo(() => deals.map((d) => ({
+  const dealCards: DealCard[] = useMemo(() => data.map((d) => ({
     id: d.id,
     title: d.title,
     amount: Number(d.amount ?? 0),
@@ -120,75 +164,69 @@ export function DealsPageClient({ pipelines, initialDeals, initialCount, initial
     stage_id: d.stage_id,
     forecast_category: d.forecast_category,
     origin: d.origin,
-  })), [deals]);
+  })), [data]);
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <Tabs value={activePipeline} onValueChange={setActivePipeline}>
-            <TabsList>
-              {pipelines.map((p) => (
-                <TabsTrigger key={p.id} value={p.id}>{p.name}</TabsTrigger>
-              ))}
-            </TabsList>
-          </Tabs>
-          <Select value={originFilter} onValueChange={(v) => { if (v) setOriginFilter(v); }}>
-            <SelectTrigger className="w-36">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Alle herkomst</SelectItem>
-              <SelectItem value="rechtstreeks">Direct</SelectItem>
-              <SelectItem value="cronos">Cronos</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-        <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" onClick={() => setShowQuickDeal(true)}>
-            RFP / Profiel
-          </Button>
-        </div>
-        <div className="flex gap-1 rounded-lg border p-1">
-          {([
-            { value: 'list' as const, label: 'Deals', icon: List },
-            { value: 'kanban' as const, label: 'Pipeline', icon: LayoutGrid },
-            { value: 'archief' as const, label: 'Archief', icon: Archive },
-          ]).map(({ value, label, icon: Icon }) => (
-            <Button
-              key={value}
-              variant={viewMode === value ? 'default' : 'ghost'}
-              size="sm"
-              onClick={() => setViewMode(value)}
-            >
-              <Icon className="h-4 w-4 mr-1" /> {label}
-            </Button>
-          ))}
-        </div>
-      </div>
+    <div>
+      {!accountId && (
+        <div className="space-y-3">
+          <PageHeader
+            title="Deals"
+            breadcrumbs={[
+              { label: 'Admin', href: '/admin' },
+              { label: 'Deals' },
+            ]}
+          />
 
-      {viewMode === 'kanban' && pipeline ? (
+          <div className="flex items-center justify-between">
+            <SubNav
+              items={VIEW_MODES}
+              activeKey={viewMode}
+              onSelect={(key) => setViewMode(key as 'list' | 'kanban' | 'archief')}
+            />
+            <div className="flex items-center gap-2">
+              <Button variant="outline" size="sm" onClick={() => setShowQuickDeal(true)}>
+                RFP / Profiel
+              </Button>
+              <Button size="sm" onClick={() => setShowQuickDeal(true)}>
+                <Plus /> Nieuwe deal
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {viewMode === 'kanban' && kanbanPipeline ? (
         <DealKanban
-          stages={pipeline.stages}
+          stages={kanbanPipeline.stages}
           deals={dealCards}
-          onRefresh={() => fetchDeals()}
+          onRefresh={() => load()}
         />
       ) : (
         <DealList
-          deals={deals}
+          deals={data}
           page={page}
           total={total}
           onPageChange={setPage}
+          onRefresh={() => load()}
           loading={loading}
+          refreshing={refreshing}
+          filters={filters}
+          onFilterChange={handleFilterChange}
+          filterOptions={filterOptions}
+          pipelines={pipelines}
+          owners={owners}
         />
       )}
 
-      <QuickDealModal
-        open={showQuickDeal}
-        onClose={() => setShowQuickDeal(false)}
-        pipelines={pipelines}
-        onSuccess={() => fetchDeals()}
-      />
+      {!accountId && (
+        <QuickDealModal
+          open={showQuickDeal}
+          onClose={() => setShowQuickDeal(false)}
+          pipelines={pipelines}
+          onSuccess={() => load()}
+        />
+      )}
     </div>
   );
 }
