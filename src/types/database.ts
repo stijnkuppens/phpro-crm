@@ -399,6 +399,7 @@ export type Database = {
       activities: {
         Row: {
           account_id: string
+          assigned_to: string | null
           created_at: string
           date: string
           deal_id: string | null
@@ -407,12 +408,14 @@ export type Database = {
           is_done: boolean
           notes: Json | null
           owner_id: string | null
+          priority: string | null
           subject: string
           type: string
           updated_at: string
         }
         Insert: {
           account_id: string
+          assigned_to?: string | null
           created_at?: string
           date: string
           deal_id?: string | null
@@ -421,12 +424,14 @@ export type Database = {
           is_done?: boolean
           notes?: Json | null
           owner_id?: string | null
+          priority?: string | null
           subject: string
           type: string
           updated_at?: string
         }
         Update: {
           account_id?: string
+          assigned_to?: string | null
           created_at?: string
           date?: string
           deal_id?: string | null
@@ -435,6 +440,7 @@ export type Database = {
           is_done?: boolean
           notes?: Json | null
           owner_id?: string | null
+          priority?: string | null
           subject?: string
           type?: string
           updated_at?: string
@@ -445,6 +451,13 @@ export type Database = {
             columns: ["account_id"]
             isOneToOne: false
             referencedRelation: "accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "activities_assigned_to_fkey"
+            columns: ["assigned_to"]
+            isOneToOne: false
+            referencedRelation: "user_profiles"
             referencedColumns: ["id"]
           },
           {
@@ -1636,6 +1649,63 @@ export type Database = {
         }
         Relationships: []
       }
+      jobs: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          entity: string | null
+          error: string | null
+          file_path: string | null
+          file_size: number | null
+          filters: Json | null
+          format: string | null
+          id: string
+          progress: number | null
+          requested_by: string
+          row_count: number | null
+          select_query: string | null
+          started_at: string | null
+          status: string
+          type: string
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          entity?: string | null
+          error?: string | null
+          file_path?: string | null
+          file_size?: number | null
+          filters?: Json | null
+          format?: string | null
+          id?: string
+          progress?: number | null
+          requested_by: string
+          row_count?: number | null
+          select_query?: string | null
+          started_at?: string | null
+          status?: string
+          type?: string
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          entity?: string | null
+          error?: string | null
+          file_path?: string | null
+          file_size?: number | null
+          filters?: Json | null
+          format?: string | null
+          id?: string
+          progress?: number | null
+          requested_by?: string
+          row_count?: number | null
+          select_query?: string | null
+          started_at?: string | null
+          status?: string
+          type?: string
+        }
+        Relationships: []
+      }
       notifications: {
         Row: {
           created_at: string
@@ -2284,67 +2354,6 @@ export type Database = {
           },
         ]
       }
-      tasks: {
-        Row: {
-          account_id: string | null
-          assigned_to: string | null
-          created_at: string
-          deal_id: string | null
-          due_date: string | null
-          id: string
-          priority: string
-          status: string
-          title: string
-          updated_at: string
-        }
-        Insert: {
-          account_id?: string | null
-          assigned_to?: string | null
-          created_at?: string
-          deal_id?: string | null
-          due_date?: string | null
-          id?: string
-          priority?: string
-          status?: string
-          title: string
-          updated_at?: string
-        }
-        Update: {
-          account_id?: string | null
-          assigned_to?: string | null
-          created_at?: string
-          deal_id?: string | null
-          due_date?: string | null
-          id?: string
-          priority?: string
-          status?: string
-          title?: string
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "tasks_account_id_fkey"
-            columns: ["account_id"]
-            isOneToOne: false
-            referencedRelation: "accounts"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "tasks_assigned_to_fkey"
-            columns: ["assigned_to"]
-            isOneToOne: false
-            referencedRelation: "user_profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "tasks_deal_id_fkey"
-            columns: ["deal_id"]
-            isOneToOne: false
-            referencedRelation: "deals"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       user_profiles: {
         Row: {
           avatar_url: string
@@ -2381,6 +2390,7 @@ export type Database = {
         Args: { p_approved_by: string; p_draft_id: string }
         Returns: undefined
       }
+      enqueue_export_job: { Args: { p_job_id: string }; Returns: number }
       get_account_banner_stats: {
         Args: { p_account_id: string }
         Returns: {
