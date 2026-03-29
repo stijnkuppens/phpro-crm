@@ -59,7 +59,7 @@ export type ExportColumn = {
 export const createExportJobSchema = z.object({
   entity: z.string().min(1),
   format: z.enum(['xlsx', 'csv']),
-  filters: z.record(z.unknown()).default({}),
+  filters: z.record(z.string(), z.unknown()).default({}),
   columns: z.array(z.object({ key: z.string(), label: z.string() })).min(1),
   selectQuery: z.string().optional(),
 });
