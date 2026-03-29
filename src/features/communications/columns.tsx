@@ -1,19 +1,8 @@
 'use client';
 
 import type { ColumnDef } from '@tanstack/react-table';
-import { Mail, FileText, Users, Phone } from 'lucide-react';
 import type { CommunicationWithDetails } from './types';
-
-const TYPE_CONFIG = {
-  email: { icon: Mail, bg: 'bg-blue-50 dark:bg-blue-950', color: 'text-blue-600 dark:text-blue-400', label: 'E-mail' },
-  note: { icon: FileText, bg: 'bg-amber-50 dark:bg-amber-950', color: 'text-amber-600 dark:text-amber-400', label: 'Notitie' },
-  meeting: { icon: Users, bg: 'bg-green-50 dark:bg-green-950', color: 'text-green-600 dark:text-green-400', label: 'Vergadering' },
-  call: { icon: Phone, bg: 'bg-purple-50 dark:bg-purple-950', color: 'text-purple-600 dark:text-purple-400', label: 'Call' },
-} as const;
-
-type CommType = keyof typeof TYPE_CONFIG;
-
-export { TYPE_CONFIG };
+import { COMMUNICATION_TYPE_CONFIG } from './types';
 
 export const communicationColumns: ColumnDef<CommunicationWithDetails>[] = [
   {
@@ -21,7 +10,7 @@ export const communicationColumns: ColumnDef<CommunicationWithDetails>[] = [
     header: '',
     meta: { label: 'Type' },
     cell: ({ row }) => {
-      const config = TYPE_CONFIG[row.original.type as CommType] ?? TYPE_CONFIG.note;
+      const config = COMMUNICATION_TYPE_CONFIG[row.original.type] ?? COMMUNICATION_TYPE_CONFIG['note'];
       const Icon = config.icon;
       return (
         <div className={`flex items-center justify-center h-8 w-8 rounded-md ${config.bg}`}>

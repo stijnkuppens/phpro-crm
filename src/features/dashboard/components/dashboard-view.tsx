@@ -1,6 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { StatCard } from '@/components/admin/stat-card';
-import { DollarSign, AlertCircle, Calendar, Building2 } from 'lucide-react';
+import { EmptyState } from '@/components/admin/empty-state';
+import { DollarSign, AlertCircle, Calendar, Building2, Activity, CheckSquare } from 'lucide-react';
 import type { DashboardStats } from '../queries/get-dashboard-stats';
 import { formatEUR } from '@/lib/format';
 
@@ -57,7 +58,7 @@ export function DashboardView({ stats, recentActivities, upcomingTasks }: Props)
           </CardHeader>
           <CardContent>
             {recentActivities.length === 0 ? (
-              <p className="text-sm text-muted-foreground">Geen recente activiteiten.</p>
+              <EmptyState icon={Activity} title="Geen recente activiteiten." />
             ) : (
               <div className="space-y-3">
                 {recentActivities.map((a) => (
@@ -80,7 +81,7 @@ export function DashboardView({ stats, recentActivities, upcomingTasks }: Props)
           </CardHeader>
           <CardContent>
             {upcomingTasks.length === 0 ? (
-              <p className="text-sm text-muted-foreground">Geen openstaande taken.</p>
+              <EmptyState icon={CheckSquare} title="Geen openstaande taken." />
             ) : (
               <div className="space-y-3">
                 {upcomingTasks.map((t) => (

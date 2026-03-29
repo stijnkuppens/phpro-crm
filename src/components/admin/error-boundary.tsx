@@ -26,12 +26,12 @@ export class ErrorBoundary extends Component<Props, State> {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <AlertTriangle className="h-5 w-5 text-destructive" />
-                Something went wrong
+                Er ging iets mis
               </CardTitle>
             </CardHeader>
             <CardContent>
               <p className="text-sm text-muted-foreground">
-                An unexpected error occurred. Try refreshing the page.
+                Er is een onverwachte fout opgetreden. Probeer de pagina te vernieuwen.
               </p>
               {process.env.NODE_ENV === 'development' && this.state.error && (
                 <pre className="mt-4 max-h-40 overflow-auto rounded bg-muted p-3 text-xs">
@@ -41,7 +41,7 @@ export class ErrorBoundary extends Component<Props, State> {
             </CardContent>
             <CardFooter>
               <Button onClick={() => this.setState({ hasError: false, error: null })}>
-                Try again
+                Opnieuw proberen
               </Button>
             </CardFooter>
           </Card>

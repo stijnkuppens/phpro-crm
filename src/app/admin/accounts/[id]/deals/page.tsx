@@ -1,6 +1,6 @@
 import { getDeals } from '@/features/deals/queries/get-deals';
 import { getPipelines } from '@/features/deals/queries/get-pipelines';
-import { DealsPageClient } from '@/features/deals/components/deals-page-client';
+import { AccountDealsPanel } from '@/features/deals/components/account-deals-panel';
 import { createServerClient } from '@/lib/supabase/server';
 
 type Props = {
@@ -18,8 +18,8 @@ export default async function DealsPage({ params }: Props) {
   ]);
 
   return (
-    <DealsPageClient
-      pipelines={(pipelines as unknown as Parameters<typeof DealsPageClient>[0]['pipelines']) ?? []}
+    <AccountDealsPanel
+      pipelines={(pipelines as unknown as Parameters<typeof AccountDealsPanel>[0]['pipelines']) ?? []}
       initialDeals={initialDeals}
       initialCount={initialCount}
       owners={(ownerRows ?? []).map((o) => ({ id: o.id, name: o.full_name ?? '' }))}

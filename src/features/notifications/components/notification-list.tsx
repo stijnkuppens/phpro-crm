@@ -39,14 +39,13 @@ export function NotificationList({ initialData }: Props) {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Meldingen</h1>
-        {hasUnread && (
+      {hasUnread && (
+        <div className="flex justify-end">
           <Button variant="outline" size="sm" onClick={handleMarkAllRead}>
             Markeer alles als gelezen
           </Button>
-        )}
-      </div>
+        </div>
+      )}
       {notifications.length === 0 ? (
         <p className="text-muted-foreground">Nog geen meldingen.</p>
       ) : (

@@ -2,25 +2,14 @@
 
 import type { ColumnDef } from '@tanstack/react-table';
 import { Avatar } from '@/components/admin/avatar';
+import { StatusBadge } from '@/components/admin/status-badge';
 import type { ConsultantWithDetails, ConsultantStatus } from './types';
-import { contractStatusColors, contractStatusDescriptions } from './types';
+import { contractStatusColors, contractStatusDescriptions, CONSULTANT_STATUS_STYLES, CONSULTANT_STATUS_LABELS } from './types';
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from '@/components/ui/tooltip';
 import { getContractStatus, getCurrentRate } from './utils';
 import { formatEUR } from '@/lib/format';
 
 const dateFmt = (d: string) => new Date(d).toLocaleDateString('nl-BE');
-
-const statusBadgeStyles: Record<ConsultantStatus, string> = {
-  bench: 'bg-orange-100 text-orange-700 border-0',
-  actief: 'bg-green-100 text-green-700 border-0',
-  stopgezet: 'bg-muted text-muted-foreground border-0',
-};
-
-const statusLabels: Record<ConsultantStatus, string> = {
-  bench: 'Bench',
-  actief: 'Actief',
-  stopgezet: 'Stopgezet',
-};
 
 function calcMaxRevenue(c: ConsultantWithDetails): number | null {
   if (c.status !== 'actief') return null;
@@ -52,33 +41,29 @@ export const consultantColumns: ColumnDef<ConsultantWithDetails>[] = [
     header: 'Status',
     cell: ({ row }) => {
       const c = row.original;
-      const status = c.status;
       if (c.is_archived) {
-        return (
-          <span className="inline-flex w-fit items-center rounded-full px-2 py-0.5 text-xs font-medium bg-red-100 text-red-700 border-0">
-            Gearchiveerd
-          </span>
-        );
+        return <StatusBadge colorMap={{ Gearchiveerd: 'bg-red-100 text-red-700' }} value="Gearchiveerd">Gearchiveerd</StatusBadge>;
       }
+      return <StatusBadge colorMap={CONSULTANT_STATUS_STYLES} value={c.status}>{CONSULTANT_STATUS_LABELS[c.status]}</StatusBadge>;
+    },
+  },
+  {
+    id: 'contract_status',
+    meta: { label: 'Contract' },
+    header: 'Contract',
+    cell: ({ row }) => {
+      const c = row.original;
+      if (c.status !== 'actief' || c.is_archived) return <span className="text-sm text-muted-foreground">—</span>;
+      const cs = getContractStatus(c);
       return (
-        <div className="flex flex-col gap-1">
-          <span className={`inline-flex w-fit items-center rounded-full px-2 py-0.5 text-xs font-medium ${statusBadgeStyles[status]}`}>
-            {statusLabels[status]}
-          </span>
-          {status === 'actief' && (() => {
-            const cs = getContractStatus(c);
-            return (
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger className={`inline-flex w-fit cursor-help items-center rounded-full px-2 py-0.5 text-xs font-medium ${contractStatusColors[cs]}`}>
-                    {cs}
-                  </TooltipTrigger>
-                  <TooltipContent>{contractStatusDescriptions[cs]}</TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-            );
-          })()}
-        </div>
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger className={`inline-flex w-fit cursor-help items-center rounded-full px-2 py-0.5 text-xs font-medium ${contractStatusColors[cs]}`}>
+              {cs}
+            </TooltipTrigger>
+            <TooltipContent>{contractStatusDescriptions[cs]}</TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
       );
     },
   },

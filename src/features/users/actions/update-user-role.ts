@@ -1,5 +1,6 @@
 'use server';
 
+import { revalidatePath } from 'next/cache';
 import { requirePermission } from '@/lib/require-permission';
 import { createServiceRoleClient } from '@/lib/supabase/admin';
 import { logAction } from '@/features/audit/actions/log-action';
@@ -29,5 +30,7 @@ export async function updateUserRole(userId: string, newRole: Role): Promise<Act
     metadata: { newRole },
   });
 
+  revalidatePath('/admin/users');
+  revalidatePath(`/admin/users/${userId}`);
   return ok();
 }

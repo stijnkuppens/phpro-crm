@@ -1,17 +1,12 @@
 'use client';
 
 import { AvatarUpload } from '@/components/admin/avatar-upload';
-import { Badge } from '@/components/ui/badge';
+import { StatusBadge } from '@/components/admin/status-badge';
 import { updateAccountAvatar } from '../actions/update-account-avatar';
 import { formatNumber } from '@/lib/format';
 import type { AccountWithRelations } from '../types';
+import { ACCOUNT_TYPE_STYLES } from '../types';
 import type { AccountBannerStats } from '../queries/get-account-banner-stats';
-
-const typeStyles: Record<string, string> = {
-  Klant: 'bg-green-100 text-green-700',
-  Prospect: 'bg-blue-100 text-blue-700',
-  Partner: 'bg-orange-100 text-orange-700',
-};
 
 type Props = {
   account: AccountWithRelations;
@@ -39,12 +34,12 @@ export function AccountBanner({ account, stats }: Props) {
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
             <h2 className="text-lg font-semibold truncate">{account.name}</h2>
-            <Badge className={`${typeStyles[account.type] ?? 'bg-muted text-muted-foreground'} border-0 text-[11px]`}>
+            <StatusBadge colorMap={ACCOUNT_TYPE_STYLES} value={account.type} className="text-[11px]">
               {account.type}
-            </Badge>
-            <Badge className={`${account.status === 'Actief' ? 'bg-primary/15 text-primary-action' : 'bg-muted text-muted-foreground'} border-0 text-[11px]`}>
+            </StatusBadge>
+            <StatusBadge positive={account.status === 'Actief'} className="text-[11px]">
               {account.status}
-            </Badge>
+            </StatusBadge>
           </div>
           <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 text-sm text-muted-foreground mt-0.5">
             {account.industry && <span>{account.industry}</span>}

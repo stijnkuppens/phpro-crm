@@ -1,3 +1,5 @@
+'use server';
+
 import { headers } from 'next/headers';
 import { createServerClient } from '@/lib/supabase/server';
 import { createServiceRoleClient } from '@/lib/supabase/admin';

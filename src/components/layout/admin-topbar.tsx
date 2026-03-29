@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useLocale } from 'next-intl';
 import { useAuth } from '@/lib/hooks/use-auth';
 import { createBrowserClient } from '@/lib/supabase/client';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Avatar } from '@/components/admin/avatar';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -75,11 +75,8 @@ export function AdminTopbar() {
         <DropdownMenu>
           <DropdownMenuTrigger
             render={
-              <Button variant="ghost" className="relative h-8 w-8 rounded-full">
-                <Avatar className="h-8 w-8">
-                  <AvatarImage src={user?.user_metadata?.avatar_url} />
-                  <AvatarFallback>{initials}</AvatarFallback>
-                </Avatar>
+              <Button variant="ghost" className="relative h-8 w-8 rounded-full p-0">
+                <Avatar path={user?.user_metadata?.avatar_url} fallback={initials} size="sm" round />
               </Button>
             }
           />

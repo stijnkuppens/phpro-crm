@@ -72,3 +72,19 @@ export type DealFilters = {
   origin?: string;
   is_closed?: boolean;
 };
+
+export type Pipeline = {
+  id: string;
+  name: string;
+  type: string;
+  stages: {
+    id: string;
+    name: string;
+    color: string;
+    sort_order: number;
+    is_closed: boolean;
+    is_won: boolean;
+    is_longterm: boolean;
+    probability: number;
+  }[];
+};

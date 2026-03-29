@@ -28,6 +28,9 @@ export function ContactFormModal({ contactId, accountId, open, onClose, onSaved 
   const [fieldErrors, setFieldErrors] = useState<Record<string, boolean>>({});
   const isEdit = !!contactId;
 
+  // Client-side fetch is intentional: the parent list only has basic Contact data,
+  // but editing requires ContactWithDetails (including personal_info and account).
+  // Pre-fetching personal_info for all contacts in the list would be wasteful.
   useEffect(() => {
     if (!contactId || !open) { setContact(null); return; }
     let cancelled = false;

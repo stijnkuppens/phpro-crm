@@ -74,12 +74,12 @@ export const activityColumns: ColumnDef<ActivityWithRelations>[] = [
     meta: {
       label: 'Status',
       filter: {
-        type: 'select',
+        type: 'pills',
         options: [
           { value: 'true', label: 'Afgerond' },
           { value: 'false', label: 'Gepland' },
         ],
-        placeholder: 'Alle statussen',
+        allLabel: 'Alle',
       },
     },
     header: 'Status',

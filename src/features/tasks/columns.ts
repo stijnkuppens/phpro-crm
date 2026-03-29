@@ -46,13 +46,13 @@ export const taskColumns: ColumnDef<TaskWithRelations>[] = [
     meta: {
       label: 'Status',
       filter: {
-        type: 'select',
+        type: 'pills',
         options: [
           { value: 'Open', label: 'Open' },
           { value: 'In Progress', label: 'In Progress' },
           { value: 'Done', label: 'Done' },
         ],
-        placeholder: 'Alle statussen',
+        allLabel: 'Alle',
       },
     },
     header: 'Status',

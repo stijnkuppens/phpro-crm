@@ -1,5 +1,7 @@
 # UI Style Guide
 
+> **Full reference:** `.claude/rules/design-system.md` — comprehensive component API docs, page templates, and usage examples. Consult it when building new pages or components.
+
 ## Immersive Layout
 
 The admin layout uses a **"paper on gray" pattern** for visual depth:
@@ -32,6 +34,58 @@ import { FilterBar } from '@/components/admin/filter-bar';
 ## Data Table Container
 
 The `DataTable` component wraps its table in `rounded-xl border bg-card shadow-sm`. Do not add extra card wrappers around `<DataTable>` — it is already styled as a card.
+
+## DataTable Filter Rules
+
+Every DataTable **must** have at minimum:
+1. **A search bar** — for the entity's primary string column (name, title, email, subject)
+2. **Exclusive pills** — for the entity's primary categorical column (≤5 static options)
+
+### Filter layout (rendered by `DataTableFilters`)
+
+```
+Row 1: [🔍 Search] [Dropdown] [Dropdown] ... [Dropdown]
+Row 2: [Alle] [Option1] [Option2] [Option3]              ← pills always below
+```
+
+Pills render on a second row below search + dropdowns. This is handled automatically by `DataTableFilters` when columns use `type: 'pills'` in their filter meta.
+
+### When to use which filter type
+
+| Criteria | Filter type | Column meta |
+|----------|------------|-------------|
+| Free text search on primary string field | Search input | `type: 'search'` |
+| ≤5 static options, pick one | **Pills** | `type: 'pills'`, `allLabel: 'Alle'` |
+| >5 options, or dynamic options | Select dropdown | `type: 'select'` |
+| Searchable list (accounts, users) | Combobox | `ComboboxFilter` in `filterBar` |
+
+### Configuring pills in column meta
+
+```tsx
+{
+  id: 'type',
+  meta: {
+    label: 'Type',
+    filter: {
+      type: 'pills',
+      options: [
+        { value: 'Klant', label: 'Klant' },
+        { value: 'Prospect', label: 'Prospect' },
+        { value: 'Partner', label: 'Partner' },
+      ],
+      allLabel: 'Alle',
+    },
+  },
+  header: 'Type',
+  cell: ...
+}
+```
+
+**Rules:**
+- Pills are always **exclusive** (one active at a time + "Alle" to clear)
+- For multi-select status filtering (e.g. consultants), use `FilterPill` components in a manual `filterBar`
+- Never put CTA buttons inside the filter bar — use `ListPageToolbar` instead
+- Every pills filter must include an "Alle" option via `allLabel`
 
 ## Brand Theming
 
@@ -179,3 +233,74 @@ All buttons use the shadcn `<Button>` component. **Never hand-roll button styles
 - Use Lucide icons (`lucide-react`), never emojis in UI components
 - Icon size in pills/badges: `h-3.5 w-3.5` (or `h-3 w-3` inside Badge with `mr-1`)
 - Icon size in buttons: `h-4 w-4`
+
+## StatusBadge over inline `<span>`
+
+**Never hand-roll badge `<span>` elements with color classes.** Use `StatusBadge` from `src/components/admin/status-badge.tsx`.
+
+```tsx
+import { StatusBadge } from '@/components/admin/status-badge';
+import { ACCOUNT_TYPE_STYLES } from '@/features/accounts/types';
+
+// Category badge (color map)
+<StatusBadge colorMap={ACCOUNT_TYPE_STYLES} value={account.type}>{account.type}</StatusBadge>
+
+// Boolean badge (positive/negative)
+<StatusBadge positive={isActive}>{isActive ? 'Actief' : 'Inactief'}</StatusBadge>
+```
+
+Shared style maps live in each feature's `types.ts`: `ACCOUNT_TYPE_STYLES`, `CONSULTANT_STATUS_STYLES`, `COMMUNICATION_TYPE_CONFIG`.
+
+## RouteErrorCard for error.tsx files
+
+**Every `error.tsx` file must use `RouteErrorCard`.** Never duplicate error card markup.
+
+```tsx
+'use client';
+import { RouteErrorCard } from '@/components/admin/route-error-card';
+
+export default function SomeError({ error, reset }: { error: Error & { digest?: string }; reset: () => void }) {
+  return <RouteErrorCard title="Fout bij laden" description="Beschrijving hier." error={error} reset={reset} />;
+}
+```
+
+## List Page Anatomy
+
+Every admin list page follows this structure. Use `ListPageToolbar` for the action bar between `PageHeader` and `DataTable`.
+
+```
+PageHeader (breadcrumb + title)          ← server page.tsx
+ListPageToolbar ([tabs] ... [CTA])       ← optional, for tabs/CTA buttons
+DataTable (filter bar + table + pagination)
+```
+
+```tsx
+// In the client list component:
+import { ListPageToolbar } from '@/components/admin/list-page-toolbar';
+
+<div className="space-y-6">
+  <ListPageToolbar
+    tabs={VIEW_MODES}           // optional SubNav tabs
+    activeTab={viewMode}
+    onTabSelect={setViewMode}
+    actions={<Button size="sm"><Plus /> Nieuw item</Button>}
+  />
+  <DataTable ... />
+</div>
+```
+
+**Rules:**
+- CTA buttons go in `ListPageToolbar actions`, never inside `filterBar`
+- If a page has no tabs and no client-side CTA, put the CTA in `PageHeader actions` instead
+- Filter pills (multi-select status filters) belong in `filterBar`, not in the toolbar
+- Page spacing is always `space-y-6`
+
+## Section Titles and Form Headings
+
+- **Card section titles:** Use `SectionTitle` from `admin/section-title.tsx` (icon + optional action slot)
+- **Form section headings:** Use `FormSectionHeading` from `admin/form-section-heading.tsx` (uppercase label)
+- **Tinted form sections:** Use `FormSection` from `admin/form-section.tsx` (colored background with dark mode handling)
+
+## External Links
+
+Use `ExternalLinkButton` from `admin/external-link-button.tsx` for all external links and download buttons. Never hand-roll `<a target="_blank">` with ExternalLink icon.

@@ -23,6 +23,9 @@ export function ContactViewModal({ contactId, onClose, onEdit }: Props) {
   const [contact, setContact] = useState<ContactWithDetails | null>(null);
   const [loading, setLoading] = useState(false);
 
+  // Client-side fetch is intentional: the parent list only has basic Contact data,
+  // but viewing requires ContactWithDetails (including personal_info and account).
+  // Pre-fetching personal_info for all contacts in the list would be wasteful.
   useEffect(() => {
     if (!contactId) { setContact(null); return; }
     let cancelled = false;

@@ -2,7 +2,9 @@
 
 import type { ColumnDef } from '@tanstack/react-table';
 import { Avatar } from '@/components/admin/avatar';
+import { StatusBadge } from '@/components/admin/status-badge';
 import type { AccountListItem } from './types';
+import { ACCOUNT_TYPE_STYLES } from './types';
 
 export const accountColumns: ColumnDef<AccountListItem>[] = [
   {
@@ -40,27 +42,20 @@ export const accountColumns: ColumnDef<AccountListItem>[] = [
     meta: {
       label: 'Type',
       filter: {
-        type: 'select',
+        type: 'pills',
         options: [
           { value: 'Klant', label: 'Klant' },
           { value: 'Prospect', label: 'Prospect' },
           { value: 'Partner', label: 'Partner' },
         ],
-        placeholder: 'Alle types',
+        allLabel: 'Alle',
       },
     },
     header: 'Type',
     cell: ({ row }) => {
       const type = row.original.type;
-      const styles: Record<string, string> = {
-        Klant: 'bg-green-100 text-green-700',
-        Prospect: 'bg-blue-100 text-blue-700',
-        Partner: 'bg-orange-100 text-orange-700',
-      };
       return (
-        <span className={`inline-flex items-center rounded-full border-0 px-2 py-0.5 text-xs font-medium ${styles[type] ?? 'bg-muted text-muted-foreground'}`}>
-          {type}
-        </span>
+        <StatusBadge colorMap={ACCOUNT_TYPE_STYLES} value={type}>{type}</StatusBadge>
       );
     },
   },
@@ -82,11 +77,7 @@ export const accountColumns: ColumnDef<AccountListItem>[] = [
     cell: ({ row }) => {
       const isActive = row.original.status === 'Actief';
       return (
-        <span className={`inline-flex items-center rounded-full border-0 px-2 py-0.5 text-xs font-medium ${
-          isActive ? 'bg-primary/15 text-primary-action' : 'bg-muted text-muted-foreground'
-        }`}>
-          {row.original.status}
-        </span>
+        <StatusBadge positive={isActive}>{row.original.status}</StatusBadge>
       );
     },
   },
@@ -108,11 +99,7 @@ export const accountColumns: ColumnDef<AccountListItem>[] = [
     cell: ({ row }) => {
       const has = row.original.has_framework_contract;
       return (
-        <span className={`inline-flex items-center rounded-full border-0 px-2 py-0.5 text-xs font-medium ${
-          has ? 'bg-primary/15 text-primary-action' : 'bg-muted text-muted-foreground'
-        }`}>
-          {has ? 'Ja' : 'Nee'}
-        </span>
+        <StatusBadge positive={has}>{has ? 'Ja' : 'Nee'}</StatusBadge>
       );
     },
   },
@@ -134,11 +121,7 @@ export const accountColumns: ColumnDef<AccountListItem>[] = [
     cell: ({ row }) => {
       const has = row.original.has_service_contract;
       return (
-        <span className={`inline-flex items-center rounded-full border-0 px-2 py-0.5 text-xs font-medium ${
-          has ? 'bg-primary/15 text-primary-action' : 'bg-muted text-muted-foreground'
-        }`}>
-          {has ? 'Ja' : 'Nee'}
-        </span>
+        <StatusBadge positive={has}>{has ? 'Ja' : 'Nee'}</StatusBadge>
       );
     },
   },
@@ -149,11 +132,7 @@ export const accountColumns: ColumnDef<AccountListItem>[] = [
     cell: ({ row }) => {
       const count = row.original.active_consultant_count;
       return (
-        <span className={`inline-flex items-center rounded-full border-0 px-2 py-0.5 text-xs font-medium ${
-          count > 0 ? 'bg-primary/15 text-primary-action' : 'bg-muted text-muted-foreground'
-        }`}>
-          {count > 0 ? `${count} actief` : 'Geen'}
-        </span>
+        <StatusBadge positive={count > 0}>{count > 0 ? `${count} actief` : 'Geen'}</StatusBadge>
       );
     },
   },

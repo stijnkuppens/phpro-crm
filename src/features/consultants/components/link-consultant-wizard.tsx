@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo, useEffect } from 'react';
+import { createContext, use, useReducer, useState, useMemo, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { Modal } from '@/components/admin/modal';
@@ -19,10 +19,10 @@ import {
 import { ArrowLeft, Check, Save, Search } from 'lucide-react';
 import { linkConsultantToAccount } from '../actions/link-consultant-to-account';
 import { createBrowserClient } from '@/lib/supabase/client';
-import type { ConsultantWithDetails } from '../types';
+import type { ConsultantWithDetails, ConsultantAccount } from '../types';
+import { CONSULTANT_PRIORITY_STYLES } from '../types';
+import { ACCOUNT_TYPE_STYLES } from '@/features/accounts/types';
 import { formatEUR } from '@/lib/format';
-
-type Account = { id: string; name: string; domain: string | null; type: string | null; city: string | null };
 
 type BenchConsultant = {
   id: string;
@@ -41,24 +41,12 @@ type BenchConsultant = {
 type Props = {
   open: boolean;
   onClose: () => void;
-  accounts: Account[];
+  accounts: ConsultantAccount[];
   roles: { value: string; label: string }[];
   /** Pre-select account (from account page) — skips step 1 */
   preselectedAccountId?: string;
   /** Pre-select bench consultant (from bench page) — skips step 2 */
   preselectedBenchConsultantId?: string;
-};
-
-const typeColors: Record<string, string> = {
-  Klant: 'bg-green-100 text-green-700',
-  Prospect: 'bg-blue-100 text-blue-700',
-  Partner: 'bg-orange-100 text-orange-700',
-};
-
-const priorityColors: Record<string, string> = {
-  High: 'bg-red-100 text-red-800',
-  Medium: 'bg-yellow-100 text-yellow-800',
-  Low: 'bg-gray-100 text-gray-800',
 };
 
 
@@ -79,18 +67,95 @@ function calcWorkdays(start: string, end: string | null): number {
   return fullWeeks * 5 + extraWorkdays;
 }
 
-export function LinkConsultantWizard({
+/* ─── Context ─────────────────────────────────────────────────────────── */
+
+type WizardState = {
+  step: number;
+  accountId: string;
+  accountSearch: string;
+  accountTypeFilter: string;
+  benchId: string;
+  benchSearch: string;
+  benchConsultants: BenchConsultant[];
+  benchLoading: boolean;
+  role: string;
+  startDate: string;
+  endDate: string;
+  isIndefinite: boolean;
+  hourlyRate: string;
+  dailyRate: string;
+  noticePeriod: string;
+  sowUrl: string;
+  notes: string;
+  loading: boolean;
+};
+
+type WizardActions = {
+  setStep: (step: number) => void;
+  setAccountId: (id: string) => void;
+  setAccountSearch: (search: string) => void;
+  setAccountTypeFilter: (filter: string) => void;
+  setBenchId: (id: string) => void;
+  setBenchSearch: (search: string) => void;
+  goToStep3: (bench: BenchConsultant) => void;
+  onHourlyChange: (val: string) => void;
+  onDailyChange: (val: string) => void;
+  setRole: (role: string) => void;
+  setStartDate: (date: string) => void;
+  setEndDate: (date: string) => void;
+  setIsIndefinite: (val: boolean) => void;
+  setNoticePeriod: (val: string) => void;
+  setSowUrl: (url: string) => void;
+  setNotes: (notes: string) => void;
+  handleSubmit: () => Promise<void>;
+  handleClose: () => void;
+};
+
+type WizardMeta = {
+  accounts: ConsultantAccount[];
+  roles: { value: string; label: string }[];
+  preselectedAccountId?: string;
+  preselectedBenchConsultantId?: string;
+  selectedAccount: ConsultantAccount | undefined;
+  selectedBench: BenchConsultant | undefined;
+  filteredAccounts: ConsultantAccount[];
+  filteredBench: BenchConsultant[];
+  werkdagen: number;
+  estimatedRevenue: number;
+  accountTypes: string[];
+};
+
+type WizardContextValue = {
+  state: WizardState;
+  actions: WizardActions;
+  meta: WizardMeta;
+};
+
+const WizardContext = createContext<WizardContextValue | null>(null);
+
+function useWizard() {
+  const ctx = use(WizardContext);
+  if (!ctx) throw new Error('useWizard must be used within WizardProvider');
+  return ctx;
+}
+
+/* ─── Provider ────────────────────────────────────────────────────────── */
+
+function WizardProvider({
   open,
   onClose,
   accounts,
   roles,
   preselectedAccountId,
   preselectedBenchConsultantId,
-}: Props) {
+  children,
+}: Props & { children: React.ReactNode }) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
 
-  // Fetch bench consultants internally
+  // Client-side fetch is intentional: bench consultants change frequently (consultants
+  // get linked/unlinked between page loads) and are only needed when the wizard opens.
+  // The parent list page doesn't have this data, and pre-fetching would be wasteful.
   const [benchConsultants, setBenchConsultants] = useState<BenchConsultant[]>([]);
   const [benchLoading, setBenchLoading] = useState(false);
 
@@ -117,56 +182,52 @@ export function LinkConsultantWizard({
   const initialStep = preselectedAccountId && preselectedBenchConsultantId ? 3
     : preselectedAccountId ? 2
     : 1;
-  const [step, setStep] = useState(initialStep);
 
-  // Reset all state when modal opens/closes
-  function resetState() {
-    setStep(initialStep);
-    setAccountId(preselectedAccountId ?? '');
-    setBenchId(preselectedBenchConsultantId ?? '');
-    setAccountSearch('');
-    setBenchSearch('');
-    setRole('');
-    setStartDate('');
-    setEndDate('');
-    setIsIndefinite(false);
-    setHourlyRate('');
-    setDailyRate('');
-    setNoticePeriod('30');
-    setSowUrl('');
-    setNotes('');
-  }
+  type WizardFormState = {
+    step: number;
+    accountId: string;
+    accountSearch: string;
+    accountTypeFilter: string;
+    benchId: string;
+    benchSearch: string;
+    role: string;
+    startDate: string;
+    endDate: string;
+    isIndefinite: boolean;
+    hourlyRate: string;
+    dailyRate: string;
+    noticePeriod: string;
+    sowUrl: string;
+    notes: string;
+  };
 
-  function handleClose() {
-    resetState();
-    onClose();
-  }
+  const initialFormState: WizardFormState = {
+    step: initialStep,
+    accountId: preselectedAccountId ?? '',
+    accountSearch: '',
+    accountTypeFilter: '',
+    benchId: preselectedBenchConsultantId ?? '',
+    benchSearch: '',
+    role: '',
+    startDate: '',
+    endDate: '',
+    isIndefinite: false,
+    hourlyRate: '',
+    dailyRate: '',
+    noticePeriod: '30',
+    sowUrl: '',
+    notes: '',
+  };
 
-  // Step 1: account selection
-  const [accountId, setAccountId] = useState(preselectedAccountId ?? '');
-  const [accountSearch, setAccountSearch] = useState('');
-
-  // Step 2: bench consultant selection
-  const [benchId, setBenchId] = useState(preselectedBenchConsultantId ?? '');
-  const [benchSearch, setBenchSearch] = useState('');
-
-  // Step 3: assignment details
-  const [role, setRole] = useState('');
-  const [startDate, setStartDate] = useState('');
-  const [endDate, setEndDate] = useState('');
-  const [isIndefinite, setIsIndefinite] = useState(false);
-  const [hourlyRate, setHourlyRate] = useState('');
-  const [dailyRate, setDailyRate] = useState('');
-  const [noticePeriod, setNoticePeriod] = useState('30');
-  const [sowUrl, setSowUrl] = useState('');
-  const [notes, setNotes] = useState('');
+  const [form, updateForm] = useReducer(
+    (prev: WizardFormState, updates: Partial<WizardFormState>) => ({ ...prev, ...updates }),
+    initialFormState,
+  );
 
   // Derived
-  const selectedAccount = accounts.find((a) => a.id === accountId);
-  const selectedBench = benchConsultants.find((c) => c.id === benchId);
+  const selectedAccount = accounts.find((a) => a.id === form.accountId);
+  const selectedBench = benchConsultants.find((c) => c.id === form.benchId);
 
-  // Step 1 filters
-  const [accountTypeFilter, setAccountTypeFilter] = useState('');
   const accountTypes = useMemo(() => {
     const types = new Set(accounts.map((a) => a.type).filter(Boolean));
     return Array.from(types) as string[];
@@ -174,11 +235,11 @@ export function LinkConsultantWizard({
 
   const filteredAccounts = useMemo(() => {
     let result = accounts;
-    if (accountTypeFilter) {
-      result = result.filter((a) => a.type === accountTypeFilter);
+    if (form.accountTypeFilter) {
+      result = result.filter((a) => a.type === form.accountTypeFilter);
     }
-    if (accountSearch) {
-      const q = accountSearch.toLowerCase();
+    if (form.accountSearch) {
+      const q = form.accountSearch.toLowerCase();
       result = result.filter(
         (a) =>
           a.name.toLowerCase().includes(q) ||
@@ -186,61 +247,72 @@ export function LinkConsultantWizard({
       );
     }
     return result;
-  }, [accounts, accountSearch, accountTypeFilter]);
+  }, [accounts, form.accountSearch, form.accountTypeFilter]);
 
   const filteredBench = useMemo(() => {
-    if (!benchSearch) return benchConsultants;
-    const q = benchSearch.toLowerCase();
+    if (!form.benchSearch) return benchConsultants;
+    const q = form.benchSearch.toLowerCase();
     return benchConsultants.filter(
       (c) =>
         `${c.first_name} ${c.last_name}`.toLowerCase().includes(q) ||
         (c.roles?.some((r) => r.toLowerCase().includes(q)) ?? false) ||
         (c.technologies?.some((t) => t.toLowerCase().includes(q)) ?? false),
     );
-  }, [benchConsultants, benchSearch]);
+  }, [benchConsultants, form.benchSearch]);
 
   // Auto-sync hourly <-> daily rate
-  function onHourlyChange(val: string) {
-    setHourlyRate(val);
-    if (val) setDailyRate(String(Math.round(Number(val) * 8)));
-  }
-  function onDailyChange(val: string) {
-    setDailyRate(val);
-    if (val) setHourlyRate(String(Math.round(Number(val) / 8)));
-  }
+  const onHourlyChange = useCallback((val: string) => {
+    updateForm({ hourlyRate: val, ...(val ? { dailyRate: String(Math.round(Number(val) * 8)) } : {}) });
+  }, []);
+
+  const onDailyChange = useCallback((val: string) => {
+    updateForm({ dailyRate: val, ...(val ? { hourlyRate: String(Math.round(Number(val) / 8)) } : {}) });
+  }, []);
 
   // Revenue preview
-  const werkdagen = startDate && endDate && !isIndefinite
-    ? calcWorkdays(startDate, endDate)
+  const werkdagen = form.startDate && form.endDate && !form.isIndefinite
+    ? calcWorkdays(form.startDate, form.endDate)
     : 0;
-  const estimatedRevenue = hourlyRate
-    ? Number(hourlyRate) * 8 * (werkdagen || 21)
+  const estimatedRevenue = form.hourlyRate
+    ? Number(form.hourlyRate) * 8 * (werkdagen || 21)
     : 0;
 
   // Pre-fill role from bench consultant when moving to step 3
-  function goToStep3(bench: BenchConsultant) {
-    if (bench && !role) {
-      setRole(bench.roles?.[0] ?? '');
+  const goToStep3 = useCallback((bench: BenchConsultant) => {
+    const updates: Partial<WizardFormState> = { step: 3 };
+    if (bench && !form.role) {
+      updates.role = bench.roles?.[0] ?? '';
     }
-    if (bench?.min_hourly_rate && !hourlyRate) {
-      onHourlyChange(String(bench.min_hourly_rate));
+    if (bench?.min_hourly_rate && !form.hourlyRate) {
+      updates.hourlyRate = String(bench.min_hourly_rate);
+      updates.dailyRate = String(Math.round(bench.min_hourly_rate * 8));
     }
-    setStep(3);
-  }
+    updateForm(updates);
+  }, [form.role, form.hourlyRate]);
 
-  async function handleSubmit() {
+  // Reset all state when modal closes
+  const resetState = useCallback(() => {
+    updateForm(initialFormState);
+  }, [initialFormState]);
+
+  const handleClose = useCallback(() => {
+    resetState();
+    onClose();
+  }, [resetState, onClose]);
+
+  const handleSubmit = useCallback(async () => {
     setLoading(true);
     const result = await linkConsultantToAccount({
-      consultant_id: benchId,
-      account_id: accountId,
-      role: role || undefined,
-      start_date: startDate,
-      end_date: isIndefinite ? null : endDate || null,
-      is_indefinite: isIndefinite,
-      hourly_rate: Number(hourlyRate),
-      notice_period_days: Number(noticePeriod) || undefined,
-      sow_url: sowUrl || undefined,
-      notes: notes || undefined,
+      consultant_id: form.benchId,
+      account_id: form.accountId,
+      role: form.role || undefined,
+      start_date: form.startDate,
+      end_date: form.isIndefinite ? null : form.endDate || null,
+      is_indefinite: form.isIndefinite,
+      hourly_rate: Number(form.hourlyRate),
+      notice_period_days: Number(form.noticePeriod) || undefined,
+      sow_url: form.sowUrl || undefined,
+      notes: form.notes || undefined,
     });
     setLoading(false);
 
@@ -252,328 +324,432 @@ export function LinkConsultantWizard({
     toast.success(`${selectedBench?.first_name} ${selectedBench?.last_name} gekoppeld aan ${selectedAccount?.name}`);
     handleClose();
     router.refresh();
-  }
+  }, [form, selectedBench, selectedAccount, handleClose, router]);
 
-  // Step titles
-  const stepTitles = ['Account kiezen', 'Consultant kiezen', 'Opdracht details'];
-  const currentTitle = `Opdracht koppelen — ${stepTitles[step - 1]}`;
+  const state: WizardState = {
+    ...form,
+    benchConsultants,
+    benchLoading,
+    loading,
+  };
+
+  const actions: WizardActions = {
+    setStep: (step) => updateForm({ step }),
+    setAccountId: (accountId) => updateForm({ accountId }),
+    setAccountSearch: (accountSearch) => updateForm({ accountSearch }),
+    setAccountTypeFilter: (accountTypeFilter) => updateForm({ accountTypeFilter }),
+    setBenchId: (benchId) => updateForm({ benchId }),
+    setBenchSearch: (benchSearch) => updateForm({ benchSearch }),
+    goToStep3,
+    onHourlyChange,
+    onDailyChange,
+    setRole: (role) => updateForm({ role }),
+    setStartDate: (startDate) => updateForm({ startDate }),
+    setEndDate: (endDate) => updateForm({ endDate }),
+    setIsIndefinite: (isIndefinite) => updateForm({ isIndefinite }),
+    setNoticePeriod: (noticePeriod) => updateForm({ noticePeriod }),
+    setSowUrl: (sowUrl) => updateForm({ sowUrl }),
+    setNotes: (notes) => updateForm({ notes }),
+    handleSubmit,
+    handleClose,
+  };
+
+  const meta: WizardMeta = {
+    accounts,
+    roles,
+    preselectedAccountId,
+    preselectedBenchConsultantId,
+    selectedAccount,
+    selectedBench,
+    filteredAccounts,
+    filteredBench,
+    werkdagen,
+    estimatedRevenue,
+    accountTypes,
+  };
 
   return (
-    <Modal open={open} onClose={handleClose} title={currentTitle} size="extra-wide">
-      {/* Progress indicator */}
-      <div className="flex items-center gap-2 mb-6">
-        {[1, 2, 3].map((s) => (
-          <div key={s} className="flex items-center gap-2">
-            <div
-              className={`h-8 w-8 rounded-full flex items-center justify-center text-sm font-medium ${
-                s < step
+    <WizardContext value={{ state, actions, meta }}>
+      {children}
+    </WizardContext>
+  );
+}
+
+/* ─── Progress Bar ────────────────────────────────────────────────────── */
+
+const stepTitles = ['Account kiezen', 'Consultant kiezen', 'Opdracht details'];
+
+function WizardProgressBar() {
+  const { state } = useWizard();
+
+  return (
+    <div className="flex items-center gap-2 mb-6">
+      {[1, 2, 3].map((s) => (
+        <div key={s} className="flex items-center gap-2">
+          <div
+            className={`h-8 w-8 rounded-full flex items-center justify-center text-sm font-medium ${
+              s < state.step
+                ? 'bg-primary text-primary-foreground'
+                : s === state.step
                   ? 'bg-primary text-primary-foreground'
-                  : s === step
-                    ? 'bg-primary text-primary-foreground'
-                    : 'bg-muted text-muted-foreground'
+                  : 'bg-muted text-muted-foreground'
+            }`}
+          >
+            {s < state.step ? <Check className="h-4 w-4" /> : s}
+          </div>
+          <span className={`text-sm ${s === state.step ? 'font-medium' : 'text-muted-foreground'}`}>
+            {stepTitles[s - 1]}
+          </span>
+          {s < 3 && <div className="w-8 h-px bg-border" />}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+/* ─── Step 1: Account Selection ───────────────────────────────────────── */
+
+function WizardStep1() {
+  const { state, actions, meta } = useWizard();
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center gap-2">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Zoek account..."
+            value={state.accountSearch}
+            onChange={(e) => actions.setAccountSearch(e.target.value)}
+            className="pl-9"
+            autoFocus
+          />
+        </div>
+        <div className="flex gap-1">
+          {meta.accountTypes.map((t) => (
+            <button
+              key={t}
+              type="button"
+              onClick={() => actions.setAccountTypeFilter(state.accountTypeFilter === t ? '' : t)}
+              className={`rounded-full px-2.5 py-1 text-xs font-medium transition-colors ${
+                state.accountTypeFilter === t
+                  ? ACCOUNT_TYPE_STYLES[t] ?? 'bg-gray-200 text-gray-800'
+                  : 'bg-muted text-muted-foreground hover:bg-muted/80'
               }`}
             >
-              {s < step ? <Check className="h-4 w-4" /> : s}
-            </div>
-            <span className={`text-sm ${s === step ? 'font-medium' : 'text-muted-foreground'}`}>
-              {stepTitles[s - 1]}
-            </span>
-            {s < 3 && <div className="w-8 h-px bg-border" />}
-          </div>
-        ))}
+              {t}
+            </button>
+          ))}
+        </div>
       </div>
+      <div className="max-h-80 overflow-y-auto divide-y">
+        {meta.filteredAccounts.map((a) => (
+          <button
+            key={a.id}
+            type="button"
+            className={`flex w-full items-center justify-between px-3 py-2 text-left transition-colors ${
+              state.accountId === a.id ? 'bg-primary/5' : 'hover:bg-muted/50'
+            }`}
+            onClick={() => {
+              actions.setAccountId(a.id);
+              if (meta.preselectedBenchConsultantId) {
+                // Bench consultant already selected — skip step 2, go to details
+                const bench = state.benchConsultants.find((c) => c.id === meta.preselectedBenchConsultantId);
+                if (bench) { actions.goToStep3(bench); return; }
+              }
+              actions.setStep(2);
+            }}
+          >
+            <div className="min-w-0">
+              <div className="truncate text-sm font-medium">{a.name}</div>
+              {a.domain && <div className="truncate text-xs text-muted-foreground">{a.domain}</div>}
+            </div>
+            {a.type && (
+              <Badge className={`ml-2 shrink-0 ${ACCOUNT_TYPE_STYLES[a.type] ?? 'bg-gray-100 text-gray-700'}`}>
+                {a.type}
+              </Badge>
+            )}
+          </button>
+        ))}
+        {meta.filteredAccounts.length === 0 && (
+          <p className="text-center text-muted-foreground py-4">Geen accounts gevonden</p>
+        )}
+      </div>
+    </div>
+  );
+}
 
-      {/* Step 1: Account selection */}
-      {step === 1 && (
-        <div className="space-y-4">
-          <div className="flex items-center gap-2">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Zoek account..."
-                value={accountSearch}
-                onChange={(e) => setAccountSearch(e.target.value)}
-                className="pl-9"
-                autoFocus
-              />
-            </div>
-            <div className="flex gap-1">
-              {accountTypes.map((t) => (
-                <button
-                  key={t}
-                  type="button"
-                  onClick={() => setAccountTypeFilter(accountTypeFilter === t ? '' : t)}
-                  className={`rounded-full px-2.5 py-1 text-xs font-medium transition-colors ${
-                    accountTypeFilter === t
-                      ? typeColors[t] ?? 'bg-gray-200 text-gray-800'
-                      : 'bg-muted text-muted-foreground hover:bg-muted/80'
-                  }`}
-                >
-                  {t}
-                </button>
-              ))}
-            </div>
+/* ─── Step 2: Bench Consultant Selection ──────────────────────────────── */
+
+function WizardStep2() {
+  const { state, actions, meta } = useWizard();
+
+  return (
+    <div className="space-y-4">
+      {/* Selected account summary */}
+      {meta.selectedAccount && (
+        <div className="flex items-center justify-between bg-muted/50 rounded-lg p-3">
+          <div>
+            <span className="text-xs text-muted-foreground">Account:</span>{' '}
+            <span className="text-sm font-medium">{meta.selectedAccount.name}</span>
           </div>
-          <div className="max-h-80 overflow-y-auto divide-y">
-            {filteredAccounts.map((a) => (
+          {!meta.preselectedAccountId && (
+            <Button variant="ghost" size="sm" onClick={() => actions.setStep(1)}>
+              Wijzigen
+            </Button>
+          )}
+        </div>
+      )}
+
+      <div className="relative">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+        <Input
+          placeholder="Zoek op naam, rol of technologie..."
+          value={state.benchSearch}
+          onChange={(e) => actions.setBenchSearch(e.target.value)}
+          className="pl-9"
+          autoFocus
+        />
+      </div>
+      <div className="max-h-72 overflow-y-auto divide-y">
+        {state.benchLoading ? (
+          <p className="text-center text-muted-foreground py-4">Laden...</p>
+        ) : (
+          <>
+            {meta.filteredBench.map((c) => (
               <button
-                key={a.id}
+                key={c.id}
                 type="button"
-                className={`flex w-full items-center justify-between px-3 py-2 text-left transition-colors ${
-                  accountId === a.id ? 'bg-primary/5' : 'hover:bg-muted/50'
+                className={`flex w-full items-center gap-3 px-3 py-2 text-left transition-colors ${
+                  state.benchId === c.id ? 'bg-primary/5' : 'hover:bg-muted/50'
                 }`}
                 onClick={() => {
-                  setAccountId(a.id);
-                  if (preselectedBenchConsultantId) {
-                    // Bench consultant already selected — skip step 2, go to details
-                    const bench = benchConsultants.find((c) => c.id === preselectedBenchConsultantId);
-                    if (bench) { goToStep3(bench); return; }
-                  }
-                  setStep(2);
+                  actions.setBenchId(c.id);
+                  actions.goToStep3(c);
                 }}
               >
-                <div className="min-w-0">
-                  <div className="truncate text-sm font-medium">{a.name}</div>
-                  {a.domain && <div className="truncate text-xs text-muted-foreground">{a.domain}</div>}
+                <div className="h-8 w-8 rounded-full bg-primary/10 text-primary flex items-center justify-center text-xs font-medium shrink-0">
+                  {c.first_name[0]}{c.last_name[0]}
                 </div>
-                {a.type && (
-                  <Badge className={`ml-2 shrink-0 ${typeColors[a.type] ?? 'bg-gray-100 text-gray-700'}`}>
-                    {a.type}
-                  </Badge>
-                )}
+                <div className="flex-1 min-w-0">
+                  <div className="text-sm font-medium">{c.first_name} {c.last_name}</div>
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                    {c.city && <span>{c.city}</span>}
+                    {c.roles && c.roles.length > 0 && (
+                      <span>{c.roles.slice(0, 2).join(', ')}</span>
+                    )}
+                  </div>
+                </div>
+                <div className="flex items-center gap-2 shrink-0">
+                  {c.min_hourly_rate && c.max_hourly_rate && (
+                    <span className="text-xs text-muted-foreground">
+                      €{c.min_hourly_rate}–€{c.max_hourly_rate}/u
+                    </span>
+                  )}
+                  <Badge className={`text-[10px] ${CONSULTANT_PRIORITY_STYLES[c.priority] ?? ''}`}>{c.priority}</Badge>
+                </div>
               </button>
             ))}
-            {filteredAccounts.length === 0 && (
-              <p className="text-center text-muted-foreground py-4">Geen accounts gevonden</p>
+            {meta.filteredBench.length === 0 && (
+              <p className="text-center text-muted-foreground py-4">Geen bench consultants gevonden</p>
+            )}
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
+/* ─── Step 3: Assignment Details ──────────────────────────────────────── */
+
+function WizardStep3() {
+  const { state, actions, meta } = useWizard();
+
+  return (
+    <div className="space-y-4">
+      {/* Summary cards */}
+      <div className="grid grid-cols-2 gap-3">
+        {meta.selectedAccount && (
+          <div className="bg-muted/50 rounded-lg p-3">
+            <span className="text-xs text-muted-foreground">Account</span>
+            <div className="text-sm font-medium">{meta.selectedAccount.name}</div>
+            {!meta.preselectedAccountId && (
+              <Button variant="ghost" size="sm" className="mt-1 h-6 text-xs px-2" onClick={() => actions.setStep(1)}>
+                Wijzigen
+              </Button>
             )}
           </div>
-        </div>
-      )}
-
-      {/* Step 2: Bench consultant selection */}
-      {step === 2 && (
-        <div className="space-y-4">
-          {/* Selected account summary */}
-          {selectedAccount && (
-            <div className="flex items-center justify-between bg-muted/50 rounded-lg p-3">
-              <div>
-                <span className="text-xs text-muted-foreground">Account:</span>{' '}
-                <span className="text-sm font-medium">{selectedAccount.name}</span>
-              </div>
-              {!preselectedAccountId && (
-                <Button variant="ghost" size="sm" onClick={() => setStep(1)}>
-                  Wijzigen
-                </Button>
-              )}
-            </div>
-          )}
-
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Zoek op naam, rol of technologie..."
-              value={benchSearch}
-              onChange={(e) => setBenchSearch(e.target.value)}
-              className="pl-9"
-              autoFocus
-            />
-          </div>
-          <div className="max-h-72 overflow-y-auto divide-y">
-            {benchLoading ? (
-              <p className="text-center text-muted-foreground py-4">Laden...</p>
-            ) : (
-              <>
-                {filteredBench.map((c) => (
-                  <button
-                    key={c.id}
-                    type="button"
-                    className={`flex w-full items-center gap-3 px-3 py-2 text-left transition-colors ${
-                      benchId === c.id ? 'bg-primary/5' : 'hover:bg-muted/50'
-                    }`}
-                    onClick={() => {
-                      setBenchId(c.id);
-                      goToStep3(c);
-                    }}
-                  >
-                    <div className="h-8 w-8 rounded-full bg-primary/10 text-primary flex items-center justify-center text-xs font-medium shrink-0">
-                      {c.first_name[0]}{c.last_name[0]}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="text-sm font-medium">{c.first_name} {c.last_name}</div>
-                      <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                        {c.city && <span>{c.city}</span>}
-                        {c.roles && c.roles.length > 0 && (
-                          <span>{c.roles.slice(0, 2).join(', ')}</span>
-                        )}
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2 shrink-0">
-                      {c.min_hourly_rate && c.max_hourly_rate && (
-                        <span className="text-xs text-muted-foreground">
-                          €{c.min_hourly_rate}–€{c.max_hourly_rate}/u
-                        </span>
-                      )}
-                      <Badge className={`text-[10px] ${priorityColors[c.priority] ?? ''}`}>{c.priority}</Badge>
-                    </div>
-                  </button>
-                ))}
-                {filteredBench.length === 0 && (
-                  <p className="text-center text-muted-foreground py-4">Geen bench consultants gevonden</p>
-                )}
-              </>
+        )}
+        {meta.selectedBench && (
+          <div className="bg-muted/50 rounded-lg p-3">
+            <span className="text-xs text-muted-foreground">Consultant</span>
+            <div className="text-sm font-medium">{meta.selectedBench.first_name} {meta.selectedBench.last_name}</div>
+            {!meta.preselectedBenchConsultantId && (
+              <Button variant="ghost" size="sm" className="mt-1 h-6 text-xs px-2" onClick={() => actions.setStep(2)}>
+                Wijzigen
+              </Button>
             )}
           </div>
+        )}
+      </div>
+
+      {/* Form */}
+      <div className="grid grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <Label>Rol</Label>
+          <Select value={state.role} onValueChange={(v) => actions.setRole(v ?? '')}>
+            <SelectTrigger>
+              {meta.roles.find((r) => r.value === state.role)?.label ?? 'Selecteer...'}
+            </SelectTrigger>
+            <SelectContent>
+              {meta.roles.map((r) => (
+                <SelectItem key={r.value} value={r.value}>{r.label}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
-      )}
-
-      {/* Step 3: Assignment details */}
-      {step === 3 && (
-        <div className="space-y-4">
-          {/* Summary cards */}
-          <div className="grid grid-cols-2 gap-3">
-            {selectedAccount && (
-              <div className="bg-muted/50 rounded-lg p-3">
-                <span className="text-xs text-muted-foreground">Account</span>
-                <div className="text-sm font-medium">{selectedAccount.name}</div>
-                {!preselectedAccountId && (
-                  <Button variant="ghost" size="sm" className="mt-1 h-6 text-xs px-2" onClick={() => setStep(1)}>
-                    Wijzigen
-                  </Button>
-                )}
-              </div>
-            )}
-            {selectedBench && (
-              <div className="bg-muted/50 rounded-lg p-3">
-                <span className="text-xs text-muted-foreground">Consultant</span>
-                <div className="text-sm font-medium">{selectedBench.first_name} {selectedBench.last_name}</div>
-                {!preselectedBenchConsultantId && (
-                  <Button variant="ghost" size="sm" className="mt-1 h-6 text-xs px-2" onClick={() => setStep(2)}>
-                    Wijzigen
-                  </Button>
-                )}
-              </div>
-            )}
-          </div>
-
-          {/* Form */}
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label>Rol</Label>
-              <Select value={role} onValueChange={(v) => setRole(v ?? '')}>
-                <SelectTrigger>
-                  {roles.find((r) => r.value === role)?.label ?? 'Selecteer...'}
-                </SelectTrigger>
-                <SelectContent>
-                  {roles.map((r) => (
-                    <SelectItem key={r.value} value={r.value}>{r.label}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <Label>Opzegtermijn (dagen)</Label>
-              <Input
-                type="number"
-                min={0}
-                value={noticePeriod}
-                onChange={(e) => setNoticePeriod(e.target.value)}
-              />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label>Startdatum *</Label>
-              <DatePicker value={startDate} onChange={setStartDate} required />
-            </div>
-            <div className="space-y-2">
-              <Label>Einddatum</Label>
-              <DatePicker value={endDate} onChange={setEndDate} disabled={isIndefinite} />
-            </div>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <input
-              id="wizard_indefinite"
-              type="checkbox"
-              checked={isIndefinite}
-              onChange={(e) => setIsIndefinite(e.target.checked)}
-              className="h-4 w-4 rounded border-input"
-            />
-            <Label htmlFor="wizard_indefinite" className="font-normal">Onbepaalde duur</Label>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label>Uurtarief €/u *</Label>
-              <Input
-                type="number"
-                min={0}
-                step={0.01}
-                value={hourlyRate}
-                onChange={(e) => onHourlyChange(e.target.value)}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label>Dagtarief €/dag</Label>
-              <Input
-                type="number"
-                min={0}
-                step={0.01}
-                value={dailyRate}
-                onChange={(e) => onDailyChange(e.target.value)}
-              />
-            </div>
-          </div>
-
-          {/* Revenue preview */}
-          {hourlyRate && (
-            <div className="bg-muted/50 rounded-lg p-3 text-sm">
-              <div className="text-muted-foreground">Geschatte omzet</div>
-              <div className="text-lg font-bold">
-                {formatEUR(estimatedRevenue)}
-              </div>
-              <div className="text-xs text-muted-foreground">
-                {formatEUR(Number(hourlyRate))}/u × 8u × {werkdagen || 21} werkdagen
-              </div>
-            </div>
-          )}
-
-          <div className="space-y-2">
-            <Label>SoW URL</Label>
-            <Input value={sowUrl} onChange={(e) => setSowUrl(e.target.value)} placeholder="https://..." />
-          </div>
-
-          <div className="space-y-2">
-            <Label>Notities</Label>
-            <Textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={3} />
-          </div>
-        </div>
-      )}
-
-      {/* Footer navigation */}
-      <div className="flex justify-between mt-6 pt-4 border-t">
-        <div>
-          {step > 1 && !(step === 2 && preselectedAccountId) && !(step === 3 && preselectedAccountId && preselectedBenchConsultantId) && (
-            <Button variant="outline" onClick={() => setStep(step - 1)}>
-              <ArrowLeft />
-              Vorige
-            </Button>
-          )}
-        </div>
-        <div className="flex gap-2">
-          <Button variant="outline" onClick={handleClose}>Annuleren</Button>
-          {step === 3 && (
-            <Button
-              onClick={handleSubmit}
-              disabled={loading || !accountId || !benchId || !startDate || !hourlyRate || Number(hourlyRate) <= 0}
-            >
-              <Save />
-              {loading ? 'Verwerken...' : 'Koppelen'}
-            </Button>
-          )}
+        <div className="space-y-2">
+          <Label>Opzegtermijn (dagen)</Label>
+          <Input
+            type="number"
+            min={0}
+            value={state.noticePeriod}
+            onChange={(e) => actions.setNoticePeriod(e.target.value)}
+          />
         </div>
       </div>
+
+      <div className="grid grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <Label>Startdatum *</Label>
+          <DatePicker value={state.startDate} onChange={actions.setStartDate} required />
+        </div>
+        <div className="space-y-2">
+          <Label>Einddatum</Label>
+          <DatePicker value={state.endDate} onChange={actions.setEndDate} disabled={state.isIndefinite} />
+        </div>
+      </div>
+
+      <div className="flex items-center gap-2">
+        <input
+          id="wizard_indefinite"
+          type="checkbox"
+          checked={state.isIndefinite}
+          onChange={(e) => actions.setIsIndefinite(e.target.checked)}
+          className="h-4 w-4 rounded border-input"
+        />
+        <Label htmlFor="wizard_indefinite" className="font-normal">Onbepaalde duur</Label>
+      </div>
+
+      <div className="grid grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <Label>Uurtarief €/u *</Label>
+          <Input
+            type="number"
+            min={0}
+            step={0.01}
+            value={state.hourlyRate}
+            onChange={(e) => actions.onHourlyChange(e.target.value)}
+          />
+        </div>
+        <div className="space-y-2">
+          <Label>Dagtarief €/dag</Label>
+          <Input
+            type="number"
+            min={0}
+            step={0.01}
+            value={state.dailyRate}
+            onChange={(e) => actions.onDailyChange(e.target.value)}
+          />
+        </div>
+      </div>
+
+      {/* Revenue preview */}
+      {state.hourlyRate && (
+        <div className="bg-muted/50 rounded-lg p-3 text-sm">
+          <div className="text-muted-foreground">Geschatte omzet</div>
+          <div className="text-lg font-bold">
+            {formatEUR(meta.estimatedRevenue)}
+          </div>
+          <div className="text-xs text-muted-foreground">
+            {formatEUR(Number(state.hourlyRate))}/u × 8u × {meta.werkdagen || 21} werkdagen
+          </div>
+        </div>
+      )}
+
+      <div className="space-y-2">
+        <Label>SoW URL</Label>
+        <Input value={state.sowUrl} onChange={(e) => actions.setSowUrl(e.target.value)} placeholder="https://..." />
+      </div>
+
+      <div className="space-y-2">
+        <Label>Notities</Label>
+        <Textarea value={state.notes} onChange={(e) => actions.setNotes(e.target.value)} rows={3} />
+      </div>
+    </div>
+  );
+}
+
+/* ─── Footer ──────────────────────────────────────────────────────────── */
+
+function WizardFooter() {
+  const { state, actions, meta } = useWizard();
+
+  const showBack = state.step > 1
+    && !(state.step === 2 && meta.preselectedAccountId)
+    && !(state.step === 3 && meta.preselectedAccountId && meta.preselectedBenchConsultantId);
+
+  return (
+    <div className="flex justify-between mt-6 pt-4 border-t">
+      <div>
+        {showBack && (
+          <Button variant="outline" onClick={() => actions.setStep(state.step - 1)}>
+            <ArrowLeft />
+            Vorige
+          </Button>
+        )}
+      </div>
+      <div className="flex gap-2">
+        <Button variant="outline" onClick={actions.handleClose}>Annuleren</Button>
+        {state.step === 3 && (
+          <Button
+            onClick={actions.handleSubmit}
+            disabled={state.loading || !state.accountId || !state.benchId || !state.startDate || !state.hourlyRate || Number(state.hourlyRate) <= 0}
+          >
+            <Save />
+            {state.loading ? 'Verwerken...' : 'Koppelen'}
+          </Button>
+        )}
+      </div>
+    </div>
+  );
+}
+
+/* ─── Content (assembles steps) ───────────────────────────────────────── */
+
+function WizardContent() {
+  const { state, actions } = useWizard();
+  const currentTitle = `Opdracht koppelen — ${stepTitles[state.step - 1]}`;
+
+  return (
+    <Modal open title={currentTitle} onClose={actions.handleClose} size="extra-wide">
+      <WizardProgressBar />
+      {state.step === 1 && <WizardStep1 />}
+      {state.step === 2 && <WizardStep2 />}
+      {state.step === 3 && <WizardStep3 />}
+      <WizardFooter />
     </Modal>
+  );
+}
+
+/* ─── Export ──────────────────────────────────────────────────────────── */
+
+export function LinkConsultantWizard(props: Props) {
+  if (!props.open) return null;
+
+  return (
+    <WizardProvider {...props}>
+      <WizardContent />
+    </WizardProvider>
   );
 }

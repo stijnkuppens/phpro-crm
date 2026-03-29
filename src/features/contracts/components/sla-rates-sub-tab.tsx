@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { ChevronLeft, ChevronRight, Wrench } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { EmptyState } from '@/components/admin/empty-state';
 import type { SlaRateWithTools } from '../types';
 import { formatEUR } from '@/lib/format';
 
@@ -41,11 +42,7 @@ export function SlaRatesSubTab({ slaRates, hasServiceContract }: Props) {
   const hasAnyData = slaRates.length > 0;
 
   if (!hasAnyData) {
-    return (
-      <div className="py-8 text-center text-muted-foreground">
-        Geen SLA tarieven geconfigureerd.
-      </div>
-    );
+    return <EmptyState icon={Wrench} title="Geen SLA tarieven geconfigureerd." />;
   }
 
   const toolCount = current?.tools?.length ?? 0;

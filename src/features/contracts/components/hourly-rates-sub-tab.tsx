@@ -1,8 +1,9 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight, CreditCard } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { EmptyState } from '@/components/admin/empty-state';
 import type { HourlyRate } from '../types';
 import { formatEUR } from '@/lib/format';
 
@@ -28,11 +29,7 @@ export function HourlyRatesSubTab({ hourlyRates }: Props) {
   }, [hourlyRates]);
 
   if (roles.length === 0) {
-    return (
-      <div className="py-8 text-center text-muted-foreground">
-        Geen uurtarieven geconfigureerd.
-      </div>
-    );
+    return <EmptyState icon={CreditCard} title="Geen uurtarieven geconfigureerd." />;
   }
 
   return (

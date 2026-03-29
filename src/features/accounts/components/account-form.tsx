@@ -3,12 +3,11 @@
 import { useActionState, useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
-import { Plus, Trash2, X } from 'lucide-react';
+import { Plus, Trash2 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { Badge } from '@/components/ui/badge';
 import {
   Select,
   SelectContent,
@@ -17,6 +16,8 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Avatar } from '@/components/admin/avatar';
+import { RefChipInput } from '@/components/admin/ref-chip-input';
+import { StringChipInput } from '@/components/admin/string-chip-input';
 import { accountFormSchema, type AccountFormValues, type AccountReferenceData, type ReferenceOption } from '../types';
 import { createAccount } from '../actions/create-account';
 import { updateAccount } from '../actions/update-account';
@@ -70,155 +71,242 @@ type Props = {
   formRef?: React.RefObject<HTMLFormElement | null>;
 };
 
-// ── ChipInput component (inline) ────────────────────────────────────────────
+// ── Private sub-components ──────────────────────────────────────────────────
 
-function RefChipInput({
-  selectedIds,
-  onChange,
-  options,
-  placeholder,
+function InternalTeamSection({
+  defaultValues,
+  internalPeople,
+  teams,
 }: {
-  selectedIds: string[];
-  onChange: (ids: string[]) => void;
-  options: ReferenceOption[];
-  placeholder?: string;
+  defaultValues?: Partial<AccountFormValues>;
+  internalPeople?: { id: string; name: string; avatar_url?: string | null }[];
+  teams?: { id: string; name: string }[];
 }) {
-  const [input, setInput] = useState('');
-  const [showSuggestions, setShowSuggestions] = useState(false);
-  const inputRef = useRef<HTMLInputElement>(null);
-
-  const selectedNames = selectedIds.map((id) => options.find((o) => o.id === id)?.name ?? id);
-  const filtered = options.filter(
-    (o) => !selectedIds.includes(o.id) && o.name.toLowerCase().includes(input.toLowerCase()),
-  );
-
-  function add(option: ReferenceOption) {
-    if (!selectedIds.includes(option.id)) {
-      onChange([...selectedIds, option.id]);
-    }
-    setInput('');
-    setShowSuggestions(false);
-    inputRef.current?.focus();
-  }
-
-  function remove(id: string) {
-    onChange(selectedIds.filter((v) => v !== id));
-  }
-
   return (
-    <div className="relative">
-      <div className="flex flex-wrap gap-1.5 mb-1.5">
-        {selectedIds.map((id, i) => (
-          <Badge key={id} variant="secondary" className="gap-1 pr-1">
-            {selectedNames[i]}
-            <button
-              type="button"
-              onClick={() => remove(id)}
-              className="ml-0.5 hover:text-destructive"
-            >
-              <X className="h-3 w-3" />
-            </button>
-          </Badge>
-        ))}
+    <div className="grid grid-cols-2 gap-3">
+      <div className="space-y-1.5">
+        <Label htmlFor="managing_partner">Managing Partner</Label>
+        <Select name="managing_partner" defaultValue={defaultValues?.managing_partner ?? ''}>
+          <SelectTrigger><SelectValue placeholder="Selecteer..." /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="">Geen</SelectItem>
+            {internalPeople?.map((p) => (
+              <SelectItem key={p.id} value={p.name}>
+                <Avatar path={p.avatar_url} fallback={p.name.split(/\s+/).map(w => w[0] ?? '').join('').toUpperCase().slice(0, 2)} size="xs" />
+                {p.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
-      <Input
-        ref={inputRef}
-        value={input}
-        onChange={(e) => {
-          setInput(e.target.value);
-          setShowSuggestions(true);
-        }}
-        onFocus={() => setShowSuggestions(true)}
-        onBlur={() => {
-          setTimeout(() => setShowSuggestions(false), 200);
-        }}
-        onKeyDown={(e) => {
-          if (e.key === 'Enter') {
-            e.preventDefault();
-            if (filtered.length > 0) {
-              add(filtered[0]);
-            }
-          }
-        }}
-        placeholder={placeholder}
-      />
-      {showSuggestions && filtered.length > 0 && (
-        <div className="absolute z-10 mt-1 w-full max-h-40 overflow-y-auto rounded-md border bg-popover p-1 shadow-md">
-          {filtered.map((o) => (
-            <button
-              key={o.id}
-              type="button"
-              className="w-full text-left px-2 py-1 text-sm rounded hover:bg-accent"
-              onMouseDown={(e) => {
-                e.preventDefault();
-                add(o);
-              }}
-            >
-              {o.name}
-            </button>
-          ))}
-        </div>
-      )}
+
+      <div className="space-y-1.5">
+        <Label htmlFor="account_director">Account Director</Label>
+        <Select name="account_director" defaultValue={defaultValues?.account_director ?? ''}>
+          <SelectTrigger><SelectValue placeholder="Selecteer..." /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="">Geen</SelectItem>
+            {internalPeople?.map((p) => (
+              <SelectItem key={p.id} value={p.name}>
+                <Avatar path={p.avatar_url} fallback={p.name.split(/\s+/).map(w => w[0] ?? '').join('').toUpperCase().slice(0, 2)} size="xs" />
+                {p.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
+      <div className="space-y-1.5">
+        <Label htmlFor="project_manager">Project Manager</Label>
+        <Select name="project_manager" defaultValue={defaultValues?.project_manager ?? ''}>
+          <SelectTrigger><SelectValue placeholder="Selecteer..." /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="">Geen</SelectItem>
+            {internalPeople?.map((p) => (
+              <SelectItem key={p.id} value={p.name}>
+                <Avatar path={p.avatar_url} fallback={p.name.split(/\s+/).map(w => w[0] ?? '').join('').toUpperCase().slice(0, 2)} size="xs" />
+                {p.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
+      <div className="space-y-1.5">
+        <Label htmlFor="team">Team</Label>
+        <Select name="team" defaultValue={defaultValues?.team ?? ''}>
+          <SelectTrigger><SelectValue placeholder="Selecteer..." /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="">Geen</SelectItem>
+            {teams?.map((t) => (
+              <SelectItem key={t.id} value={t.name}>{t.name}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
     </div>
   );
 }
 
-// ── StringChipInput (for manual_services which stay text-based) ─────────────
-
-function StringChipInput({
-  values,
-  onChange,
-  placeholder,
+function CompetenceCentersSection({
+  entries,
+  onAdd,
+  onRemove,
+  onUpdate,
+  onToggleService,
+  competenceCenters: ccOptions,
+  ccServices,
 }: {
-  values: string[];
-  onChange: (v: string[]) => void;
-  placeholder?: string;
+  entries: CompetenceCenterEntry[];
+  onAdd: () => void;
+  onRemove: (index: number) => void;
+  onUpdate: (index: number, updates: Partial<CompetenceCenterEntry>) => void;
+  onToggleService: (index: number, serviceId: string) => void;
+  competenceCenters: ReferenceOption[];
+  ccServices: ReferenceOption[];
 }) {
-  const [input, setInput] = useState('');
-  const inputRef = useRef<HTMLInputElement>(null);
-
-  function add(value: string) {
-    if (!values.includes(value)) {
-      onChange([...values, value]);
-    }
-    setInput('');
-    inputRef.current?.focus();
-  }
-
-  function remove(value: string) {
-    onChange(values.filter((v) => v !== value));
-  }
-
   return (
-    <div className="relative">
-      <div className="flex flex-wrap gap-1.5 mb-1.5">
-        {values.map((v) => (
-          <Badge key={v} variant="secondary" className="gap-1 pr-1">
-            {v}
-            <button
-              type="button"
-              onClick={() => remove(v)}
-              className="ml-0.5 hover:text-destructive"
-            >
-              <X className="h-3 w-3" />
-            </button>
-          </Badge>
-        ))}
+    <div className="space-y-2">
+      <div className="flex items-center justify-between">
+        <Label>Andere Competence Centers</Label>
+        <Button type="button" variant="ghost" size="sm" onClick={onAdd}>
+          <Plus className="h-4 w-4 mr-1" /> CC toevoegen
+        </Button>
       </div>
-      <Input
-        ref={inputRef}
-        value={input}
-        onChange={(e) => setInput(e.target.value)}
-        onKeyDown={(e) => {
-          if (e.key === 'Enter') {
-            e.preventDefault();
-            if (input.trim() && !values.includes(input.trim())) {
-              add(input.trim());
-            }
-          }
-        }}
-        placeholder={placeholder}
-      />
+      {entries.map((cc, index) => (
+        <div key={index} className="rounded-lg border bg-card p-3 shadow-sm space-y-2">
+          <div className="flex items-center gap-2">
+            <Select
+              value={cc.competence_center_id || undefined}
+              onValueChange={(v) => {
+                if (!v) return;
+                const found = ccOptions.find((o) => o.id === v);
+                onUpdate(index, {
+                  competence_center_id: v,
+                  competence_center_name: found?.name ?? '',
+                });
+              }}
+            >
+              <SelectTrigger>{cc.competence_center_name || <span className="text-muted-foreground">Selecteer CC...</span>}</SelectTrigger>
+              <SelectContent>
+                {ccOptions.map((o) => (
+                  <SelectItem key={o.id} value={o.id}>{o.name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              onClick={() => onRemove(index)}
+              className="shrink-0"
+            >
+              <Trash2 className="h-4 w-4 text-muted-foreground" />
+            </Button>
+          </div>
+          <div className="flex flex-wrap gap-1.5">
+            {ccServices.map((service) => (
+              <button
+                key={service.id}
+                type="button"
+                onClick={() => onToggleService(index, service.id)}
+                className={`px-2 py-0.5 text-xs rounded-full border transition-colors ${
+                  cc.service_ids.includes(service.id)
+                    ? 'bg-primary text-primary-foreground border-primary'
+                    : 'bg-background text-muted-foreground border-border hover:bg-accent'
+                }`}
+              >
+                {service.name}
+              </button>
+            ))}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function HostingSection({
+  entries,
+  onAdd,
+  onRemove,
+  onUpdate,
+  providers,
+  environments,
+}: {
+  entries: HostingEntry[];
+  onAdd: () => void;
+  onRemove: (index: number) => void;
+  onUpdate: (index: number, updates: Partial<HostingEntry>) => void;
+  providers: ReferenceOption[];
+  environments: ReferenceOption[];
+}) {
+  return (
+    <div className="space-y-2">
+      <div className="flex items-center justify-between">
+        <Label>Hosting</Label>
+        <Button type="button" variant="ghost" size="sm" onClick={onAdd}>
+          <Plus className="h-4 w-4 mr-1" /> Hosting toevoegen
+        </Button>
+      </div>
+      {entries.map((entry, index) => (
+        <div key={index} className="rounded-lg border bg-card p-3 shadow-sm space-y-2">
+          <div className="flex items-center gap-2">
+            <div className="flex-1">
+              <Select
+                value={entry.provider_id || undefined}
+                onValueChange={(v) => {
+                  if (!v) return;
+                  const found = providers.find((o) => o.id === v);
+                  onUpdate(index, { provider_id: v, provider_name: found?.name ?? '' });
+                }}
+              >
+                <SelectTrigger>{entry.provider_name || <span className="text-muted-foreground">Provider...</span>}</SelectTrigger>
+                <SelectContent>
+                  {providers.map((o) => (
+                    <SelectItem key={o.id} value={o.id}>{o.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="w-36">
+              <Select
+                value={entry.environment_id || undefined}
+                onValueChange={(v) => {
+                  const found = environments.find((o) => o.id === v);
+                  onUpdate(index, { environment_id: v ?? '', environment_name: found?.name ?? '' });
+                }}
+              >
+                <SelectTrigger>{entry.environment_name || <span className="text-muted-foreground">Omgeving</span>}</SelectTrigger>
+                <SelectContent>
+                  {environments.map((env) => (
+                    <SelectItem key={env.id} value={env.id}>{env.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              onClick={() => onRemove(index)}
+              className="shrink-0"
+            >
+              <Trash2 className="h-4 w-4 text-muted-foreground" />
+            </Button>
+          </div>
+          <Input
+            value={entry.url}
+            onChange={(e) => onUpdate(index, { url: e.target.value })}
+            placeholder="URL"
+          />
+          <Input
+            value={entry.notes}
+            onChange={(e) => onUpdate(index, { notes: e.target.value })}
+            placeholder="Notitie"
+          />
+        </div>
+      ))}
     </div>
   );
 }
@@ -573,68 +661,11 @@ export function AccountForm({ referenceData, defaultValues, onSuccess, formRef: 
             PHPro Intern
           </h3>
 
-          <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-1.5">
-              <Label htmlFor="managing_partner">Managing Partner</Label>
-              <Select name="managing_partner" defaultValue={defaultValues?.managing_partner ?? ''}>
-                <SelectTrigger><SelectValue placeholder="Selecteer..." /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="">Geen</SelectItem>
-                  {referenceData?.internalPeople.map((p) => (
-                    <SelectItem key={p.id} value={p.name}>
-                      <Avatar path={p.avatar_url} fallback={p.name.split(/\s+/).map(w => w[0] ?? '').join('').toUpperCase().slice(0, 2)} size="xs" />
-                      {p.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-1.5">
-              <Label htmlFor="account_director">Account Director</Label>
-              <Select name="account_director" defaultValue={defaultValues?.account_director ?? ''}>
-                <SelectTrigger><SelectValue placeholder="Selecteer..." /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="">Geen</SelectItem>
-                  {referenceData?.internalPeople.map((p) => (
-                    <SelectItem key={p.id} value={p.name}>
-                      <Avatar path={p.avatar_url} fallback={p.name.split(/\s+/).map(w => w[0] ?? '').join('').toUpperCase().slice(0, 2)} size="xs" />
-                      {p.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-1.5">
-              <Label htmlFor="project_manager">Project Manager</Label>
-              <Select name="project_manager" defaultValue={defaultValues?.project_manager ?? ''}>
-                <SelectTrigger><SelectValue placeholder="Selecteer..." /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="">Geen</SelectItem>
-                  {referenceData?.internalPeople.map((p) => (
-                    <SelectItem key={p.id} value={p.name}>
-                      <Avatar path={p.avatar_url} fallback={p.name.split(/\s+/).map(w => w[0] ?? '').join('').toUpperCase().slice(0, 2)} size="xs" />
-                      {p.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-1.5">
-              <Label htmlFor="team">Team</Label>
-              <Select name="team" defaultValue={defaultValues?.team ?? ''}>
-                <SelectTrigger><SelectValue placeholder="Selecteer..." /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="">Geen</SelectItem>
-                  {referenceData?.teams.map((t) => (
-                    <SelectItem key={t.id} value={t.name}>{t.name}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
+          <InternalTeamSection
+            defaultValues={defaultValues}
+            internalPeople={referenceData?.internalPeople}
+            teams={referenceData?.teams}
+          />
 
           <div className="space-y-1.5">
             <Label htmlFor="phpro_contract">PHPro Contract status</Label>
@@ -692,131 +723,25 @@ export function AccountForm({ referenceData, defaultValues, onSuccess, formRef: 
           </div>
 
           {/* Competence Centers */}
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <Label>Andere Competence Centers</Label>
-              <Button type="button" variant="ghost" size="sm" onClick={addCompetenceCenter}>
-                <Plus className="h-4 w-4 mr-1" /> CC toevoegen
-              </Button>
-            </div>
-            {competenceCenters.map((cc, index) => (
-              <div key={index} className="rounded-lg border bg-card p-3 shadow-sm space-y-2">
-                <div className="flex items-center gap-2">
-                  <Select
-                    value={cc.competence_center_id || undefined}
-                    onValueChange={(v) => {
-                      if (!v) return;
-                      const found = ref.competenceCenters.find((o) => o.id === v);
-                      updateCompetenceCenter(index, {
-                        competence_center_id: v,
-                        competence_center_name: found?.name ?? '',
-                      });
-                    }}
-                  >
-                    <SelectTrigger>{cc.competence_center_name || <span className="text-muted-foreground">Selecteer CC...</span>}</SelectTrigger>
-                    <SelectContent>
-                      {ref.competenceCenters.map((o) => (
-                        <SelectItem key={o.id} value={o.id}>{o.name}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => removeCompetenceCenter(index)}
-                    className="shrink-0"
-                  >
-                    <Trash2 className="h-4 w-4 text-muted-foreground" />
-                  </Button>
-                </div>
-                <div className="flex flex-wrap gap-1.5">
-                  {ref.ccServices.map((service) => (
-                    <button
-                      key={service.id}
-                      type="button"
-                      onClick={() => toggleCCService(index, service.id)}
-                      className={`px-2 py-0.5 text-xs rounded-full border transition-colors ${
-                        cc.service_ids.includes(service.id)
-                          ? 'bg-primary text-primary-foreground border-primary'
-                          : 'bg-background text-muted-foreground border-border hover:bg-accent'
-                      }`}
-                    >
-                      {service.name}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            ))}
-          </div>
+          <CompetenceCentersSection
+            entries={competenceCenters}
+            onAdd={addCompetenceCenter}
+            onRemove={removeCompetenceCenter}
+            onUpdate={updateCompetenceCenter}
+            onToggleService={toggleCCService}
+            competenceCenters={ref.competenceCenters}
+            ccServices={ref.ccServices}
+          />
 
           {/* Hosting */}
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <Label>Hosting</Label>
-              <Button type="button" variant="ghost" size="sm" onClick={addHosting}>
-                <Plus className="h-4 w-4 mr-1" /> Hosting toevoegen
-              </Button>
-            </div>
-            {hosting.map((entry, index) => (
-              <div key={index} className="rounded-lg border bg-card p-3 shadow-sm space-y-2">
-                <div className="flex items-center gap-2">
-                  <div className="flex-1">
-                    <Select
-                      value={entry.provider_id || undefined}
-                      onValueChange={(v) => {
-                        if (!v) return;
-                        const found = ref.hostingProviders.find((o) => o.id === v);
-                        updateHosting(index, { provider_id: v, provider_name: found?.name ?? '' });
-                      }}
-                    >
-                      <SelectTrigger>{entry.provider_name || <span className="text-muted-foreground">Provider...</span>}</SelectTrigger>
-                      <SelectContent>
-                        {ref.hostingProviders.map((o) => (
-                          <SelectItem key={o.id} value={o.id}>{o.name}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="w-36">
-                    <Select
-                      value={entry.environment_id || undefined}
-                      onValueChange={(v) => {
-                        const found = ref.hostingEnvironments.find((o) => o.id === v);
-                        updateHosting(index, { environment_id: v ?? '', environment_name: found?.name ?? '' });
-                      }}
-                    >
-                      <SelectTrigger>{entry.environment_name || <span className="text-muted-foreground">Omgeving</span>}</SelectTrigger>
-                      <SelectContent>
-                        {ref.hostingEnvironments.map((env) => (
-                          <SelectItem key={env.id} value={env.id}>{env.name}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => removeHosting(index)}
-                    className="shrink-0"
-                  >
-                    <Trash2 className="h-4 w-4 text-muted-foreground" />
-                  </Button>
-                </div>
-                <Input
-                  value={entry.url}
-                  onChange={(e) => updateHosting(index, { url: e.target.value })}
-                  placeholder="URL"
-                />
-                <Input
-                  value={entry.notes}
-                  onChange={(e) => updateHosting(index, { notes: e.target.value })}
-                  placeholder="Notitie"
-                />
-              </div>
-            ))}
-          </div>
+          <HostingSection
+            entries={hosting}
+            onAdd={addHosting}
+            onRemove={removeHosting}
+            onUpdate={updateHosting}
+            providers={ref.hostingProviders}
+            environments={ref.hostingEnvironments}
+          />
         </div>
       </div>
     </form>

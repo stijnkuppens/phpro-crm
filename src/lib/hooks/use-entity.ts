@@ -4,6 +4,7 @@ import { useState, useCallback, useRef } from 'react';
 import { createBrowserClient } from '@/lib/supabase/client';
 import { toast } from 'sonner';
 import type { Database } from '@/types/database';
+import { escapeSearch } from '@/lib/utils/escape-search';
 
 type TableName = keyof Database['public']['Tables'];
 
@@ -63,7 +64,7 @@ export function useEntity<T extends Record<string, unknown>>({
       }
 
       if (search?.query) {
-        query = query.ilike(search.column, `%${search.query}%`);
+        query = query.ilike(search.column, `%${escapeSearch(search.query)}%`);
       }
 
       if (orFilter) {
@@ -82,7 +83,7 @@ export function useEntity<T extends Record<string, unknown>>({
 
       const { data: rows, count, error } = await query;
       if (error) {
-        toast.error(`Failed to load ${table}`);
+        toast.error(`Laden mislukt: ${table}`);
       } else {
         const newData = (rows ?? []) as T[];
         setData(newData);
@@ -102,7 +103,7 @@ export function useEntity<T extends Record<string, unknown>>({
         .eq('id', id)
         .single();
       if (error) {
-        toast.error(`Failed to load record`);
+        toast.error(`Record laden mislukt`);
         return null;
       }
       return data as T;
@@ -114,10 +115,10 @@ export function useEntity<T extends Record<string, unknown>>({
     async (values: Partial<T>) => {
       const { error } = await queryTable(table).insert(values);
       if (error) {
-        toast.error(`Failed to create record`);
+        toast.error(`Record aanmaken mislukt`);
         return false;
       }
-      toast.success('Record created');
+      toast.success('Record aangemaakt');
       return true;
     },
     [table],
@@ -127,10 +128,10 @@ export function useEntity<T extends Record<string, unknown>>({
     async (id: string, values: Partial<T>) => {
       const { error } = await queryTable(table).update(values).eq('id', id);
       if (error) {
-        toast.error(`Failed to update record`);
+        toast.error(`Record bijwerken mislukt`);
         return false;
       }
-      toast.success('Record updated');
+      toast.success('Record bijgewerkt');
       return true;
     },
     [table],
@@ -140,10 +141,10 @@ export function useEntity<T extends Record<string, unknown>>({
     async (id: string) => {
       const { error } = await queryTable(table).delete().eq('id', id);
       if (error) {
-        toast.error(`Failed to delete record`);
+        toast.error(`Record verwijderen mislukt`);
         return false;
       }
-      toast.success('Record deleted');
+      toast.success('Record verwijderd');
       return true;
     },
     [table],
@@ -153,10 +154,10 @@ export function useEntity<T extends Record<string, unknown>>({
     async (ids: string[]) => {
       const { error } = await queryTable(table).delete().in('id', ids);
       if (error) {
-        toast.error(`Failed to delete records`);
+        toast.error(`Records verwijderen mislukt`);
         return false;
       }
-      toast.success(`${ids.length} records deleted`);
+      toast.success(`${ids.length} records verwijderd`);
       return true;
     },
     [table],

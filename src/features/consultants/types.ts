@@ -102,3 +102,24 @@ export const languageFormSchema = z.object({
 });
 
 export type LanguageFormValues = z.infer<typeof languageFormSchema>;
+
+// ── Shared badge style maps ────────────────────────────────────────────────
+export const CONSULTANT_PRIORITY_STYLES: Record<string, string> = {
+  High: 'bg-red-100 text-red-800',
+  Medium: 'bg-yellow-100 text-yellow-800',
+  Low: 'bg-gray-100 text-gray-800',
+};
+
+export const CONSULTANT_STATUS_STYLES: Record<ConsultantStatus, string> = {
+  bench: 'bg-orange-100 text-orange-700',
+  actief: 'bg-green-100 text-green-700',
+  stopgezet: 'bg-muted text-muted-foreground',
+};
+
+export const CONSULTANT_STATUS_LABELS: Record<ConsultantStatus, string> = {
+  bench: 'Bench',
+  actief: 'Actief',
+  stopgezet: 'Stopgezet',
+};
+
+export type ConsultantAccount = { id: string; name: string; domain: string | null; type: string | null; city: string | null };

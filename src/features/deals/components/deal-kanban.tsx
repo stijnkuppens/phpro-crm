@@ -5,10 +5,12 @@ import {
   DndContext,
   closestCorners,
   PointerSensor,
+  KeyboardSensor,
   useSensor,
   useSensors,
   type DragEndEvent,
 } from '@dnd-kit/core';
+import { sortableKeyboardCoordinates } from '@dnd-kit/sortable';
 import { useDroppable } from '@dnd-kit/core';
 import { useDraggable } from '@dnd-kit/core';
 import { useRouter } from 'next/navigation';
@@ -54,10 +56,8 @@ function DroppableColumn({
   return (
     <div
       ref={setNodeRef}
-      className={cn('w-72 shrink-0 rounded-lg p-3 transition-colors', isOver && 'ring-2 ring-primary/30')}
-      style={{
-        backgroundColor: isOver ? `${stage.color}15` : '#f9fafb',
-      }}
+      className={cn('w-72 shrink-0 rounded-lg p-3 transition-colors', !isOver && 'bg-muted/50', isOver && 'ring-2 ring-primary/30')}
+      style={isOver ? { backgroundColor: `${stage.color}15` } : undefined}
     >
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
@@ -150,7 +150,10 @@ export function DealKanban({ stages, deals, onRefresh, onCreateDeal }: Props) {
     .filter((s) => !s.is_closed)
     .sort((a, b) => a.sort_order - b.sort_order);
 
-  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }));
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
+  );
 
   async function handleDragEnd(event: DragEndEvent) {
     setIsDragging(false);

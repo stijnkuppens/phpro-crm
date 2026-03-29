@@ -2,6 +2,7 @@ import { cache } from 'react';
 import { createServerClient } from '@/lib/supabase/server';
 import { logger } from '@/lib/logger';
 import type { DealWithRelations, DealFilters } from '../types';
+import { escapeSearch } from '@/lib/utils/escape-search';
 
 type GetDealsParams = {
   filters?: DealFilters;
@@ -39,7 +40,7 @@ export const getDeals = cache(
       query = query.eq('pipeline_id', filters.pipeline_id);
     }
     if (filters?.search) {
-      query = query.ilike('title', `%${filters.search}%`);
+      query = query.ilike('title', `%${escapeSearch(filters.search)}%`);
     }
     if (filters?.owner_id) {
       query = query.eq('owner_id', filters.owner_id);

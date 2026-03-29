@@ -4,15 +4,9 @@ import { Modal } from '@/components/admin/modal';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { SquarePen, Clock, User, Briefcase, Calendar, Mail, FileText, Users, Phone } from 'lucide-react';
+import { SquarePen, Clock, User, Briefcase, Calendar, Mail } from 'lucide-react';
 import type { CommunicationWithDetails } from '../types';
-
-const TYPE_CONFIG: Record<string, { icon: typeof Mail; label: string; bg: string; color: string }> = {
-  email: { icon: Mail, label: 'E-mail', bg: 'bg-blue-50 dark:bg-blue-950', color: 'text-blue-600 dark:text-blue-400' },
-  note: { icon: FileText, label: 'Notitie', bg: 'bg-amber-50 dark:bg-amber-950', color: 'text-amber-600 dark:text-amber-400' },
-  meeting: { icon: Users, label: 'Vergadering', bg: 'bg-green-50 dark:bg-green-950', color: 'text-green-600 dark:text-green-400' },
-  call: { icon: Phone, label: 'Call', bg: 'bg-purple-50 dark:bg-purple-950', color: 'text-purple-600 dark:text-purple-400' },
-};
+import { COMMUNICATION_TYPE_CONFIG } from '../types';
 
 type Props = {
   communication: CommunicationWithDetails;
@@ -30,7 +24,7 @@ function extractContentText(content: unknown): string {
 }
 
 export function CommunicationDetailModal({ communication: comm, onClose, onEdit }: Props) {
-  const config = TYPE_CONFIG[comm.type] ?? TYPE_CONFIG.note;
+  const config = COMMUNICATION_TYPE_CONFIG[comm.type] ?? COMMUNICATION_TYPE_CONFIG.note;
   const Icon = config.icon;
   const contentText = extractContentText(comm.content);
 

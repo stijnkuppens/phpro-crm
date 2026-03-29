@@ -1,5 +1,6 @@
 'use server';
 
+import { revalidatePath } from 'next/cache';
 import { createServerClient } from '@/lib/supabase/server';
 import { createServiceRoleClient } from '@/lib/supabase/admin';
 import { ok, err, type ActionResult } from '@/lib/action-result';
@@ -26,5 +27,6 @@ export async function createNotification(params: {
     return err(error.message);
   }
 
+  revalidatePath('/admin', 'layout');
   return ok();
 }

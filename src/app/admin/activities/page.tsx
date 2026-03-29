@@ -1,13 +1,15 @@
 import { PageHeader } from '@/components/admin/page-header';
 import { getActivities } from '@/features/activities/queries/get-activities';
-import { getActivityFilterOptions } from '@/features/activities/queries/get-activity-filter-options';
+import { getAccounts } from '@/features/accounts/queries/get-accounts';
 import { ActivityList } from '@/features/activities/components/activity-list';
 
 export default async function ActivitiesPage() {
-  const [{ data, count }, filterOptions] = await Promise.all([
+  const [{ data, count }, { data: accountsData }] = await Promise.all([
     getActivities(),
-    getActivityFilterOptions(),
+    getAccounts({ pageSize: 500 }),
   ]);
+
+  const accounts = accountsData.map((a) => ({ id: a.id, name: a.name }));
 
   return (
     <div className="space-y-6">
@@ -18,7 +20,7 @@ export default async function ActivitiesPage() {
           { label: 'Activiteiten' },
         ]}
       />
-      <ActivityList initialData={data} initialCount={count} filterOptions={filterOptions} />
+      <ActivityList initialData={data} initialCount={count} accounts={accounts} />
     </div>
   );
 }

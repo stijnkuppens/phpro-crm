@@ -48,12 +48,12 @@ export function ConfirmDialog({
           <AlertDialogDescription>{description}</AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel>Cancel</AlertDialogCancel>
+          <AlertDialogCancel>Annuleren</AlertDialogCancel>
           <AlertDialogAction
             onClick={onConfirm}
             className={variant === 'destructive' ? 'bg-destructive text-white hover:bg-destructive/90' : ''}
           >
-            Confirm
+            Bevestigen
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

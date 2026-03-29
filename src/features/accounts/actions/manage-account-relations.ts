@@ -3,6 +3,7 @@
 import { createServerClient } from '@/lib/supabase/server';
 import { requirePermission } from '@/lib/require-permission';
 import { logAction } from '@/features/audit/actions/log-action';
+import { revalidatePath } from 'next/cache';
 import { ok, err, type ActionResult } from '@/lib/action-result';
 
 type SubTable =
@@ -40,6 +41,8 @@ export async function addAccountRelation(
     return err(error.message);
   }
 
+  revalidatePath('/admin/accounts');
+  revalidatePath(`/admin/accounts/${accountId}`);
   return ok(data);
 }
 
@@ -64,6 +67,7 @@ export async function updateAccountRelation(
     return err(error.message);
   }
 
+  revalidatePath('/admin/accounts');
   return ok();
 }
 
@@ -87,6 +91,7 @@ export async function deleteAccountRelation(
     return err(error.message);
   }
 
+  revalidatePath('/admin/accounts');
   return ok();
 }
 
@@ -126,5 +131,7 @@ export async function syncAccountFKRelation(
     metadata: { account_id: accountId, count: values.length },
   });
 
+  revalidatePath('/admin/accounts');
+  revalidatePath(`/admin/accounts/${accountId}`);
   return ok();
 }

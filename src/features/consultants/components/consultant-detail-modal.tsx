@@ -4,12 +4,11 @@ import { useCallback, useEffect, useState } from 'react';
 import { Modal } from '@/components/admin/modal';
 import { Avatar } from '@/components/admin/avatar';
 import { createBrowserClient } from '@/lib/supabase/client';
-import { CONSULTANT_SELECT } from '../types';
+import { CONSULTANT_SELECT, CONSULTANT_STATUS_STYLES, CONSULTANT_STATUS_LABELS, CONSULTANT_PRIORITY_STYLES, contractStatusColors, contractStatusDescriptions, type ConsultantWithDetails } from '../types';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from '@/components/ui/tooltip';
 import { ExternalLink } from 'lucide-react';
-import { contractStatusColors, contractStatusDescriptions, type ConsultantWithDetails } from '../types';
 import { getContractStatus, getCurrentRate } from '../utils';
 import { StopConsultantModal } from './stop-consultant-modal';
 import { ExtendConsultantModal } from './extend-consultant-modal';
@@ -23,23 +22,6 @@ type Props = {
   onClose: () => void;
 };
 
-const priorityColors: Record<string, string> = {
-  High: 'bg-red-100 text-red-800',
-  Medium: 'bg-yellow-100 text-yellow-800',
-  Low: 'bg-green-100 text-green-800',
-};
-
-const statusLabels: Record<string, string> = {
-  bench: 'Bench',
-  actief: 'Actief',
-  stopgezet: 'Stopgezet',
-};
-
-const statusColors: Record<string, string> = {
-  bench: 'bg-blue-100 text-blue-800',
-  actief: 'bg-green-100 text-green-800',
-  stopgezet: 'bg-gray-300 text-gray-600',
-};
 
 function BenchDetail({ consultant }: { consultant: ConsultantWithDetails }) {
   return (
@@ -49,7 +31,7 @@ function BenchDetail({ consultant }: { consultant: ConsultantWithDetails }) {
         <div>
           <span className="text-muted-foreground">Prioriteit:</span>{' '}
           {consultant.priority ? (
-            <Badge className={priorityColors[consultant.priority]}>{consultant.priority}</Badge>
+            <Badge className={CONSULTANT_PRIORITY_STYLES[consultant.priority]}>{consultant.priority}</Badge>
           ) : '-'}
         </div>
         <div><span className="text-muted-foreground">Stad:</span> {consultant.city ?? '-'}</div>
@@ -320,6 +302,10 @@ export function ConsultantDetailModal({ consultant: initialConsultant, open, onC
   const [activeModal, setActiveModal] = useState<'stop' | 'extend' | 'rate' | 'contract-attr' | null>(null);
   const initials = `${consultant.first_name[0]}${consultant.last_name[0]}`;
 
+  // Client-side re-fetch is intentional here: after a sub-modal action (stop, extend,
+  // rate change, contract attribution), the modal stays open and needs fresh data.
+  // The parent list component doesn't have a mechanism to push updated data into
+  // an already-open modal, so we re-fetch the single consultant directly.
   const refresh = useCallback(async () => {
     const supabase = createBrowserClient();
     const { data } = await supabase
@@ -345,7 +331,7 @@ export function ConsultantDetailModal({ consultant: initialConsultant, open, onC
             <Avatar path={consultant.avatar_path} fallback={initials} size="md" round />
             <div>
               <div className="font-medium">{consultant.first_name} {consultant.last_name}</div>
-              <Badge className={statusColors[consultant.status]}>{statusLabels[consultant.status]}</Badge>
+              <Badge className={CONSULTANT_STATUS_STYLES[consultant.status]}>{CONSULTANT_STATUS_LABELS[consultant.status]}</Badge>
             </div>
           </div>
 

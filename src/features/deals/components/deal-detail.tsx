@@ -13,14 +13,14 @@ import { EmptyState } from '@/components/admin/empty-state';
 import { ConfirmDialog } from '@/components/admin/confirm-dialog';
 import {
   CheckCircle2, Pencil, Building2, User, Calendar, TrendingUp, Sparkles,
-  ClipboardList, Plus, Check, Trash2, ChevronDown, ChevronUp, RotateCcw,
+  ClipboardList, Plus, Check, Trash2, RotateCcw,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { formatEUR } from '@/lib/format';
 import type { ActivityWithRelations } from '@/features/activities/types';
 import type { TaskWithRelations } from '@/features/tasks/types';
 import type { CommunicationWithDetails } from '@/features/communications/types';
-import { GROUP_ORDER, GROUP_COLORS, ACTIVITY_TYPE_ICONS, getActivityGroup } from '@/features/activities/utils/activity-constants';
+import { ActivityCardList } from '@/features/activities/components/activity-card-list';
 import { ActivityForm } from '@/features/activities/components/activity-form';
 import { TaskForm } from '@/features/tasks/components/task-form';
 import { toggleActivityDone } from '@/features/activities/actions/toggle-activity-done';
@@ -29,17 +29,10 @@ import { toggleTaskDone } from '@/features/tasks/actions/toggle-task-done';
 import { deleteTask } from '@/features/tasks/actions/delete-task';
 import { reopenDeal } from '../actions/reopen-deal';
 import { CloseDealModal } from './close-deal-modal';
-import type { DealWithRelations } from '../types';
+import type { DealWithRelations, Pipeline } from '../types';
 import dynamic from 'next/dynamic';
 
 const DealEditModal = dynamic(() => import('./deal-edit-modal').then(m => ({ default: m.DealEditModal })), { ssr: false });
-
-type Pipeline = {
-  id: string;
-  name: string;
-  type: string;
-  stages: { id: string; name: string; sort_order: number; is_closed: boolean; probability: number }[];
-};
 
 type Props = {
   deal: DealWithRelations;
@@ -51,10 +44,7 @@ type Props = {
   consultant: { id: string; first_name: string; last_name: string; role: string | null; city: string | null } | null;
 };
 
-const ORIGIN_LABEL: Record<string, string> = {
-  rechtstreeks: 'Rechtstreeks',
-  cronos: 'Via Cronos',
-};
+import { ORIGIN_LABELS } from '../constants';
 
 const PRIORITY_COLORS: Record<string, string> = {
   High: 'bg-destructive/15 text-destructive',
@@ -87,7 +77,6 @@ export function DealDetail({ deal, activities, tasks, communications, pipelines,
   const [showEdit, setShowEdit] = useState(false);
   const [activityModal, setActivityModal] = useState<{ mode: 'new' } | { mode: 'edit'; activity: ActivityWithRelations } | null>(null);
   const [taskModal, setTaskModal] = useState<{ mode: 'new' } | { mode: 'edit'; task: TaskWithRelations } | null>(null);
-  const [expandedNotes, setExpandedNotes] = useState<Set<string>>(new Set());
   const [confirmDelete, setConfirmDelete] = useState<{ type: 'activity' | 'task'; id: string } | null>(null);
 
   const contactName = deal.contact
@@ -96,23 +85,6 @@ export function DealDetail({ deal, activities, tasks, communications, pipelines,
 
   const isConsultancy = deal.pipeline?.type === 'consultancy';
   const isClosed = !!deal.closed_at;
-
-  // Group activities
-  const grouped: Record<string, ActivityWithRelations[]> = {};
-  for (const a of activities) {
-    const g = getActivityGroup(a.date, a.is_done ?? false);
-    if (!grouped[g]) grouped[g] = [];
-    grouped[g].push(a);
-  }
-
-  function toggleNote(id: string) {
-    setExpandedNotes((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
-    });
-  }
 
   async function handleToggleActivityDone(id: string) {
     const result = await toggleActivityDone(id);
@@ -242,7 +214,7 @@ export function DealDetail({ deal, activities, tasks, communications, pipelines,
             )}
             <InfoRow icon={Calendar} label="Sluitdatum" value={deal.close_date ? fmtDate(deal.close_date) : null} />
             <InfoRow label="Leadbron" value={deal.lead_source} />
-            <InfoRow label="Herkomst" value={deal.origin ? ORIGIN_LABEL[deal.origin] ?? deal.origin : null} />
+            <InfoRow label="Herkomst" value={deal.origin ? ORIGIN_LABELS[deal.origin] ?? deal.origin : null} />
             {deal.origin === 'cronos' && (
               <>
                 {deal.cronos_cc && <InfoRow label="Cronos CC" value={deal.cronos_cc} />}
@@ -387,151 +359,27 @@ export function DealDetail({ deal, activities, tasks, communications, pipelines,
       {/* Activities + Tasks side by side */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Activities */}
-        <Card>
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <CardTitle className="flex items-center gap-2 text-sm font-semibold">
-                <Sparkles className="h-4 w-4 text-muted-foreground" />
-                Activiteiten
-                {activities.length > 0 && (
-                  <Badge variant="secondary" className="ml-1">{activities.length}</Badge>
-                )}
-              </CardTitle>
-              <Button variant="outline" size="sm" onClick={() => setActivityModal({ mode: 'new' })}>
-                <Plus /> Nieuwe activiteit
-              </Button>
+        <div>
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-2 text-sm font-semibold">
+              <Sparkles className="h-4 w-4 text-muted-foreground" />
+              Activiteiten
+              {activities.length > 0 && (
+                <Badge variant="secondary" className="ml-1">{activities.length}</Badge>
+              )}
             </div>
-          </CardHeader>
-          <CardContent>
-            {activities.length === 0 ? (
-              <EmptyState
-                icon={Sparkles}
-                title="Nog geen activiteiten"
-                action={{ label: 'Eerste activiteit toevoegen', onClick: () => setActivityModal({ mode: 'new' }) }}
-              />
-            ) : (
-              <div className="space-y-6">
-                {GROUP_ORDER.filter((g) => grouped[g] && grouped[g].length > 0).map((group) => (
-                  <div key={group}>
-                    {/* Group label */}
-                    <div className="flex items-center gap-2 mb-3">
-                      <span className={cn('text-xs font-semibold uppercase tracking-wide', GROUP_COLORS[group] ?? 'text-muted-foreground')}>
-                        {group}
-                      </span>
-                      <div className="flex-1 h-px bg-border" />
-                    </div>
-                    {/* Activity items */}
-                    <div className="space-y-3">
-                      {grouped[group].map((a) => {
-                        const Icon = ACTIVITY_TYPE_ICONS[a.type] ?? Sparkles;
-                        const hasNote = a.notes && typeof a.notes === 'string' && a.notes.trim().length > 0;
-                        const expanded = expandedNotes.has(a.id);
-
-                        return (
-                          <div
-                            key={a.id}
-                            className={cn(
-                              'rounded-xl border p-4 transition-all',
-                              a.is_done
-                                ? 'border-border bg-muted/50'
-                                : group === 'Verstreken'
-                                  ? 'border-destructive/30 bg-destructive/5'
-                                  : 'border-primary/20 bg-primary/5',
-                            )}
-                          >
-                            <div className="flex items-start gap-3">
-                              <div className={cn(
-                                'p-1.5 rounded-lg shrink-0 mt-0.5',
-                                a.is_done ? 'bg-muted text-muted-foreground' : 'bg-primary/15 text-primary-action',
-                              )}>
-                                <Icon className="h-3.5 w-3.5" />
-                              </div>
-                              <div className="flex-1 min-w-0">
-                                <div className="flex items-start justify-between gap-2">
-                                  <div>
-                                    <p className={cn(
-                                      'text-sm font-semibold',
-                                      a.is_done ? 'text-muted-foreground line-through' : group === 'Verstreken' ? 'text-destructive' : 'text-foreground',
-                                    )}>
-                                      {a.subject}
-                                    </p>
-                                    <div className="flex items-center gap-2 mt-0.5 flex-wrap">
-                                      <span className={cn(
-                                        'text-xs',
-                                        a.is_done ? 'text-muted-foreground' : group === 'Verstreken' ? 'text-destructive' : 'text-primary-action',
-                                      )}>
-                                        {fmtDate(a.date)}
-                                      </span>
-                                      {a.duration_minutes != null && a.duration_minutes > 0 && (
-                                        <span className="text-xs text-muted-foreground">{a.duration_minutes} min</span>
-                                      )}
-                                      <Badge
-                                        className={cn(
-                                          'text-[10px] py-0 border-0',
-                                          a.is_done ? 'bg-muted text-muted-foreground' : group === 'Verstreken' ? 'bg-destructive/15 text-destructive' : 'bg-primary/15 text-primary-action',
-                                        )}
-                                      >
-                                        {a.type}
-                                      </Badge>
-                                    </div>
-                                  </div>
-                                  {/* Actions */}
-                                  <div className="flex items-center gap-1 shrink-0">
-                                    <button
-                                      title={a.is_done ? 'Heropen' : 'Markeer gedaan'}
-                                      onClick={() => handleToggleActivityDone(a.id)}
-                                      className={cn(
-                                        'p-1.5 rounded-lg transition-colors text-xs',
-                                        a.is_done ? 'text-muted-foreground hover:bg-muted' : 'text-primary-action hover:bg-primary/10',
-                                      )}
-                                    >
-                                      <Check className="h-3.5 w-3.5" />
-                                    </button>
-                                    <button
-                                      title="Bewerken"
-                                      onClick={() => setActivityModal({ mode: 'edit', activity: a })}
-                                      className="p-1.5 rounded-lg text-muted-foreground hover:text-primary-action hover:bg-primary/10 transition-colors"
-                                    >
-                                      <Pencil className="h-3.5 w-3.5" />
-                                    </button>
-                                    <button
-                                      title="Verwijderen"
-                                      onClick={() => handleDeleteActivity(a.id)}
-                                      className="p-1.5 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
-                                    >
-                                      <Trash2 className="h-3.5 w-3.5" />
-                                    </button>
-                                  </div>
-                                </div>
-                                {/* Note toggle */}
-                                {hasNote && (
-                                  <div className="mt-2">
-                                    {expanded ? (
-                                      <>
-                                        <p className="text-sm text-muted-foreground whitespace-pre-wrap">{a.notes as string}</p>
-                                        <button onClick={() => toggleNote(a.id)} className="flex items-center gap-1 text-xs text-primary-action hover:underline mt-1">
-                                          <ChevronUp className="h-3 w-3" /> Minder tonen
-                                        </button>
-                                      </>
-                                    ) : (
-                                      <button onClick={() => toggleNote(a.id)} className="flex items-center gap-1 text-xs text-primary-action hover:underline">
-                                        <ChevronDown className="h-3 w-3" /> Notitie tonen
-                                      </button>
-                                    )}
-                                  </div>
-                                )}
-                              </div>
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </CardContent>
-        </Card>
+            <Button variant="outline" size="sm" onClick={() => setActivityModal({ mode: 'new' })}>
+              <Plus /> Nieuwe activiteit
+            </Button>
+          </div>
+          <ActivityCardList
+            activities={activities}
+            onToggleDone={(act) => handleToggleActivityDone(act.id)}
+            onDelete={(id) => handleDeleteActivity(id)}
+            emptyIcon={Sparkles}
+            emptyAction={{ label: 'Eerste activiteit toevoegen', onClick: () => setActivityModal({ mode: 'new' }) }}
+          />
+        </div>
 
         {/* Tasks */}
         <Card>

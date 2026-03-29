@@ -174,7 +174,7 @@ export function AccountOverviewTab({ account, contract, contacts, internalPeople
                 <div key={h.id} className="flex items-center gap-4 text-sm">
                   <span className="font-medium">{h.provider.name}</span>
                   <span className="text-muted-foreground">{h.environment?.name}</span>
-                  {h.url && <a href={h.url} target="_blank" rel="noopener" className="text-blue-600 underline text-xs">{h.url}</a>}
+                  {h.url && <a href={h.url} target="_blank" rel="noopener" className="text-primary-action hover:underline text-xs">{h.url}</a>}
                 </div>
               ))}
             </div>

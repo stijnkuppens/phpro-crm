@@ -1,15 +1,14 @@
-'use server';
-
+import { cache } from 'react';
 import { createServerClient } from '@/lib/supabase/server';
 import { requirePermission } from '@/lib/require-permission';
 import { ok, err, type ActionResult } from '@/lib/action-result';
 import type { SimulationResult } from '../types';
 
-export async function simulateIndexation(
+export const simulateIndexation = cache(async (
   accountId: string,
   baseYear: number,
   percentage: number,
-): Promise<ActionResult<SimulationResult>> {
+): Promise<ActionResult<SimulationResult>> => {
   try {
     await requirePermission('indexation.read');
   } catch {
@@ -59,4 +58,4 @@ export async function simulateIndexation(
     : null;
 
   return ok({ rates, sla });
-}
+});

@@ -25,6 +25,7 @@ import {
   updateReferenceItem,
   deleteReferenceItem,
 } from '../actions/manage-reference-items';
+import { updateInternalPersonAvatar } from '../actions/update-internal-person-avatar';
 
 type Props = {
   initialTable: RefTableKey;
@@ -40,6 +41,9 @@ export function ReferenceDataPage({ initialTable, initialData }: Props) {
   const [addValues, setAddValues] = useState<RefItemFormValues>({ name: '', sort_order: 0, is_active: true });
   const [isPending, startTransition] = useTransition();
 
+  // Client-side fetch is intentional for tab switching: the server page passes
+  // initialData for the first tab only. Subsequent tab switches fetch dynamically
+  // because pre-fetching all reference tables would be wasteful.
   async function fetchItems(table: RefTableKey) {
     const supabase = createBrowserClient();
     const columns = table === 'ref_internal_people'
@@ -217,9 +221,11 @@ export function ReferenceDataPage({ initialTable, initialData }: Props) {
                           storagePath={`internal-people/${item.id}`}
                           size="sm"
                           onUploaded={async (path) => {
-                            const supabase = createBrowserClient();
-                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                            await (supabase.from('ref_internal_people') as any).update({ avatar_url: path }).eq('id', item.id);
+                            const result = await updateInternalPersonAvatar(item.id, path);
+                            if (result.error) {
+                              toast.error(typeof result.error === 'string' ? result.error : 'Avatar bijwerken mislukt');
+                              return;
+                            }
                             setItems((prev) => prev.map((i) => i.id === item.id ? { ...i, avatar_url: path } : i));
                           }}
                         />
@@ -267,9 +273,11 @@ export function ReferenceDataPage({ initialTable, initialData }: Props) {
                           storagePath={`internal-people/${item.id}`}
                           size="sm"
                           onUploaded={async (path) => {
-                            const supabase = createBrowserClient();
-                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                            await (supabase.from('ref_internal_people') as any).update({ avatar_url: path }).eq('id', item.id);
+                            const result = await updateInternalPersonAvatar(item.id, path);
+                            if (result.error) {
+                              toast.error(typeof result.error === 'string' ? result.error : 'Avatar bijwerken mislukt');
+                              return;
+                            }
                             setItems((prev) => prev.map((i) => i.id === item.id ? { ...i, avatar_url: path } : i));
                           }}
                         />

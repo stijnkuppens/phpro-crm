@@ -8,18 +8,11 @@ import DataTable from '@/components/admin/data-table';
 import type { FilterOption } from '@/components/admin/data-table-filters';
 import { dealColumns } from '../columns';
 import { deleteDeal } from '../actions/delete-deal';
-import type { DealWithRelations } from '../types';
+import type { DealWithRelations, Pipeline } from '../types';
 import dynamic from 'next/dynamic';
 
 const DealEditModal = dynamic(() => import('./deal-edit-modal').then(m => ({ default: m.DealEditModal })), { ssr: false });
 const CloseDealModal = dynamic(() => import('./close-deal-modal').then(m => ({ default: m.CloseDealModal })), { ssr: false });
-
-type Pipeline = {
-  id: string;
-  name: string;
-  type: string;
-  stages: { id: string; name: string; sort_order: number; is_closed: boolean; probability: number }[];
-};
 
 type Props = {
   deals: DealWithRelations[];
@@ -29,8 +22,8 @@ type Props = {
   onRefresh?: () => void;
   loading: boolean;
   refreshing?: boolean;
-  filters?: Record<string, string | undefined>;
-  onFilterChange?: (filters: Record<string, string | undefined>) => void;
+  filters: Record<string, string | undefined>;
+  onFilterChange: (filters: Record<string, string | undefined>) => void;
   filterOptions?: Record<string, FilterOption[]>;
   pipelines: Pipeline[];
   owners: { id: string; name: string }[];

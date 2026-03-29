@@ -2,6 +2,7 @@ import { cache } from 'react';
 import { createServerClient } from '@/lib/supabase/server';
 import { logger } from '@/lib/logger';
 import type { ActivityWithRelations, ActivityFilters } from '../types';
+import { escapeSearch } from '@/lib/utils/escape-search';
 
 type GetActivitiesParams = {
   filters?: ActivityFilters;
@@ -31,7 +32,7 @@ export const getActivities = cache(
       .range(from, to);
 
     if (filters?.search) {
-      query = query.ilike('subject', `%${filters.search}%`);
+      query = query.ilike('subject', `%${escapeSearch(filters.search)}%`);
     }
     if (filters?.type) {
       query = query.eq('type', filters.type as 'Meeting' | 'Demo' | 'Call' | 'E-mail' | 'Lunch' | 'Event');

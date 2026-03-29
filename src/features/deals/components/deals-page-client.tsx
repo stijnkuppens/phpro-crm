@@ -10,21 +10,11 @@ import { SubNav, type SubNavItem } from '@/components/admin/sub-nav';
 import { dealColumns } from '../columns';
 import { DealKanban } from './deal-kanban';
 import { DealList } from './deal-list';
+import { DEAL_SELECT, ORIGIN_OPTIONS, FORECAST_CATEGORY_OPTIONS, PAGE_SIZE } from '../constants';
 import dynamic from 'next/dynamic';
 
 const DealEditModal = dynamic(() => import('./deal-edit-modal').then(m => ({ default: m.DealEditModal })), { ssr: false });
-import type { DealCard, DealWithRelations } from '../types';
-
-const DEAL_SELECT = `
-  *,
-  account:accounts!account_id(id, name),
-  contact:contacts!contact_id(id, first_name, last_name, title),
-  owner:user_profiles!owner_id(id, full_name),
-  stage:pipeline_stages!stage_id(id, name, color, probability, is_closed, is_won, is_longterm),
-  pipeline:pipelines!pipeline_id(id, name, type)
-`;
-
-const PAGE_SIZE = 50;
+import type { DealCard, DealWithRelations, Pipeline } from '../types';
 
 const VIEW_MODES: SubNavItem[] = [
   { key: 'list', label: 'Deals', icon: List },
@@ -32,36 +22,14 @@ const VIEW_MODES: SubNavItem[] = [
   { key: 'archief', label: 'Archief', icon: Archive },
 ];
 
-const ORIGIN_OPTIONS: FilterOption[] = [
-  { value: 'rechtstreeks', label: 'Direct' },
-  { value: 'cronos', label: 'Cronos' },
-];
-
-type Pipeline = {
-  id: string;
-  name: string;
-  type: string;
-  stages: {
-    id: string;
-    name: string;
-    color: string;
-    sort_order: number;
-    is_closed: boolean;
-    is_won: boolean;
-    is_longterm: boolean;
-    probability: number;
-  }[];
-};
-
 type Props = {
   pipelines: Pipeline[];
   initialDeals: DealWithRelations[];
   initialCount: number;
   owners: { id: string; name: string }[];
-  accountId?: string;
 };
 
-export function DealsPageClient({ pipelines, initialDeals, initialCount, owners, accountId }: Props) {
+export function DealsPageClient({ pipelines, initialDeals, initialCount, owners }: Props) {
   const [viewMode, setViewMode] = useState<'list' | 'kanban' | 'archief'>('list');
   const [filters, setFilters] = useState<Record<string, string | undefined>>({});
   const [page, setPage] = useState(1);
@@ -108,17 +76,13 @@ export function DealsPageClient({ pipelines, initialDeals, initialCount, owners,
       owner_id: ownerOpts,
       lead_source: leadSourceOpts,
       origin: ORIGIN_OPTIONS,
+      forecast_category: FORECAST_CATEGORY_OPTIONS,
     };
   }, [pipelines, data, filters.pipeline_id]);
 
   const load = useCallback(() => {
     const { orFilter, eqFilters: autoFilters } = buildFilterQuery(dealColumns, filters);
     const eqFilters: Record<string, string> = { ...autoFilters };
-
-    // Hard-filter by account when embedded in account page
-    if (accountId) {
-      eqFilters.account_id = accountId;
-    }
 
     // View mode filter: kanban = active only, archief = closed only
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -132,7 +96,7 @@ export function DealsPageClient({ pipelines, initialDeals, initialCount, owners,
     }
 
     fetchList({ page, orFilter, eqFilters, applyFilters });
-  }, [fetchList, page, filters, viewMode, accountId]);
+  }, [fetchList, page, filters, viewMode]);
 
   const handleFilterChange = useCallback(
     (newFilters: Record<string, string | undefined>) => {
@@ -170,33 +134,31 @@ export function DealsPageClient({ pipelines, initialDeals, initialCount, owners,
 
   return (
     <div>
-      {!accountId && (
-        <div className="space-y-6">
-          <PageHeader
-            title="Deals"
-            breadcrumbs={[
-              { label: 'Admin', href: '/admin' },
-              { label: 'Deals' },
-            ]}
-          />
+      <div className="space-y-6">
+        <PageHeader
+          title="Deals"
+          breadcrumbs={[
+            { label: 'Admin', href: '/admin' },
+            { label: 'Deals' },
+          ]}
+        />
 
-          <div className="flex items-center justify-between">
-            <SubNav
-              items={VIEW_MODES}
-              activeKey={viewMode}
-              onSelect={(key) => setViewMode(key as 'list' | 'kanban' | 'archief')}
-            />
-            <div className="flex items-center gap-2">
-              <Button variant="outline" size="sm" onClick={() => setShowQuickDeal(true)}>
-                RFP / Profiel
-              </Button>
-              <Button size="sm" onClick={() => setShowQuickDeal(true)}>
-                <Plus /> Nieuwe deal
-              </Button>
-            </div>
+        <div className="flex items-center justify-between">
+          <SubNav
+            items={VIEW_MODES}
+            activeKey={viewMode}
+            onSelect={(key) => setViewMode(key as 'list' | 'kanban' | 'archief')}
+          />
+          <div className="flex items-center gap-2">
+            <Button variant="outline" size="sm" onClick={() => setShowQuickDeal(true)}>
+              RFP / Profiel
+            </Button>
+            <Button size="sm" onClick={() => setShowQuickDeal(true)}>
+              <Plus /> Nieuwe deal
+            </Button>
           </div>
         </div>
-      )}
+      </div>
 
       {viewMode === 'kanban' && kanbanPipeline ? (
         <DealKanban
@@ -222,7 +184,7 @@ export function DealsPageClient({ pipelines, initialDeals, initialCount, owners,
         />
       )}
 
-      {!accountId && showQuickDeal && (
+      {showQuickDeal && (
         <DealEditModal
           open
           onClose={() => { setShowQuickDeal(false); load(); }}

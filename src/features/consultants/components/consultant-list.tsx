@@ -17,6 +17,7 @@ import { toast } from 'sonner';
 import { Input } from '@/components/ui/input';
 import { StatCard } from '@/components/admin/stat-card';
 import { FilterPill } from '@/components/admin/filter-pill';
+import { ListPageToolbar } from '@/components/admin/list-page-toolbar';
 import { Button } from '@/components/ui/button';
 import DataTable from '@/components/admin/data-table';
 import { useEntity } from '@/lib/hooks/use-entity';
@@ -24,6 +25,7 @@ import { consultantColumns } from '../columns';
 import {
   type ConsultantWithDetails,
   type ConsultantStatus,
+  type ConsultantAccount,
   CONSULTANT_SELECT,
 } from '../types';
 import dynamic from 'next/dynamic';
@@ -46,13 +48,11 @@ type Stats = {
   stoppedCount: number;
 };
 
-type Account = { id: string; name: string; domain: string | null; type: string | null; city: string | null };
-
 type Props = {
   initialData: ConsultantWithDetails[];
   initialCount: number;
   stats: Stats;
-  accounts: Account[];
+  accounts: ConsultantAccount[];
   roles: { value: string; label: string }[];
 };
 
@@ -71,12 +71,16 @@ export function ConsultantListView({ initialData, initialCount, stats, accounts,
   const [search, setSearch] = useState('');
   const [selectedStatuses, setSelectedStatuses] = useState<(ConsultantStatus | 'archived')[]>(['bench', 'actief']);
   const [page, setPage] = useState(1);
-  const [selected, setSelected] = useState<ConsultantWithDetails | null>(null);
-  const [editTarget, setEditTarget] = useState<ConsultantWithDetails | null>(null);
-  const [wizardTarget, setWizardTarget] = useState<ConsultantWithDetails | null>(null);
-  const [stopTarget, setStopTarget] = useState<ConsultantWithDetails | null>(null);
-  const [extendTarget, setExtendTarget] = useState<ConsultantWithDetails | null>(null);
-  const [rateTarget, setRateTarget] = useState<ConsultantWithDetails | null>(null);
+  type ActiveModal =
+    | { type: 'view'; consultant: ConsultantWithDetails }
+    | { type: 'edit'; consultant: ConsultantWithDetails }
+    | { type: 'wizard'; consultant: ConsultantWithDetails }
+    | { type: 'stop'; consultant: ConsultantWithDetails }
+    | { type: 'extend'; consultant: ConsultantWithDetails }
+    | { type: 'rate'; consultant: ConsultantWithDetails }
+    | null;
+
+  const [activeModal, setActiveModal] = useState<ActiveModal>(null);
   const [showNewBench, setShowNewBench] = useState(false);
 
   const { data, total, fetchList } = useEntity<ConsultantWithDetails>({
@@ -180,18 +184,20 @@ export function ConsultantListView({ initialData, initialCount, stats, accounts,
     switch (row.status) {
       case 'bench':
         return [
-          { icon: Link2, label: 'Koppel', onClick: () => setWizardTarget(row) },
-          { icon: SquarePen, label: 'Bewerk', onClick: () => setEditTarget(row) },
+          { icon: Link2, label: 'Koppel', onClick: () => setActiveModal({ type: 'wizard', consultant: row }) },
+          { icon: SquarePen, label: 'Bewerk', onClick: () => setActiveModal({ type: 'edit', consultant: row }) },
           { icon: Archive, label: 'Archiveer', onClick: () => handleArchive(row), variant: 'destructive' as const, confirm: { title: 'Consultant archiveren?', description: 'Deze consultant wordt gearchiveerd en is niet meer zichtbaar in de lijst.' } },
         ];
       case 'actief':
         return [
-          { icon: CalendarPlus, label: 'Verlengen', onClick: () => setExtendTarget(row) },
-          { icon: DollarSign, label: 'Tariefwijziging', onClick: () => setRateTarget(row) },
-          { icon: Square, label: 'Stopzetten', onClick: () => setStopTarget(row), variant: 'destructive' as const },
+          { icon: SquarePen, label: 'Bewerk', onClick: () => setActiveModal({ type: 'edit', consultant: row }) },
+          { icon: CalendarPlus, label: 'Verlengen', onClick: () => setActiveModal({ type: 'extend', consultant: row }) },
+          { icon: DollarSign, label: 'Tariefwijziging', onClick: () => setActiveModal({ type: 'rate', consultant: row }) },
+          { icon: Square, label: 'Stopzetten', onClick: () => setActiveModal({ type: 'stop', consultant: row }), variant: 'destructive' as const },
         ];
       case 'stopgezet':
         return [
+          { icon: SquarePen, label: 'Bewerk', onClick: () => setActiveModal({ type: 'edit', consultant: row }) },
           { icon: RotateCcw, label: 'Naar bench', onClick: () => handleMoveToBench(row) },
         ];
       default:
@@ -201,9 +207,19 @@ export function ConsultantListView({ initialData, initialCount, stats, accounts,
 
   return (
     <>
-      <div className="space-y-4">
+      <div className="space-y-6">
+        {/* Toolbar: status pills + CTA */}
+        <ListPageToolbar
+          actions={
+            <Button size="sm" onClick={() => setShowNewBench(true)}>
+              <Plus />
+              Nieuwe consultant
+            </Button>
+          }
+        />
+
         {/* Stat cards */}
-        <div className="grid grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           <StatCard title="Bench" value={stats.benchCount} subtitle="consultants" />
           <StatCard title="Actief" value={stats.activeCount} subtitle="consultants" />
           <StatCard title="Max maandomzet" value={formatEUR(stats.maxRevenue)} subtitle="op basis van uurtarieven" />
@@ -234,56 +250,51 @@ export function ConsultantListView({ initialData, initialCount, stats, accounts,
                   );
                 })}
               </div>
-              <div className="flex-1" />
-              <Button size="sm" onClick={() => setShowNewBench(true)}>
-                <Plus />
-                Nieuwe consultant
-              </Button>
             </div>
           }
           columns={consultantColumns}
           data={data}
-          onRowClick={(row) => setSelected(row)}
+          onRowClick={(row) => setActiveModal({ type: 'view', consultant: row })}
           pagination={{ page, pageSize: PAGE_SIZE, total }}
           onPageChange={setPage}
           rowActions={(row) => getRowActions(row)}
         />
       </div>
 
-      {selected && (
+      {activeModal?.type === 'view' && (
         <ConsultantDetailModal
-          consultant={selected}
-          open={!!selected}
+          consultant={activeModal.consultant}
+          open
           onClose={() => {
-            setSelected(null);
+            setActiveModal(null);
             router.refresh();
           }}
         />
       )}
 
-      {stopTarget && (
+      {activeModal?.type === 'stop' && (
         <StopConsultantModal
-          consultantId={stopTarget.id}
-          open={!!stopTarget}
-          onClose={() => setStopTarget(null)}
+          consultantId={activeModal.consultant.id}
+          open
+          onClose={() => setActiveModal(null)}
           onSuccess={handleRefresh}
         />
       )}
 
-      {extendTarget && (
+      {activeModal?.type === 'extend' && (
         <ExtendConsultantModal
-          consultantId={extendTarget.id}
-          open={!!extendTarget}
-          onClose={() => setExtendTarget(null)}
+          consultantId={activeModal.consultant.id}
+          open
+          onClose={() => setActiveModal(null)}
           onSuccess={handleRefresh}
         />
       )}
 
-      {rateTarget && (
+      {activeModal?.type === 'rate' && (
         <RateChangeModal
-          consultantId={rateTarget.id}
-          open={!!rateTarget}
-          onClose={() => setRateTarget(null)}
+          consultantId={activeModal.consultant.id}
+          open
+          onClose={() => setActiveModal(null)}
           onSuccess={handleRefresh}
         />
       )}
@@ -296,27 +307,27 @@ export function ConsultantListView({ initialData, initialCount, stats, accounts,
         }}
       />
 
-      {editTarget && (
+      {activeModal?.type === 'edit' && (
         <BenchFormModal
-          open={!!editTarget}
+          open
           onClose={() => {
-            setEditTarget(null);
+            setActiveModal(null);
             handleRefresh();
           }}
-          consultant={editTarget}
+          consultant={activeModal.consultant}
         />
       )}
 
-      {wizardTarget && (
+      {activeModal?.type === 'wizard' && (
         <LinkConsultantWizard
-          open={!!wizardTarget}
+          open
           onClose={() => {
-            setWizardTarget(null);
+            setActiveModal(null);
             handleRefresh();
           }}
           accounts={accounts}
           roles={roles}
-          preselectedBenchConsultantId={wizardTarget.id}
+          preselectedBenchConsultantId={activeModal.consultant.id}
         />
       )}
     </>

@@ -53,16 +53,8 @@ type BulkAction = {
   confirm?: { title: string; description: string };
 };
 
-type DataTableProps<T> = {
+type DataTableBaseProps<T> = {
   tableId?: string;
-  /** Custom filter bar (overrides auto-generated filters) */
-  filterBar?: React.ReactNode;
-  /** Auto-generated filters: current filter state keyed by column accessorKey */
-  filters?: Record<string, string | undefined>;
-  /** Auto-generated filters: called when any filter changes */
-  onFilterChange?: (filters: Record<string, string | undefined>) => void;
-  /** Auto-generated filters: dynamic options keyed by column accessorKey */
-  filterOptions?: Record<string, FilterOption[]>;
   columns: ColumnDef<T>[];
   data: T[];
   pagination?: { page: number; pageSize: number; total: number };
@@ -74,6 +66,13 @@ type DataTableProps<T> = {
   loading?: boolean;
   refreshing?: boolean;
 };
+
+type DataTableFilterProps =
+  | { /** Custom filter bar (overrides auto-generated filters) */ filterBar: React.ReactNode; filters?: never; onFilterChange?: never; filterOptions?: never }
+  | { filterBar?: never; /** Auto-generated filters: current filter state keyed by column accessorKey */ filters: Record<string, string | undefined>; /** Called when any filter changes */ onFilterChange: (filters: Record<string, string | undefined>) => void; /** Dynamic options keyed by column accessorKey */ filterOptions?: Record<string, FilterOption[]> }
+  | { filterBar?: never; filters?: never; onFilterChange?: never; filterOptions?: never };
+
+type DataTableProps<T> = DataTableBaseProps<T> & DataTableFilterProps;
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function RowActionButton<T extends Record<string, any>>({ action, row }: { action: RowAction<T>; row: T }) {
@@ -247,7 +246,7 @@ export default function DataTable<T extends Record<string, any>>({
         )}
       </div>
 
-      {(filterBar || (filters && onFilterChange) || tableId) && (
+      {(filterBar || filters || tableId) && (
         <FilterBar>
           <div className="flex items-center gap-3">
             <div className="flex flex-1 flex-wrap items-center gap-3">
@@ -278,20 +277,17 @@ export default function DataTable<T extends Record<string, any>>({
               <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map((header) => (
                   <TableHead key={header.id}>
-                    {header.isPlaceholder ? null : (
-                      <div
-                        className={
-                          header.column.getCanSort()
-                            ? 'flex cursor-pointer select-none items-center gap-1'
-                            : ''
-                        }
+                    {header.isPlaceholder ? null : header.column.getCanSort() ? (
+                      <button
+                        type="button"
+                        className="flex cursor-pointer select-none items-center gap-1 bg-transparent border-0 p-0"
                         onClick={header.column.getToggleSortingHandler()}
                       >
                         {flexRender(header.column.columnDef.header, header.getContext())}
-                        {header.column.getCanSort() && (
-                          <ArrowUpDown className="h-3 w-3" />
-                        )}
-                      </div>
+                        <ArrowUpDown className="h-3 w-3" />
+                      </button>
+                    ) : (
+                      flexRender(header.column.columnDef.header, header.getContext())
                     )}
                   </TableHead>
                 ))}
@@ -356,9 +352,13 @@ export default function DataTable<T extends Record<string, any>>({
                 className={pagination.page <= 1 ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
               />
             </PaginationItem>
-            {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
-              const page = i + 1;
-              return (
+            {(() => {
+              const maxVisible = 5;
+              let startPage = Math.max(1, pagination.page - Math.floor(maxVisible / 2));
+              const endPage = Math.min(totalPages, startPage + maxVisible - 1);
+              startPage = Math.max(1, endPage - maxVisible + 1);
+              const pageNumbers = Array.from({ length: endPage - startPage + 1 }, (_, i) => startPage + i);
+              return pageNumbers.map((page) => (
                 <PaginationItem key={page}>
                   <PaginationLink
                     onClick={() => onPageChange?.(page)}
@@ -368,8 +368,8 @@ export default function DataTable<T extends Record<string, any>>({
                     {page}
                   </PaginationLink>
                 </PaginationItem>
-              );
-            })}
+              ));
+            })()}
             <PaginationItem>
               <PaginationNext
                 onClick={() => onPageChange?.(Math.min(totalPages, pagination.page + 1))}

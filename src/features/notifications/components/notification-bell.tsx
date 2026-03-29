@@ -24,7 +24,9 @@ export function NotificationBell() {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const unreadCount = notifications.filter((n) => !n.read).length;
 
-  // Initial fetch
+  // Client-side fetch + realtime subscription is intentional: the notification bell
+  // lives in the topbar layout and needs live updates via Supabase Realtime. Server
+  // rendering would only show a stale snapshot; client-side is the correct pattern here.
   useEffect(() => {
     if (!user) return;
     let cancelled = false;

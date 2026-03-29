@@ -15,10 +15,7 @@ function getInitials(name: string): string {
     .slice(0, 2);
 }
 
-const ORIGIN_LABEL: Record<string, string> = {
-  rechtstreeks: 'Direct',
-  cronos: 'Cronos',
-};
+import { ORIGIN_LABELS } from './constants';
 
 export const dealColumns: ColumnDef<DealWithRelations>[] = [
   {
@@ -57,7 +54,7 @@ export const dealColumns: ColumnDef<DealWithRelations>[] = [
     header: 'Herkomst',
     cell: ({ row }) => {
       const origin = row.original.origin;
-      return origin ? ORIGIN_LABEL[origin] ?? origin : <span className="text-muted-foreground">–</span>;
+      return origin ? ORIGIN_LABELS[origin] ?? origin : <span className="text-muted-foreground">–</span>;
     },
   },
   {

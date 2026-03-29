@@ -132,3 +132,10 @@ export type AccountFilters = {
   owner_id?: string;
   country?: string;
 };
+
+// ── Shared badge style maps ────────────────────────────────────────────────
+export const ACCOUNT_TYPE_STYLES: Record<string, string> = {
+  Klant: 'bg-green-100 text-green-700',
+  Prospect: 'bg-blue-100 text-blue-700',
+  Partner: 'bg-orange-100 text-orange-700',
+};

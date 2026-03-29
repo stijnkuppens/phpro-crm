@@ -5,16 +5,18 @@ import { useRouter } from 'next/navigation';
 import { SquarePen, Plus, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useEntity } from '@/lib/hooks/use-entity';
+import { deleteCommunication } from '@/features/communications/actions/delete-communication';
 import { Button } from '@/components/ui/button';
 import DataTable from '@/components/admin/data-table';
 import { DataTableFilters, buildFilterQuery } from '@/components/admin/data-table-filters';
 import { CommunicationModal } from '@/features/communications/components/communication-modal';
 import { CommunicationDetailModal } from '@/features/communications/components/communication-detail-modal';
-import { communicationColumns, TYPE_CONFIG } from '@/features/communications/columns';
+import { communicationColumns } from '@/features/communications/columns';
 import type { CommunicationWithDetails } from '@/features/communications/types';
+import { COMMUNICATION_TYPE_CONFIG } from '@/features/communications/types';
 import type { FilterOption } from '@/components/admin/data-table-filters';
 
-type CommType = keyof typeof TYPE_CONFIG;
+type CommType = keyof typeof COMMUNICATION_TYPE_CONFIG;
 
 type Props = {
   accountId: string;
@@ -116,10 +118,9 @@ export function AccountCommunicationsTab({ accountId, initialData, initialCount,
   }, [load, router]);
 
   const handleDelete = async (id: string) => {
-    const supabase = (await import('@/lib/supabase/client')).createBrowserClient();
-    const { error } = await supabase.from('communications').delete().eq('id', id);
-    if (error) {
-      toast.error('Verwijderen mislukt');
+    const result = await deleteCommunication(id);
+    if (result.error) {
+      toast.error(typeof result.error === 'string' ? result.error : 'Verwijderen mislukt');
     } else {
       toast.success('Communicatie verwijderd');
       load();

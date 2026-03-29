@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Check, RotateCcw, Save } from 'lucide-react';
-import { simulateIndexation } from '../actions/simulate-indexation';
+import { simulateIndexation } from '../queries/simulate-indexation';
 import { saveIndexationDraft } from '../actions/save-indexation-draft';
 import { approveIndexation } from '../actions/approve-indexation';
 import type { SimulationResult, IndexationDraftFull, IndexationDraftValues } from '../types';
