@@ -8,92 +8,18 @@
   Every SECURITY DEFINER function includes:
   1. SET search_path = public (prevents search_path hijacking)
   2. Auth guard (checks user role before executing)
+
+  Functions:
+  - sync_account_fk_relation  — generic delete-then-insert for account junction tables
+  - upsert_hourly_rates        — atomic delete-then-insert for hourly_rates by account+year
+  - approve_indexation         — multi-step atomic indexation approval
+  - get_open_deal_value        — weighted sum of open deal values
+  - get_consultant_stats       — bench/active/stopped counts and max revenue
+  - get_distinct_account_countries — distinct country values from accounts
+  - get_account_banner_stats   — consultant/contact/deal/activity counts for account banner
 */
 
--- ── 1. link_consultant_to_account ───────────────────────────────────────────
--- Atomic transition: updates consultant from bench → actief, sets account/deal
--- fields, creates initial rate history entry.
-
-CREATE OR REPLACE FUNCTION public.link_consultant_to_account(
-  p_consultant_id      UUID,
-  p_account_id         UUID,
-  p_role               TEXT    DEFAULT NULL,
-  p_start_date         DATE    DEFAULT NULL,
-  p_end_date           DATE    DEFAULT NULL,
-  p_is_indefinite      BOOLEAN DEFAULT FALSE,
-  p_hourly_rate        NUMERIC DEFAULT 0,
-  p_notice_period_days INTEGER DEFAULT 30,
-  p_sow_url            TEXT    DEFAULT NULL,
-  p_notes              TEXT    DEFAULT NULL
-)
-RETURNS UUID
-LANGUAGE plpgsql
-SECURITY DEFINER
-SET search_path = public
-AS $$
-DECLARE
-  v_role           text;
-  v_consultant     consultants%ROWTYPE;
-  v_account_name   TEXT;
-  v_effective_role TEXT;
-BEGIN
-  -- Auth guard: only admin, sales_manager, and customer_success may call this function
-  SELECT role INTO v_role FROM user_profiles WHERE id = (SELECT auth.uid());
-  IF v_role NOT IN ('admin', 'sales_manager', 'customer_success') THEN
-    RAISE EXCEPTION 'Insufficient permissions';
-  END IF;
-
-  -- 1. Validate hourly rate
-  IF p_hourly_rate IS NULL OR p_hourly_rate <= 0 THEN
-    RAISE EXCEPTION 'Uurtarief moet groter zijn dan 0';
-  END IF;
-
-  -- 2. Fetch consultant (lock row to prevent concurrent linking)
-  SELECT * INTO v_consultant
-  FROM consultants
-  WHERE id = p_consultant_id AND status = 'bench' AND is_archived = false
-  FOR UPDATE;
-
-  IF NOT FOUND THEN
-    RAISE EXCEPTION 'Consultant niet gevonden of niet beschikbaar';
-  END IF;
-
-  -- 3. Fetch account name for denormalized field
-  SELECT name INTO v_account_name
-  FROM accounts
-  WHERE id = p_account_id;
-
-  IF NOT FOUND THEN
-    RAISE EXCEPTION 'Account niet gevonden';
-  END IF;
-
-  -- 4. Determine role: explicit > first bench role > null
-  v_effective_role := COALESCE(p_role, v_consultant.roles[1]);
-
-  -- 5. Update consultant: bench → actief
-  UPDATE consultants SET
-    status             = 'actief',
-    account_id         = p_account_id,
-    role               = v_effective_role,
-    client_name        = v_account_name,
-    start_date         = p_start_date,
-    end_date           = CASE WHEN p_is_indefinite THEN NULL ELSE p_end_date END,
-    is_indefinite      = p_is_indefinite,
-    hourly_rate        = p_hourly_rate,
-    sow_url            = p_sow_url,
-    notice_period_days = p_notice_period_days,
-    notes              = p_notes
-  WHERE id = p_consultant_id;
-
-  -- 6. Create initial rate history entry
-  INSERT INTO consultant_rate_history (consultant_id, date, rate, reason)
-  VALUES (p_consultant_id, p_start_date, p_hourly_rate, 'Initieel tarief');
-
-  RETURN p_consultant_id;
-END;
-$$;
-
--- ── 2. sync_account_fk_relation ─────────────────────────────────────────────
+-- ── 1. sync_account_fk_relation ─────────────────────────────────────────────
 -- Generic delete-then-insert for account junction tables.
 -- Validates table name against an explicit allow-list to prevent SQL injection.
 
@@ -120,9 +46,9 @@ DECLARE
   v_keys  text[];
   v_key   text;
 BEGIN
-  -- Auth guard: only admin and sales_manager may call this function
+  -- Auth guard: admin, sales_manager, and sales_rep may call this function
   SELECT role INTO v_role FROM user_profiles WHERE id = (SELECT auth.uid());
-  IF v_role NOT IN ('admin', 'sales_manager') THEN
+  IF v_role NOT IN ('admin', 'sales_manager', 'sales_rep') THEN
     RAISE EXCEPTION 'Insufficient permissions';
   END IF;
 
@@ -169,7 +95,7 @@ BEGIN
 END;
 $$;
 
--- ── 4. upsert_hourly_rates ─────────────────────────────────────────────────
+-- ── 2. upsert_hourly_rates ─────────────────────────────────────────────────
 -- Atomic delete-then-insert for hourly_rates by account+year.
 
 CREATE OR REPLACE FUNCTION public.upsert_hourly_rates(
@@ -209,7 +135,7 @@ BEGIN
 END;
 $$;
 
--- ── 5. approve_indexation ───────────────────────────────────────────────────
+-- ── 3. approve_indexation ───────────────────────────────────────────────────
 -- Multi-step atomic transaction: validates draft, applies rates, updates SLA,
 -- logs history, finalizes draft, creates notification.
 
@@ -331,7 +257,7 @@ BEGIN
 END;
 $$;
 
--- ── 6. get_open_deal_value ──────────────────────────────────────────────────
+-- ── 4. get_open_deal_value ──────────────────────────────────────────────────
 -- Returns the weighted sum of open deal values (amount * probability).
 -- NOT security definer — reads through RLS.
 
@@ -345,7 +271,7 @@ AS $$
   FROM deals WHERE closed_at IS NULL;
 $$;
 
--- ── 7. get_consultant_stats ─────────────────────────────────────────────────
+-- ── 5. get_consultant_stats ─────────────────────────────────────────────────
 -- Returns bench/active/stopped counts and max potential monthly revenue.
 
 CREATE OR REPLACE FUNCTION public.get_consultant_stats()
@@ -368,7 +294,7 @@ AS $$
   WHERE is_archived = false;
 $$;
 
--- ── 8. get_distinct_account_countries ────────────────────────────────────────
+-- ── 6. get_distinct_account_countries ────────────────────────────────────────
 -- Returns distinct non-null country values from accounts table.
 
 CREATE OR REPLACE FUNCTION public.get_distinct_account_countries()
@@ -383,7 +309,7 @@ AS $$
   ORDER BY a.country;
 $$;
 
--- ── 9. get_account_banner_stats ─────────────────────────────────────────────
+-- ── 7. get_account_banner_stats ─────────────────────────────────────────────
 -- Returns consultant/contact/deal/activity counts, pipeline value, and monthly
 -- revenue for the account detail page banner.
 
@@ -420,7 +346,6 @@ $$;
 
 -- ── Grants ──────────────────────────────────────────────────────────────────
 
-GRANT EXECUTE ON FUNCTION public.link_consultant_to_account TO authenticated;
 GRANT EXECUTE ON FUNCTION public.sync_account_fk_relation(uuid, text, jsonb) TO authenticated;
 GRANT EXECUTE ON FUNCTION public.upsert_hourly_rates(UUID, INTEGER, JSONB) TO authenticated;
 GRANT EXECUTE ON FUNCTION public.approve_indexation(UUID, UUID) TO authenticated;

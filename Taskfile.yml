@@ -3,7 +3,7 @@ version: "3"
 dotenv: ['.env']
 
 vars:
-  DB_URL: "postgresql://postgres.{{.POOLER_TENANT_ID}}:{{.POSTGRES_PASSWORD}}@localhost:{{.POOLER_SESSION_PORT}}/postgres"
+  DB_URL: "postgresql://postgres:{{.POSTGRES_PASSWORD}}@localhost:54320/postgres"
   DB_CONTAINER: supabase-db
 
 tasks:
@@ -60,8 +60,10 @@ tasks:
 
   db:migrate:
     desc: "Apply pending migrations to the database"
+    env:
+      PGSSLMODE: disable
     cmds:
-      - npx supabase db push --db-url "{{.DB_URL}}"
+      - npx supabase db push --include-all --db-url "{{.DB_URL}}"
 
   db:migrate:dry:
     desc: "Dry-run migrations (show what would be applied)"
@@ -81,7 +83,9 @@ tasks:
   db:reset:
     desc: "Drop and recreate database, re-run init scripts"
     cmds:
-      - docker compose down -v
+      - docker compose down -v --remove-orphans
+      - rm -rf docker/volumes/db/data
+      - mkdir -p docker/volumes/db/data
       - docker compose up -d
       - echo "Waiting for DB to be healthy..."
       - sleep 10

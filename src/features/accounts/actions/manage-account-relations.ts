@@ -37,7 +37,6 @@ export async function addAccountRelation(
   const insertValues = table === 'account_cc_services'
     ? safe
     : { ...safe, account_id: accountId };
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { data, error } = await (supabase.from(table) as any)
     .insert(insertValues)
     .select('id')
@@ -68,7 +67,6 @@ export async function updateAccountRelation(
 
   const safe = sanitizeValues(table, values);
   const supabase = await createServerClient();
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { error } = await (supabase.from(table) as any)
     .update(safe)
     .eq('id', id);
@@ -95,7 +93,6 @@ export async function deleteAccountRelation(
   if (!parsedId.success) return err('Ongeldig ID');
 
   const supabase = await createServerClient();
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { error } = await (supabase.from(table) as any)
     .delete()
     .eq('id', id);

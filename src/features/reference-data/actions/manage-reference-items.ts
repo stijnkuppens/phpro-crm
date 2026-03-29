@@ -33,7 +33,6 @@ export async function createReferenceItem(
   if (!parsed.success) return err(z.flattenError(parsed.error).fieldErrors);
 
   const supabase = await createServerClient();
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { data, error } = await (supabase.from(table) as any)
     .insert(toDbRow(parsed.data))
     .select('id')
@@ -62,7 +61,6 @@ export async function updateReferenceItem(
   if (!parsed.success) return err(z.flattenError(parsed.error).fieldErrors);
 
   const supabase = await createServerClient();
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { error } = await (supabase.from(table) as any)
     .update(toDbRow(parsed.data))
     .eq('id', id);
@@ -86,7 +84,6 @@ export async function deleteReferenceItem(
   if (!isValidTable(table)) return err('Invalid table');
 
   const supabase = await createServerClient();
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { error } = await (supabase.from(table) as any)
     .delete()
     .eq('id', id);

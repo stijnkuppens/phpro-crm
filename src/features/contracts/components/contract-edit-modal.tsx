@@ -2,7 +2,7 @@
 
 import { useActionState, useState } from 'react';
 import { toast } from 'sonner';
-import { Modal } from '@/components/admin/modal';
+import { Modal, ModalFooter } from '@/components/admin/modal';
 import { Input } from '@/components/ui/input';
 import { DatePicker } from '@/components/ui/date-picker';
 import { Label } from '@/components/ui/label';
@@ -201,10 +201,10 @@ export function ContractEditModal({ accountId, contract, indexationConfig, open,
           <Input name="purchase_orders_url" defaultValue={contract?.purchase_orders_url ?? ''} placeholder="https://confluence.phpro.be/..." />
         </div>
 
-        <div className="flex justify-end gap-2 pt-2">
+        <ModalFooter>
           <Button type="button" variant="outline" onClick={onClose}>Annuleer</Button>
           <SubmitButton icon={<Save />}>Opslaan</SubmitButton>
-        </div>
+        </ModalFooter>
       </form>
     </Modal>
   );

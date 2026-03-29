@@ -2,6 +2,7 @@
 
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
+import { useQueryState, parseAsInteger } from 'nuqs';
 import { Plus, Search, Activity as ActivityIcon } from 'lucide-react';
 import { toast } from 'sonner';
 import { useEntity } from '@/lib/hooks/use-entity';
@@ -39,7 +40,8 @@ const ACTIVITY_SELECT = `
   *,
   account:accounts!account_id(id, name),
   deal:deals!deal_id(id, title),
-  owner:user_profiles!owner_id(id, full_name)
+  owner:user_profiles!owner_id(id, full_name),
+  assignee:user_profiles!assigned_to(id, full_name)
 `;
 
 type Props = {
@@ -52,9 +54,9 @@ export function ActivityList({ initialData, initialCount, accounts = [] }: Props
   const router = useRouter();
   const [modalOpen, setModalOpen] = useState(false);
   const [editTarget, setEditTarget] = useState<ActivityWithRelations | null>(null);
-  const [search, setSearch] = useState('');
-  const [statusFilter, setStatusFilter] = useState('all');
-  const [page, setPage] = useState(1);
+  const [search, setSearch] = useQueryState('q', { defaultValue: '' });
+  const [statusFilter, setStatusFilter] = useQueryState('status', { defaultValue: 'all' });
+  const [page, setPage] = useQueryState('page', parseAsInteger.withDefault(1));
   const isInitialMount = useRef(true);
 
   const { data, total, fetchList } = useEntity<ActivityWithRelations>({
@@ -88,10 +90,6 @@ export function ActivityList({ initialData, initialCount, accounts = [] }: Props
     }
     load();
   }, [load]);
-
-  useEffect(() => {
-    setPage(1);
-  }, [search, statusFilter]);
 
   async function handleToggleDone(activity: ActivityWithRelations) {
     const values: ActivityFormValues = {
@@ -144,8 +142,8 @@ export function ActivityList({ initialData, initialCount, accounts = [] }: Props
                 <Input
                   placeholder="Zoek activiteiten..."
                   value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  className="w-48 pl-9"
+                  onChange={(e) => { setSearch(e.target.value); setPage(1); }}
+                  className="w-full sm:w-48 pl-9"
                 />
               </div>
             </div>
@@ -155,7 +153,7 @@ export function ActivityList({ initialData, initialCount, accounts = [] }: Props
                   key={pill.value}
                   label={pill.label}
                   active={statusFilter === pill.value}
-                  onClick={() => setStatusFilter(pill.value)}
+                  onClick={() => { setStatusFilter(pill.value); setPage(1); }}
                 />
               ))}
             </div>
@@ -239,6 +237,8 @@ export function ActivityList({ initialData, initialCount, accounts = [] }: Props
               deal_id: editTarget.deal_id,
               notes: editTarget.notes,
               is_done: editTarget.is_done ?? false,
+              priority: editTarget.priority as ActivityFormValues['priority'],
+              assigned_to: editTarget.assigned_to,
             }}
             accounts={accounts}
             onSuccess={() => {

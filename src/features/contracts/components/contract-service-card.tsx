@@ -10,22 +10,18 @@ import type { Contract } from '@/features/contracts/types';
 
 type Props = {
   hasService: boolean;
-  setHasService: (v: boolean) => void;
   serviceUrl: string;
-  setServiceUrl: (v: string) => void;
   serviceDoc: string;
-  setServiceDoc: (v: string) => void;
+  onChange: (updates: { hasService?: boolean; serviceUrl?: string; serviceDoc?: string }) => void;
   contract: Contract | null;
   accountId: string;
 };
 
 export function ContractServiceCard({
   hasService,
-  setHasService,
   serviceUrl,
-  setServiceUrl,
   serviceDoc,
-  setServiceDoc,
+  onChange,
   contract,
   accountId,
 }: Props) {
@@ -34,7 +30,7 @@ export function ContractServiceCard({
       <CardContent className="p-5 space-y-4">
         <div className="flex items-center justify-between">
           <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Dienstencontract (SLA)</h2>
-          <Switch checked={hasService} onCheckedChange={setHasService} />
+          <Switch checked={hasService} onCheckedChange={(v) => onChange({ hasService: v })} />
         </div>
         {hasService && (
           <div className="space-y-4">
@@ -50,13 +46,13 @@ export function ContractServiceCard({
             </div>
             <div className="space-y-1.5">
               <Label>Document uploaden</Label>
-              <PdfUploadField value={serviceDoc} onChange={setServiceDoc} folder={`contracts/${accountId}`} />
+              <PdfUploadField value={serviceDoc} onChange={(v) => onChange({ serviceDoc: v })} folder={`contracts/${accountId}`} />
             </div>
             <div className="space-y-1.5">
               <Label>Link naar document (URL)</Label>
               <Input
                 value={serviceUrl}
-                onChange={(e) => setServiceUrl(e.target.value)}
+                onChange={(e) => onChange({ serviceUrl: e.target.value })}
                 placeholder="https://confluence.phpro.be/..."
               />
             </div>

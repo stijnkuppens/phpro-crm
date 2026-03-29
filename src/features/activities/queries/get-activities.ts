@@ -26,7 +26,8 @@ export const getActivities = cache(
         *,
         account:accounts!account_id(id, name),
         deal:deals!deal_id(id, title),
-        owner:user_profiles!owner_id(id, full_name)
+        owner:user_profiles!owner_id(id, full_name),
+        assignee:user_profiles!assigned_to(id, full_name)
       `, { count: 'exact' })
       .order('date', { ascending: false })
       .range(from, to);

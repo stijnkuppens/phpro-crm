@@ -23,8 +23,7 @@ export const getDealsByPipeline = cache(
       return [];
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return (data ?? []).map((d: any) => ({
+    return (data ?? []).map((d) => ({
       id: d.id,
       title: d.title,
       amount: Number(d.amount ?? 0),

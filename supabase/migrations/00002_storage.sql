@@ -20,10 +20,16 @@ CREATE POLICY avatars_select ON storage.objects
   FOR SELECT TO authenticated
   USING (bucket_id = 'avatars');
 
--- Authenticated users can upload avatars
+-- Authenticated users can upload avatars (only under accounts/ or contacts/ prefixes)
 CREATE POLICY avatars_insert ON storage.objects
   FOR INSERT TO authenticated
-  WITH CHECK (bucket_id = 'avatars');
+  WITH CHECK (
+    bucket_id = 'avatars'
+    AND (
+      (storage.foldername(name))[1] = 'accounts'
+      OR (storage.foldername(name))[1] = 'contacts'
+    )
+  );
 
 -- Authenticated users can update their own avatars (uid in path)
 CREATE POLICY avatars_update ON storage.objects
@@ -43,10 +49,16 @@ CREATE POLICY documents_select ON storage.objects
   FOR SELECT TO authenticated
   USING (bucket_id = 'documents');
 
--- Authenticated users can upload documents
+-- Authenticated users can upload documents (only under accounts/ or contacts/ prefixes)
 CREATE POLICY documents_insert ON storage.objects
   FOR INSERT TO authenticated
-  WITH CHECK (bucket_id = 'documents');
+  WITH CHECK (
+    bucket_id = 'documents'
+    AND (
+      (storage.foldername(name))[1] = 'accounts'
+      OR (storage.foldername(name))[1] = 'contacts'
+    )
+  );
 
 -- Authenticated users can update their own documents (uid in path)
 CREATE POLICY documents_update ON storage.objects

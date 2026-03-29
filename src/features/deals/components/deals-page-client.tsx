@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useCallback, useEffect, useMemo, useRef } from 'react';
+import { useQueryState, parseAsInteger } from 'nuqs';
 import { Button } from '@/components/ui/button';
 import { LayoutGrid, List, Archive, Plus } from 'lucide-react';
 import { useEntity } from '@/lib/hooks/use-entity';
@@ -30,9 +31,9 @@ type Props = {
 };
 
 export function DealsPageClient({ pipelines, initialDeals, initialCount, owners }: Props) {
-  const [viewMode, setViewMode] = useState<'list' | 'kanban' | 'archief'>('list');
+  const [viewMode, setViewMode] = useQueryState('view', { defaultValue: 'list' });
   const [filters, setFilters] = useState<Record<string, string | undefined>>({});
-  const [page, setPage] = useState(1);
+  const [page, setPage] = useQueryState('page', parseAsInteger.withDefault(1));
   const [showQuickDeal, setShowQuickDeal] = useState(false);
   const [kanbanCreateStageId, setKanbanCreateStageId] = useState<string | null>(null);
   const isInitialMount = useRef(true);
@@ -85,13 +86,10 @@ export function DealsPageClient({ pipelines, initialDeals, initialCount, owners 
     const eqFilters: Record<string, string> = { ...autoFilters };
 
     // View mode filter: kanban = active only, archief = closed only
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let applyFilters: ((query: any) => any) | undefined;
     if (viewMode === 'kanban') {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       applyFilters = (q: any) => q.is('closed_at', null);
     } else if (viewMode === 'archief') {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       applyFilters = (q: any) => q.not('closed_at', 'is', null);
     }
 
@@ -109,10 +107,10 @@ export function DealsPageClient({ pipelines, initialDeals, initialCount, owners 
   useEffect(() => {
     if (isInitialMount.current) {
       isInitialMount.current = false;
-      if (initialDeals && page === 1) return;
+      return;
     }
     load();
-  }, [load, initialDeals, page, filters, viewMode]);
+  }, [load]);
 
   // For kanban: use first pipeline or the filtered one
   const kanbanPipelineId = filters.pipeline_id || pipelines[0]?.id;
@@ -133,31 +131,24 @@ export function DealsPageClient({ pipelines, initialDeals, initialCount, owners 
   })), [data]);
 
   return (
-    <div>
-      <div className="space-y-6">
-        <PageHeader
-          title="Deals"
-          breadcrumbs={[
-            { label: 'Admin', href: '/admin' },
-            { label: 'Deals' },
-          ]}
-        />
+    <div className="space-y-6">
+      <PageHeader
+        title="Deals"
+        breadcrumbs={[
+          { label: 'Admin', href: '/admin' },
+          { label: 'Deals' },
+        ]}
+      />
 
-        <div className="flex items-center justify-between">
-          <SubNav
-            items={VIEW_MODES}
-            activeKey={viewMode}
-            onSelect={(key) => setViewMode(key as 'list' | 'kanban' | 'archief')}
-          />
-          <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" onClick={() => setShowQuickDeal(true)}>
-              RFP / Profiel
-            </Button>
-            <Button size="sm" onClick={() => setShowQuickDeal(true)}>
-              <Plus /> Nieuwe deal
-            </Button>
-          </div>
-        </div>
+      <div className="flex items-center justify-between">
+        <SubNav
+          items={VIEW_MODES}
+          activeKey={viewMode}
+          onSelect={(key) => { setViewMode(key); setPage(1); }}
+        />
+        <Button size="sm" onClick={() => setShowQuickDeal(true)}>
+          <Plus /> Nieuwe deal
+        </Button>
       </div>
 
       {viewMode === 'kanban' && kanbanPipeline ? (

@@ -33,6 +33,9 @@ CREATE TRIGGER set_contacts_updated_at
 
 CREATE INDEX idx_contacts_account ON public.contacts(account_id);
 CREATE INDEX idx_contacts_name ON public.contacts(last_name, first_name);
+CREATE INDEX idx_contacts_first_name_trgm ON contacts USING gin (first_name gin_trgm_ops);
+CREATE INDEX idx_contacts_last_name_trgm ON contacts USING gin (last_name gin_trgm_ops);
+CREATE INDEX idx_contacts_email_trgm ON contacts USING gin (email gin_trgm_ops);
 
 ALTER TABLE public.contacts ENABLE ROW LEVEL SECURITY;
 
@@ -42,12 +45,12 @@ CREATE POLICY contacts_select ON public.contacts
 
 CREATE POLICY contacts_insert ON public.contacts
   FOR INSERT TO authenticated
-  WITH CHECK ((SELECT public.get_user_role()) IN ('admin', 'sales_manager'));
+  WITH CHECK ((SELECT public.get_user_role()) IN ('admin', 'sales_manager', 'sales_rep'));
 
 CREATE POLICY contacts_update ON public.contacts
   FOR UPDATE TO authenticated
-  USING ((SELECT public.get_user_role()) IN ('admin', 'sales_manager'))
-  WITH CHECK ((SELECT public.get_user_role()) IN ('admin', 'sales_manager'));
+  USING ((SELECT public.get_user_role()) IN ('admin', 'sales_manager', 'sales_rep'))
+  WITH CHECK ((SELECT public.get_user_role()) IN ('admin', 'sales_manager', 'sales_rep'));
 
 CREATE POLICY contacts_delete ON public.contacts
   FOR DELETE TO authenticated
@@ -92,12 +95,12 @@ CREATE POLICY contact_personal_info_select ON public.contact_personal_info
 
 CREATE POLICY contact_personal_info_insert ON public.contact_personal_info
   FOR INSERT TO authenticated
-  WITH CHECK ((SELECT public.get_user_role()) IN ('admin', 'sales_manager'));
+  WITH CHECK ((SELECT public.get_user_role()) IN ('admin', 'sales_manager', 'sales_rep'));
 
 CREATE POLICY contact_personal_info_update ON public.contact_personal_info
   FOR UPDATE TO authenticated
-  USING ((SELECT public.get_user_role()) IN ('admin', 'sales_manager'))
-  WITH CHECK ((SELECT public.get_user_role()) IN ('admin', 'sales_manager'));
+  USING ((SELECT public.get_user_role()) IN ('admin', 'sales_manager', 'sales_rep'))
+  WITH CHECK ((SELECT public.get_user_role()) IN ('admin', 'sales_manager', 'sales_rep'));
 
 CREATE POLICY contact_personal_info_delete ON public.contact_personal_info
   FOR DELETE TO authenticated
@@ -119,7 +122,7 @@ CREATE TABLE public.communications (
   duration_minutes int,
   content          jsonb,
   is_done          bool NOT NULL DEFAULT false,
-  owner_id         uuid REFERENCES auth.users(id) ON DELETE SET NULL,
+  owner_id         uuid REFERENCES user_profiles(id) ON DELETE SET NULL,
   created_at       timestamptz NOT NULL DEFAULT now(),
   updated_at       timestamptz NOT NULL DEFAULT now()
 );
@@ -141,16 +144,16 @@ CREATE POLICY communications_select ON public.communications
 
 CREATE POLICY communications_insert ON public.communications
   FOR INSERT TO authenticated
-  WITH CHECK ((SELECT public.get_user_role()) IN ('admin', 'sales_manager'));
+  WITH CHECK ((SELECT public.get_user_role()) IN ('admin', 'sales_manager', 'sales_rep', 'customer_success'));
 
 CREATE POLICY communications_update ON public.communications
   FOR UPDATE TO authenticated
-  USING ((SELECT public.get_user_role()) IN ('admin', 'sales_manager'))
-  WITH CHECK ((SELECT public.get_user_role()) IN ('admin', 'sales_manager'));
+  USING ((SELECT public.get_user_role()) IN ('admin', 'sales_manager', 'sales_rep', 'customer_success'))
+  WITH CHECK ((SELECT public.get_user_role()) IN ('admin', 'sales_manager', 'sales_rep', 'customer_success'));
 
 CREATE POLICY communications_delete ON public.communications
   FOR DELETE TO authenticated
-  USING ((SELECT public.get_user_role()) IN ('admin', 'sales_manager'));
+  USING ((SELECT public.get_user_role()) IN ('admin', 'sales_manager', 'sales_rep', 'customer_success'));
 
 GRANT SELECT, INSERT, UPDATE, DELETE ON public.communications TO authenticated;
 

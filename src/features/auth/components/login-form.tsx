@@ -22,7 +22,10 @@ type LoginFormProps = {
 export function LoginForm({ oauthProviders = [] }: LoginFormProps) {
   const router = useRouter();
   const { brand, setBrand, mounted } = useBrandTheme();
-  const [oauthLoading, setOauthLoading] = useState(false);
+  const [oauthLoading, setOauthLoading] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    return window.location.hash.includes('access_token');
+  });
 
   // Handle hash-based auth tokens (invite, magic link, recovery).
   // @supabase/ssr's createBrowserClient does NOT auto-detect hash fragments,
@@ -38,7 +41,6 @@ export function LoginForm({ oauthProviders = [] }: LoginFormProps) {
 
     if (!accessToken || !refreshToken) return;
 
-    setOauthLoading(true);
     const supabase = createBrowserClient();
     supabase.auth.setSession({ access_token: accessToken, refresh_token: refreshToken })
       .then(({ error }) => {

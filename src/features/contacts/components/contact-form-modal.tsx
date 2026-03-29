@@ -2,7 +2,7 @@
 
 import { useActionState, useState, useEffect } from 'react';
 import { toast } from 'sonner';
-import { Modal } from '@/components/admin/modal';
+import { Modal, ModalFooter } from '@/components/admin/modal';
 import { Button } from '@/components/ui/button';
 import { SubmitButton } from '@/components/ui/submit-button';
 import { ContactFormFields } from './contact-form-fields';
@@ -28,11 +28,18 @@ export function ContactFormModal({ contactId, accountId, open, onClose, onSaved 
   const [fieldErrors, setFieldErrors] = useState<Record<string, boolean>>({});
   const isEdit = !!contactId;
 
+  // Reset contact when contactId changes (render-phase setState to avoid lint error)
+  const [prevContactId, setPrevContactId] = useState(contactId);
+  if (prevContactId !== contactId) {
+    setPrevContactId(contactId);
+    setContact(null);
+  }
+
   // Client-side fetch is intentional: the parent list only has basic Contact data,
   // but editing requires ContactWithDetails (including personal_info and account).
   // Pre-fetching personal_info for all contacts in the list would be wasteful.
   useEffect(() => {
-    if (!contactId || !open) { setContact(null); return; }
+    if (!contactId || !open) return;
     let cancelled = false;
     const supabase = createBrowserClient();
     supabase
@@ -138,10 +145,10 @@ export function ContactFormModal({ contactId, accountId, open, onClose, onSaved 
           defaultPersonalInfo={contact?.personal_info as Partial<PersonalInfoFormValues> | undefined ?? undefined}
           errors={fieldErrors}
         />
-        <div className="flex justify-end gap-2 pt-2">
+        <ModalFooter>
           <Button type="button" variant="outline" onClick={onClose}>Annuleren</Button>
           <SubmitButton icon={<Save />}>Opslaan</SubmitButton>
-        </div>
+        </ModalFooter>
       </form>
     </Modal>
   );

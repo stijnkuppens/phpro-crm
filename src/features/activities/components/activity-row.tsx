@@ -2,6 +2,7 @@
 
 import { CalendarPlus, CheckCircle2, Circle, SquarePen, Trash2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { StatusBadge } from '@/components/admin/status-badge';
 import { Button } from '@/components/ui/button';
 import type { ActivityWithRelations } from '../types';
 
@@ -12,6 +13,13 @@ export const ACTIVITY_TYPE_CONFIG: Record<string, { label: string; className: st
   Demo: { label: 'Demo', className: 'bg-orange-50 text-orange-700 border-orange-200' },
   Lunch: { label: 'Lunch', className: 'bg-amber-50 text-amber-700 border-amber-200' },
   Event: { label: 'Event', className: 'bg-pink-50 text-pink-700 border-pink-200' },
+  Taak: { label: 'Taak', className: 'bg-slate-50 text-slate-700 border-slate-200' },
+};
+
+const PRIORITY_STYLES: Record<string, string> = {
+  High: 'bg-destructive/15 text-destructive',
+  Medium: 'bg-primary/15 text-primary-action',
+  Low: 'bg-muted text-muted-foreground',
 };
 
 type ActivityRowProps = {
@@ -67,7 +75,7 @@ export function ActivityRow({ activity, showAccount, onToggleDone, onEdit, onDel
   };
 
   return (
-    <div className={`flex items-center gap-3 px-4 py-3 ${activity.is_done ? 'opacity-60' : ''}`}>
+    <div className={`flex flex-wrap items-start gap-2 px-4 py-3 sm:flex-nowrap sm:items-center sm:gap-3 ${activity.is_done ? 'opacity-60' : ''}`}>
       <button
         type="button"
         onClick={() => onToggleDone(activity)}
@@ -85,7 +93,7 @@ export function ActivityRow({ activity, showAccount, onToggleDone, onEdit, onDel
         {config.label}
       </Badge>
 
-      <div className="flex-1 min-w-0">
+      <div className="min-w-0 basis-full sm:flex-1 sm:basis-auto">
         <span className={`text-sm font-medium ${activity.is_done ? 'line-through' : ''}`}>
           {activity.subject}
         </span>
@@ -99,43 +107,55 @@ export function ActivityRow({ activity, showAccount, onToggleDone, onEdit, onDel
             {activity.deal.title}
           </Badge>
         )}
+        {activity.priority && (
+          <StatusBadge colorMap={PRIORITY_STYLES} value={activity.priority} className="ml-2 text-[10px]">
+            {activity.priority}
+          </StatusBadge>
+        )}
+        {activity.assignee?.full_name && (
+          <span className="ml-2 text-xs text-muted-foreground">
+            → {activity.assignee.full_name}
+          </span>
+        )}
       </div>
 
       <span className="text-xs text-muted-foreground shrink-0">
         {new Date(activity.date).toLocaleString('nl-BE', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
       </span>
 
-      <Button
-        variant="ghost"
-        size="icon"
-        onClick={() => downloadIcs(activity)}
-        className="shrink-0 h-7 w-7 text-muted-foreground hover:text-primary-action hover:bg-primary/10"
-        title="Toevoegen aan agenda"
-      >
-        <CalendarPlus className="h-4 w-4" />
-      </Button>
-
-      {onEdit && (
+      <div className="flex shrink-0 items-center gap-0.5">
         <Button
           variant="ghost"
           size="icon"
-          onClick={() => onEdit(activity)}
+          onClick={() => downloadIcs(activity)}
           className="shrink-0 h-7 w-7 text-muted-foreground hover:text-primary-action hover:bg-primary/10"
-          title="Bewerken"
+          title="Toevoegen aan agenda"
         >
-          <SquarePen className="h-4 w-4" />
+          <CalendarPlus className="h-4 w-4" />
         </Button>
-      )}
 
-      <Button
-        variant="ghost"
-        size="icon"
-        onClick={() => onDelete(activity.id)}
-        className="shrink-0 h-7 w-7 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
-        title="Verwijderen"
-      >
-        <Trash2 className="h-4 w-4" />
-      </Button>
+        {onEdit && (
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => onEdit(activity)}
+            className="shrink-0 h-7 w-7 text-muted-foreground hover:text-primary-action hover:bg-primary/10"
+            title="Bewerken"
+          >
+            <SquarePen className="h-4 w-4" />
+          </Button>
+        )}
+
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => onDelete(activity.id)}
+          className="shrink-0 h-7 w-7 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+          title="Verwijderen"
+        >
+          <Trash2 className="h-4 w-4" />
+        </Button>
+      </div>
     </div>
   );
 }

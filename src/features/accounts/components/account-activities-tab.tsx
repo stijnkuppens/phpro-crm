@@ -110,6 +110,8 @@ export function AccountActivitiesTab({ accountId, accountName, initialData, init
               deal_id: editTarget.deal_id,
               notes: editTarget.notes,
               is_done: editTarget.is_done ?? false,
+              priority: editTarget.priority as ActivityFormValues['priority'],
+              assigned_to: editTarget.assigned_to,
             }}
             accounts={accountName ? [{ id: accountId, name: accountName }] : []}
             deals={deals}

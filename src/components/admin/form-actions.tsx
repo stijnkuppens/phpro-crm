@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef } from 'react';
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Save } from 'lucide-react';
 
@@ -31,7 +31,7 @@ const defaults = {
 
 export function FormActions({ isEdit, loading, formRef, onSaveAndClose, formId, labels }: Props) {
   const l = { ...defaults, ...labels };
-  const closingRef = useRef(false);
+  const [closing, setClosing] = useState(false);
 
   return (
     <>
@@ -41,23 +41,23 @@ export function FormActions({ isEdit, loading, formRef, onSaveAndClose, formId, 
           variant="outline"
           disabled={loading}
           onClick={() => {
-            closingRef.current = true;
+            setClosing(true);
             onSaveAndClose();
             formRef.current?.requestSubmit();
           }}
         >
           <Save />
-          {loading && closingRef.current ? l.saving : l.updateAndClose}
+          {loading && closing ? l.saving : l.updateAndClose}
         </Button>
       )}
       <Button
         type="submit"
         form={formId}
         disabled={loading}
-        onClick={() => { closingRef.current = false; }}
+        onClick={() => { setClosing(false); }}
       >
         <Save />
-        {loading && !closingRef.current ? l.saving : isEdit ? l.update : l.create}
+        {loading && !closing ? l.saving : isEdit ? l.update : l.create}
       </Button>
     </>
   );

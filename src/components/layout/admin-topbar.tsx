@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useSyncExternalStore } from 'react';
 import { useRouter } from 'next/navigation';
 import { useLocale } from 'next-intl';
 import { useAuth } from '@/lib/hooks/use-auth';
@@ -17,10 +17,13 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { SidebarTrigger } from '@/components/ui/sidebar';
-import { LogOut, User } from 'lucide-react';
+import { LogOut, User, Globe, Sun, Moon } from 'lucide-react';
 import { ThemeToggle } from '@/components/layout/theme-toggle';
 import { BrandSwitcher } from '@/components/layout/brand-switcher';
 import { NotificationBell } from '@/features/notifications/components/notification-bell';
+import { useTheme } from 'next-themes';
+
+const emptySubscribe = () => () => {};
 
 function LocaleSwitcher() {
   const locale = useLocale();
@@ -45,14 +48,24 @@ function LocaleSwitcher() {
 export function AdminTopbar() {
   const { user } = useAuth();
   const router = useRouter();
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => setMounted(true), []);
+  const mounted = useSyncExternalStore(emptySubscribe, () => true, () => false);
+  const locale = useLocale();
+  const { theme, setTheme } = useTheme();
 
   const handleSignOut = async () => {
     const supabase = createBrowserClient();
     await supabase.auth.signOut();
     router.push('/login');
+  };
+
+  const switchLocale = () => {
+    const newLocale = locale === 'nl' ? 'en' : 'nl';
+    document.cookie = `locale=${newLocale};path=/;max-age=31536000`;
+    router.refresh();
+  };
+
+  const toggleTheme = () => {
+    setTheme(theme === 'dark' ? 'light' : 'dark');
   };
 
   const initials = user?.user_metadata?.full_name
@@ -64,12 +77,15 @@ export function AdminTopbar() {
     : user?.email?.[0]?.toUpperCase() ?? '?';
 
   return (
-    <header className="flex h-14 items-center gap-4 border-b bg-background px-4">
+    <header className="flex h-14 items-center gap-2 border-b bg-background px-3 sm:gap-4 sm:px-4">
       <SidebarTrigger />
       <div className="flex-1" />
-      <BrandSwitcher />
-      <LocaleSwitcher />
-      <ThemeToggle />
+      {/* Desktop: show all controls inline */}
+      <div className="hidden sm:contents">
+        <BrandSwitcher />
+        <LocaleSwitcher />
+        <ThemeToggle />
+      </div>
       <NotificationBell />
       {mounted && (
         <DropdownMenu>
@@ -94,6 +110,22 @@ export function AdminTopbar() {
               <User className="mr-2 h-4 w-4" />
               Settings
             </DropdownMenuItem>
+            {/* Mobile-only: settings that are hidden from topbar */}
+            <div className="sm:hidden">
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={switchLocale}>
+                <Globe className="mr-2 h-4 w-4" />
+                {locale === 'nl' ? 'Switch to English' : 'Wissel naar Nederlands'}
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={toggleTheme}>
+                {theme === 'dark' ? (
+                  <Sun className="mr-2 h-4 w-4" />
+                ) : (
+                  <Moon className="mr-2 h-4 w-4" />
+                )}
+                {theme === 'dark' ? 'Light mode' : 'Dark mode'}
+              </DropdownMenuItem>
+            </div>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={handleSignOut}>
               <LogOut className="mr-2 h-4 w-4" />

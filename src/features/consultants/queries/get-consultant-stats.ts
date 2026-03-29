@@ -11,8 +11,7 @@ export type ConsultantStats = {
 
 export const getConsultantStats = cache(async (): Promise<ConsultantStats> => {
   const supabase = await createServerClient();
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- RPC added in migration 00077
-  const { data, error } = await (supabase.rpc as any)('get_consultant_stats').single();
+  const { data, error } = await supabase.rpc('get_consultant_stats').single();
 
   if (error || !data) {
     logger.error({ err: error, entity: 'consultants' }, 'Failed to fetch consultant stats');

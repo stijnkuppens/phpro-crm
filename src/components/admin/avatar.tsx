@@ -34,13 +34,22 @@ const sizes = {
 };
 
 export function Avatar({ path, fallback, size = 'sm', round = true }: Props) {
-  const [url, setUrl] = useState<string | null>(null);
+  const [fetchedUrl, setFetchedUrl] = useState<string | null>(null);
   const [error, setError] = useState(false);
+  const [currentPath, setCurrentPath] = useState(path);
+
+  // Reset when path changes (setState during render is React's approved pattern)
+  if (currentPath !== path) {
+    setCurrentPath(path);
+    setFetchedUrl(null);
+    setError(false);
+  }
+
+  // Check cache synchronously during render
+  const cachedUrl = path ? getCachedUrl(path) : null;
 
   useEffect(() => {
-    if (!path) { setUrl(null); return; }
-    const cached = getCachedUrl(path);
-    if (cached) { setUrl(cached); return; }
+    if (!path || getCachedUrl(path)) return;
     let cancelled = false;
     const supabase = createBrowserClient();
     supabase.storage.from('avatars').createSignedUrl(path, 3600).then(({ data }) => {
@@ -48,12 +57,13 @@ export function Avatar({ path, fallback, size = 'sm', round = true }: Props) {
       if (data?.signedUrl) {
         const finalUrl = withApiKey(data.signedUrl);
         setCachedUrl(path, finalUrl);
-        setUrl(finalUrl);
+        setFetchedUrl(finalUrl);
       }
     });
     return () => { cancelled = true; };
   }, [path]);
 
+  const url = cachedUrl ?? fetchedUrl;
   const hasImage = url && !error;
 
   return (

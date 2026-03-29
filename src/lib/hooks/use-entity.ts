@@ -26,8 +26,7 @@ export function useEntity<T extends Record<string, unknown>>({
   const supabase = createBrowserClient();
   // Targeted cast: .from() with a dynamic table name returns a union type that TS
   // can't narrow. We cast the query builder, not the entire client.
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const queryTable = (t: TableName) => supabase.from(t) as any;
+  const queryTable = useCallback((t: TableName) => supabase.from(t) as any, [supabase]);
   const [data, setData] = useState<T[]>(initialData ?? []);
   const [total, setTotal] = useState(initialCount ?? 0);
   const [loading, setLoading] = useState(!initialData);
@@ -41,7 +40,6 @@ export function useEntity<T extends Record<string, unknown>>({
       search?: { column: string; query: string };
       orFilter?: string;
       eqFilters?: Record<string, string | boolean>;
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       applyFilters?: (query: any) => any;
     } = {}) => {
       if (hasDataRef.current) {
@@ -93,7 +91,7 @@ export function useEntity<T extends Record<string, unknown>>({
       setLoading(false);
       setRefreshing(false);
     },
-    [table, select, pageSize],
+    [table, select, pageSize, queryTable],
   );
 
   const getById = useCallback(
@@ -108,7 +106,7 @@ export function useEntity<T extends Record<string, unknown>>({
       }
       return data as T;
     },
-    [table],
+    [table, queryTable],
   );
 
   const create = useCallback(
@@ -121,7 +119,7 @@ export function useEntity<T extends Record<string, unknown>>({
       toast.success('Record aangemaakt');
       return true;
     },
-    [table],
+    [table, queryTable],
   );
 
   const update = useCallback(
@@ -134,7 +132,7 @@ export function useEntity<T extends Record<string, unknown>>({
       toast.success('Record bijgewerkt');
       return true;
     },
-    [table],
+    [table, queryTable],
   );
 
   const remove = useCallback(
@@ -147,7 +145,7 @@ export function useEntity<T extends Record<string, unknown>>({
       toast.success('Record verwijderd');
       return true;
     },
-    [table],
+    [table, queryTable],
   );
 
   const bulkDelete = useCallback(
@@ -160,7 +158,7 @@ export function useEntity<T extends Record<string, unknown>>({
       toast.success(`${ids.length} records verwijderd`);
       return true;
     },
-    [table],
+    [table, queryTable],
   );
 
   return { data, total, loading, refreshing, fetchList, getById, create, update, remove, bulkDelete };

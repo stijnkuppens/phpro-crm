@@ -7,19 +7,19 @@ import { useEntity } from '@/lib/hooks/use-entity';
 import DataTable from '@/components/admin/data-table';
 import { buildFilterQuery, type FilterOption } from '@/components/admin/data-table-filters';
 import { taskColumns } from '../columns';
-import type { Task } from '../types';
+import type { TaskWithRelations } from '../types';
 import { deleteTask } from '../actions/delete-task';
 
 const PAGE_SIZE = 25;
 
 type Props = {
-  initialData: Task[];
+  initialData: TaskWithRelations[];
   initialCount: number;
   filterOptions?: Record<string, FilterOption[]>;
 };
 
 export function TaskList({ initialData, initialCount, filterOptions }: Props) {
-  const { data, total, loading, refreshing, fetchList } = useEntity<Task>({
+  const { data, total, loading, refreshing, fetchList } = useEntity<TaskWithRelations>({
     table: 'tasks',
     pageSize: PAGE_SIZE,
     initialData,
@@ -56,16 +56,16 @@ export function TaskList({ initialData, initialCount, filterOptions }: Props) {
   useEffect(() => {
     if (isInitialMount.current) {
       isInitialMount.current = false;
-      if (initialData && page === 1) return;
+      return;
     }
     load();
-  }, [load, initialData, page, filters]);
+  }, [load]);
 
   return (
     <div className="space-y-4">
       <DataTable
         tableId="tasks"
-        columns={taskColumns as any}
+        columns={taskColumns}
         data={data}
         filters={filters}
         onFilterChange={handleFilterChange}

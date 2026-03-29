@@ -7,6 +7,7 @@ import { toast } from 'sonner';
 import { useEntity } from '@/lib/hooks/use-entity';
 import { deleteCommunication } from '@/features/communications/actions/delete-communication';
 import { Button } from '@/components/ui/button';
+import { ListPageToolbar } from '@/components/admin/list-page-toolbar';
 import DataTable from '@/components/admin/data-table';
 import { DataTableFilters, buildFilterQuery } from '@/components/admin/data-table-filters';
 import { CommunicationModal } from '@/features/communications/components/communication-modal';
@@ -92,10 +93,10 @@ export function AccountCommunicationsTab({ accountId, initialData, initialCount,
   useEffect(() => {
     if (isInitialMount.current) {
       isInitialMount.current = false;
-      if (initialData && page === 1) return;
+      return;
     }
     load();
-  }, [load, initialData, page, typeFilter, filters]);
+  }, [load]);
 
   const handleFilterChange = useCallback(
     (newFilters: Record<string, string | undefined>) => {
@@ -105,9 +106,7 @@ export function AccountCommunicationsTab({ accountId, initialData, initialCount,
     [],
   );
 
-  useEffect(() => {
-    setPage(1);
-  }, [typeFilter]);
+  useEffect(() => { setPage(1); }, [typeFilter]);
 
   const handleClose = useCallback(() => {
     setCreateOpen(false);
@@ -129,23 +128,23 @@ export function AccountCommunicationsTab({ accountId, initialData, initialCount,
 
   return (
     <div className="space-y-4 mt-4">
+      <ListPageToolbar
+        actions={
+          <Button size="sm" onClick={() => setCreateOpen(true)}>
+            <Plus /> Nieuw
+          </Button>
+        }
+      />
       <DataTable
         tableId="account-communications"
         filterBar={
           <div className="flex flex-col gap-3">
-            <div className="flex items-center gap-3">
-              <div className="flex flex-1 flex-wrap items-center gap-3">
-                <DataTableFilters
-                  columns={communicationColumns}
-                  filters={filters}
-                  onFilterChange={handleFilterChange}
-                  filterOptions={filterOptions}
-                />
-              </div>
-              <Button size="sm" onClick={() => setCreateOpen(true)}>
-                <Plus /> Nieuw
-              </Button>
-            </div>
+            <DataTableFilters
+              columns={communicationColumns}
+              filters={filters}
+              onFilterChange={handleFilterChange}
+              filterOptions={filterOptions}
+            />
             <div className="flex gap-1.5">
               {TYPE_PILLS.map((pill) => (
                 <button
@@ -185,6 +184,20 @@ export function AccountCommunicationsTab({ accountId, initialData, initialCount,
             onClick: () => handleDelete(row.id),
           },
         ]}
+        renderMobileCard={(row) => (
+          <div className="space-y-1 py-1">
+            <div className="flex items-center gap-2">
+              <span className="rounded-full bg-muted px-2 py-0.5 text-[11px] font-medium">{row.type}</span>
+              <span className="truncate font-medium text-sm">{row.subject}</span>
+            </div>
+            {row.contact && (
+              <div className="text-xs text-muted-foreground">{row.contact.first_name} {row.contact.last_name}</div>
+            )}
+            <div className="text-[11px] text-muted-foreground">
+              {new Date(row.date).toLocaleDateString('nl-BE', { day: 'numeric', month: 'short', year: 'numeric' })}
+            </div>
+          </div>
+        )}
       />
 
       {/* Detail modal — row click */}

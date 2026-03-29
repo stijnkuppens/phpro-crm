@@ -42,10 +42,18 @@ export function AvatarUpload({
   const [uploading, setUploading] = useState(false);
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [loadError, setLoadError] = useState(false);
+  const [trackedPath, setTrackedPath] = useState(currentPath);
+
+  // Reset when currentPath changes (setState during render is React's approved pattern)
+  if (trackedPath !== currentPath) {
+    setTrackedPath(currentPath);
+    setImageUrl(null);
+    setLoadError(false);
+  }
 
   // Build signed URL for existing image
   useEffect(() => {
-    if (!currentPath) { setImageUrl(null); return; }
+    if (!currentPath) return;
     let cancelled = false;
     const supabase = createBrowserClient();
     supabase.storage

@@ -14,7 +14,7 @@ export function ListPageToolbar({ tabs, activeTab, onTabSelect, getTabHref, acti
   if (!tabs?.length && !actions) return null;
 
   return (
-    <div className="flex items-center justify-between gap-4">
+    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
       {tabs?.length ? (
         <SubNav
           items={tabs}

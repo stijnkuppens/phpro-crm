@@ -4,7 +4,6 @@ import { PageHeader } from '@/components/admin/page-header';
 import { getDeal } from '@/features/deals/queries/get-deal';
 import { getPipelines } from '@/features/deals/queries/get-pipelines';
 import { getActivities } from '@/features/activities/queries/get-activities';
-import { getTasks } from '@/features/tasks/queries/get-tasks';
 import { getCommunications } from '@/features/communications/queries/get-communications';
 import { DealDetail } from '@/features/deals/components/deal-detail';
 import { createServerClient } from '@/lib/supabase/server';
@@ -23,10 +22,9 @@ export default async function DealDetailPage({ params }: Props) {
   const { id } = await params;
   const supabase = await createServerClient();
 
-  const [deal, activitiesResult, tasksResult, communicationsResult, pipelines, { data: ownerRows }] = await Promise.all([
+  const [deal, activitiesResult, communicationsResult, pipelines, { data: ownerRows }] = await Promise.all([
     getDeal(id),
     getActivities({ filters: { deal_id: id }, pageSize: 50 }),
-    getTasks({ filters: { deal_id: id }, pageSize: 50 }),
     getCommunications({ filters: { deal_id: id }, pageSize: 50 }),
     getPipelines(),
     supabase.from('user_profiles').select('id, full_name').order('full_name'),
@@ -54,7 +52,6 @@ export default async function DealDetailPage({ params }: Props) {
       <DealDetail
         deal={deal}
         activities={activitiesResult.data}
-        tasks={tasksResult.data}
         communications={communicationsResult.data}
         pipelines={pipelines}
         owners={(ownerRows ?? []).map((o) => ({ id: o.id, name: o.full_name ?? '' }))}

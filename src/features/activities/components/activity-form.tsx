@@ -15,7 +15,7 @@ import {
   SelectItem,
   SelectTrigger,
 } from '@/components/ui/select';
-import { Calendar, Activity, Phone, Mail, FileText, Zap, CalendarCheck, Check } from 'lucide-react';
+import { Calendar, Activity, Phone, Mail, FileText, Zap, CalendarCheck, Check, ClipboardList } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { activityFormSchema, type ActivityFormValues } from '../types';
 import { createActivity } from '../actions/create-activity';
@@ -27,6 +27,7 @@ type Props = {
   defaultValues?: Partial<ActivityFormValues> & { id?: string };
   accounts?: OptionItem[];
   deals?: { id: string; title: string }[];
+  users?: OptionItem[];
   onSuccess?: (id: string) => void;
   onCancel?: () => void;
 };
@@ -38,26 +39,32 @@ const ACTIVITY_TYPES = [
   { value: 'Demo', label: 'Demo', icon: Activity },
   { value: 'Lunch', label: 'Voorstel', icon: FileText },
   { value: 'Event', label: 'Andere', icon: Zap },
+  { value: 'Taak', label: 'Taak', icon: ClipboardList },
 ] as const;
 
-export function ActivityForm({ defaultValues, accounts = [], deals = [], onSuccess, onCancel }: Props) {
+export function ActivityForm({ defaultValues, accounts = [], deals = [], users = [], onSuccess, onCancel }: Props) {
   const router = useRouter();
   const [type, setType] = useState<string>(defaultValues?.type ?? 'Meeting');
   const [accountId, setAccountId] = useState(defaultValues?.account_id ?? '');
   const [dealId, setDealId] = useState(defaultValues?.deal_id ?? '');
   const [isDone, setIsDone] = useState(defaultValues?.is_done ?? false);
+  const [priority, setPriority] = useState(defaultValues?.priority ?? 'Medium');
+  const [assignedTo, setAssignedTo] = useState(defaultValues?.assigned_to ?? '');
   const isEdit = !!defaultValues?.id;
+  const isTask = type === 'Taak';
 
   const [, formAction] = useActionState(async (_prev: null, formData: FormData) => {
     const values: ActivityFormValues = {
       type: type as ActivityFormValues['type'],
       subject: formData.get('subject') as string,
       date: formData.get('date') as string,
-      duration_minutes: formData.get('duration_minutes') ? Number(formData.get('duration_minutes')) : undefined,
+      duration_minutes: isTask ? undefined : (formData.get('duration_minutes') ? Number(formData.get('duration_minutes')) : undefined),
       account_id: accountId,
       deal_id: dealId || undefined,
       notes: (formData.get('notes') as string) || undefined,
       is_done: isDone,
+      priority: isTask ? (priority as 'High' | 'Medium' | 'Low') : undefined,
+      assigned_to: isTask && assignedTo ? assignedTo : undefined,
     };
 
     const parsed = activityFormSchema.safeParse(values);
@@ -117,17 +124,51 @@ export function ActivityForm({ defaultValues, accounts = [], deals = [], onSucce
         <Input id="subject" name="subject" defaultValue={defaultValues?.subject ?? ''} required placeholder="bv. Discovery call, Demo platform..." />
       </div>
 
-      {/* Datum & tijd + Duur */}
+      {/* Datum & tijd + Duur (or Priority for Taak) */}
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
-          <Label htmlFor="date">Datum &amp; tijd</Label>
+          <Label htmlFor="date">{isTask ? 'Deadline' : 'Datum & tijd'}</Label>
           <DateTimePicker name="date" value={defaultValues?.date ?? ''} required />
         </div>
-        <div className="space-y-2">
-          <Label htmlFor="duration_minutes">Duur (min)</Label>
-          <Input id="duration_minutes" name="duration_minutes" type="number" min="0" defaultValue={defaultValues?.duration_minutes ?? '60'} />
-        </div>
+        {isTask ? (
+          <div className="space-y-2">
+            <Label>Prioriteit</Label>
+            <Select value={priority} onValueChange={(v) => setPriority(v ?? 'Medium')}>
+              <SelectTrigger>
+                {priority}
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="High">High</SelectItem>
+                <SelectItem value="Medium">Medium</SelectItem>
+                <SelectItem value="Low">Low</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        ) : (
+          <div className="space-y-2">
+            <Label htmlFor="duration_minutes">Duur (min)</Label>
+            <Input id="duration_minutes" name="duration_minutes" type="number" min="0" defaultValue={defaultValues?.duration_minutes ?? '60'} />
+          </div>
+        )}
       </div>
+
+      {/* Assigned to (Taak only) */}
+      {isTask && users.length > 0 && (
+        <div className="space-y-2">
+          <Label>Toegewezen aan</Label>
+          <Select value={assignedTo} onValueChange={(v) => setAssignedTo(v ?? '')}>
+            <SelectTrigger>
+              {users.find((u) => u.id === assignedTo)?.name ?? '— niemand —'}
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="">— niemand —</SelectItem>
+              {users.map((u) => (
+                <SelectItem key={u.id} value={u.id}>{u.name}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      )}
 
       {/* Gepland / Gedaan toggle */}
       <div className="grid grid-cols-2 gap-2">

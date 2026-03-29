@@ -16,8 +16,11 @@ import {
   ArchiveRestore,
 } from 'lucide-react';
 import DataTable from '@/components/admin/data-table';
+import { ListPageToolbar } from '@/components/admin/list-page-toolbar';
+import { StatusBadge } from '@/components/admin/status-badge';
+import { Avatar } from '@/components/admin/avatar';
 import { consultantColumns } from '../columns';
-import { type ConsultantWithDetails, type ConsultantStatus } from '../types';
+import { type ConsultantWithDetails, type ConsultantStatus, CONSULTANT_STATUS_STYLES } from '../types';
 import { archiveConsultant } from '../actions/archive-consultant';
 import { moveToBench } from '../actions/move-to-bench';
 import { FilterPill } from '@/components/admin/filter-pill';
@@ -136,6 +139,13 @@ export function AccountConsultantsTab({ accountId, accountName, consultants, rol
   return (
     <>
       <div className="space-y-4 mt-4">
+        <ListPageToolbar
+          actions={
+            <Button size="sm" onClick={() => setWizardOpen(true)}>
+              <Plus /> Consultant koppelen
+            </Button>
+          }
+        />
         <DataTable
           tableId="account-consultants"
           columns={consultantColumns}
@@ -143,27 +153,41 @@ export function AccountConsultantsTab({ accountId, accountName, consultants, rol
           onRowClick={(row) => setSelected(row)}
           rowActions={(row) => getRowActions(row)}
           filterBar={
-            <div className="flex items-center gap-3">
-              <div className="flex gap-1.5">
-                {STATUS_PILLS.map((pill) => {
-                  const active = selectedStatuses.has(pill.value);
-                  return (
-                    <FilterPill
-                      key={pill.value}
-                      label={pill.label}
-                      active={active}
-                      onClick={() => toggleStatus(pill.value)}
-                    />
-                  );
-                })}
-              </div>
-              <div className="flex-1" />
-              <Button size="sm" onClick={() => setWizardOpen(true)}>
-                <Plus />
-                Consultant koppelen
-              </Button>
+            <div className="flex gap-1.5 overflow-x-auto">
+              {STATUS_PILLS.map((pill) => {
+                const active = selectedStatuses.has(pill.value);
+                return (
+                  <FilterPill
+                    key={pill.value}
+                    label={pill.label}
+                    active={active}
+                    onClick={() => toggleStatus(pill.value)}
+                  />
+                );
+              })}
             </div>
           }
+          renderMobileCard={(row) => {
+            const name = `${row.first_name} ${row.last_name}`;
+            const initials = `${row.first_name?.[0] ?? ''}${row.last_name?.[0] ?? ''}`.toUpperCase();
+            return (
+              <div className="flex items-center gap-3">
+                <Avatar path={null} fallback={initials} size="sm" round />
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-2">
+                    <span className="truncate font-medium text-sm">{name}</span>
+                    <StatusBadge colorMap={CONSULTANT_STATUS_STYLES} value={row.status}>{row.status}</StatusBadge>
+                  </div>
+                  <div className="text-xs text-muted-foreground">
+                    {row.role}{row.client_name ? ` · ${row.client_name}` : ''}
+                  </div>
+                  {row.city && (
+                    <div className="text-[11px] text-muted-foreground">{row.city}</div>
+                  )}
+                </div>
+              </div>
+            );
+          }}
         />
       </div>
 

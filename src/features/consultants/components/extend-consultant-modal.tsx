@@ -2,7 +2,7 @@
 
 import { useActionState } from 'react';
 import { toast } from 'sonner';
-import { Modal } from '@/components/admin/modal';
+import { Modal, ModalFooter } from '@/components/admin/modal';
 import { Input } from '@/components/ui/input';
 import { DatePicker } from '@/components/ui/date-picker';
 import { Label } from '@/components/ui/label';
@@ -47,10 +47,10 @@ export function ExtendConsultantModal({ consultantId, open, onClose, onSuccess }
           <Label htmlFor="notes">Notities</Label>
           <Textarea id="notes" name="notes" rows={3} />
         </div>
-        <div className="flex gap-2 justify-end">
+        <ModalFooter>
           <Button type="button" variant="outline" onClick={onClose}>Annuleren</Button>
           <SubmitButton>Verlengen</SubmitButton>
-        </div>
+        </ModalFooter>
       </form>
     </Modal>
   );

@@ -21,8 +21,8 @@ type PageHeaderProps = {
 
 export function PageHeader({ title, breadcrumbs, actions }: PageHeaderProps) {
   return (
-    <div className="flex items-center justify-between">
-      <div className="space-y-1">
+    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      <div className="min-w-0 space-y-1">
         {breadcrumbs && breadcrumbs.length > 0 && (
           <Breadcrumb>
             <BreadcrumbList>

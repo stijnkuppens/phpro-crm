@@ -1,9 +1,6 @@
 import type { Metadata } from 'next';
-import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { PageHeader } from '@/components/admin/page-header';
-import { Pencil } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import { getAccount } from '@/features/accounts/queries/get-account';
 import { getAccountBannerStats } from '@/features/accounts/queries/get-account-banner-stats';
 import { AccountBanner } from '@/features/accounts/components/account-banner';
@@ -39,12 +36,6 @@ export default async function AccountDetailLayout({ params, children }: Props) {
           { label: 'Accounts', href: '/admin/accounts' },
           { label: account.name },
         ]}
-        actions={
-          <Button nativeButton={false} render={<Link href={`/admin/accounts/${id}/edit`} />}>
-            <Pencil />
-            Bewerken
-          </Button>
-        }
       />
       <AccountBanner account={account} stats={stats} />
       <AccountSubNav accountId={id} stats={stats} />

@@ -9,24 +9,19 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Modal } from '@/components/admin/modal';
 import { InfoRow } from '@/components/admin/info-row';
 import { Avatar } from '@/components/admin/avatar';
-import { EmptyState } from '@/components/admin/empty-state';
 import { ConfirmDialog } from '@/components/admin/confirm-dialog';
 import {
   CheckCircle2, Pencil, Building2, User, Calendar, TrendingUp, Sparkles,
-  ClipboardList, Plus, Check, Trash2, RotateCcw,
+  Plus, RotateCcw,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { formatEUR } from '@/lib/format';
-import type { ActivityWithRelations } from '@/features/activities/types';
-import type { TaskWithRelations } from '@/features/tasks/types';
+import type { ActivityWithRelations, ActivityFormValues } from '@/features/activities/types';
 import type { CommunicationWithDetails } from '@/features/communications/types';
 import { ActivityCardList } from '@/features/activities/components/activity-card-list';
 import { ActivityForm } from '@/features/activities/components/activity-form';
-import { TaskForm } from '@/features/tasks/components/task-form';
 import { toggleActivityDone } from '@/features/activities/actions/toggle-activity-done';
 import { deleteActivity } from '@/features/activities/actions/delete-activity';
-import { toggleTaskDone } from '@/features/tasks/actions/toggle-task-done';
-import { deleteTask } from '@/features/tasks/actions/delete-task';
 import { reopenDeal } from '../actions/reopen-deal';
 import { CloseDealModal } from './close-deal-modal';
 import type { DealWithRelations, Pipeline } from '../types';
@@ -37,7 +32,6 @@ const DealEditModal = dynamic(() => import('./deal-edit-modal').then(m => ({ def
 type Props = {
   deal: DealWithRelations;
   activities: ActivityWithRelations[];
-  tasks: TaskWithRelations[];
   communications: CommunicationWithDetails[];
   pipelines: Pipeline[];
   owners: { id: string; name: string }[];
@@ -45,12 +39,6 @@ type Props = {
 };
 
 import { ORIGIN_LABELS } from '../constants';
-
-const PRIORITY_COLORS: Record<string, string> = {
-  High: 'bg-destructive/15 text-destructive',
-  Medium: 'bg-primary/15 text-primary-action',
-  Low: 'bg-muted text-muted-foreground',
-};
 
 const CLOSED_TYPE_COLORS: Record<string, string> = {
   won: 'bg-green-100 text-green-700',
@@ -71,13 +59,12 @@ function getInitials(name: string): string {
 const fmtDate = (d: string) =>
   new Date(d).toLocaleDateString('nl-BE', { day: 'numeric', month: 'short', year: 'numeric' });
 
-export function DealDetail({ deal, activities, tasks, communications, pipelines, owners, consultant }: Props) {
+export function DealDetail({ deal, activities, communications, pipelines, owners, consultant }: Props) {
   const router = useRouter();
   const [showClose, setShowClose] = useState(false);
   const [showEdit, setShowEdit] = useState(false);
   const [activityModal, setActivityModal] = useState<{ mode: 'new' } | { mode: 'edit'; activity: ActivityWithRelations } | null>(null);
-  const [taskModal, setTaskModal] = useState<{ mode: 'new' } | { mode: 'edit'; task: TaskWithRelations } | null>(null);
-  const [confirmDelete, setConfirmDelete] = useState<{ type: 'activity' | 'task'; id: string } | null>(null);
+  const [confirmDelete, setConfirmDelete] = useState<{ type: 'activity'; id: string } | null>(null);
 
   const contactName = deal.contact
     ? `${deal.contact.first_name} ${deal.contact.last_name}${deal.contact.title ? ` \u00B7 ${deal.contact.title}` : ''}`
@@ -96,27 +83,11 @@ export function DealDetail({ deal, activities, tasks, communications, pipelines,
     setConfirmDelete({ type: 'activity', id });
   }
 
-  async function handleToggleTaskDone(id: string) {
-    const result = await toggleTaskDone(id);
-    if (!result.success) toast.error(typeof result.error === 'string' ? result.error : 'Er ging iets mis');
-    router.refresh();
-  }
-
-  function handleDeleteTask(id: string) {
-    setConfirmDelete({ type: 'task', id });
-  }
-
   async function handleConfirmDelete() {
     if (!confirmDelete) return;
-    if (confirmDelete.type === 'activity') {
-      const result = await deleteActivity(confirmDelete.id);
-      if (result.success) toast.success('Activiteit verwijderd');
-      else toast.error(typeof result.error === 'string' ? result.error : 'Er ging iets mis');
-    } else {
-      const result = await deleteTask(confirmDelete.id);
-      if (result.success) toast.success('Taak verwijderd');
-      else toast.error(typeof result.error === 'string' ? result.error : 'Er ging iets mis');
-    }
+    const result = await deleteActivity(confirmDelete.id);
+    if (result.success) toast.success('Activiteit verwijderd');
+    else toast.error(typeof result.error === 'string' ? result.error : 'Er ging iets mis');
     setConfirmDelete(null);
     router.refresh();
   }
@@ -356,123 +327,27 @@ export function DealDetail({ deal, activities, tasks, communications, pipelines,
         </Card>
       )}
 
-      {/* Activities + Tasks side by side */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Activities */}
-        <div>
-          <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center gap-2 text-sm font-semibold">
-              <Sparkles className="h-4 w-4 text-muted-foreground" />
-              Activiteiten
-              {activities.length > 0 && (
-                <Badge variant="secondary" className="ml-1">{activities.length}</Badge>
-              )}
-            </div>
-            <Button variant="outline" size="sm" onClick={() => setActivityModal({ mode: 'new' })}>
-              <Plus /> Nieuwe activiteit
-            </Button>
-          </div>
-          <ActivityCardList
-            activities={activities}
-            onToggleDone={(act) => handleToggleActivityDone(act.id)}
-            onDelete={(id) => handleDeleteActivity(id)}
-            emptyIcon={Sparkles}
-            emptyAction={{ label: 'Eerste activiteit toevoegen', onClick: () => setActivityModal({ mode: 'new' }) }}
-          />
-        </div>
-
-        {/* Tasks */}
-        <Card>
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <CardTitle className="flex items-center gap-2 text-sm font-semibold">
-                <ClipboardList className="h-4 w-4 text-muted-foreground" />
-                Taken
-                {tasks.length > 0 && (
-                  <Badge variant="secondary" className="ml-1">{tasks.length}</Badge>
-                )}
-              </CardTitle>
-              <Button variant="outline" size="sm" onClick={() => setTaskModal({ mode: 'new' })}>
-                <Plus /> Nieuwe taak
-              </Button>
-            </div>
-          </CardHeader>
-          <CardContent>
-            {tasks.length === 0 ? (
-              <EmptyState
-                icon={ClipboardList}
-                title="Nog geen taken voor deze deal"
-                action={{ label: 'Eerste taak toevoegen', onClick: () => setTaskModal({ mode: 'new' }) }}
-              />
-            ) : (
-              <div className="space-y-2">
-                {tasks.map((t) => {
-                  const isDone = t.status === 'Done';
-                  const isOverdue = !isDone && t.due_date && new Date(t.due_date) < new Date(new Date().toDateString());
-                  return (
-                    <div
-                      key={t.id}
-                      className={cn(
-                        'flex items-center gap-3 p-3 rounded-xl border transition-all',
-                        isDone ? 'border-border bg-muted/50' : isOverdue ? 'border-destructive/30 bg-destructive/5' : 'border-primary/20 bg-primary/5',
-                      )}
-                    >
-                      <button
-                        onClick={() => handleToggleTaskDone(t.id)}
-                        className={cn(
-                          'w-5 h-5 rounded border-2 flex items-center justify-center shrink-0 transition-colors',
-                          isDone ? 'bg-primary border-primary' : 'border-muted-foreground hover:border-primary',
-                        )}
-                      >
-                        {isDone && <Check className="h-3 w-3 text-white" />}
-                      </button>
-                      <div className="flex-1 min-w-0">
-                        <p className={cn(
-                          'text-sm font-medium truncate',
-                          isDone ? 'line-through text-muted-foreground' : isOverdue ? 'text-destructive' : 'text-foreground',
-                        )}>
-                          {t.title}
-                        </p>
-                        <div className="flex items-center gap-2 mt-0.5 flex-wrap">
-                          {t.due_date && (
-                            <span className={cn(
-                              'text-xs',
-                              isDone ? 'text-muted-foreground' : isOverdue ? 'text-destructive' : 'text-primary-action',
-                            )}>
-                              {fmtDate(t.due_date)}
-                            </span>
-                          )}
-                          {t.assignee?.full_name && (
-                            <span className="text-xs text-muted-foreground">{t.assignee.full_name}</span>
-                          )}
-                          <Badge className={cn('text-[10px] py-0 border-0', PRIORITY_COLORS[t.priority] ?? '')}>
-                            {t.priority}
-                          </Badge>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-1 shrink-0">
-                        <button
-                          title="Bewerken"
-                          onClick={() => setTaskModal({ mode: 'edit', task: t })}
-                          className="p-1.5 rounded-lg text-muted-foreground hover:text-primary-action hover:bg-primary/10 transition-colors"
-                        >
-                          <Pencil className="h-3.5 w-3.5" />
-                        </button>
-                        <button
-                          title="Verwijderen"
-                          onClick={() => handleDeleteTask(t.id)}
-                          className="p-1.5 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
-                        >
-                          <Trash2 className="h-3.5 w-3.5" />
-                        </button>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
+      {/* Activities */}
+      <div>
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center gap-2 text-sm font-semibold">
+            <Sparkles className="h-4 w-4 text-muted-foreground" />
+            Activiteiten
+            {activities.length > 0 && (
+              <Badge variant="secondary" className="ml-1">{activities.length}</Badge>
             )}
-          </CardContent>
-        </Card>
+          </div>
+          <Button variant="outline" size="sm" onClick={() => setActivityModal({ mode: 'new' })}>
+            <Plus /> Nieuwe activiteit
+          </Button>
+        </div>
+        <ActivityCardList
+          activities={activities}
+          onToggleDone={(act) => handleToggleActivityDone(act.id)}
+          onDelete={(id) => handleDeleteActivity(id)}
+          emptyIcon={Sparkles}
+          emptyAction={{ label: 'Eerste activiteit toevoegen', onClick: () => setActivityModal({ mode: 'new' }) }}
+        />
       </div>
 
       {/* Communications */}
@@ -533,7 +408,8 @@ export function DealDetail({ deal, activities, tasks, communications, pipelines,
               ? {
                   ...activityModal.activity,
                   id: activityModal.activity.id,
-                  type: activityModal.activity.type as 'Meeting' | 'Demo' | 'Call' | 'E-mail' | 'Lunch' | 'Event',
+                  type: activityModal.activity.type as ActivityFormValues['type'],
+                  priority: activityModal.activity.priority as ActivityFormValues['priority'],
                 }
               : { account_id: deal.account_id, deal_id: deal.id }
             }
@@ -543,37 +419,12 @@ export function DealDetail({ deal, activities, tasks, communications, pipelines,
         </Modal>
       )}
 
-      {taskModal && (
-        <Modal
-          open
-          onClose={() => { setTaskModal(null); router.refresh(); }}
-          title={taskModal.mode === 'edit' ? 'Taak bewerken' : 'Nieuwe taak'}
-        >
-          <TaskForm
-            defaultValues={taskModal.mode === 'edit'
-              ? {
-                  ...taskModal.task,
-                  id: taskModal.task.id,
-                  priority: taskModal.task.priority as 'High' | 'Medium' | 'Low',
-                  status: taskModal.task.status as 'Open' | 'In Progress' | 'Done',
-                }
-              : { account_id: deal.account_id ?? undefined, deal_id: deal.id }
-            }
-            owners={owners}
-            onSuccess={() => { setTaskModal(null); router.refresh(); }}
-            onCancel={() => setTaskModal(null)}
-          />
-        </Modal>
-      )}
-
       {confirmDelete && (
         <ConfirmDialog
           open
           onOpenChange={(open) => { if (!open) setConfirmDelete(null); }}
-          title={confirmDelete.type === 'activity' ? 'Activiteit verwijderen?' : 'Taak verwijderen?'}
-          description={confirmDelete.type === 'activity'
-            ? 'Deze activiteit wordt permanent verwijderd.'
-            : 'Deze taak wordt permanent verwijderd.'}
+          title="Activiteit verwijderen?"
+          description="Deze activiteit wordt permanent verwijderd."
           onConfirm={handleConfirmDelete}
         />
       )}

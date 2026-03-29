@@ -10,22 +10,18 @@ import type { Contract } from '@/features/contracts/types';
 
 type Props = {
   hasFramework: boolean;
-  setHasFramework: (v: boolean) => void;
   frameworkUrl: string;
-  setFrameworkUrl: (v: string) => void;
   frameworkDoc: string;
-  setFrameworkDoc: (v: string) => void;
+  onChange: (updates: { hasFramework?: boolean; frameworkUrl?: string; frameworkDoc?: string }) => void;
   contract: Contract | null;
   accountId: string;
 };
 
 export function ContractFrameworkCard({
   hasFramework,
-  setHasFramework,
   frameworkUrl,
-  setFrameworkUrl,
   frameworkDoc,
-  setFrameworkDoc,
+  onChange,
   contract,
   accountId,
 }: Props) {
@@ -34,7 +30,7 @@ export function ContractFrameworkCard({
       <CardContent className="p-5 space-y-4">
         <div className="flex items-center justify-between">
           <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Raamcontract</h2>
-          <Switch checked={hasFramework} onCheckedChange={setHasFramework} />
+          <Switch checked={hasFramework} onCheckedChange={(v) => onChange({ hasFramework: v })} />
         </div>
         {hasFramework && (
           <div className="space-y-4">
@@ -50,13 +46,13 @@ export function ContractFrameworkCard({
             </div>
             <div className="space-y-1.5">
               <Label>Document uploaden</Label>
-              <PdfUploadField value={frameworkDoc} onChange={setFrameworkDoc} folder={`contracts/${accountId}`} />
+              <PdfUploadField value={frameworkDoc} onChange={(v) => onChange({ frameworkDoc: v })} folder={`contracts/${accountId}`} />
             </div>
             <div className="space-y-1.5">
               <Label>Link naar document (URL)</Label>
               <Input
                 value={frameworkUrl}
-                onChange={(e) => setFrameworkUrl(e.target.value)}
+                onChange={(e) => onChange({ frameworkUrl: e.target.value })}
                 placeholder="https://confluence.phpro.be/..."
               />
             </div>

@@ -2,6 +2,7 @@
 
 import { Save, Trash2 } from 'lucide-react';
 import { ConfirmDialog } from '@/components/admin/confirm-dialog';
+import { ModalFooter } from '@/components/admin/modal';
 import { Button } from '@/components/ui/button';
 import { SubmitButton } from '@/components/ui/submit-button';
 import { useDealForm } from '@/features/deals/components/deal-form-context';
@@ -10,7 +11,7 @@ export function DealFormFooter() {
   const { state, actions, meta } = useDealForm();
 
   return (
-    <div className="flex justify-between mt-6 pt-4 border-t">
+    <ModalFooter className="justify-between">
       <div>
         {meta.isEdit && (
           <ConfirmDialog
@@ -35,6 +36,6 @@ export function DealFormFooter() {
           {meta.isEdit ? 'Bijwerken' : 'Aanmaken'}
         </SubmitButton>
       </div>
-    </div>
+    </ModalFooter>
   );
 }

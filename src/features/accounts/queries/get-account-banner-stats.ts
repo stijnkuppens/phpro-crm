@@ -13,8 +13,7 @@ export type AccountBannerStats = {
 
 export const getAccountBannerStats = cache(async (accountId: string): Promise<AccountBannerStats> => {
   const supabase = await createServerClient();
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- RPC added in migration 00079
-  const { data, error } = await (supabase.rpc as any)('get_account_banner_stats', { p_account_id: accountId }).single();
+  const { data, error } = await supabase.rpc('get_account_banner_stats', { p_account_id: accountId }).single();
 
   if (error || !data) {
     logger.error({ err: error, entity: 'accounts' }, 'Failed to fetch account banner stats');

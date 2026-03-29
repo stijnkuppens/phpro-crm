@@ -1,12 +1,18 @@
 'use client';
 
 import { useState, useCallback, useEffect, useMemo, useRef } from 'react';
+import { Plus } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { ListPageToolbar } from '@/components/admin/list-page-toolbar';
 import { useEntity } from '@/lib/hooks/use-entity';
 import { buildFilterQuery, type FilterOption } from '@/components/admin/data-table-filters';
 import { dealColumns } from '../columns';
 import { DealList } from './deal-list';
 import { DEAL_SELECT, ORIGIN_OPTIONS, FORECAST_CATEGORY_OPTIONS, PAGE_SIZE } from '../constants';
 import type { DealWithRelations, Pipeline } from '../types';
+import dynamic from 'next/dynamic';
+
+const DealEditModal = dynamic(() => import('./deal-edit-modal').then(m => ({ default: m.DealEditModal })), { ssr: false });
 
 type Props = {
   pipelines: Pipeline[];
@@ -19,6 +25,7 @@ type Props = {
 export function AccountDealsPanel({ pipelines, initialDeals, initialCount, owners, accountId }: Props) {
   const [filters, setFilters] = useState<Record<string, string | undefined>>({});
   const [page, setPage] = useState(1);
+  const [showNewDeal, setShowNewDeal] = useState(false);
   const isInitialMount = useRef(true);
 
   const { data, total, loading, refreshing, fetchList } = useEntity<DealWithRelations>({
@@ -81,25 +88,46 @@ export function AccountDealsPanel({ pipelines, initialDeals, initialCount, owner
   useEffect(() => {
     if (isInitialMount.current) {
       isInitialMount.current = false;
-      if (initialDeals && page === 1) return;
+      return;
     }
     load();
-  }, [load, initialDeals, page, filters]);
+  }, [load]);
 
   return (
-    <DealList
-      deals={data}
-      page={page}
-      total={total}
-      onPageChange={setPage}
-      onRefresh={() => load()}
-      loading={loading}
-      refreshing={refreshing}
-      filters={filters}
-      onFilterChange={handleFilterChange}
-      filterOptions={filterOptions}
-      pipelines={pipelines}
-      owners={owners}
-    />
+    <>
+      <div className="space-y-4 mt-4">
+        <ListPageToolbar
+          actions={
+            <Button size="sm" onClick={() => setShowNewDeal(true)}>
+              <Plus /> Nieuwe deal
+            </Button>
+          }
+        />
+        <DealList
+          deals={data}
+          page={page}
+          total={total}
+          onPageChange={setPage}
+          onRefresh={() => load()}
+          loading={loading}
+          refreshing={refreshing}
+          filters={filters}
+          onFilterChange={handleFilterChange}
+          filterOptions={filterOptions}
+          pipelines={pipelines}
+          owners={owners}
+        />
+      </div>
+
+      {showNewDeal && (
+        <DealEditModal
+          open
+          onClose={() => { setShowNewDeal(false); load(); }}
+          pipelines={pipelines}
+          owners={owners}
+          accountId={accountId}
+        />
+      )}
+    </>
   );
 }

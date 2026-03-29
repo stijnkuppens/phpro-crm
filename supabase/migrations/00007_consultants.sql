@@ -67,6 +67,9 @@ CREATE TRIGGER set_updated_at BEFORE UPDATE ON consultants
 CREATE INDEX idx_consultants_status ON consultants(status);
 CREATE INDEX idx_consultants_account ON consultants(account_id);
 CREATE INDEX idx_consultants_archived ON consultants(is_archived);
+CREATE INDEX idx_consultants_first_name_trgm ON consultants USING gin (first_name gin_trgm_ops);
+CREATE INDEX idx_consultants_last_name_trgm ON consultants USING gin (last_name gin_trgm_ops);
+CREATE INDEX idx_consultants_client_name_trgm ON consultants USING gin (client_name gin_trgm_ops);
 
 -- RLS
 ALTER TABLE consultants ENABLE ROW LEVEL SECURITY;
@@ -293,10 +296,17 @@ SECURITY DEFINER
 SET search_path = public
 AS $$
 DECLARE
-  v_consultant consultants%ROWTYPE;
-  v_account_name TEXT;
+  v_role           text;
+  v_consultant     consultants%ROWTYPE;
+  v_account_name   TEXT;
   v_effective_role TEXT;
 BEGIN
+  -- Auth guard: only admin, sales_manager, and customer_success may call this function
+  SELECT role INTO v_role FROM user_profiles WHERE id = (SELECT auth.uid());
+  IF v_role NOT IN ('admin', 'sales_manager', 'customer_success') THEN
+    RAISE EXCEPTION 'Insufficient permissions';
+  END IF;
+
   -- 1. Validate hourly rate
   IF p_hourly_rate IS NULL OR p_hourly_rate <= 0 THEN
     RAISE EXCEPTION 'Uurtarief moet groter zijn dan 0';

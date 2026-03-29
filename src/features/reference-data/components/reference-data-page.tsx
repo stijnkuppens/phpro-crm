@@ -27,6 +27,11 @@ import {
 } from '../actions/manage-reference-items';
 import { updateInternalPersonAvatar } from '../actions/update-internal-person-avatar';
 
+type FormMode =
+  | { mode: 'idle' }
+  | { mode: 'edit'; id: string; values: RefItemFormValues }
+  | { mode: 'add'; values: RefItemFormValues };
+
 type Props = {
   initialTable: RefTableKey;
   initialData: ReferenceItem[];
@@ -35,10 +40,7 @@ type Props = {
 export function ReferenceDataPage({ initialTable, initialData }: Props) {
   const [selectedTable, setSelectedTable] = useState<RefTableKey>(initialTable);
   const [items, setItems] = useState<ReferenceItem[]>(initialData);
-  const [editingId, setEditingId] = useState<string | null>(null);
-  const [editValues, setEditValues] = useState<RefItemFormValues>({ name: '', sort_order: 0, is_active: true });
-  const [showAdd, setShowAdd] = useState(false);
-  const [addValues, setAddValues] = useState<RefItemFormValues>({ name: '', sort_order: 0, is_active: true });
+  const [formMode, setFormMode] = useState<FormMode>({ mode: 'idle' });
   const [isPending, startTransition] = useTransition();
 
   // Client-side fetch is intentional for tab switching: the server page passes
@@ -49,7 +51,6 @@ export function ReferenceDataPage({ initialTable, initialData }: Props) {
     const columns = table === 'ref_internal_people'
       ? 'id, name, sort_order, is_active:active, avatar_url, created_at, updated_at'
       : 'id, name, sort_order, is_active:active, created_at, updated_at';
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { data, error } = await (supabase.from(table) as any)
       .select(columns)
       .order('sort_order', { ascending: true })
@@ -64,27 +65,25 @@ export function ReferenceDataPage({ initialTable, initialData }: Props) {
 
   function handleTableSwitch(table: RefTableKey) {
     setSelectedTable(table);
-    setEditingId(null);
-    setShowAdd(false);
+    setFormMode({ mode: 'idle' });
     fetchItems(table);
   }
 
   function startEdit(item: ReferenceItem) {
-    setEditingId(item.id);
-    setEditValues({ name: item.name, sort_order: item.sort_order, is_active: item.is_active });
-    setShowAdd(false);
+    setFormMode({ mode: 'edit', id: item.id, values: { name: item.name, sort_order: item.sort_order, is_active: item.is_active } });
   }
 
   function cancelEdit() {
-    setEditingId(null);
+    setFormMode({ mode: 'idle' });
   }
 
   function handleSaveEdit(id: string) {
+    if (formMode.mode !== 'edit') return;
     startTransition(async () => {
-      const result = await updateReferenceItem(selectedTable, id, editValues);
+      const result = await updateReferenceItem(selectedTable, id, formMode.values);
       if (result.success) {
         toast.success('Item bijgewerkt');
-        setEditingId(null);
+        setFormMode({ mode: 'idle' });
         await fetchItems(selectedTable);
       } else {
         toast.error(typeof result.error === 'string' ? result.error : 'Validatiefout');
@@ -109,12 +108,12 @@ export function ReferenceDataPage({ initialTable, initialData }: Props) {
   }
 
   function handleAdd() {
+    if (formMode.mode !== 'add') return;
     startTransition(async () => {
-      const result = await createReferenceItem(selectedTable, addValues);
+      const result = await createReferenceItem(selectedTable, formMode.values);
       if (result.success) {
         toast.success('Item toegevoegd');
-        setShowAdd(false);
-        setAddValues({ name: '', sort_order: 0, is_active: true });
+        setFormMode({ mode: 'idle' });
         await fetchItems(selectedTable);
       } else {
         toast.error(typeof result.error === 'string' ? result.error : 'Validatiefout');
@@ -160,7 +159,7 @@ export function ReferenceDataPage({ initialTable, initialData }: Props) {
       <div className="flex-1 space-y-4">
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-semibold">{selectedLabel}</h2>
-          <Button size="sm" onClick={() => { setShowAdd(true); setEditingId(null); }}>
+          <Button size="sm" onClick={() => setFormMode({ mode: 'add', values: { name: '', sort_order: 0, is_active: true } })}>
             Toevoegen
           </Button>
         </div>
@@ -176,13 +175,13 @@ export function ReferenceDataPage({ initialTable, initialData }: Props) {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {showAdd && (
+            {formMode.mode === 'add' && (
               <TableRow>
                 {hasAvatar && <TableCell />}
                 <TableCell>
                   <Input
-                    value={addValues.name}
-                    onChange={(e) => setAddValues((v) => ({ ...v, name: e.target.value }))}
+                    value={formMode.values.name}
+                    onChange={(e) => setFormMode((prev) => prev.mode === 'add' ? { ...prev, values: { ...prev.values, name: e.target.value } } : prev)}
                     placeholder="Naam"
                     autoFocus
                   />
@@ -190,8 +189,8 @@ export function ReferenceDataPage({ initialTable, initialData }: Props) {
                 <TableCell>
                   <Input
                     type="number"
-                    value={addValues.sort_order}
-                    onChange={(e) => setAddValues((v) => ({ ...v, sort_order: parseInt(e.target.value) || 0 }))}
+                    value={formMode.values.sort_order}
+                    onChange={(e) => setFormMode((prev) => prev.mode === 'add' ? { ...prev, values: { ...prev.values, sort_order: parseInt(e.target.value) || 0 } } : prev)}
                     className="w-20"
                   />
                 </TableCell>
@@ -202,7 +201,7 @@ export function ReferenceDataPage({ initialTable, initialData }: Props) {
                       <Save />
                       Opslaan
                     </Button>
-                    <Button size="sm" variant="ghost" onClick={() => setShowAdd(false)}>
+                    <Button size="sm" variant="ghost" onClick={() => setFormMode({ mode: 'idle' })}>
                       Annuleer
                     </Button>
                   </div>
@@ -211,7 +210,7 @@ export function ReferenceDataPage({ initialTable, initialData }: Props) {
             )}
             {items.map((item) => (
               <TableRow key={item.id}>
-                {editingId === item.id ? (
+                {formMode.mode === 'edit' && formMode.id === item.id ? (
                   <>
                     {hasAvatar && (
                       <TableCell>
@@ -233,22 +232,22 @@ export function ReferenceDataPage({ initialTable, initialData }: Props) {
                     )}
                     <TableCell>
                       <Input
-                        value={editValues.name}
-                        onChange={(e) => setEditValues((v) => ({ ...v, name: e.target.value }))}
+                        value={formMode.values.name}
+                        onChange={(e) => setFormMode((prev) => prev.mode === 'edit' ? { ...prev, values: { ...prev.values, name: e.target.value } } : prev)}
                       />
                     </TableCell>
                     <TableCell>
                       <Input
                         type="number"
-                        value={editValues.sort_order}
-                        onChange={(e) => setEditValues((v) => ({ ...v, sort_order: parseInt(e.target.value) || 0 }))}
+                        value={formMode.values.sort_order}
+                        onChange={(e) => setFormMode((prev) => prev.mode === 'edit' ? { ...prev, values: { ...prev.values, sort_order: parseInt(e.target.value) || 0 } } : prev)}
                         className="w-20"
                       />
                     </TableCell>
                     <TableCell>
                       <Switch
-                        checked={editValues.is_active}
-                        onCheckedChange={(checked) => setEditValues((v) => ({ ...v, is_active: checked }))}
+                        checked={formMode.values.is_active}
+                        onCheckedChange={(checked) => setFormMode((prev) => prev.mode === 'edit' ? { ...prev, values: { ...prev.values, is_active: checked } } : prev)}
                       />
                     </TableCell>
                     <TableCell>
@@ -324,7 +323,7 @@ export function ReferenceDataPage({ initialTable, initialData }: Props) {
                 )}
               </TableRow>
             ))}
-            {items.length === 0 && !showAdd && (
+            {items.length === 0 && formMode.mode !== 'add' && (
               <TableRow>
                 <TableCell colSpan={hasAvatar ? 5 : 4} className="text-center text-muted-foreground py-8">
                   Geen items gevonden

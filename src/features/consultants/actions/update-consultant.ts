@@ -43,8 +43,7 @@ export async function updateConsultant(
   const schema = consultant.status === 'bench' ? benchConsultantFormSchema : consultantFormSchema;
   const parsed = schema.safeParse(values);
   if (!parsed.success) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- schema is dynamic (bench vs active), creating a union type
-    return err(z.flattenError(parsed.error as any).fieldErrors);
+    return err(parsed.error.flatten().fieldErrors);
   }
 
   const { error: updateError } = await supabase

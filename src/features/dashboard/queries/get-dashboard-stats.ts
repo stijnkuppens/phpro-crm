@@ -12,8 +12,7 @@ export const getDashboardStats = cache(async (): Promise<DashboardStats> => {
   const supabase = await createServerClient();
 
   const [dealValueResult, accountsResult, activitiesResult, tasksResult] = await Promise.all([
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- RPC added in migration 00074, regenerate types with `task types:generate`
-    (supabase.rpc as any)('get_open_deal_value') as Promise<{ data: number | null; error: unknown }>,
+    supabase.rpc('get_open_deal_value'),
     supabase
       .from('accounts')
       .select('*', { count: 'exact', head: true }),

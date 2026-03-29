@@ -2,7 +2,7 @@
 
 import { useActionState, useState } from 'react';
 import { toast } from 'sonner';
-import { Modal } from '@/components/admin/modal';
+import { Modal, ModalFooter } from '@/components/admin/modal';
 import { Input } from '@/components/ui/input';
 import { DatePicker } from '@/components/ui/date-picker';
 import { Label } from '@/components/ui/label';
@@ -71,10 +71,10 @@ export function StopConsultantModal({ consultantId, open, onClose, onSuccess }: 
           />
           <Label htmlFor="move_to_bench">Naar bench verplaatsen</Label>
         </div>
-        <div className="flex gap-2 justify-end">
+        <ModalFooter>
           <Button type="button" variant="outline" onClick={onClose}>Annuleren</Button>
           <SubmitButton variant="destructive">Stopzetten</SubmitButton>
-        </div>
+        </ModalFooter>
       </form>
     </Modal>
   );

@@ -85,7 +85,6 @@ export function useRealtime<T extends Record<string, unknown>>(
     return () => {
       supabase.removeChannel(channel);
     };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [table, options?.filter]);
 
   return { data, events };

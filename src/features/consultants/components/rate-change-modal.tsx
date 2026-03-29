@@ -2,7 +2,7 @@
 
 import { useActionState } from 'react';
 import { toast } from 'sonner';
-import { Modal } from '@/components/admin/modal';
+import { Modal, ModalFooter } from '@/components/admin/modal';
 import { Input } from '@/components/ui/input';
 import { DatePicker } from '@/components/ui/date-picker';
 import { Label } from '@/components/ui/label';
@@ -60,10 +60,10 @@ export function RateChangeModal({ consultantId, open, onClose, onSuccess }: Prop
           <Label htmlFor="notes">Notities</Label>
           <Textarea id="notes" name="notes" rows={2} />
         </div>
-        <div className="flex gap-2 justify-end">
+        <ModalFooter>
           <Button type="button" variant="outline" onClick={onClose}>Annuleren</Button>
           <SubmitButton icon={<Save />}>Opslaan</SubmitButton>
-        </div>
+        </ModalFooter>
       </form>
     </Modal>
   );

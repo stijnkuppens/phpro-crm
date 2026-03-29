@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { DatePicker } from '@/components/ui/date-picker';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Modal } from '@/components/admin/modal';
+import { Modal, ModalFooter } from '@/components/admin/modal';
 import { Save } from 'lucide-react';
 import { z } from 'zod';
 import { closeDealSchema, type CloseDealValues } from '../types';
@@ -106,7 +106,7 @@ export function CloseDealModal({ dealId, open, onOpenChange, onSuccess, initialT
               <DatePicker name="longterm_date" required />
             </div>
           )}
-          <div className="flex gap-2 justify-end">
+          <ModalFooter>
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
               Annuleren
             </Button>
@@ -114,7 +114,7 @@ export function CloseDealModal({ dealId, open, onOpenChange, onSuccess, initialT
               <Save />
               {loading ? 'Opslaan...' : 'Bevestigen'}
             </Button>
-          </div>
+          </ModalFooter>
         </form>
     </Modal>
   );

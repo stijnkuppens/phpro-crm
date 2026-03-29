@@ -12,6 +12,7 @@
 -- ── Extensions ──────────────────────────────────────────────────────────────
 
 CREATE EXTENSION IF NOT EXISTS moddatetime SCHEMA extensions;
+CREATE EXTENSION IF NOT EXISTS pg_trgm;
 
 -- ── Tables ──────────────────────────────────────────────────────────────────
 
@@ -126,8 +127,26 @@ CREATE TRIGGER guard_role_change
   BEFORE UPDATE ON public.user_profiles
   FOR EACH ROW EXECUTE FUNCTION public.prevent_role_change();
 
--- NOTE: sync_role_to_jwt() trigger is defined in 00014_jwt_claims.sql
--- (it writes role to auth.users.raw_app_meta_data for JWT embedding)
+-- Sync role to JWT: writes role to auth.users.raw_app_meta_data for JWT embedding
+CREATE OR REPLACE FUNCTION public.sync_role_to_jwt()
+RETURNS trigger
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+BEGIN
+  UPDATE auth.users
+  SET raw_app_meta_data = COALESCE(raw_app_meta_data, '{}'::jsonb) || jsonb_build_object('role', NEW.role)
+  WHERE id = NEW.id;
+  RETURN NEW;
+END;
+$$;
+
+DROP TRIGGER IF EXISTS on_role_change_sync_jwt ON user_profiles;
+CREATE TRIGGER on_role_change_sync_jwt
+  AFTER INSERT OR UPDATE OF role ON user_profiles
+  FOR EACH ROW
+  EXECUTE FUNCTION sync_role_to_jwt();
 
 -- ── RLS ─────────────────────────────────────────────────────────────────────
 

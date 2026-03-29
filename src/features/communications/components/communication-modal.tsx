@@ -2,7 +2,7 @@
 
 import { useActionState, useState } from 'react';
 import { toast } from 'sonner';
-import { Modal } from '@/components/admin/modal';
+import { Modal, ModalFooter } from '@/components/admin/modal';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
@@ -207,7 +207,7 @@ export function CommunicationModal({ open, onClose, accountId, contacts = [], de
         </div>
 
         {/* Actions */}
-        <div className="flex justify-end gap-2 pt-2">
+        <ModalFooter>
           <Button type="button" variant="outline" onClick={onClose} disabled={sending}>Annuleer</Button>
           {type === 'email' && (
             <Button
@@ -223,7 +223,7 @@ export function CommunicationModal({ open, onClose, accountId, contacts = [], de
           <SubmitButton icon={<Save />} disabled={sending}>
             {isEdit ? 'Bijwerken' : 'Opslaan'}
           </SubmitButton>
-        </div>
+        </ModalFooter>
       </form>
     </Modal>
   );

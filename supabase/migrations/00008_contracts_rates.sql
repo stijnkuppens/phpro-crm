@@ -23,12 +23,22 @@ CREATE TABLE public.contracts (
   service_start          date,
   service_end            date,
   service_indefinite     bool NOT NULL DEFAULT false,
-  purchase_orders_url    text,
+  purchase_orders_url      text,
+  framework_doc_path       text,
+  service_doc_path         text,
+  purchase_orders_doc_path text,
   created_at             timestamptz NOT NULL DEFAULT now(),
   updated_at             timestamptz NOT NULL DEFAULT now()
 );
 
 CREATE INDEX idx_contracts_account ON public.contracts(account_id);
+
+COMMENT ON COLUMN public.contracts.framework_pdf_url IS 'External URL (e.g. Confluence) for raamcontract document';
+COMMENT ON COLUMN public.contracts.framework_doc_path IS 'Supabase Storage path for uploaded raamcontract document';
+COMMENT ON COLUMN public.contracts.service_pdf_url IS 'External URL (e.g. Confluence) for service contract document';
+COMMENT ON COLUMN public.contracts.service_doc_path IS 'Supabase Storage path for uploaded service contract document';
+COMMENT ON COLUMN public.contracts.purchase_orders_url IS 'External URL (e.g. Confluence) for purchase orders';
+COMMENT ON COLUMN public.contracts.purchase_orders_doc_path IS 'Supabase Storage path for uploaded purchase orders document';
 
 CREATE TRIGGER set_contracts_updated_at
   BEFORE UPDATE ON public.contracts

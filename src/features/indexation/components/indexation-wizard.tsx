@@ -60,44 +60,56 @@ export function IndexationWizard({ accountId, open, onClose, draft }: Props) {
   });
 
   // Step 3: Negotiation state
-  const [draftRates, setDraftRates] = useState<Record<string, string>>(() => {
-    if (!hasDraftData) return {};
-    const map: Record<string, string> = {};
-    for (const r of draft.rates) {
-      map[r.role] = String(Number(r.proposed_rate));
+  type NegotiationState = {
+    rates: Record<string, string>;
+    sla: Record<string, string>;
+    pctHourly: string;
+    pctSla: string;
+    info: string;
+  };
+
+  const [negotiation, setNegotiation] = useState<NegotiationState>(() => {
+    const rates: Record<string, string> = {};
+    if (hasDraftData) {
+      for (const r of draft.rates) rates[r.role] = String(Number(r.proposed_rate));
     }
-    return map;
-  });
-  const [draftSla, setDraftSla] = useState<Record<string, string>>(() => {
-    if (!draft?.sla) return {} as Record<string, string>;
+    const sla: Record<string, string> = draft?.sla
+      ? {
+          fixed_monthly_rate: String(Number(draft.sla.fixed_monthly_rate)),
+          support_hourly_rate: String(Number(draft.sla.support_hourly_rate)),
+        }
+      : {};
     return {
-      fixed_monthly_rate: String(Number(draft.sla.fixed_monthly_rate)),
-      support_hourly_rate: String(Number(draft.sla.support_hourly_rate)),
-    } as Record<string, string>;
+      rates,
+      sla,
+      pctHourly: draft?.adjustment_pct_hourly != null ? String(Number(draft.adjustment_pct_hourly)) : '',
+      pctSla: draft?.adjustment_pct_sla != null ? String(Number(draft.adjustment_pct_sla)) : '',
+      info: draft?.info ?? '',
+    };
   });
-  const [draftPctHourly, setDraftPctHourly] = useState(
-    draft?.adjustment_pct_hourly != null ? String(Number(draft.adjustment_pct_hourly)) : '',
-  );
-  const [draftPctSla, setDraftPctSla] = useState(
-    draft?.adjustment_pct_sla != null ? String(Number(draft.adjustment_pct_sla)) : '',
-  );
-  const [draftInfo, setDraftInfo] = useState(draft?.info ?? '');
+
+  const updateNegotiation = useCallback((updates: Partial<NegotiationState>) => {
+    setNegotiation((prev) => ({ ...prev, ...updates }));
+  }, []);
+
   const [draftId, setDraftId] = useState<string | null>(draft?.id ?? null);
 
   // Initialize negotiation state from simulation
   const initNegotiationFromSim = useCallback((sim: SimulationResult) => {
     const rates: Record<string, string> = {};
     for (const r of sim.rates) rates[r.role] = String(r.proposed_rate);
-    setDraftRates(rates);
-    if (sim.sla) {
-      setDraftSla({
-        fixed_monthly_rate: String(sim.sla.proposed_fixed),
-        support_hourly_rate: String(sim.sla.proposed_support),
-      });
-    }
-    setDraftPctHourly(String(percentage));
-    setDraftPctSla(String(percentage));
-  }, [percentage]);
+    updateNegotiation({
+      rates,
+      sla: sim.sla
+        ? {
+            fixed_monthly_rate: String(sim.sla.proposed_fixed),
+            support_hourly_rate: String(sim.sla.proposed_support),
+          }
+        : {},
+      pctHourly: String(percentage),
+      pctSla: String(percentage),
+    });
+  }, [percentage, updateNegotiation]);
 
   // Bulk recalculate hourly rates from a new %
   const recalcHourly = useCallback((pct: number) => {
@@ -106,26 +118,28 @@ export function IndexationWizard({ accountId, open, onClose, draft }: Props) {
     for (const r of simulation.rates) {
       rates[r.role] = String(applyIndex(r.current_rate, pct));
     }
-    setDraftRates(rates);
-  }, [simulation]);
+    updateNegotiation({ rates });
+  }, [simulation, updateNegotiation]);
 
   // Bulk recalculate SLA from a new %
   const recalcSla = useCallback((pct: number) => {
     if (!simulation?.sla) return;
-    setDraftSla({
-      fixed_monthly_rate: String(applyIndex(simulation.sla.fixed_monthly_rate, pct)),
-      support_hourly_rate: String(applyIndex(simulation.sla.support_hourly_rate, pct)),
+    updateNegotiation({
+      sla: {
+        fixed_monthly_rate: String(applyIndex(simulation.sla.fixed_monthly_rate, pct)),
+        support_hourly_rate: String(applyIndex(simulation.sla.support_hourly_rate, pct)),
+      },
     });
-  }, [simulation]);
+  }, [simulation, updateNegotiation]);
 
   // Get final negotiated value (draft or simulated fallback)
   const getFinalRate = useCallback((role: string) => {
-    return Number(draftRates[role]) || 0;
-  }, [draftRates]);
+    return Number(negotiation.rates[role]) || 0;
+  }, [negotiation.rates]);
 
   const getFinalSla = useCallback((key: string) => {
-    return Number(draftSla[key]) || 0;
-  }, [draftSla]);
+    return Number(negotiation.sla[key]) || 0;
+  }, [negotiation.sla]);
 
   // Step 1: Simulate
   async function handleSimulate() {
@@ -159,9 +173,9 @@ export function IndexationWizard({ accountId, open, onClose, draft }: Props) {
       target_year: targetYear,
       base_year: baseYear,
       percentage,
-      info: draftInfo || undefined,
-      adjustment_pct_hourly: Number(draftPctHourly) || null,
-      adjustment_pct_sla: Number(draftPctSla) || null,
+      info: negotiation.info || undefined,
+      adjustment_pct_hourly: Number(negotiation.pctHourly) || null,
+      adjustment_pct_sla: Number(negotiation.pctSla) || null,
       rates: simulation.rates.map((r) => ({
         role: r.role,
         current_rate: r.current_rate,
@@ -386,9 +400,9 @@ export function IndexationWizard({ accountId, open, onClose, draft }: Props) {
                 <Input
                   type="number"
                   step="0.1"
-                  value={draftPctHourly}
+                  value={negotiation.pctHourly}
                   onChange={(e) => {
-                    setDraftPctHourly(e.target.value);
+                    updateNegotiation({ pctHourly: e.target.value });
                     const p = Number(e.target.value);
                     if (p > 0) recalcHourly(p);
                   }}
@@ -399,7 +413,7 @@ export function IndexationWizard({ accountId, open, onClose, draft }: Props) {
               <Button
                 variant="ghost"
                 size="icon-sm"
-                onClick={() => { setDraftPctHourly(String(percentage)); recalcHourly(percentage); }}
+                onClick={() => { updateNegotiation({ pctHourly: String(percentage) }); recalcHourly(percentage); }}
                 title="Reset naar simulatie %"
               >
                 <RotateCcw className="h-3.5 w-3.5" />
@@ -411,9 +425,9 @@ export function IndexationWizard({ accountId, open, onClose, draft }: Props) {
                 <Input
                   type="number"
                   step="0.1"
-                  value={draftPctSla}
+                  value={negotiation.pctSla}
                   onChange={(e) => {
-                    setDraftPctSla(e.target.value);
+                    updateNegotiation({ pctSla: e.target.value });
                     const p = Number(e.target.value);
                     if (p > 0) recalcSla(p);
                   }}
@@ -424,7 +438,7 @@ export function IndexationWizard({ accountId, open, onClose, draft }: Props) {
               <Button
                 variant="ghost"
                 size="icon-sm"
-                onClick={() => { setDraftPctSla(String(percentage)); recalcSla(percentage); }}
+                onClick={() => { updateNegotiation({ pctSla: String(percentage) }); recalcSla(percentage); }}
                 title="Reset naar simulatie %"
               >
                 <RotateCcw className="h-3.5 w-3.5" />
@@ -445,7 +459,7 @@ export function IndexationWizard({ accountId, open, onClose, draft }: Props) {
               </thead>
               <tbody>
                 {simulation.rates.map((r) => {
-                  const negotiated = Number(draftRates[r.role]) || 0;
+                  const negotiated = Number(negotiation.rates[r.role]) || 0;
                   const diff = negotiated - r.proposed_rate;
                   return (
                     <tr key={r.role} className="border-b last:border-0">
@@ -456,8 +470,8 @@ export function IndexationWizard({ accountId, open, onClose, draft }: Props) {
                         <div className="flex items-center gap-1.5">
                           <Input
                             type="number"
-                            value={draftRates[r.role] ?? ''}
-                            onChange={(e) => setDraftRates((prev) => ({ ...prev, [r.role]: e.target.value }))}
+                            value={negotiation.rates[r.role] ?? ''}
+                            onChange={(e) => setNegotiation((prev) => ({ ...prev, rates: { ...prev.rates, [r.role]: e.target.value } }))}
                             placeholder={String(r.proposed_rate)}
                             className="h-8 text-right text-sm"
                           />
@@ -499,8 +513,8 @@ export function IndexationWizard({ accountId, open, onClose, draft }: Props) {
                       <td className="p-1.5 w-36">
                         <Input
                           type="number"
-                          value={draftSla[row.key] ?? ''}
-                          onChange={(e) => setDraftSla((prev) => ({ ...prev, [row.key]: e.target.value }))}
+                          value={negotiation.sla[row.key] ?? ''}
+                          onChange={(e) => setNegotiation((prev) => ({ ...prev, sla: { ...prev.sla, [row.key]: e.target.value } }))}
                           placeholder={String(row.sim)}
                           className="h-8 text-right text-sm"
                         />
@@ -516,8 +530,8 @@ export function IndexationWizard({ accountId, open, onClose, draft }: Props) {
           <div className="space-y-1.5">
             <Label>Notities (context, afspraken, open punten)</Label>
             <Textarea
-              value={draftInfo}
-              onChange={(e) => setDraftInfo(e.target.value)}
+              value={negotiation.info}
+              onChange={(e) => updateNegotiation({ info: e.target.value })}
               placeholder="Bijv. klant akkoord met 2.5% op uurtarieven, SLA blijft gelijk..."
               rows={3}
             />
@@ -593,19 +607,19 @@ export function IndexationWizard({ accountId, open, onClose, draft }: Props) {
                   <span className="text-muted-foreground">Basisjaar:</span><span className="font-medium">{baseYear}</span>
                   <span className="text-muted-foreground">Doeljaar:</span><span className="font-medium">{targetYear}</span>
                   <span className="text-muted-foreground">Basis %:</span><span className="font-medium">+{percentage}%</span>
-                  {draftPctHourly && Number(draftPctHourly) !== percentage && (
-                    <><span className="text-muted-foreground">Aanpassing uurtarieven:</span><span className="font-medium">+{draftPctHourly}%</span></>
+                  {negotiation.pctHourly && Number(negotiation.pctHourly) !== percentage && (
+                    <><span className="text-muted-foreground">Aanpassing uurtarieven:</span><span className="font-medium">+{negotiation.pctHourly}%</span></>
                   )}
-                  {draftPctSla && Number(draftPctSla) !== percentage && (
-                    <><span className="text-muted-foreground">Aanpassing SLA:</span><span className="font-medium">+{draftPctSla}%</span></>
+                  {negotiation.pctSla && Number(negotiation.pctSla) !== percentage && (
+                    <><span className="text-muted-foreground">Aanpassing SLA:</span><span className="font-medium">+{negotiation.pctSla}%</span></>
                   )}
                 </div>
               </div>
 
-              {draftInfo && (
+              {negotiation.info && (
                 <div className="rounded-lg border bg-muted/30 p-4 text-sm">
                   <div className="text-xs font-medium text-muted-foreground mb-1">Notities</div>
-                  <p className="whitespace-pre-wrap">{draftInfo}</p>
+                  <p className="whitespace-pre-wrap">{negotiation.info}</p>
                 </div>
               )}
             </div>

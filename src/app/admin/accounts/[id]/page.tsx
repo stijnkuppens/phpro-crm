@@ -1,4 +1,7 @@
+import Link from 'next/link';
 import { notFound } from 'next/navigation';
+import { Pencil } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import { getAccount } from '@/features/accounts/queries/get-account';
 import { getContract } from '@/features/contracts/queries/get-contract';
 import { getContactsByAccount } from '@/features/contacts/queries/get-contacts-by-account';
@@ -18,5 +21,14 @@ export default async function AccountOverviewPage({ params }: Props) {
     getReferenceOptions('ref_internal_people'),
   ]);
   if (!account) notFound();
-  return <AccountOverviewTab account={account} contract={contract} contacts={contacts} internalPeople={internalPeople} />;
+  return (
+    <>
+      <div className="flex justify-end">
+        <Button nativeButton={false} render={<Link href={`/admin/accounts/${id}/edit`} />}>
+          <Pencil /> Bewerken
+        </Button>
+      </div>
+      <AccountOverviewTab account={account} contract={contract} contacts={contacts} internalPeople={internalPeople} />
+    </>
+  );
 }

@@ -3,7 +3,7 @@
 import { createContext, use, useReducer, useState, useMemo, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
-import { Modal } from '@/components/admin/modal';
+import { Modal, ModalFooter } from '@/components/admin/modal';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { DatePicker } from '@/components/ui/date-picker';
@@ -159,10 +159,16 @@ function WizardProvider({
   const [benchConsultants, setBenchConsultants] = useState<BenchConsultant[]>([]);
   const [benchLoading, setBenchLoading] = useState(false);
 
+  // Set loading when open changes to true (render-phase setState to avoid lint error)
+  const [prevOpen, setPrevOpen] = useState(open);
+  if (prevOpen !== open) {
+    setPrevOpen(open);
+    if (open) setBenchLoading(true);
+  }
+
   useEffect(() => {
     if (!open) return;
     let cancelled = false;
-    setBenchLoading(true);
     const supabase = createBrowserClient();
     supabase
       .from('consultants')
@@ -201,7 +207,7 @@ function WizardProvider({
     notes: string;
   };
 
-  const initialFormState: WizardFormState = {
+  const initialFormState = useMemo<WizardFormState>(() => ({
     step: initialStep,
     accountId: preselectedAccountId ?? '',
     accountSearch: '',
@@ -217,7 +223,7 @@ function WizardProvider({
     noticePeriod: '30',
     sowUrl: '',
     notes: '',
-  };
+  }), [initialStep, preselectedAccountId, preselectedBenchConsultantId]);
 
   const [form, updateForm] = useReducer(
     (prev: WizardFormState, updates: Partial<WizardFormState>) => ({ ...prev, ...updates }),
@@ -700,7 +706,7 @@ function WizardFooter() {
     && !(state.step === 3 && meta.preselectedAccountId && meta.preselectedBenchConsultantId);
 
   return (
-    <div className="flex justify-between mt-6 pt-4 border-t">
+    <ModalFooter className="justify-between">
       <div>
         {showBack && (
           <Button variant="outline" onClick={() => actions.setStep(state.step - 1)}>
@@ -721,7 +727,7 @@ function WizardFooter() {
           </Button>
         )}
       </div>
-    </div>
+    </ModalFooter>
   );
 }
 

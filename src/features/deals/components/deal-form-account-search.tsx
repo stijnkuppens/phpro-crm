@@ -7,6 +7,7 @@ import { useDealForm } from '@/features/deals/components/deal-form-context';
 export function AccountSearchField() {
   const { state, actions, meta } = useDealForm();
 
+  // eslint-disable-next-line react-hooks/refs -- propAccountId is a plain string, not a ref value
   if (meta.propAccountId) {
     return (
       <div className="space-y-1.5">
@@ -19,6 +20,7 @@ export function AccountSearchField() {
   return (
     <div className="space-y-1.5">
       <Label>Account *</Label>
+      {/* eslint-disable-next-line react-hooks/refs -- passing ref object to ref prop is standard React */}
       <div className="relative" ref={meta.accountSearchRef}>
         <Input
           value={state.selectedAccountId ? state.accountName : state.accountSearch}

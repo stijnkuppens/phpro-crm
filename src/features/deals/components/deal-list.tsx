@@ -6,8 +6,10 @@ import { toast } from 'sonner';
 import { SquarePen, Trash2, CheckCircle2 } from 'lucide-react';
 import DataTable from '@/components/admin/data-table';
 import type { FilterOption } from '@/components/admin/data-table-filters';
+import { StatusBadge } from '@/components/admin/status-badge';
 import { dealColumns } from '../columns';
 import { deleteDeal } from '../actions/delete-deal';
+import { formatEUR } from '@/lib/format';
 import type { DealWithRelations, Pipeline } from '../types';
 import dynamic from 'next/dynamic';
 
@@ -66,6 +68,38 @@ export function DealList({ deals, page, total, onPageChange, onRefresh, loading,
         ]}
         loading={loading}
         refreshing={refreshing}
+        renderMobileCard={(row) => (
+          <div className="flex flex-col gap-1.5 py-1">
+            <span className="font-medium text-sm">{row.title}</span>
+            {row.account?.name && (
+              <span className="text-xs text-muted-foreground">{row.account.name}</span>
+            )}
+            <div className="flex flex-wrap items-center gap-1.5">
+              {row.pipeline?.name && (
+                <StatusBadge positive>{row.pipeline.name}</StatusBadge>
+              )}
+              {row.stage && (
+                <span className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium bg-muted text-foreground">
+                  <span
+                    className="inline-block h-2 w-2 shrink-0 rounded-full"
+                    style={{ backgroundColor: row.stage.color || '#9ca3af' }}
+                  />
+                  {row.stage.name}
+                </span>
+              )}
+              {Number(row.amount) > 0 && (
+                <span className="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium bg-muted text-foreground">
+                  {formatEUR(Number(row.amount))}
+                </span>
+              )}
+            </div>
+            {row.close_date && (
+              <span className="text-xs text-muted-foreground">
+                {new Date(row.close_date).toLocaleDateString('nl-BE', { day: 'numeric', month: 'short', year: 'numeric' })}
+              </span>
+            )}
+          </div>
+        )}
       />
 
       {editDeal && (

@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { toast } from 'sonner';
-import { Modal } from '@/components/admin/modal';
+import { Modal, ModalFooter } from '@/components/admin/modal';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
@@ -118,13 +118,13 @@ export function SlaRatesEditModal({ accountId, year, existingRate, open, onClose
         </div>
       </div>
 
-      <div className="flex justify-end gap-2 pt-4 mt-4 border-t">
+      <ModalFooter>
         <Button variant="outline" onClick={onClose} disabled={loading}>Annuleer</Button>
         <Button onClick={handleSubmit} disabled={loading}>
           <Save />
           {loading ? 'Opslaan...' : 'Opslaan'}
         </Button>
-      </div>
+      </ModalFooter>
     </Modal>
   );
 }

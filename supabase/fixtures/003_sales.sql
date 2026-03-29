@@ -132,23 +132,25 @@ SELECT
 FROM user_profiles up WHERE up.full_name = 'Sales Manager'
 ON CONFLICT DO NOTHING;
 
--- ── Tasks ───────────────────────────────────────────────────────────────────
-INSERT INTO tasks (id, title, due_date, priority, status, account_id, deal_id, assigned_to)
+-- ── Tasks (as activities with type='Taak') ─────────────────────────────────
+INSERT INTO activities (id, type, subject, date, account_id, deal_id, owner_id, is_done, priority, assigned_to)
 SELECT
   'da000000-0000-0000-0000-000000000001'::uuid,
-  'Stuur aangepaste offerte TechVision', '2026-02-18', 'High', 'Open',
+  'Taak',
+  'Stuur aangepaste offerte TechVision', '2026-02-18'::timestamptz,
   'a0000000-0000-0000-0000-000000000001'::uuid,
   'd0000000-0000-0000-0000-000000000001'::uuid,
-  up.id
+  up.id, false, 'High', up.id
 FROM user_profiles up WHERE up.full_name = 'Sales Manager'
 ON CONFLICT DO NOTHING;
 
-INSERT INTO tasks (id, title, due_date, priority, status, account_id, deal_id, assigned_to)
+INSERT INTO activities (id, type, subject, date, account_id, deal_id, owner_id, is_done, priority, assigned_to)
 SELECT
   'da000000-0000-0000-0000-000000000002'::uuid,
-  'Follow-up call Dirk Van Damme', '2026-02-20', 'Medium', 'Open',
+  'Taak',
+  'Follow-up call Dirk Van Damme', '2026-02-20'::timestamptz,
   'a0000000-0000-0000-0000-000000000002'::uuid,
   null,
-  up.id
+  up.id, false, 'Medium', up.id
 FROM user_profiles up WHERE up.full_name = 'Admin User'
 ON CONFLICT DO NOTHING;

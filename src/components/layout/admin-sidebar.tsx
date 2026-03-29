@@ -23,7 +23,6 @@ import {
   Users,
   TrendingUp,
   Activity,
-  CheckSquare,
   Settings,
   Bell,
   ScrollText,
@@ -50,7 +49,6 @@ export function AdminSidebar() {
         { label: t('contacts'), href: '/admin/contacts', icon: Contact },
         { label: t('deals'), href: '/admin/deals', icon: TrendingUp },
         { label: t('activities'), href: '/admin/activities', icon: Activity },
-        { label: t('tasks'), href: '/admin/tasks', icon: CheckSquare },
       ],
     },
     {

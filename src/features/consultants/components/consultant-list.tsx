@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { useQueryState, parseAsInteger, parseAsArrayOf, parseAsString } from 'nuqs';
 import { useRouter } from 'next/navigation';
 import {
   Plus,
@@ -40,6 +41,14 @@ const RateChangeModal = dynamic(() => import('./rate-change-modal').then(m => ({
 import { moveToBench } from '../actions/move-to-bench';
 import { formatEUR } from '@/lib/format';
 import { escapeSearch } from '@/lib/utils/escape-search';
+import { Avatar } from '@/components/admin/avatar';
+import { StatusBadge } from '@/components/admin/status-badge';
+import {
+  CONSULTANT_STATUS_STYLES,
+  CONSULTANT_STATUS_LABELS,
+  contractStatusColors,
+} from '../types';
+import { getContractStatus, getCurrentRate } from '../utils';
 
 type Stats = {
   benchCount: number;
@@ -68,9 +77,9 @@ const statusPills: { value: ConsultantStatus | 'archived'; label: string }[] = [
 
 export function ConsultantListView({ initialData, initialCount, stats, accounts, roles }: Props) {
   const router = useRouter();
-  const [search, setSearch] = useState('');
-  const [selectedStatuses, setSelectedStatuses] = useState<(ConsultantStatus | 'archived')[]>(['bench', 'actief']);
-  const [page, setPage] = useState(1);
+  const [search, setSearch] = useQueryState('q', { defaultValue: '' });
+  const [selectedStatuses, setSelectedStatuses] = useQueryState('statuses', parseAsArrayOf(parseAsString).withDefault(['bench', 'actief']));
+  const [page, setPage] = useQueryState('page', parseAsInteger.withDefault(1));
   type ActiveModal =
     | { type: 'view'; consultant: ConsultantWithDetails }
     | { type: 'edit'; consultant: ConsultantWithDetails }
@@ -103,7 +112,6 @@ export function ConsultantListView({ initialData, initialCount, stats, accounts,
       page,
       sort: { column: 'last_name', direction: 'asc' },
       orFilter,
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       applyFilters: (q: any) => {
         if (showArchived && realStatuses.length === 0) {
           return q.eq('is_archived', true);
@@ -128,16 +136,13 @@ export function ConsultantListView({ initialData, initialCount, stats, accounts,
       return;
     }
     load();
-  }, [load, page, search, selectedStatuses]);
-
-  useEffect(() => {
-    setPage(1);
-  }, [search, selectedStatuses]);
+  }, [load]);
 
   function toggleStatus(s: ConsultantStatus | 'archived') {
     setSelectedStatuses((prev) =>
       prev.includes(s) ? prev.filter((v) => v !== s) : [...prev, s],
     );
+    setPage(1);
   }
 
   function handleRefresh() {
@@ -234,8 +239,8 @@ export function ConsultantListView({ initialData, initialCount, stats, accounts,
               <Input
                 placeholder="Zoek consultant..."
                 value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="w-64"
+                onChange={(e) => { setSearch(e.target.value); setPage(1); }}
+                className="w-full sm:w-64"
               />
               <div className="flex gap-1.5">
                 {statusPills.map((pill) => {
@@ -258,6 +263,55 @@ export function ConsultantListView({ initialData, initialCount, stats, accounts,
           pagination={{ page, pageSize: PAGE_SIZE, total }}
           onPageChange={setPage}
           rowActions={(row) => getRowActions(row)}
+          renderMobileCard={(row) => {
+            const name = `${row.first_name} ${row.last_name}`;
+            const initials = [row.first_name, row.last_name]
+              .map((w) => w?.[0]?.toUpperCase() ?? '')
+              .join('');
+            const rate = row.status === 'bench'
+              ? (() => {
+                  if (row.min_hourly_rate != null && row.max_hourly_rate != null)
+                    return `${formatEUR(row.min_hourly_rate)}–${formatEUR(row.max_hourly_rate)}/u`;
+                  if (row.min_hourly_rate != null) return `vanaf ${formatEUR(row.min_hourly_rate)}/u`;
+                  if (row.max_hourly_rate != null) return `tot ${formatEUR(row.max_hourly_rate)}/u`;
+                  return null;
+                })()
+              : `${formatEUR(getCurrentRate(row))}/u`;
+            const contractStatus = row.status === 'actief' && !row.is_archived
+              ? getContractStatus(row)
+              : null;
+            const roleLabel = row.status === 'bench' ? row.roles?.[0] : row.role;
+            const clientName = row.account?.name ?? row.client_name;
+            return (
+              <div className="flex items-start gap-3">
+                <Avatar fallback={initials} path={row.avatar_path} size="md" round />
+                <div className="min-w-0 flex-1">
+                  <div className="flex flex-wrap items-center gap-1.5">
+                    <span className="font-medium">{name}</span>
+                    <StatusBadge colorMap={CONSULTANT_STATUS_STYLES} value={row.status}>
+                      {CONSULTANT_STATUS_LABELS[row.status as keyof typeof CONSULTANT_STATUS_LABELS] ?? row.status}
+                    </StatusBadge>
+                    {contractStatus && (
+                      <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${contractStatusColors[contractStatus]}`}>
+                        {contractStatus}
+                      </span>
+                    )}
+                  </div>
+                  {row.city && (
+                    <div className="mt-0.5 text-xs text-muted-foreground">{row.city}</div>
+                  )}
+                  {(roleLabel || clientName) && (
+                    <div className="mt-1 text-xs text-muted-foreground">
+                      {[roleLabel, clientName].filter(Boolean).join(' · ')}
+                    </div>
+                  )}
+                  {rate && (
+                    <div className="mt-1 text-sm font-semibold text-primary-action">{rate}</div>
+                  )}
+                </div>
+              </div>
+            );
+          }}
         />
       </div>
 

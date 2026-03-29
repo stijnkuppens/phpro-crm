@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { ArrowLeft, Save } from 'lucide-react';
@@ -56,19 +56,31 @@ export function ContractEditPage({ accountId, contract, hourlyRates, slaRates, i
   const [saving, setSaving] = useState(false);
 
   // ── Contract state ─────────────────────────────────────────────────────
-  const [hasFramework, setHasFramework] = useState(contract?.has_framework_contract ?? false);
-  const [hasService, setHasService] = useState(contract?.has_service_contract ?? false);
-  const [frameworkUrl, setFrameworkUrl] = useState(contract?.framework_pdf_url ?? '');
-  const [frameworkDoc, setFrameworkDoc] = useState(contract?.framework_doc_path ?? '');
-  const [serviceUrl, setServiceUrl] = useState(contract?.service_pdf_url ?? '');
-  const [serviceDoc, setServiceDoc] = useState(contract?.service_doc_path ?? '');
-  const [purchaseOrdersUrl, setPurchaseOrdersUrl] = useState(contract?.purchase_orders_url ?? '');
-  const [purchaseOrdersDoc, setPurchaseOrdersDoc] = useState(contract?.purchase_orders_doc_path ?? '');
+  const [contractFields, setContractFields] = useState({
+    hasFramework: contract?.has_framework_contract ?? false,
+    hasService: contract?.has_service_contract ?? false,
+    frameworkUrl: contract?.framework_pdf_url ?? '',
+    frameworkDoc: contract?.framework_doc_path ?? '',
+    serviceUrl: contract?.service_pdf_url ?? '',
+    serviceDoc: contract?.service_doc_path ?? '',
+    purchaseOrdersUrl: contract?.purchase_orders_url ?? '',
+    purchaseOrdersDoc: contract?.purchase_orders_doc_path ?? '',
+  });
+
+  const updateContract = useCallback((updates: Partial<typeof contractFields>) => {
+    setContractFields((prev) => ({ ...prev, ...updates }));
+  }, []);
 
   // ── Indexation state ───────────────────────────────────────────────────
-  const [indexType, setIndexType] = useState(indexationConfig?.indexation_type ?? '');
-  const [indexMonth, setIndexMonth] = useState(String(indexationConfig?.start_month ?? ''));
-  const [indexYear, setIndexYear] = useState(indexationConfig?.start_year?.toString() ?? '');
+  const [indexation, setIndexation] = useState({
+    type: indexationConfig?.indexation_type ?? '',
+    month: String(indexationConfig?.start_month ?? ''),
+    year: indexationConfig?.start_year?.toString() ?? '',
+  });
+
+  const updateIndexation = useCallback((updates: Partial<typeof indexation>) => {
+    setIndexation((prev) => ({ ...prev, ...updates }));
+  }, []);
 
   // ── Year window (shared) ──────────────────────────────────────────────
   const currentYear = new Date().getFullYear();
@@ -151,28 +163,28 @@ export function ContractEditPage({ accountId, contract, hourlyRates, slaRates, i
     }));
   }, []);
 
-  const emptySla: SlaYearState = { fixed_monthly_rate: '', support_hourly_rate: '', tools: [] };
+  const emptySla = useMemo<SlaYearState>(() => ({ fixed_monthly_rate: '', support_hourly_rate: '', tools: [] }), []);
 
   const addSlaTool = useCallback((year: number) => {
     setSlaGrid((prev) => {
       const cur = prev[year] ?? emptySla;
       return { ...prev, [year]: { ...cur, tools: [...cur.tools, { tool_name: '', monthly_price: '' }] } };
     });
-  }, []);
+  }, [emptySla]);
 
   const removeSlaTool = useCallback((year: number, index: number) => {
     setSlaGrid((prev) => {
       const cur = prev[year] ?? emptySla;
       return { ...prev, [year]: { ...cur, tools: cur.tools.filter((_, i) => i !== index) } };
     });
-  }, []);
+  }, [emptySla]);
 
   const updateSlaTool = useCallback((year: number, index: number, field: keyof ToolEntry, value: string) => {
     setSlaGrid((prev) => {
       const cur = prev[year] ?? emptySla;
       return { ...prev, [year]: { ...cur, tools: cur.tools.map((t, i) => (i === index ? { ...t, [field]: value } : t)) } };
     });
-  }, []);
+  }, [emptySla]);
 
   // ── Save all ──────────────────────────────────────────────────────────
   async function handleSave() {
@@ -180,20 +192,20 @@ export function ContractEditPage({ accountId, contract, hourlyRates, slaRates, i
 
     // 1. Contract
     const contractValues: ContractFormValues = {
-      has_framework_contract: hasFramework,
-      framework_pdf_url: frameworkUrl || null,
-      framework_doc_path: frameworkDoc || null,
+      has_framework_contract: contractFields.hasFramework,
+      framework_pdf_url: contractFields.frameworkUrl || null,
+      framework_doc_path: contractFields.frameworkDoc || null,
       framework_start: (document.querySelector<HTMLInputElement>('[name="framework_start"]')?.value) || null,
       framework_end: (document.querySelector<HTMLInputElement>('[name="framework_end"]')?.value) || null,
       framework_indefinite: (document.querySelector<HTMLInputElement>('#framework_indefinite')?.checked) ?? false,
-      has_service_contract: hasService,
-      service_pdf_url: serviceUrl || null,
-      service_doc_path: serviceDoc || null,
+      has_service_contract: contractFields.hasService,
+      service_pdf_url: contractFields.serviceUrl || null,
+      service_doc_path: contractFields.serviceDoc || null,
       service_start: (document.querySelector<HTMLInputElement>('[name="service_start"]')?.value) || null,
       service_end: (document.querySelector<HTMLInputElement>('[name="service_end"]')?.value) || null,
       service_indefinite: (document.querySelector<HTMLInputElement>('#service_indefinite')?.checked) ?? false,
-      purchase_orders_url: purchaseOrdersUrl || null,
-      purchase_orders_doc_path: purchaseOrdersDoc || null,
+      purchase_orders_url: contractFields.purchaseOrdersUrl || null,
+      purchase_orders_doc_path: contractFields.purchaseOrdersDoc || null,
     };
 
     const contractResult = await upsertContract(accountId, contractValues);
@@ -204,12 +216,12 @@ export function ContractEditPage({ accountId, contract, hourlyRates, slaRates, i
     }
 
     // 2. Indexation config
-    if (indexType || indexMonth || indexYear) {
+    if (indexation.type || indexation.month || indexation.year) {
       await upsertIndexationConfig({
         account_id: accountId,
-        indexation_type: indexType || null,
-        start_month: indexMonth ? Number(indexMonth) : null,
-        start_year: indexYear ? Number(indexYear) : null,
+        indexation_type: indexation.type || null,
+        start_month: indexation.month ? Number(indexation.month) : null,
+        start_year: indexation.year ? Number(indexation.year) : null,
       });
     }
 
@@ -275,22 +287,18 @@ export function ContractEditPage({ accountId, contract, hourlyRates, slaRates, i
       {/* ── Top row: contracts side by side ───────────────────────── */}
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
         <ContractFrameworkCard
-          hasFramework={hasFramework}
-          setHasFramework={setHasFramework}
-          frameworkUrl={frameworkUrl}
-          setFrameworkUrl={setFrameworkUrl}
-          frameworkDoc={frameworkDoc}
-          setFrameworkDoc={setFrameworkDoc}
+          hasFramework={contractFields.hasFramework}
+          frameworkUrl={contractFields.frameworkUrl}
+          frameworkDoc={contractFields.frameworkDoc}
+          onChange={updateContract}
           contract={contract}
           accountId={accountId}
         />
         <ContractServiceCard
-          hasService={hasService}
-          setHasService={setHasService}
-          serviceUrl={serviceUrl}
-          setServiceUrl={setServiceUrl}
-          serviceDoc={serviceDoc}
-          setServiceDoc={setServiceDoc}
+          hasService={contractFields.hasService}
+          serviceUrl={contractFields.serviceUrl}
+          serviceDoc={contractFields.serviceDoc}
+          onChange={updateContract}
           contract={contract}
           accountId={accountId}
         />
@@ -304,8 +312,8 @@ export function ContractEditPage({ accountId, contract, hourlyRates, slaRates, i
             <div className="grid grid-cols-3 gap-3">
               <div className="space-y-1.5">
                 <Label>Type</Label>
-                <Select value={indexType} onValueChange={(v) => setIndexType(v ?? '')}>
-                  <SelectTrigger>{indexType || 'Niet ingesteld'}</SelectTrigger>
+                <Select value={indexation.type} onValueChange={(v) => updateIndexation({ type: v ?? '' })}>
+                  <SelectTrigger>{indexation.type || 'Niet ingesteld'}</SelectTrigger>
                   <SelectContent>
                     <SelectItem value="">Niet ingesteld</SelectItem>
                     {INDEX_TYPES.map((t) => <SelectItem key={t} value={t}>{t}</SelectItem>)}
@@ -314,8 +322,8 @@ export function ContractEditPage({ accountId, contract, hourlyRates, slaRates, i
               </div>
               <div className="space-y-1.5">
                 <Label>Vanaf maand</Label>
-                <Select value={indexMonth} onValueChange={(v) => setIndexMonth(v ?? '')}>
-                  <SelectTrigger>{indexMonth ? MONTHS.find((m) => m.value === indexMonth)?.label : 'Selecteer...'}</SelectTrigger>
+                <Select value={indexation.month} onValueChange={(v) => updateIndexation({ month: v ?? '' })}>
+                  <SelectTrigger>{indexation.month ? MONTHS.find((m) => m.value === indexation.month)?.label : 'Selecteer...'}</SelectTrigger>
                   <SelectContent>
                     {MONTHS.map((m) => <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>)}
                   </SelectContent>
@@ -323,7 +331,7 @@ export function ContractEditPage({ accountId, contract, hourlyRates, slaRates, i
               </div>
               <div className="space-y-1.5">
                 <Label>Vanaf jaar</Label>
-                <Input type="number" value={indexYear} onChange={(e) => setIndexYear(e.target.value)} placeholder={String(currentYear)} />
+                <Input type="number" value={indexation.year} onChange={(e) => updateIndexation({ year: e.target.value })} placeholder={String(currentYear)} />
               </div>
             </div>
           </CardContent>
@@ -334,11 +342,11 @@ export function ContractEditPage({ accountId, contract, hourlyRates, slaRates, i
             <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Bestelbonnen</h2>
             <div className="space-y-1.5">
               <Label>Link (Confluence URL)</Label>
-              <Input value={purchaseOrdersUrl} onChange={(e) => setPurchaseOrdersUrl(e.target.value)} placeholder="https://confluence.phpro.be/..." />
+              <Input value={contractFields.purchaseOrdersUrl} onChange={(e) => updateContract({ purchaseOrdersUrl: e.target.value })} placeholder="https://confluence.phpro.be/..." />
             </div>
             <div className="space-y-1.5">
               <Label>Document uploaden</Label>
-              <PdfUploadField value={purchaseOrdersDoc} onChange={setPurchaseOrdersDoc} folder={`contracts/${accountId}`} />
+              <PdfUploadField value={contractFields.purchaseOrdersDoc} onChange={(v) => updateContract({ purchaseOrdersDoc: v })} folder={`contracts/${accountId}`} />
             </div>
           </CardContent>
         </Card>

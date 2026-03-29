@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useSyncExternalStore } from 'react';
 
 export type BrandTheme = 'phpro' | '25carat';
 
@@ -18,28 +18,41 @@ function setBrandCookie(brand: BrandTheme) {
   document.cookie = `${COOKIE_NAME}=${brand};path=/;max-age=31536000;SameSite=Lax`;
 }
 
+// Module-level mutable snapshot for useSyncExternalStore
+let currentBrand: BrandTheme | null = null;
+
+function getSnapshot(): BrandTheme {
+  if (currentBrand) return currentBrand;
+  currentBrand =
+    (localStorage.getItem(STORAGE_KEY) as BrandTheme) ??
+    getBrandFromCookie() ??
+    'phpro';
+  return currentBrand;
+}
+
+function getServerSnapshot(): BrandTheme {
+  return 'phpro';
+}
+
+function subscribe(callback: () => void) {
+  const onBrandChange = () => callback();
+  window.addEventListener(BRAND_CHANGE_EVENT, onBrandChange);
+  return () => window.removeEventListener(BRAND_CHANGE_EVENT, onBrandChange);
+}
+
+const emptySubscribe = () => () => {};
+
 export function useBrandTheme() {
-  const [brand, setBrandState] = useState<BrandTheme>('phpro');
-  const [mounted, setMounted] = useState(false);
+  const brand = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
+  const mounted = useSyncExternalStore(emptySubscribe, () => true, () => false);
 
+  // Keep data-brand attribute in sync
   useEffect(() => {
-    const stored =
-      (localStorage.getItem(STORAGE_KEY) as BrandTheme) ??
-      getBrandFromCookie() ??
-      'phpro';
-    setBrandState(stored);
-    document.documentElement.setAttribute('data-brand', stored);
-    setMounted(true);
-
-    const onBrandChange = (e: Event) => {
-      setBrandState((e as CustomEvent<BrandTheme>).detail);
-    };
-    window.addEventListener(BRAND_CHANGE_EVENT, onBrandChange);
-    return () => window.removeEventListener(BRAND_CHANGE_EVENT, onBrandChange);
-  }, []);
+    document.documentElement.setAttribute('data-brand', brand);
+  }, [brand]);
 
   const setBrand = useCallback((next: BrandTheme) => {
-    setBrandState(next);
+    currentBrand = next;
     localStorage.setItem(STORAGE_KEY, next);
     setBrandCookie(next);
     document.documentElement.setAttribute('data-brand', next);

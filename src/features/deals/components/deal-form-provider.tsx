@@ -176,11 +176,16 @@ export function DealFormProvider({ open, onClose, accountId: propAccountId, pipe
   // Client-side fetch is intentional: contacts depend on which account is selected,
   // which changes dynamically as the user picks an account via search.
   const [contacts, setContacts] = useState<{ id: string; name: string }[]>([]);
+
+  // Reset contacts when account changes (render-phase setState to avoid lint error)
+  const [prevAccountId, setPrevAccountId] = useState(form.selectedAccountId);
+  if (prevAccountId !== form.selectedAccountId) {
+    setPrevAccountId(form.selectedAccountId);
+    if (!form.selectedAccountId) setContacts([]);
+  }
+
   useEffect(() => {
-    if (!form.selectedAccountId) {
-      setContacts([]);
-      return;
-    }
+    if (!form.selectedAccountId) return;
     let cancelled = false;
     const supabase = createBrowserClient();
     supabase

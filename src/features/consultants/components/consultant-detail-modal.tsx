@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
-import { Modal } from '@/components/admin/modal';
+import { Modal, ModalFooter } from '@/components/admin/modal';
 import { Avatar } from '@/components/admin/avatar';
 import { createBrowserClient } from '@/lib/supabase/client';
 import { CONSULTANT_SELECT, CONSULTANT_STATUS_STYLES, CONSULTANT_STATUS_LABELS, CONSULTANT_PRIORITY_STYLES, contractStatusColors, contractStatusDescriptions, type ConsultantWithDetails } from '../types';
@@ -342,20 +342,20 @@ export function ConsultantDetailModal({ consultant: initialConsultant, open, onC
 
           {/* Actions — only for active consultants */}
           {consultant.status === 'actief' && (
-            <div className="flex gap-2 justify-end">
-              <Button variant="outline" onClick={() => setActiveModal('contract-attr')}>
+            <ModalFooter className="flex-wrap justify-end">
+              <Button variant="outline" size="sm" onClick={() => setActiveModal('contract-attr')}>
                 {consultant.contract_attribution ? 'Contract wijzigen' : 'Contract instellen'}
               </Button>
-              <Button variant="outline" onClick={() => setActiveModal('rate')}>
+              <Button variant="outline" size="sm" onClick={() => setActiveModal('rate')}>
                 Tarief wijzigen
               </Button>
-              <Button variant="outline" onClick={() => setActiveModal('extend')}>
+              <Button variant="outline" size="sm" onClick={() => setActiveModal('extend')}>
                 Verlengen
               </Button>
-              <Button variant="destructive" onClick={() => setActiveModal('stop')}>
+              <Button variant="destructive" size="sm" onClick={() => setActiveModal('stop')}>
                 Stopzetten
               </Button>
-            </div>
+            </ModalFooter>
           )}
         </div>
       </Modal>
