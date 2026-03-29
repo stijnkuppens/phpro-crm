@@ -1,5 +1,7 @@
 import type { Metadata } from 'next';
 import { PageHeader } from '@/components/admin/page-header';
+import { ExportDropdown } from '@/components/admin/export-dropdown';
+import { consultantExportColumns, CONSULTANT_EXPORT_SELECT } from '@/features/consultants/export-columns';
 import { getConsultants } from '@/features/consultants/queries/get-consultants';
 import { getConsultantStats } from '@/features/consultants/queries/get-consultant-stats';
 import { getAccountNames } from '@/features/accounts/queries/get-account-names';
@@ -35,6 +37,14 @@ export default async function ConsultantsPage() {
           { label: 'Admin', href: '/admin' },
           { label: 'Consultants' },
         ]}
+        actions={
+          <ExportDropdown
+            entity="consultants"
+            columns={consultantExportColumns}
+            filters={{ sort: { column: 'last_name', direction: 'asc' } }}
+            selectQuery={CONSULTANT_EXPORT_SELECT}
+          />
+        }
       />
       <ConsultantListView
         initialData={firstPage}

@@ -3,7 +3,9 @@
 import { useState, useCallback, useEffect, useMemo, useRef } from 'react';
 import { useQueryState, parseAsInteger } from 'nuqs';
 import { Button } from '@/components/ui/button';
+import { ExportDropdown } from '@/components/admin/export-dropdown';
 import { LayoutGrid, List, Archive, Plus } from 'lucide-react';
+import { dealExportColumns, DEAL_EXPORT_SELECT } from '../export-columns';
 import { useEntity } from '@/lib/hooks/use-entity';
 import { buildFilterQuery, type FilterOption } from '@/components/admin/data-table-filters';
 import { PageHeader } from '@/components/admin/page-header';
@@ -138,6 +140,14 @@ export function DealsPageClient({ pipelines, initialDeals, initialCount, owners 
           { label: 'Admin', href: '/admin' },
           { label: 'Deals' },
         ]}
+        actions={
+          <ExportDropdown
+            entity="deals"
+            columns={dealExportColumns}
+            filters={{ sort: { column: 'created_at', direction: 'desc' } }}
+            selectQuery={DEAL_EXPORT_SELECT}
+          />
+        }
       />
 
       <div className="flex items-center justify-between">
