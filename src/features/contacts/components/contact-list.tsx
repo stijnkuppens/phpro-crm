@@ -9,7 +9,7 @@ import DataTable from '@/components/admin/data-table';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { ComboboxFilter } from '@/components/admin/combobox-filter';
-import { ListPageToolbar } from '@/components/admin/list-page-toolbar';
+import { PageHeader } from '@/components/admin/page-header';
 import { ExportDropdown } from '@/components/admin/export-dropdown';
 import { contactExportColumns, CONTACT_EXPORT_SELECT } from '../export-columns';
 import { Avatar } from '@/components/admin/avatar';
@@ -96,8 +96,13 @@ export function ContactList({ initialData, initialCount, accounts = [] }: Contac
   };
 
   return (
-    <div className="space-y-4">
-      <ListPageToolbar
+    <div className="space-y-6">
+      <PageHeader
+        title="Contacts"
+        breadcrumbs={[
+          { label: 'Admin', href: '/admin' },
+          { label: 'Contacts' },
+        ]}
         actions={
           <div className="flex gap-2">
             <ExportDropdown

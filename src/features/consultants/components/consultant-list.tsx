@@ -18,7 +18,7 @@ import { toast } from 'sonner';
 import { Input } from '@/components/ui/input';
 import { StatCard } from '@/components/admin/stat-card';
 import { FilterPill } from '@/components/admin/filter-pill';
-import { ListPageToolbar } from '@/components/admin/list-page-toolbar';
+import { PageHeader } from '@/components/admin/page-header';
 import { ExportDropdown } from '@/components/admin/export-dropdown';
 import { consultantExportColumns, CONSULTANT_EXPORT_SELECT } from '../export-columns';
 import { Button } from '@/components/ui/button';
@@ -215,8 +215,12 @@ export function ConsultantListView({ initialData, initialCount, stats, accounts,
   return (
     <>
       <div className="space-y-6">
-        {/* Toolbar: status pills + CTA */}
-        <ListPageToolbar
+        <PageHeader
+          title="Consultants"
+          breadcrumbs={[
+            { label: 'Admin', href: '/admin' },
+            { label: 'Consultants' },
+          ]}
           actions={
             <div className="flex gap-2">
               <ExportDropdown

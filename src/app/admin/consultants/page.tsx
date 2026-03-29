@@ -1,5 +1,4 @@
 import type { Metadata } from 'next';
-import { PageHeader } from '@/components/admin/page-header';
 import { getConsultants } from '@/features/consultants/queries/get-consultants';
 import { getConsultantStats } from '@/features/consultants/queries/get-consultant-stats';
 import { getAccountNames } from '@/features/accounts/queries/get-account-names';
@@ -28,21 +27,12 @@ export default async function ConsultantsPage() {
   }));
 
   return (
-    <div className="space-y-6">
-      <PageHeader
-        title="Consultants"
-        breadcrumbs={[
-          { label: 'Admin', href: '/admin' },
-          { label: 'Consultants' },
-        ]}
-      />
-      <ConsultantListView
-        initialData={firstPage}
-        initialCount={count}
-        stats={stats}
-        roles={roles}
-        accounts={accounts}
-      />
-    </div>
+    <ConsultantListView
+      initialData={firstPage}
+      initialCount={count}
+      stats={stats}
+      roles={roles}
+      accounts={accounts}
+    />
   );
 }
