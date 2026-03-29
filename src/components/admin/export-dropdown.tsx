@@ -5,12 +5,9 @@ import { useRouter } from 'next/navigation';
 import { Download, FileSpreadsheet, FileText } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+import { Modal } from '@/components/admin/modal';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Label } from '@/components/ui/label';
 import { createExportJob } from '@/features/jobs/actions/create-export-job';
 import type { ExportColumn } from '@/features/jobs/types';
 
@@ -28,17 +25,62 @@ export function ExportDropdown({
   selectQuery,
 }: ExportDropdownProps) {
   const router = useRouter();
+  const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [selectedKeys, setSelectedKeys] = useState<Set<string>>(
+    () => new Set(columns.map((c) => c.key)),
+  );
+
+  const toggleColumn = (key: string) => {
+    setSelectedKeys((prev) => {
+      const next = new Set(prev);
+      if (next.has(key)) {
+        next.delete(key);
+      } else {
+        next.add(key);
+      }
+      return next;
+    });
+  };
+
+  const toggleAll = () => {
+    if (selectedKeys.size === columns.length) {
+      setSelectedKeys(new Set());
+    } else {
+      setSelectedKeys(new Set(columns.map((c) => c.key)));
+    }
+  };
 
   const handleExport = async (format: 'xlsx' | 'csv') => {
+    const selectedColumns = columns.filter((c) => selectedKeys.has(c.key));
+    if (selectedColumns.length === 0) {
+      toast.error('Selecteer minimaal één kolom');
+      return;
+    }
+
     setLoading(true);
     try {
+      // Build select query from selected columns only
+      const selectedSelect = selectedColumns
+        .map((c) => {
+          // Find the matching segment in the original selectQuery for join paths
+          // e.g. "owner.full_name" needs "owner:user_profiles!owner_id(full_name)"
+          if (selectQuery && c.key.includes('.')) {
+            const prefix = c.key.split('.')[0];
+            const segments = selectQuery.split(',');
+            const joinSegment = segments.find((s) => s.startsWith(`${prefix}:`));
+            if (joinSegment) return joinSegment;
+          }
+          return c.key;
+        })
+        .join(',');
+
       const result = await createExportJob({
         entity,
         format,
         filters,
-        columns,
-        selectQuery,
+        columns: selectedColumns,
+        selectQuery: selectedSelect,
       });
 
       if (result.error) {
@@ -48,6 +90,7 @@ export function ExportDropdown({
         return;
       }
 
+      setOpen(false);
       toast.success('Export gestart', {
         description: 'Je ontvangt een melding wanneer het bestand klaar is.',
         action: {
@@ -61,25 +104,74 @@ export function ExportDropdown({
   };
 
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger
-        render={
-          <Button variant="outline" size="sm" disabled={loading}>
-            <Download />
-            {loading ? 'Bezig...' : 'Exporteren'}
-          </Button>
-        }
-      />
-      <DropdownMenuContent align="end">
-        <DropdownMenuItem onClick={() => handleExport('xlsx')}>
-          <FileSpreadsheet className="mr-2 h-4 w-4" />
-          Excel (.xlsx)
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => handleExport('csv')}>
-          <FileText className="mr-2 h-4 w-4" />
-          CSV (.csv)
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
+    <>
+      <Button
+        variant="outline"
+        size="sm"
+        onClick={() => {
+          setSelectedKeys(new Set(columns.map((c) => c.key)));
+          setOpen(true);
+        }}
+      >
+        <Download />
+        Exporteren
+      </Button>
+
+      {open && (
+        <Modal open onClose={() => setOpen(false)} title="Exporteren">
+          <div className="space-y-4">
+            <div>
+              <div className="mb-2 flex items-center justify-between">
+                <span className="text-sm font-medium">Kolommen</span>
+                <button
+                  type="button"
+                  onClick={toggleAll}
+                  className="text-xs text-primary-action hover:underline"
+                >
+                  {selectedKeys.size === columns.length ? 'Geen selecteren' : 'Alles selecteren'}
+                </button>
+              </div>
+              <div className="space-y-2 rounded-lg border p-3">
+                {columns.map((col) => (
+                  <label
+                    key={col.key}
+                    className="flex cursor-pointer items-center gap-2 text-sm"
+                  >
+                    <Checkbox
+                      checked={selectedKeys.has(col.key)}
+                      onCheckedChange={() => toggleColumn(col.key)}
+                    />
+                    {col.label}
+                  </label>
+                ))}
+              </div>
+              <p className="mt-1 text-xs text-muted-foreground">
+                {selectedKeys.size} van {columns.length} kolommen geselecteerd
+              </p>
+            </div>
+
+            <div className="flex gap-2">
+              <Button
+                className="flex-1"
+                disabled={loading || selectedKeys.size === 0}
+                onClick={() => handleExport('xlsx')}
+              >
+                <FileSpreadsheet />
+                {loading ? 'Bezig...' : 'Excel (.xlsx)'}
+              </Button>
+              <Button
+                variant="outline"
+                className="flex-1"
+                disabled={loading || selectedKeys.size === 0}
+                onClick={() => handleExport('csv')}
+              >
+                <FileText />
+                {loading ? 'Bezig...' : 'CSV (.csv)'}
+              </Button>
+            </div>
+          </div>
+        </Modal>
+      )}
+    </>
   );
 }
