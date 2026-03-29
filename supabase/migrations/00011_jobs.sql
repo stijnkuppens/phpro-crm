@@ -3,6 +3,9 @@
 
 CREATE EXTENSION IF NOT EXISTS pgmq;
 
+-- Grant postgres role access to pgmq schema (needed for pgmq.create)
+GRANT USAGE, CREATE ON SCHEMA pgmq TO postgres;
+
 CREATE TABLE public.jobs (
   id            uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   type          text NOT NULL DEFAULT 'export',
