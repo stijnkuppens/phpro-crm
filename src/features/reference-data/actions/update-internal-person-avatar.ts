@@ -29,7 +29,8 @@ export async function updateInternalPersonAvatar(
     .eq('id', id);
 
   if (error) {
-    return err(error.message);
+    console.error('[updateInternalPersonAvatar]', error);
+    return err('Er is een fout opgetreden');
   }
 
   revalidatePath('/admin/reference-data');

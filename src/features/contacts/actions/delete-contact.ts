@@ -19,19 +19,22 @@ export async function deleteContact(id: string): Promise<ActionResult> {
   if (!parsedId.success) return err('Ongeldig ID');
 
   const supabase = await createServerClient();
+  const { data: snapshot } = await supabase.from('contacts').select('*').eq('id', id).single();
   const { error } = await supabase
     .from('contacts')
     .delete()
     .eq('id', id);
 
   if (error) {
-    return err(error.message);
+    console.error('[deleteContact]', error);
+    return err('Er is een fout opgetreden');
   }
 
   await logAction({
     action: 'contact.deleted',
     entityType: 'contact',
     entityId: id,
+    metadata: { snapshot },
   });
 
   revalidatePath('/admin/contacts');

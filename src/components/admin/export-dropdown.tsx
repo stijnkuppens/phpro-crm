@@ -9,20 +9,18 @@ import { Modal } from '@/components/admin/modal';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { createExportJob } from '@/features/jobs/actions/create-export-job';
-import type { ExportColumn } from '@/features/jobs/types';
+import type { ExportColumn, AllowedExportEntity } from '@/features/jobs/types';
 
 type ExportDropdownProps = {
-  entity: string;
+  entity: AllowedExportEntity;
   columns: ExportColumn[];
   filters?: Record<string, unknown>;
-  selectQuery?: string;
 };
 
 export function ExportDropdown({
   entity,
   columns,
   filters = {},
-  selectQuery,
 }: ExportDropdownProps) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
@@ -60,27 +58,11 @@ export function ExportDropdown({
 
     setLoading(true);
     try {
-      // Build select query from selected columns only
-      const selectedSelect = selectedColumns
-        .map((c) => {
-          // Find the matching segment in the original selectQuery for join paths
-          // e.g. "owner.full_name" needs "owner:user_profiles!owner_id(full_name)"
-          if (selectQuery && c.key.includes('.')) {
-            const prefix = c.key.split('.')[0];
-            const segments = selectQuery.split(',');
-            const joinSegment = segments.find((s) => s.startsWith(`${prefix}:`));
-            if (joinSegment) return joinSegment;
-          }
-          return c.key;
-        })
-        .join(',');
-
       const result = await createExportJob({
         entity,
         format,
         filters,
         columns: selectedColumns,
-        selectQuery: selectedSelect,
       });
 
       if (result.error) {

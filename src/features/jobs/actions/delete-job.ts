@@ -33,7 +33,10 @@ export async function deleteJob(id: string): Promise<ActionResult> {
     .delete()
     .eq('id', id);
 
-  if (deleteError) return err(deleteError.message);
+  if (deleteError) {
+    console.error('[deleteJob]', deleteError);
+    return err('Er is een fout opgetreden');
+  }
 
   revalidatePath('/admin/jobs');
   return ok();

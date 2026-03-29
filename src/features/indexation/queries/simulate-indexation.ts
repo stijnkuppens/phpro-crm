@@ -34,10 +34,12 @@ export const simulateIndexation = cache(async (
     ]);
 
   if (ratesError) {
-    return err(ratesError.message);
+    console.error('[simulateIndexation] rates', ratesError);
+    return err('Er is een fout opgetreden');
   }
   if (slaError) {
-    return err(slaError.message);
+    console.error('[simulateIndexation] sla', slaError);
+    return err('Er is een fout opgetreden');
   }
 
   const multiplier = 1 + percentage / 100;

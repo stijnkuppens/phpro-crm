@@ -14,6 +14,7 @@ export async function moveDealStage(dealId: string, newStageId: string): Promise
   }
 
   const supabase = await createServerClient();
+  const { data: before } = await supabase.from('deals').select('*').eq('id', dealId).single();
 
   const { data: stage } = await supabase
     .from('pipeline_stages')
@@ -38,14 +39,15 @@ export async function moveDealStage(dealId: string, newStageId: string): Promise
     .eq('id', dealId);
 
   if (error) {
-    return err(error.message);
+    console.error('[moveDealStage]', error);
+    return err('Er is een fout opgetreden');
   }
 
   await logAction({
     action: 'deal.stage_moved',
     entityType: 'deal',
     entityId: dealId,
-    metadata: { new_stage_id: newStageId },
+    metadata: { new_stage_id: newStageId, before },
   });
 
   revalidatePath('/admin/deals');

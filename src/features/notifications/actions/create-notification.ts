@@ -13,7 +13,7 @@ export async function createNotification(params: {
   link?: string;
 }): Promise<ActionResult> {
   try {
-    await requirePermission('notifications.read');
+    await requirePermission('notifications.write');
   } catch {
     return err('Onvoldoende rechten');
   }
@@ -30,7 +30,8 @@ export async function createNotification(params: {
   });
 
   if (error) {
-    return err(error.message);
+    console.error('[createNotification]', error);
+    return err('Er is een fout opgetreden');
   }
 
   revalidatePath('/admin', 'layout');

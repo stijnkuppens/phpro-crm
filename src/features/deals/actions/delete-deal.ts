@@ -18,19 +18,22 @@ export async function deleteDeal(id: string): Promise<ActionResult> {
   if (!parsedId.success) return err('Ongeldig ID');
 
   const supabase = await createServerClient();
+  const { data: snapshot } = await supabase.from('deals').select('*').eq('id', id).single();
   const { error } = await supabase
     .from('deals')
     .delete()
     .eq('id', id);
 
   if (error) {
-    return err(error.message);
+    console.error('[deleteDeal]', error);
+    return err('Er is een fout opgetreden');
   }
 
   await logAction({
     action: 'deal.deleted',
     entityType: 'deal',
     entityId: id,
+    metadata: { snapshot },
   });
 
   revalidatePath('/admin/deals');

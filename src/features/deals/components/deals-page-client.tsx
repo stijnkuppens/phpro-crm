@@ -5,7 +5,7 @@ import { useQueryState, parseAsInteger } from 'nuqs';
 import { Button } from '@/components/ui/button';
 import { ExportDropdown } from '@/components/admin/export-dropdown';
 import { LayoutGrid, List, Archive, Plus } from 'lucide-react';
-import { dealExportColumns, DEAL_EXPORT_SELECT } from '../export-columns';
+import { dealExportColumns } from '../export-columns';
 import { useEntity } from '@/lib/hooks/use-entity';
 import { buildFilterQuery, type FilterOption } from '@/components/admin/data-table-filters';
 import { PageHeader } from '@/components/admin/page-header';
@@ -147,7 +147,6 @@ export function DealsPageClient({ pipelines, initialDeals, initialCount, owners,
               entity="deals"
               columns={dealExportColumns}
               filters={{ sort: { column: 'created_at', direction: 'desc' } }}
-              selectQuery={DEAL_EXPORT_SELECT}
             />
             <Button size="sm" onClick={() => setShowQuickDeal(true)}>
               <Plus /> Nieuwe deal

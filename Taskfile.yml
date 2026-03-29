@@ -145,6 +145,15 @@ tasks:
     cmds:
       - bash scripts/entity-new.sh {{.CLI_ARGS}}
 
+  # ── API ─────────────────────────────────────────────
+
+  openapi:export:
+    desc: "Export PostgREST OpenAPI spec (for Postman import)"
+    cmds:
+      - |
+        curl -s http://localhost:8000/rest/v1/ -H "apikey: $ANON_KEY" | python3 -m json.tool > supabase-openapi.json
+        echo "Saved supabase-openapi.json"
+
   # ── Quality ────────────────────────────────────────
 
   lint:

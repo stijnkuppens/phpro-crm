@@ -1,10 +1,10 @@
 import { cache } from 'react';
 import { unstable_cache } from 'next/cache';
-import { createServerClient } from '@/lib/supabase/server';
+import { createServiceRoleClient } from '@/lib/supabase/admin';
 import type { SettingsValues } from '../types';
 
 const fetchSettings = async (): Promise<SettingsValues> => {
-  const supabase = await createServerClient();
+  const supabase = createServiceRoleClient();
   const { data } = await supabase
     .from('app_settings')
     .select('key, value');

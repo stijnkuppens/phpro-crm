@@ -13,11 +13,27 @@ export async function logAction(params: {
   entityId?: string;
   metadata?: Record<string, Json>;
 }): Promise<void> {
+  // Skip logging if before/after are present but identical (no actual change)
+  if (params.metadata?.before && params.metadata?.after) {
+    const before = params.metadata.before;
+    const after = params.metadata.after;
+    if (typeof before === 'object' && typeof after === 'object') {
+      // Compare only the keys present in `after` (the submitted fields)
+      const afterKeys = Object.keys(after as Record<string, unknown>);
+      const hasChange = afterKeys.some(
+        (key) =>
+          JSON.stringify((before as Record<string, unknown>)[key]) !==
+          JSON.stringify((after as Record<string, unknown>)[key]),
+      );
+      if (!hasChange) return;
+    }
+  }
   const supabase = await createServerClient();
   const { data: { user } } = await supabase.auth.getUser();
 
   const headersList = await headers();
-  const ip = headersList.get('x-forwarded-for')?.split(',')[0]?.trim() ?? null;
+  const forwardedFor = headersList.get('x-forwarded-for');
+  const ip = forwardedFor?.split(',').pop()?.trim() ?? null;
 
   const admin = createServiceRoleClient();
   const { error } = await admin.from('audit_logs').insert({

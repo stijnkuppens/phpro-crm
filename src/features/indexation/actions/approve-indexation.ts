@@ -21,6 +21,7 @@ export async function approveIndexation(
   if (!z.string().min(1).safeParse(draftId).success) return err('Ongeldig draft ID');
 
   const supabase = await createServerClient();
+  const { data: before } = await supabase.from('indexation_drafts').select('*, indexation_draft_rates(*), indexation_draft_sla(*), indexation_draft_sla_tools(*)').eq('id', draftId).single();
 
   const { error: rpcError } = await supabase.rpc('approve_indexation', {
     p_draft_id: draftId,
@@ -28,14 +29,15 @@ export async function approveIndexation(
   });
 
   if (rpcError) {
-    return err(rpcError.message);
+    console.error('[approveIndexation]', rpcError);
+    return err('Er is een fout opgetreden');
   }
 
   await logAction({
     action: 'indexation.approved',
     entityType: 'account',
     entityId: accountId,
-    metadata: { draft_id: draftId, approved_by: userId },
+    metadata: { draft_id: draftId, approved_by: userId, before },
   });
 
   revalidatePath(`/admin/accounts/${accountId}`);

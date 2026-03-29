@@ -34,7 +34,8 @@ export async function saveIndexationDraft(
     .eq('status', 'draft');
 
   if (deleteError) {
-    return err(deleteError.message);
+    console.error('[saveIndexationDraft] delete', deleteError);
+    return err('Er is een fout opgetreden');
   }
 
   // Create new draft
@@ -55,7 +56,8 @@ export async function saveIndexationDraft(
     .single();
 
   if (draftError) {
-    return err(draftError.message);
+    console.error('[saveIndexationDraft] insert', draftError);
+    return err('Er is een fout opgetreden');
   }
 
   // Insert rates
@@ -72,7 +74,8 @@ export async function saveIndexationDraft(
       );
 
     if (ratesError) {
-      return err(ratesError.message);
+      console.error('[saveIndexationDraft] rates', ratesError);
+      return err('Er is een fout opgetreden');
     }
   }
 
@@ -87,7 +90,8 @@ export async function saveIndexationDraft(
       });
 
     if (slaError) {
-      return err(slaError.message);
+      console.error('[saveIndexationDraft] sla', slaError);
+      return err('Er is een fout opgetreden');
     }
   }
 
@@ -104,7 +108,8 @@ export async function saveIndexationDraft(
       );
 
     if (toolsError) {
-      return err(toolsError.message);
+      console.error('[saveIndexationDraft] tools', toolsError);
+      return err('Er is een fout opgetreden');
     }
   }
 
@@ -112,7 +117,7 @@ export async function saveIndexationDraft(
     action: 'indexation_draft.saved',
     entityType: 'account',
     entityId: accountId,
-    metadata: { draft_id: draft.id, target_year: parsed.data.target_year },
+    metadata: { draft_id: draft.id, target_year: parsed.data.target_year, body: parsed.data },
   });
 
   revalidatePath(`/admin/accounts/${accountId}`);

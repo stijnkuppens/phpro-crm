@@ -25,6 +25,7 @@ export async function upsertSlaRates(
   }
 
   const supabase = await createServerClient();
+  const { data: beforeSla } = await supabase.from('sla_rates').select('*, sla_tools(*)').eq('account_id', accountId).eq('year', year).single();
 
   const { data: slaRate, error: upsertError } = await supabase
     .from('sla_rates')
@@ -41,7 +42,8 @@ export async function upsertSlaRates(
     .single();
 
   if (upsertError) {
-    return err(upsertError.message);
+    console.error('[upsertSlaRates] upsert', upsertError);
+    return err('Er is een fout opgetreden');
   }
 
   const { error: deleteToolsError } = await supabase
@@ -50,7 +52,8 @@ export async function upsertSlaRates(
     .eq('sla_rate_id', slaRate.id);
 
   if (deleteToolsError) {
-    return err(deleteToolsError.message);
+    console.error('[upsertSlaRates] deleteTools', deleteToolsError);
+    return err('Er is een fout opgetreden');
   }
 
   if (parsed.data.tools.length > 0) {
@@ -65,7 +68,8 @@ export async function upsertSlaRates(
       );
 
     if (insertToolsError) {
-      return err(insertToolsError.message);
+      console.error('[upsertSlaRates] insertTools', insertToolsError);
+      return err('Er is een fout opgetreden');
     }
   }
 
@@ -73,7 +77,7 @@ export async function upsertSlaRates(
     action: 'sla_rates.upserted',
     entityType: 'account',
     entityId: accountId,
-    metadata: { year },
+    metadata: { year, before: beforeSla, after: parsed.data },
   });
 
   revalidatePath(`/admin/accounts/${accountId}`);

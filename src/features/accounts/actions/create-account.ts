@@ -29,14 +29,15 @@ export async function createAccount(values: AccountFormValues): Promise<ActionRe
     .single();
 
   if (error) {
-    return err(error.message);
+    console.error('[createAccount]', error);
+    return err('Er is een fout opgetreden');
   }
 
   await logAction({
     action: 'account.created',
     entityType: 'account',
     entityId: data.id,
-    metadata: { name: parsed.data.name },
+    metadata: { name: parsed.data.name, body: parsed.data },
   });
 
   revalidatePath('/admin/accounts');

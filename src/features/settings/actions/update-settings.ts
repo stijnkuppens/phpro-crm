@@ -23,7 +23,10 @@ export async function updateSettings(values: { app_name: string; logo_url: strin
   ];
 
   const { error } = await supabase.from('app_settings').upsert(upserts);
-  if (error) return err(error.message);
+  if (error) {
+    console.error('[updateSettings]', error);
+    return err('Er is een fout opgetreden');
+  }
 
   revalidatePath('/admin/settings');
   updateTag('settings');

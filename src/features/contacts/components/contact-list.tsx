@@ -11,7 +11,7 @@ import { Button } from '@/components/ui/button';
 import { ComboboxFilter } from '@/components/admin/combobox-filter';
 import { PageHeader } from '@/components/admin/page-header';
 import { ExportDropdown } from '@/components/admin/export-dropdown';
-import { contactExportColumns, CONTACT_EXPORT_SELECT } from '../export-columns';
+import { contactExportColumns } from '../export-columns';
 import { Avatar } from '@/components/admin/avatar';
 import { StatusBadge } from '@/components/admin/status-badge';
 import { contactColumns } from '../columns';
@@ -109,7 +109,6 @@ export function ContactList({ initialData, initialCount, accounts = [] }: Contac
               entity="contacts"
               columns={contactExportColumns}
               filters={{ sort: { column: 'last_name', direction: 'asc' } }}
-              selectQuery={CONTACT_EXPORT_SELECT}
             />
             <Button size="sm" onClick={() => setShowNew(true)}>
               <Plus />

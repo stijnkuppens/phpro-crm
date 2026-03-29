@@ -21,7 +21,7 @@ export async function reopenDeal(dealId: string): Promise<ActionResult> {
 
   const { data: deal } = await supabase
     .from('deals')
-    .select('pipeline_id')
+    .select('*')
     .eq('id', dealId)
     .single();
 
@@ -51,12 +51,16 @@ export async function reopenDeal(dealId: string): Promise<ActionResult> {
     })
     .eq('id', dealId);
 
-  if (error) return err(error.message);
+  if (error) {
+    console.error('[reopenDeal]', error);
+    return err('Er is een fout opgetreden');
+  }
 
   await logAction({
     action: 'deal.reopened',
     entityType: 'deal',
     entityId: dealId,
+    metadata: { before: deal },
   });
 
   revalidatePath('/admin/deals');

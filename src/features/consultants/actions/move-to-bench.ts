@@ -22,7 +22,7 @@ export async function moveToBench(
   // Fetch current consultant to check existing bench fields
   const { data: consultant, error: fetchError } = await supabase
     .from('consultants')
-    .select('available_date, priority')
+    .select('*')
     .eq('id', id)
     .single();
 
@@ -54,13 +54,15 @@ export async function moveToBench(
     .eq('id', id);
 
   if (error) {
-    return err(error.message);
+    console.error('[moveToBench]', error);
+    return err('Er is een fout opgetreden');
   }
 
   await logAction({
     action: 'consultant.moved_to_bench',
     entityType: 'consultant',
     entityId: id,
+    metadata: { before: consultant },
   });
 
   revalidatePath('/admin/consultants');

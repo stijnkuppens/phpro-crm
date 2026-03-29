@@ -7,6 +7,7 @@ import { logAction } from '@/features/audit/actions/log-action';
 import { revalidatePath } from 'next/cache';
 import { communicationFormSchema, entityIdSchema, type CommunicationFormValues } from '@/features/communications/types';
 import { ok, err, type ActionResult } from '@/lib/action-result';
+import type { Json } from '@/types/database';
 
 export async function updateCommunication(id: string, values: CommunicationFormValues): Promise<ActionResult> {
   try {
@@ -24,19 +25,22 @@ export async function updateCommunication(id: string, values: CommunicationFormV
   }
 
   const supabase = await createServerClient();
+  const { data: before } = await supabase.from('communications').select('*').eq('id', id).single();
   const { error } = await supabase
     .from('communications')
-    .update(parsed.data)
+    .update({ ...parsed.data, content: parsed.data.content as Json })
     .eq('id', id);
 
   if (error) {
-    return err(error.message);
+    console.error('[updateCommunication]', error);
+    return err('Er is een fout opgetreden');
   }
 
   await logAction({
     action: 'communication.updated',
     entityType: 'communication',
     entityId: id,
+    metadata: { before, after: parsed.data as unknown as Record<string, Json> },
   });
 
   revalidatePath('/admin/accounts');

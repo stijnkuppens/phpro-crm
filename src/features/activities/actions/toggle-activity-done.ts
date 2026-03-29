@@ -31,7 +31,10 @@ export async function toggleActivityDone(id: string): Promise<ActionResult> {
     .update({ is_done: !activity.is_done })
     .eq('id', id);
 
-  if (error) return err(error.message);
+  if (error) {
+    console.error('[toggleActivityDone]', error);
+    return err('Er is een fout opgetreden');
+  }
 
   revalidatePath('/admin/activities');
   revalidatePath('/admin/deals');

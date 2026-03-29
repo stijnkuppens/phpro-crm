@@ -31,6 +31,7 @@ export async function addRateChange(
   }
 
   const supabase = await createServerClient();
+  const { data: before } = await supabase.from('consultants').select('*').eq('id', id).single();
 
   const { error: historyError } = await supabase
     .from('consultant_rate_history')
@@ -43,7 +44,8 @@ export async function addRateChange(
     });
 
   if (historyError) {
-    return err(historyError.message);
+    console.error('[addRateChange] insert', historyError);
+    return err('Er is een fout opgetreden');
   }
 
   // Only update the current hourly_rate if the rate change is effective today or earlier
@@ -58,7 +60,8 @@ export async function addRateChange(
       .eq('id', id);
 
     if (updateError) {
-      return err(updateError.message);
+      console.error('[addRateChange] update', updateError);
+      return err('Er is een fout opgetreden');
     }
   }
 
@@ -66,7 +69,7 @@ export async function addRateChange(
     action: 'consultant.rate_changed',
     entityType: 'consultant',
     entityId: id,
-    metadata: { date: parsed.data.date, rate: parsed.data.rate, reason: parsed.data.reason ?? null },
+    metadata: { date: parsed.data.date, rate: parsed.data.rate, reason: parsed.data.reason ?? null, before },
   });
 
   revalidatePath('/admin/consultants');

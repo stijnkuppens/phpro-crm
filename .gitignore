@@ -50,3 +50,6 @@ docs/
 npm-debug.log*
 
 demo_crm/
+
+# Supabase OpenAPI schema (exposes full DB schema)
+supabase-openapi.json

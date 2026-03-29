@@ -22,6 +22,7 @@ export async function upsertHourlyRates(
   if (!parsed.success) return err('Ongeldige invoer');
 
   const supabase = await createServerClient();
+  const { data: before } = await supabase.from('hourly_rates').select('*').eq('account_id', accountId).eq('year', year);
 
   const { error: rpcError } = await supabase.rpc('upsert_hourly_rates', {
     p_account_id: accountId,
@@ -30,14 +31,15 @@ export async function upsertHourlyRates(
   });
 
   if (rpcError) {
-    return err(rpcError.message);
+    console.error('[upsertHourlyRates]', rpcError);
+    return err('Er is een fout opgetreden');
   }
 
   await logAction({
     action: 'hourly_rates.upserted',
     entityType: 'account',
     entityId: accountId,
-    metadata: { year, count: rates.length },
+    metadata: { year, count: rates.length, before, after: rates },
   });
 
   revalidatePath(`/admin/accounts/${accountId}`);

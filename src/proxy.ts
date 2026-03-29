@@ -45,8 +45,12 @@ export async function proxy(request: NextRequest) {
 
   const { data: { user } } = await supabase.auth.getUser();
 
+  if (request.nextUrl.pathname === '/register') {
+    return NextResponse.redirect(new URL('/login', request.url));
+  }
+
   const isAdminRoute = request.nextUrl.pathname.startsWith('/admin');
-  const isAuthRoute = ['/login', '/register', '/forgot-password'].includes(
+  const isAuthRoute = ['/login', '/forgot-password'].includes(
     request.nextUrl.pathname,
   );
 
@@ -87,4 +91,5 @@ export async function proxy(request: NextRequest) {
 
 export const proxyConfig = {
   matcher: ['/admin/:path*', '/login', '/register', '/forgot-password', '/reset-password', '/auth/callback', '/forbidden'],
+  // Note: /register is kept in matcher so the redirect in proxy() fires
 };

@@ -8,7 +8,7 @@ import { useEntity } from '@/lib/hooks/use-entity';
 import DataTable from '@/components/admin/data-table';
 import { buildFilterQuery, type FilterOption } from '@/components/admin/data-table-filters';
 import { ExportDropdown } from '@/components/admin/export-dropdown';
-import { accountExportColumns, ACCOUNT_EXPORT_SELECT } from '../export-columns';
+import { accountExportColumns } from '../export-columns';
 import { Avatar } from '@/components/admin/avatar';
 import { StatusBadge } from '@/components/admin/status-badge';
 import { accountColumns } from '../columns';

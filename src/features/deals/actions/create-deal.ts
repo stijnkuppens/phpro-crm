@@ -29,14 +29,15 @@ export async function createDeal(values: DealFormValues): Promise<ActionResult<{
     .single();
 
   if (error) {
-    return err(error.message);
+    console.error('[createDeal]', error);
+    return err('Er is een fout opgetreden');
   }
 
   await logAction({
     action: 'deal.created',
     entityType: 'deal',
     entityId: data.id,
-    metadata: { title: parsed.data.title },
+    metadata: { title: parsed.data.title, body: parsed.data },
   });
 
   revalidatePath('/admin/deals');

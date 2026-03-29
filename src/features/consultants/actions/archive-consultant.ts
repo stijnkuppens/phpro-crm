@@ -19,6 +19,7 @@ export async function archiveConsultant(
   if (!z.string().min(1).safeParse(id).success) return err('Ongeldig ID');
 
   const supabase = await createServerClient();
+  const { data: before } = await supabase.from('consultants').select('*').eq('id', id).single();
   const { error } = await supabase
     .from('consultants')
     .update({ is_archived: archive })
@@ -26,13 +27,15 @@ export async function archiveConsultant(
     .eq('status', 'bench');
 
   if (error) {
-    return err(error.message);
+    console.error('[archiveConsultant]', error);
+    return err('Er is een fout opgetreden');
   }
 
   await logAction({
     action: archive ? 'consultant.archived' : 'consultant.unarchived',
     entityType: 'consultant',
     entityId: id,
+    metadata: { before },
   });
 
   revalidatePath('/admin/consultants');

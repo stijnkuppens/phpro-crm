@@ -24,7 +24,6 @@ export const getContacts = cache(
       .from('contacts')
       .select(`
         *,
-        personal_info:contact_personal_info(*),
         account:accounts!account_id(id, name)
       `, { count: 'exact' })
       .order('last_name', { ascending: true })

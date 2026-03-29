@@ -30,14 +30,15 @@ export async function createBenchConsultant(
     .single();
 
   if (error) {
-    return err(error.message);
+    console.error('[createBenchConsultant]', error);
+    return err('Er is een fout opgetreden');
   }
 
   await logAction({
     action: 'consultant.created',
     entityType: 'consultant',
     entityId: data.id,
-    metadata: { name: `${parsed.data.first_name} ${parsed.data.last_name}` },
+    metadata: { name: `${parsed.data.first_name} ${parsed.data.last_name}`, body: parsed.data },
   });
 
   revalidatePath('/admin/consultants');

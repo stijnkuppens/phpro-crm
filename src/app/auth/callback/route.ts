@@ -15,13 +15,14 @@ import { createServerClient } from '@supabase/ssr';
 export async function GET(request: NextRequest) {
   const { searchParams, origin } = request.nextUrl;
   const code = searchParams.get('code');
-  const next = searchParams.get('next') ?? '/admin';
+  const nextParam = searchParams.get('next') ?? '/admin';
+  const safeNext = nextParam.startsWith('/') && !nextParam.startsWith('//') ? nextParam : '/admin';
 
   if (!code) {
     return NextResponse.redirect(new URL('/login', origin));
   }
 
-  const response = NextResponse.redirect(new URL(next, origin));
+  const response = NextResponse.redirect(new URL(safeNext, origin));
 
   const supabase = createServerClient(
     process.env.SUPABASE_URL!,

@@ -24,20 +24,22 @@ export async function updateContact(id: string, values: ContactFormValues): Prom
   }
 
   const supabase = await createServerClient();
+  const { data: before } = await supabase.from('contacts').select('*').eq('id', id).single();
   const { error } = await supabase
     .from('contacts')
     .update(parsed.data)
     .eq('id', id);
 
   if (error) {
-    return err(error.message);
+    console.error('[updateContact]', error);
+    return err('Er is een fout opgetreden');
   }
 
   await logAction({
     action: 'contact.updated',
     entityType: 'contact',
     entityId: id,
-    metadata: { name: `${parsed.data.first_name} ${parsed.data.last_name}` },
+    metadata: { name: `${parsed.data.first_name} ${parsed.data.last_name}`, before, after: parsed.data },
   });
 
   revalidatePath('/admin/contacts');

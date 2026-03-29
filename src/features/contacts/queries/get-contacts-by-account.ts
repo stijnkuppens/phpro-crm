@@ -9,10 +9,7 @@ export const getContactsByAccount = cache(
 
     const { data, error } = await supabase
       .from('contacts')
-      .select(`
-        *,
-        personal_info:contact_personal_info(*)
-      `)
+      .select('*')
       .eq('account_id', accountId)
       .order('is_pinned', { ascending: false })
       .order('last_name', { ascending: true });

@@ -28,7 +28,8 @@ export async function createContact(values: ContactFormValues): Promise<ActionRe
     .single();
 
   if (error) {
-    return err(error.message);
+    console.error('[createContact]', error);
+    return err('Er is een fout opgetreden');
   }
 
   // Create empty personal info record
@@ -37,14 +38,15 @@ export async function createContact(values: ContactFormValues): Promise<ActionRe
     .insert({ contact_id: data.id });
 
   if (personalInfoError) {
-    return err(personalInfoError.message);
+    console.error('[createContact] personalInfo', personalInfoError);
+    return err('Er is een fout opgetreden');
   }
 
   await logAction({
     action: 'contact.created',
     entityType: 'contact',
     entityId: data.id,
-    metadata: { name: `${parsed.data.first_name} ${parsed.data.last_name}` },
+    metadata: { name: `${parsed.data.first_name} ${parsed.data.last_name}`, body: parsed.data },
   });
 
   revalidatePath('/admin/contacts');

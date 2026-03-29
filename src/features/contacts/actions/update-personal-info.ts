@@ -21,6 +21,7 @@ export async function updatePersonalInfo(contactId: string, values: PersonalInfo
   }
 
   const supabase = await createServerClient();
+  const { data: before } = await supabase.from('contact_personal_info').select('*').eq('contact_id', contactId).single();
 
   // Upsert: create if not exists, update if exists
   const { error } = await supabase
@@ -31,13 +32,15 @@ export async function updatePersonalInfo(contactId: string, values: PersonalInfo
     );
 
   if (error) {
-    return err(error.message);
+    console.error('[updatePersonalInfo]', error);
+    return err('Er is een fout opgetreden');
   }
 
   await logAction({
     action: 'contact_personal_info.updated',
     entityType: 'contact',
     entityId: contactId,
+    metadata: { before, after: parsed.data },
   });
 
   const { data: contact } = await supabase

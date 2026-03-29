@@ -14,7 +14,10 @@ export async function markAsRead(notificationId: string): Promise<ActionResult> 
     .eq('id', notificationId)
     .eq('user_id', user.id);
 
-  if (error) return err(error.message);
+  if (error) {
+    console.error('[markAsRead]', error);
+    return err('Er is een fout opgetreden');
+  }
   revalidatePath('/admin', 'layout');
   return ok();
 }
@@ -30,7 +33,10 @@ export async function markAllAsRead(): Promise<ActionResult> {
     .eq('user_id', user.id)
     .eq('read', false);
 
-  if (error) return err(error.message);
+  if (error) {
+    console.error('[markAllAsRead]', error);
+    return err('Er is een fout opgetreden');
+  }
   revalidatePath('/admin', 'layout');
   return ok();
 }

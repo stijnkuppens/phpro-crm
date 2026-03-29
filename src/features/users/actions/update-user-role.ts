@@ -18,20 +18,22 @@ export async function updateUserRole(userId: string, newRole: string): Promise<A
   if (!parsed.success) return err('Ongeldige rol');
 
   const admin = createServiceRoleClient();
+  const { data: before } = await admin.from('user_profiles').select('*').eq('id', parsed.data.userId).single();
   const { error } = await admin
     .from('user_profiles')
     .update({ role: parsed.data.newRole })
     .eq('id', parsed.data.userId);
 
   if (error) {
-    return err(error.message);
+    console.error('[updateUserRole]', error);
+    return err('Er is een fout opgetreden');
   }
 
   await logAction({
     action: 'user.role_changed',
     entityType: 'user',
     entityId: userId,
-    metadata: { newRole },
+    metadata: { newRole, before },
   });
 
   revalidatePath('/admin/users');

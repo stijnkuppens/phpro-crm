@@ -40,7 +40,10 @@ export async function retryJob(id: string): Promise<ActionResult> {
     })
     .eq('id', id);
 
-  if (updateError) return err(updateError.message);
+  if (updateError) {
+    console.error('[retryJob] update', updateError);
+    return err('Er is een fout opgetreden');
+  }
 
   // Manually trigger the Edge Function (the INSERT trigger only fires on new rows)
   const { error: triggerError } = await supabase.rpc('trigger_job_retry', {
@@ -48,7 +51,8 @@ export async function retryJob(id: string): Promise<ActionResult> {
   });
 
   if (triggerError) {
-    return err(`Retry trigger mislukt: ${triggerError.message}`);
+    console.error('[retryJob] trigger', triggerError);
+    return err('Er is een fout opgetreden');
   }
 
   return ok();

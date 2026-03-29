@@ -24,20 +24,22 @@ export async function updateAccount(id: string, values: AccountFormValues): Prom
   }
 
   const supabase = await createServerClient();
+  const { data: before } = await supabase.from('accounts').select('*').eq('id', id).single();
   const { error } = await supabase
     .from('accounts')
     .update(parsed.data)
     .eq('id', id);
 
   if (error) {
-    return err(error.message);
+    console.error('[updateAccount]', error);
+    return err('Er is een fout opgetreden');
   }
 
   await logAction({
     action: 'account.updated',
     entityType: 'account',
     entityId: id,
-    metadata: { name: parsed.data.name },
+    metadata: { name: parsed.data.name, before, after: parsed.data },
   });
 
   revalidatePath('/admin/accounts');

@@ -38,7 +38,10 @@ export async function createReferenceItem(
     .select('id')
     .single();
 
-  if (error) return err(error.message);
+  if (error) {
+    console.error('[createReferenceItem]', error);
+    return err('Er is een fout opgetreden');
+  }
 
   revalidatePath('/admin/reference-data');
   return ok(data as { id: string });
@@ -65,7 +68,10 @@ export async function updateReferenceItem(
     .update(toDbRow(parsed.data))
     .eq('id', id);
 
-  if (error) return err(error.message);
+  if (error) {
+    console.error('[updateReferenceItem]', error);
+    return err('Er is een fout opgetreden');
+  }
 
   revalidatePath('/admin/reference-data');
   return ok();
@@ -88,7 +94,10 @@ export async function deleteReferenceItem(
     .delete()
     .eq('id', id);
 
-  if (error) return err(error.message);
+  if (error) {
+    console.error('[deleteReferenceItem]', error);
+    return err('Er is een fout opgetreden');
+  }
 
   revalidatePath('/admin/reference-data');
   return ok();

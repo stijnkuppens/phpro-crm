@@ -43,7 +43,8 @@ export async function POST(request: Request) {
   const { error } = await admin.auth.admin.inviteUserByEmail(email);
 
   if (error) {
-    return NextResponse.json({ error: error.message }, { status: 400, headers: { 'Cache-Control': 'no-store' } });
+    console.error('[POST /api/admin/invite]', error);
+    return NextResponse.json({ error: 'Er is een fout opgetreden' }, { status: 400, headers: { 'Cache-Control': 'no-store' } });
   }
 
   await logAction({

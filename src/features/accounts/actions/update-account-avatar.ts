@@ -27,7 +27,10 @@ export async function updateAccountAvatar(id: string, path: string): Promise<Act
     .update({ logo_url: parsed.data.path })
     .eq('id', parsed.data.id);
 
-  if (error) return err(error.message);
+  if (error) {
+    console.error('[updateAccountAvatar]', error);
+    return err('Er is een fout opgetreden');
+  }
 
   revalidatePath(`/admin/accounts/${parsed.data.id}`);
   return ok(undefined);

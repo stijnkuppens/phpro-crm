@@ -27,7 +27,10 @@ export async function updateContactAvatar(id: string, path: string): Promise<Act
     .update({ avatar_url: parsed.data.path })
     .eq('id', parsed.data.id);
 
-  if (error) return err(error.message);
+  if (error) {
+    console.error('[updateContactAvatar]', error);
+    return err('Er is een fout opgetreden');
+  }
 
   revalidatePath('/admin/contacts');
   return ok(undefined);

@@ -8,7 +8,9 @@ const clientSchema = z.object({
 const serverSchema = z.object({
   SUPABASE_URL: z.string().min(1),
   SUPABASE_SERVICE_ROLE_KEY: z.string().min(1),
-  WEBHOOK_SECRET: z.string().min(1).optional(),
+  WEBHOOK_SECRET: process.env.NODE_ENV === 'production'
+    ? z.string().min(1)
+    : z.string().min(1).optional(),
 });
 
 function validateEnv<T extends z.ZodType>(schema: T, env: Record<string, unknown>, label: string): z.infer<T> {

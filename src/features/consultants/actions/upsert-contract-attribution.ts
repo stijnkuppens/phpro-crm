@@ -34,6 +34,7 @@ export async function upsertContractAttribution(
   }
 
   const supabase = await createServerClient();
+  const { data: before } = await supabase.from('consultant_contract_attributions').select('*').eq('consultant_id', parsed.data.consultant_id).single();
   const { data, error } = await supabase
     .from('consultant_contract_attributions')
     .upsert(parsed.data, { onConflict: 'consultant_id' })
@@ -41,14 +42,15 @@ export async function upsertContractAttribution(
     .single();
 
   if (error) {
-    return err(error.message);
+    console.error('[upsertContractAttribution]', error);
+    return err('Er is een fout opgetreden');
   }
 
   await logAction({
     action: 'consultant.contract_attribution_upserted',
     entityType: 'consultant',
     entityId: data.id,
-    metadata: { consultant_id: parsed.data.consultant_id },
+    metadata: { consultant_id: parsed.data.consultant_id, before, after: parsed.data },
   });
 
   revalidatePath('/admin/consultants');

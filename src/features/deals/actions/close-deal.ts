@@ -29,7 +29,7 @@ export async function closeDeal(dealId: string, values: CloseDealValues): Promis
 
   const { data: deal } = await supabase
     .from('deals')
-    .select('pipeline_id')
+    .select('*')
     .eq('id', dealId)
     .single();
 
@@ -71,14 +71,15 @@ export async function closeDeal(dealId: string, values: CloseDealValues): Promis
     .eq('id', dealId);
 
   if (error) {
-    return err(error.message);
+    console.error('[closeDeal]', error);
+    return err('Er is een fout opgetreden');
   }
 
   await logAction({
     action: `deal.closed.${parsed.data.closed_type}`,
     entityType: 'deal',
     entityId: dealId,
-    metadata: { closed_type: parsed.data.closed_type, reason: parsed.data.closed_reason ?? null },
+    metadata: { closed_type: parsed.data.closed_type, reason: parsed.data.closed_reason ?? null, before: deal },
   });
 
   revalidatePath('/admin/deals');

@@ -43,7 +43,8 @@ export async function addAccountRelation(
     .single();
 
   if (error) {
-    return err(error.message);
+    console.error('[addAccountRelation]', error);
+    return err('Er is een fout opgetreden');
   }
 
   revalidatePath('/admin/accounts');
@@ -72,7 +73,8 @@ export async function updateAccountRelation(
     .eq('id', id);
 
   if (error) {
-    return err(error.message);
+    console.error('[updateAccountRelation]', error);
+    return err('Er is een fout opgetreden');
   }
 
   revalidatePath('/admin/accounts');
@@ -98,7 +100,8 @@ export async function deleteAccountRelation(
     .eq('id', id);
 
   if (error) {
-    return err(error.message);
+    console.error('[deleteAccountRelation]', error);
+    return err('Er is een fout opgetreden');
   }
 
   revalidatePath('/admin/accounts');
@@ -124,6 +127,7 @@ export async function syncAccountFKRelation(
   }
 
   const supabase = await createServerClient();
+  const { data: before } = await (supabase.from(table) as any).select('*').eq('account_id', accountId);
   const rows = values.map((v) => ({ account_id: accountId, [field]: v }));
   const { error } = await supabase.rpc('sync_account_fk_relation', {
     p_account_id: accountId,
@@ -132,13 +136,14 @@ export async function syncAccountFKRelation(
   });
 
   if (error) {
-    return err(error.message);
+    console.error('[syncAccountFKRelation]', error);
+    return err('Er is een fout opgetreden');
   }
 
   await logAction({
     action: `${table}.synced`,
     entityType: table,
-    metadata: { account_id: accountId, count: values.length },
+    metadata: { account_id: accountId, count: values.length, before, after: rows },
   });
 
   revalidatePath('/admin/accounts');

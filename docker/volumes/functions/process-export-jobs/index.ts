@@ -52,6 +52,11 @@ async function processExportJob(supabase: SupabaseClient, jobId: string) {
     const entity = job.entity as string;
     const selectQuery = job.select_query || '*';
 
+    const ALLOWED_ENTITIES = ['accounts', 'contacts', 'deals', 'consultants', 'activities', 'communications'];
+    if (!ALLOWED_ENTITIES.includes(entity)) {
+      throw new Error(`Invalid export entity: ${entity}`);
+    }
+
     // deno-lint-ignore no-explicit-any
     let query: any = supabase.from(entity).select(selectQuery);
 

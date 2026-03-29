@@ -29,6 +29,7 @@ export async function extendConsultant(
   }
 
   const supabase = await createServerClient();
+  const { data: before } = await supabase.from('consultants').select('*').eq('id', id).single();
 
   const { error: extensionError } = await supabase
     .from('consultant_extensions')
@@ -39,7 +40,8 @@ export async function extendConsultant(
     });
 
   if (extensionError) {
-    return err(extensionError.message);
+    console.error('[extendConsultant] insert', extensionError);
+    return err('Er is een fout opgetreden');
   }
 
   const { error: updateError } = await supabase
@@ -48,14 +50,15 @@ export async function extendConsultant(
     .eq('id', id);
 
   if (updateError) {
-    return err(updateError.message);
+    console.error('[extendConsultant] update', updateError);
+    return err('Er is een fout opgetreden');
   }
 
   await logAction({
     action: 'consultant.extended',
     entityType: 'consultant',
     entityId: id,
-    metadata: { new_end_date: parsed.data.new_end_date },
+    metadata: { new_end_date: parsed.data.new_end_date, before },
   });
 
   revalidatePath('/admin/consultants');

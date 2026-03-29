@@ -26,7 +26,7 @@ export const activityFormSchema = z.object({
   duration_minutes: z.coerce.number().optional().nullable(),
   account_id: z.string().min(1, 'Account is verplicht'),
   deal_id: z.string().optional().nullable(),
-  notes: z.any().optional().nullable(),
+  notes: z.unknown().optional().nullable(),
   is_done: z.boolean().optional(),
   priority: z.enum(['High', 'Medium', 'Low']).optional().nullable(),
   assigned_to: z.string().optional().nullable(),

@@ -20,7 +20,7 @@ import { StatCard } from '@/components/admin/stat-card';
 import { FilterPill } from '@/components/admin/filter-pill';
 import { PageHeader } from '@/components/admin/page-header';
 import { ExportDropdown } from '@/components/admin/export-dropdown';
-import { consultantExportColumns, CONSULTANT_EXPORT_SELECT } from '../export-columns';
+import { consultantExportColumns } from '../export-columns';
 import { Button } from '@/components/ui/button';
 import DataTable from '@/components/admin/data-table';
 import { useEntity } from '@/lib/hooks/use-entity';
@@ -227,7 +227,6 @@ export function ConsultantListView({ initialData, initialCount, stats, accounts,
                 entity="consultants"
                 columns={consultantExportColumns}
                 filters={{ sort: { column: 'last_name', direction: 'asc' } }}
-                selectQuery={CONSULTANT_EXPORT_SELECT}
               />
               <Button size="sm" onClick={() => setShowNewBench(true)}>
                 <Plus />

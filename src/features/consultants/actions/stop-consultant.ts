@@ -29,6 +29,7 @@ export async function stopConsultant(
   }
 
   const supabase = await createServerClient();
+  const { data: before } = await supabase.from('consultants').select('*').eq('id', id).single();
   const { error } = await supabase
     .from('consultants')
     .update({
@@ -39,14 +40,15 @@ export async function stopConsultant(
     .eq('id', id);
 
   if (error) {
-    return err(error.message);
+    console.error('[stopConsultant]', error);
+    return err('Er is een fout opgetreden');
   }
 
   await logAction({
     action: 'consultant.stopped',
     entityType: 'consultant',
     entityId: id,
-    metadata: { stop_date: parsed.data.stop_date, stop_reason: parsed.data.stop_reason ?? null },
+    metadata: { stop_date: parsed.data.stop_date, stop_reason: parsed.data.stop_reason ?? null, before },
   });
 
   revalidatePath('/admin/consultants');

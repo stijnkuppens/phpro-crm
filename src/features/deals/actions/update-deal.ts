@@ -24,6 +24,7 @@ export async function updateDeal(id: string, values: DealFormValues): Promise<Ac
   }
 
   const supabase = await createServerClient();
+  const { data: before } = await supabase.from('deals').select('*').eq('id', id).single();
   const { data: updatedDeal, error } = await supabase
     .from('deals')
     .update(parsed.data)
@@ -32,13 +33,15 @@ export async function updateDeal(id: string, values: DealFormValues): Promise<Ac
     .single();
 
   if (error) {
-    return err(error.message);
+    console.error('[updateDeal]', error);
+    return err('Er is een fout opgetreden');
   }
 
   await logAction({
     action: 'deal.updated',
     entityType: 'deal',
     entityId: id,
+    metadata: { before, after: parsed.data },
   });
 
   revalidatePath('/admin/deals');

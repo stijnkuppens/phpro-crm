@@ -24,6 +24,7 @@ export async function upsertContract(
   }
 
   const supabase = await createServerClient();
+  const { data: before } = await supabase.from('contracts').select('*').eq('account_id', accountId).single();
   const { data, error } = await supabase
     .from('contracts')
     .upsert({ ...parsed.data, account_id: accountId }, { onConflict: 'account_id' })
@@ -31,14 +32,15 @@ export async function upsertContract(
     .single();
 
   if (error) {
-    return err(error.message);
+    console.error('[upsertContract]', error);
+    return err('Er is een fout opgetreden');
   }
 
   await logAction({
     action: 'contract.upserted',
     entityType: 'contract',
     entityId: data.id,
-    metadata: { account_id: accountId },
+    metadata: { account_id: accountId, before, after: parsed.data },
   });
 
   revalidatePath(`/admin/accounts/${accountId}`);

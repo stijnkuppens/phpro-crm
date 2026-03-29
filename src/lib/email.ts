@@ -1,5 +1,13 @@
 import nodemailer from 'nodemailer';
 
+function escapeHtml(text: string): string {
+  return text
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
 const transporter = nodemailer.createTransport({
   host: process.env.SMTP_HOST ?? 'localhost',
   port: Number(process.env.SMTP_PORT ?? 54325),
@@ -82,7 +90,7 @@ function wrapInTemplate(body: string, brand: Brand): string {
       <img src="data:image/svg+xml;base64,${Buffer.from(b.logoSvg).toString('base64')}" alt="${b.name}" />
     </div>
     <div class="content">
-      ${body.split('\n').map((line) => `<p>${line || '&nbsp;'}</p>`).join('\n      ')}
+      ${body.split('\n').map((line) => `<p>${escapeHtml(line) || '&nbsp;'}</p>`).join('\n      ')}
     </div>
     <div class="footer">
       <p>Verstuurd via <a href="${b.url}">${b.name}</a> CRM</p>

@@ -25,7 +25,7 @@ export const communicationFormSchema = z.object({
   to: z.string().optional().nullable(),
   date: z.string().min(1, 'Datum is verplicht'),
   duration_minutes: z.coerce.number().optional().nullable(),
-  content: z.any().optional().nullable(), // Plate JSON
+  content: z.unknown().optional().nullable(), // Plate JSON
   is_done: z.boolean().optional(),
 });
 

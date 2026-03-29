@@ -7,6 +7,7 @@ import { logAction } from '@/features/audit/actions/log-action';
 import { revalidatePath } from 'next/cache';
 import { activityFormSchema, type ActivityFormValues } from '../types';
 import { ok, err, type ActionResult } from '@/lib/action-result';
+import type { Json } from '@/types/database';
 
 export async function createActivity(values: ActivityFormValues): Promise<ActionResult<{ id: string }>> {
   let userId: string;
@@ -24,19 +25,20 @@ export async function createActivity(values: ActivityFormValues): Promise<Action
   const supabase = await createServerClient();
   const { data, error } = await supabase
     .from('activities')
-    .insert({ ...parsed.data, owner_id: userId })
+    .insert({ ...parsed.data, notes: parsed.data.notes as Json, owner_id: userId })
     .select('id')
     .single();
 
   if (error) {
-    return err(error.message);
+    console.error('[createActivity]', error);
+    return err('Er is een fout opgetreden');
   }
 
   await logAction({
     action: 'activity.created',
     entityType: 'activity',
     entityId: data.id,
-    metadata: { subject: parsed.data.subject, type: parsed.data.type },
+    metadata: { subject: parsed.data.subject, type: parsed.data.type, body: parsed.data as unknown as Record<string, Json> },
   });
 
   revalidatePath('/admin/activities');

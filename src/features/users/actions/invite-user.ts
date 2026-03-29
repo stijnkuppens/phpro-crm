@@ -52,7 +52,8 @@ export async function inviteUser(
     if (createError.message.includes('already been registered')) {
       return err('Dit e-mailadres is al geregistreerd');
     }
-    return err(createError.message);
+    console.error('[inviteUser] createUser', createError);
+    return err('Er is een fout opgetreden');
   }
 
   // handle_new_user() trigger created user_profiles with default role 'viewer'
@@ -63,7 +64,8 @@ export async function inviteUser(
     .eq('id', created.user.id);
 
   if (roleError) {
-    return err(`Gebruiker aangemaakt maar rol instellen mislukt: ${roleError.message}`);
+    console.error('[inviteUser] updateRole', roleError);
+    return err('Gebruiker aangemaakt maar rol instellen mislukt');
   }
 
   // Generate invite link for the branded email
@@ -75,7 +77,8 @@ export async function inviteUser(
     });
 
   if (linkError) {
-    return err(`Gebruiker aangemaakt maar uitnodigingslink genereren mislukt: ${linkError.message}`);
+    console.error('[inviteUser] generateLink', linkError);
+    return err('Gebruiker aangemaakt maar uitnodigingslink genereren mislukt');
   }
 
   // Send branded invite email
@@ -96,7 +99,7 @@ export async function inviteUser(
     action: 'user.invited',
     entityType: 'user',
     entityId: created.user.id,
-    metadata: { email, fullName, role },
+    metadata: { email, fullName, role, body: parsed.data },
   });
 
   revalidatePath('/admin/users');

@@ -7,6 +7,7 @@ import { logAction } from '@/features/audit/actions/log-action';
 import { revalidatePath } from 'next/cache';
 import { activityFormSchema, entityIdSchema, type ActivityFormValues } from '@/features/activities/types';
 import { ok, err, type ActionResult } from '@/lib/action-result';
+import type { Json } from '@/types/database';
 
 export async function updateActivity(id: string, values: ActivityFormValues): Promise<ActionResult> {
   try {
@@ -24,19 +25,22 @@ export async function updateActivity(id: string, values: ActivityFormValues): Pr
   }
 
   const supabase = await createServerClient();
+  const { data: before } = await supabase.from('activities').select('*').eq('id', id).single();
   const { error } = await supabase
     .from('activities')
-    .update(parsed.data)
+    .update({ ...parsed.data, notes: parsed.data.notes as Json })
     .eq('id', id);
 
   if (error) {
-    return err(error.message);
+    console.error('[updateActivity]', error);
+    return err('Er is een fout opgetreden');
   }
 
   await logAction({
     action: 'activity.updated',
     entityType: 'activity',
     entityId: id,
+    metadata: { before, after: parsed.data as unknown as Record<string, Json> },
   });
 
   revalidatePath('/admin/activities');

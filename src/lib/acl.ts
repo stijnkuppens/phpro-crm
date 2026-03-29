@@ -22,6 +22,7 @@ const rolePermissions: Record<Role, Permission[] | 'all'> = {
     'settings.read',
     'audit.read',
     'notifications.read',
+    'notifications.write',
     'jobs.read',
   ],
 

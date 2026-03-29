@@ -52,6 +52,7 @@ export type Permission =
   | 'audit.read'
   // Notifications (existing)
   | 'notifications.read'
+  | 'notifications.write'
   // Jobs
   | 'jobs.read';
 
