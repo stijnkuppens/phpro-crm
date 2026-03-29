@@ -1,17 +1,15 @@
 'use client';
 
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
-import { ArrowLeft, ChevronLeft, ChevronRight, Plus, Save, Trash2 } from 'lucide-react';
+import { ArrowLeft, Save } from 'lucide-react';
 import Link from 'next/link';
 import { PageHeader } from '@/components/admin/page-header';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Switch } from '@/components/ui/switch';
-import { DatePicker } from '@/components/ui/date-picker';
 import { PdfUploadField } from '@/components/admin/pdf-upload-field';
 import {
   Select,
@@ -19,11 +17,15 @@ import {
   SelectItem,
   SelectTrigger,
 } from '@/components/ui/select';
-import { upsertContract } from '../actions/upsert-contract';
-import { upsertHourlyRates } from '../actions/upsert-hourly-rates';
-import { upsertSlaRates } from '../actions/upsert-sla-rates';
+import { upsertContract } from '@/features/contracts/actions/upsert-contract';
+import { upsertHourlyRates } from '@/features/contracts/actions/upsert-hourly-rates';
+import { upsertSlaRates } from '@/features/contracts/actions/upsert-sla-rates';
 import { upsertIndexationConfig } from '@/features/indexation/actions/upsert-indexation-config';
-import type { Contract, ContractFormValues, HourlyRate, SlaRateWithTools } from '../types';
+import { ContractFrameworkCard } from '@/features/contracts/components/contract-framework-card';
+import { ContractServiceCard } from '@/features/contracts/components/contract-service-card';
+import { ContractHourlyRatesSection } from '@/features/contracts/components/contract-hourly-rates-section';
+import { ContractSlaRatesSection } from '@/features/contracts/components/contract-sla-rates-section';
+import type { Contract, ContractFormValues, HourlyRate, SlaRateWithTools, SlaYearState, ToolEntry } from '@/features/contracts/types';
 import type { IndexationConfig } from '@/features/indexation/types';
 
 // ── Constants ──────────────────────────────────────────────────────────────
@@ -37,13 +39,7 @@ const MONTHS = [
 
 const INDEX_TYPES = ['Agoria', 'Agoria Digital'];
 
-const SECTION_WHITE = '[&_input]:bg-white [&_[data-slot=select-trigger]]:bg-white [&_button[data-slot=button]]:bg-white dark:[&_input]:bg-background dark:[&_[data-slot=select-trigger]]:bg-background dark:[&_button[data-slot=button]]:bg-background';
-
 // ── Types ──────────────────────────────────────────────────────────────────
-
-type RateEntry = { role: string; rate: string };
-type ToolEntry = { tool_name: string; monthly_price: string };
-type SlaYearState = { fixed_monthly_rate: string; support_hourly_rate: string; tools: ToolEntry[] };
 
 type Props = {
   accountId: string;
@@ -278,85 +274,26 @@ export function ContractEditPage({ accountId, contract, hourlyRates, slaRates, i
 
       {/* ── Top row: contracts side by side ───────────────────────── */}
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
-        {/* Left: Raamcontract */}
-        <Card>
-          <CardContent className="p-5 space-y-4">
-            <div className="flex items-center justify-between">
-              <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Raamcontract</h2>
-              <Switch checked={hasFramework} onCheckedChange={setHasFramework} />
-            </div>
-            {hasFramework && (
-              <div className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-1.5">
-                    <Label>Start</Label>
-                    <DatePicker name="framework_start" value={contract?.framework_start ?? ''} />
-                  </div>
-                  <div className="space-y-1.5">
-                    <Label>Einde</Label>
-                    <DatePicker name="framework_end" value={contract?.framework_end ?? ''} />
-                  </div>
-                </div>
-                <div className="space-y-1.5">
-                  <Label>Document uploaden</Label>
-                  <PdfUploadField value={frameworkDoc} onChange={setFrameworkDoc} folder={`contracts/${accountId}`} />
-                </div>
-                <div className="space-y-1.5">
-                  <Label>Link naar document (URL)</Label>
-                  <Input
-                    value={frameworkUrl}
-                    onChange={(e) => setFrameworkUrl(e.target.value)}
-                    placeholder="https://confluence.phpro.be/..."
-                  />
-                </div>
-                <div className="flex items-center gap-2">
-                  <input type="checkbox" id="framework_indefinite" defaultChecked={contract?.framework_indefinite ?? false} />
-                  <Label htmlFor="framework_indefinite">Onbepaalde duur</Label>
-                </div>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* Right: Dienstencontract */}
-        <Card>
-          <CardContent className="p-5 space-y-4">
-            <div className="flex items-center justify-between">
-              <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Dienstencontract (SLA)</h2>
-              <Switch checked={hasService} onCheckedChange={setHasService} />
-            </div>
-            {hasService && (
-              <div className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-1.5">
-                    <Label>Start</Label>
-                    <DatePicker name="service_start" value={contract?.service_start ?? ''} />
-                  </div>
-                  <div className="space-y-1.5">
-                    <Label>Einde</Label>
-                    <DatePicker name="service_end" value={contract?.service_end ?? ''} />
-                  </div>
-                </div>
-                <div className="space-y-1.5">
-                  <Label>Document uploaden</Label>
-                  <PdfUploadField value={serviceDoc} onChange={setServiceDoc} folder={`contracts/${accountId}`} />
-                </div>
-                <div className="space-y-1.5">
-                  <Label>Link naar document (URL)</Label>
-                  <Input
-                    value={serviceUrl}
-                    onChange={(e) => setServiceUrl(e.target.value)}
-                    placeholder="https://confluence.phpro.be/..."
-                  />
-                </div>
-                <div className="flex items-center gap-2">
-                  <input type="checkbox" id="service_indefinite" defaultChecked={contract?.service_indefinite ?? false} />
-                  <Label htmlFor="service_indefinite">Onbepaalde duur</Label>
-                </div>
-              </div>
-            )}
-          </CardContent>
-        </Card>
+        <ContractFrameworkCard
+          hasFramework={hasFramework}
+          setHasFramework={setHasFramework}
+          frameworkUrl={frameworkUrl}
+          setFrameworkUrl={setFrameworkUrl}
+          frameworkDoc={frameworkDoc}
+          setFrameworkDoc={setFrameworkDoc}
+          contract={contract}
+          accountId={accountId}
+        />
+        <ContractServiceCard
+          hasService={hasService}
+          setHasService={setHasService}
+          serviceUrl={serviceUrl}
+          setServiceUrl={setServiceUrl}
+          serviceDoc={serviceDoc}
+          setServiceDoc={setServiceDoc}
+          contract={contract}
+          accountId={accountId}
+        />
       </div>
 
       {/* ── Second row: Indexering + Bestelbonnen side by side ─────── */}
@@ -408,188 +345,29 @@ export function ContractEditPage({ accountId, contract, hourlyRates, slaRates, i
       </div>
 
       {/* ── Uurtarieven (full width table) ────────────────────────── */}
-      <Card>
-        <CardContent className="p-5 space-y-4">
-        <div className="flex items-center justify-between">
-          <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Uurtarieven</h2>
-          <div className="flex items-center gap-2">
-            <Button variant="ghost" size="icon-sm" onClick={() => setHrWindowStart((y) => y + 1)}>
-              <ChevronLeft />
-            </Button>
-            <span className="text-xs text-muted-foreground tabular-nums">
-              {hrVisibleYears[0]}–{hrVisibleYears[2]}
-            </span>
-            <Button variant="ghost" size="icon-sm" onClick={() => setHrWindowStart((y) => y - 1)}>
-              <ChevronRight />
-            </Button>
-            <Button variant="outline" size="sm" onClick={addHrRole}>
-              <Plus /> Rol
-            </Button>
-          </div>
-        </div>
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b bg-muted/30">
-                <th className="text-left p-2.5 font-medium w-56">Rol</th>
-                {hrVisibleYears.map((year, i) => (
-                  <th key={year} className={`text-right p-2.5 font-medium w-32 ${year === currentYear ? 'bg-primary/5' : ''}`}>
-                    {year} (€/u)
-                  </th>
-                ))}
-                <th className="w-10" />
-              </tr>
-            </thead>
-            <tbody>
-              {hrRoles.map((role) => (
-                <tr key={role} className="border-b last:border-0">
-                  <td className="p-1.5">
-                    <Input
-                      value={role}
-                      onChange={(e) => renameHrRole(role, e.target.value)}
-                      className="h-9 text-sm"
-                    />
-                  </td>
-                  {hrVisibleYears.map((year, i) => (
-                    <td key={year} className={`p-1.5 ${year === currentYear ? 'bg-primary/5' : ''}`}>
-                      <Input
-                        type="number"
-                        value={hrGrid[role]?.[year] ?? ''}
-                        onChange={(e) => updateHrRate(role, year, e.target.value)}
-                        placeholder="0"
-                        className="h-9 text-right text-sm"
-                      />
-                    </td>
-                  ))}
-                  <td className="p-1.5 text-center">
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon-xs"
-                      className="text-muted-foreground hover:text-destructive"
-                      onClick={() => removeHrRole(role)}
-                    >
-                      <Trash2 className="h-3.5 w-3.5" />
-                    </Button>
-                  </td>
-                </tr>
-              ))}
-              {hrRoles.length === 0 && (
-                <tr>
-                  <td colSpan={hrVisibleYears.length + 2} className="p-6 text-center text-muted-foreground">
-                    Geen rollen. Klik &quot;Rol toevoegen&quot; om te beginnen.
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
-        </CardContent>
-      </Card>
+      <ContractHourlyRatesSection
+        hrRoles={hrRoles}
+        hrGrid={hrGrid}
+        hrVisibleYears={hrVisibleYears}
+        currentYear={currentYear}
+        updateHrRate={updateHrRate}
+        addHrRole={addHrRole}
+        removeHrRole={removeHrRole}
+        renameHrRole={renameHrRole}
+        setHrWindowStart={setHrWindowStart}
+      />
 
       {/* ── SLA Tarieven (per-year cards in grid) ─────────────────── */}
-      <div className="space-y-4">
-        <div className="flex items-center justify-between px-1">
-          <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">SLA Tarieven</h2>
-          <div className="flex items-center gap-2">
-            <Button variant="ghost" size="icon-sm" onClick={() => setSlaWindowStart((y) => y + 1)}>
-              <ChevronLeft />
-            </Button>
-            <span className="text-xs text-muted-foreground tabular-nums">
-              {slaVisibleYears[0]}–{slaVisibleYears[2]}
-            </span>
-            <Button variant="ghost" size="icon-sm" onClick={() => setSlaWindowStart((y) => y - 1)}>
-              <ChevronRight />
-            </Button>
-          </div>
-        </div>
-        <div className="grid grid-cols-1 xl:grid-cols-3 gap-4">
-          {slaVisibleYears.map((year, yi) => {
-            const state = getSlaState(year);
-            const isCurrentYear = year === currentYear;
-            return (
-              <div
-                key={year}
-                className={`rounded-xl border p-5 space-y-4 shadow-sm ${
-                  year === currentYear ? `bg-primary/5 border-primary/20 ${SECTION_WHITE}` : 'bg-card'
-                }`}
-              >
-                <div className="flex items-center gap-2">
-                  <h3 className="text-base font-semibold">{year}</h3>
-                  {isCurrentYear && (
-                    <span className="rounded-full bg-primary/15 px-2 py-0.5 text-[10px] font-medium text-primary-action">
-                      Huidig
-                    </span>
-                  )}
-                </div>
-
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="space-y-1.5">
-                    <Label className="text-xs">Vast maandtarief (€/m)</Label>
-                    <Input
-                      type="number"
-                      value={state.fixed_monthly_rate}
-                      onChange={(e) => updateSlaField(year, 'fixed_monthly_rate', e.target.value)}
-                      placeholder="0"
-                      className="text-sm"
-                    />
-                  </div>
-                  <div className="space-y-1.5">
-                    <Label className="text-xs">Support uurtarief (€/u)</Label>
-                    <Input
-                      type="number"
-                      value={state.support_hourly_rate}
-                      onChange={(e) => updateSlaField(year, 'support_hourly_rate', e.target.value)}
-                      placeholder="0"
-                      className="text-sm"
-                    />
-                  </div>
-                </div>
-
-                {/* Tools */}
-                <div className="space-y-2 border-t pt-3">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-medium text-muted-foreground">Tools & Modules</span>
-                    <Button type="button" variant="outline" size="xs" onClick={() => addSlaTool(year)}>
-                      <Plus /> Tool
-                    </Button>
-                  </div>
-                  {state.tools.length > 0 && (
-                    <div className="space-y-1.5">
-                      {state.tools.map((tool, i) => (
-                        <div key={i} className="flex items-center gap-1.5">
-                          <Input
-                            value={tool.tool_name}
-                            onChange={(e) => updateSlaTool(year, i, 'tool_name', e.target.value)}
-                            placeholder="Naam"
-                            className="h-8 flex-1 text-xs"
-                          />
-                          <Input
-                            type="number"
-                            value={tool.monthly_price}
-                            onChange={(e) => updateSlaTool(year, i, 'monthly_price', e.target.value)}
-                            placeholder="€/m"
-                            className="h-8 w-20 text-right text-xs"
-                          />
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="icon-xs"
-                            className="shrink-0 text-muted-foreground hover:text-destructive"
-                            onClick={() => removeSlaTool(year, i)}
-                          >
-                            <Trash2 className="h-3 w-3" />
-                          </Button>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </div>
+      <ContractSlaRatesSection
+        slaVisibleYears={slaVisibleYears}
+        currentYear={currentYear}
+        getSlaState={getSlaState}
+        updateSlaField={updateSlaField}
+        addSlaTool={addSlaTool}
+        removeSlaTool={removeSlaTool}
+        updateSlaTool={updateSlaTool}
+        setSlaWindowStart={setSlaWindowStart}
+      />
 
       {/* ── Acties ─────────────────────────────────────────────────── */}
       <Card>
