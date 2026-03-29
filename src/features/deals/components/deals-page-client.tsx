@@ -141,25 +141,25 @@ export function DealsPageClient({ pipelines, initialDeals, initialCount, owners 
           { label: 'Deals' },
         ]}
         actions={
-          <ExportDropdown
-            entity="deals"
-            columns={dealExportColumns}
-            filters={{ sort: { column: 'created_at', direction: 'desc' } }}
-            selectQuery={DEAL_EXPORT_SELECT}
-          />
+          <div className="flex gap-2">
+            <ExportDropdown
+              entity="deals"
+              columns={dealExportColumns}
+              filters={{ sort: { column: 'created_at', direction: 'desc' } }}
+              selectQuery={DEAL_EXPORT_SELECT}
+            />
+            <Button size="sm" onClick={() => setShowQuickDeal(true)}>
+              <Plus /> Nieuwe deal
+            </Button>
+          </div>
         }
       />
 
-      <div className="flex items-center justify-between">
-        <SubNav
-          items={VIEW_MODES}
-          activeKey={viewMode}
-          onSelect={(key) => { setViewMode(key); setPage(1); }}
-        />
-        <Button size="sm" onClick={() => setShowQuickDeal(true)}>
-          <Plus /> Nieuwe deal
-        </Button>
-      </div>
+      <SubNav
+        items={VIEW_MODES}
+        activeKey={viewMode}
+        onSelect={(key) => { setViewMode(key); setPage(1); }}
+      />
 
       {viewMode === 'kanban' && kanbanPipeline ? (
         <DealKanban
