@@ -19,6 +19,8 @@ import { Input } from '@/components/ui/input';
 import { StatCard } from '@/components/admin/stat-card';
 import { FilterPill } from '@/components/admin/filter-pill';
 import { ListPageToolbar } from '@/components/admin/list-page-toolbar';
+import { ExportDropdown } from '@/components/admin/export-dropdown';
+import { consultantExportColumns, CONSULTANT_EXPORT_SELECT } from '../export-columns';
 import { Button } from '@/components/ui/button';
 import DataTable from '@/components/admin/data-table';
 import { useEntity } from '@/lib/hooks/use-entity';
@@ -216,10 +218,18 @@ export function ConsultantListView({ initialData, initialCount, stats, accounts,
         {/* Toolbar: status pills + CTA */}
         <ListPageToolbar
           actions={
-            <Button size="sm" onClick={() => setShowNewBench(true)}>
-              <Plus />
-              Nieuwe consultant
-            </Button>
+            <div className="flex gap-2">
+              <ExportDropdown
+                entity="consultants"
+                columns={consultantExportColumns}
+                filters={{ sort: { column: 'last_name', direction: 'asc' } }}
+                selectQuery={CONSULTANT_EXPORT_SELECT}
+              />
+              <Button size="sm" onClick={() => setShowNewBench(true)}>
+                <Plus />
+                Nieuwe consultant
+              </Button>
+            </div>
           }
         />
 
