@@ -17,14 +17,14 @@ import type { ExportColumn } from '@/features/jobs/types';
 type ExportDropdownProps = {
   entity: string;
   columns: ExportColumn[];
-  getFilters: () => Record<string, unknown>;
+  filters?: Record<string, unknown>;
   selectQuery?: string;
 };
 
 export function ExportDropdown({
   entity,
   columns,
-  getFilters,
+  filters = {},
   selectQuery,
 }: ExportDropdownProps) {
   const router = useRouter();
@@ -36,7 +36,7 @@ export function ExportDropdown({
       const result = await createExportJob({
         entity,
         format,
-        filters: getFilters(),
+        filters,
         columns,
         selectQuery,
       });

@@ -27,7 +27,7 @@ export default async function AccountsPage() {
             <ExportDropdown
               entity="accounts"
               columns={accountExportColumns}
-              getFilters={() => ({ sort: { column: 'name', direction: 'asc' } })}
+              filters={{ sort: { column: 'name', direction: 'asc' } }}
               selectQuery={ACCOUNT_EXPORT_SELECT}
             />
             <Button size="sm" nativeButton={false} render={<Link href="/admin/accounts/new" />}>
