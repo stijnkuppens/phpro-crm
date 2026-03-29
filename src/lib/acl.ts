@@ -22,6 +22,7 @@ const rolePermissions: Record<Role, Permission[] | 'all'> = {
     'settings.read',
     'audit.read',
     'notifications.read',
+    'jobs.read',
   ],
 
   sales_rep: [
@@ -37,6 +38,7 @@ const rolePermissions: Record<Role, Permission[] | 'all'> = {
     'contracts.read',
     'indexation.read',
     'notifications.read',
+    'jobs.read',
   ],
 
   customer_success: [
@@ -51,6 +53,7 @@ const rolePermissions: Record<Role, Permission[] | 'all'> = {
     'bench.read',
     'contracts.read',
     'notifications.read',
+    'jobs.read',
   ],
 
   marketing: [
@@ -62,6 +65,7 @@ const rolePermissions: Record<Role, Permission[] | 'all'> = {
     'tasks.read',
     'communications.read',
     'notifications.read',
+    'jobs.read',
   ],
 };
 

@@ -51,7 +51,9 @@ export type Permission =
   // Audit (existing)
   | 'audit.read'
   // Notifications (existing)
-  | 'notifications.read';
+  | 'notifications.read'
+  // Jobs
+  | 'jobs.read';
 
 export type UserWithRole = {
   id: string;
