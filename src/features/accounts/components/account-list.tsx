@@ -7,6 +7,9 @@ import { SquarePen, Trash2 } from 'lucide-react';
 import { useEntity } from '@/lib/hooks/use-entity';
 import DataTable from '@/components/admin/data-table';
 import { buildFilterQuery, type FilterOption } from '@/components/admin/data-table-filters';
+import { ListPageToolbar } from '@/components/admin/list-page-toolbar';
+import { ExportDropdown } from '@/components/admin/export-dropdown';
+import { accountExportColumns, ACCOUNT_EXPORT_SELECT } from '../export-columns';
 import { Avatar } from '@/components/admin/avatar';
 import { StatusBadge } from '@/components/admin/status-badge';
 import { accountColumns } from '../columns';
@@ -67,6 +70,19 @@ export function AccountList({ initialData, initialCount, filterOptions }: Accoun
 
   return (
     <div className="space-y-4">
+      <ListPageToolbar
+        actions={
+          <ExportDropdown
+            entity="accounts"
+            columns={accountExportColumns}
+            getFilters={() => {
+              const { orFilter, eqFilters } = buildFilterQuery(accountColumns, filters);
+              return { orFilter, eqFilters, sort: { column: 'name', direction: 'asc' } };
+            }}
+            selectQuery={ACCOUNT_EXPORT_SELECT}
+          />
+        }
+      />
       <DataTable
         tableId="accounts"
         columns={accountColumns}
