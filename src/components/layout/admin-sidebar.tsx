@@ -28,6 +28,7 @@ import {
   ScrollText,
   Database,
   Contact,
+  ClipboardList,
 } from 'lucide-react';
 
 const brandLogos: Record<string, { src: string; alt: string; width: number; height: number }> = {
@@ -61,6 +62,7 @@ export function AdminSidebar() {
       section: null, // no label, separator group
       items: [
         { label: t('notifications'), href: '/admin/notifications', icon: Bell },
+        { label: t('jobs'), href: '/admin/jobs', icon: ClipboardList },
         { label: t('audit'), href: '/admin/audit', icon: ScrollText },
         { label: t('users'), href: '/admin/users', icon: Users },
         { label: t('settings'), href: '/admin/settings', icon: Settings },
