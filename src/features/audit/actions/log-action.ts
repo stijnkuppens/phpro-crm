@@ -1,4 +1,5 @@
-'use server';
+// Internal utility — NOT a server action. Called only from other 'use server' actions.
+// Do not add 'use server' — that would expose logAction as a callable endpoint.
 
 import { headers } from 'next/headers';
 import { createServerClient } from '@/lib/supabase/server';

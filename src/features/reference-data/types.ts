@@ -1,5 +1,7 @@
 import { z } from 'zod';
 
+export const entityIdSchema = z.string().min(1);
+
 export const REF_TABLES = [
   { key: 'ref_competence_centers', label: 'Competence Centers' },
   { key: 'ref_cc_services', label: 'CC Services' },

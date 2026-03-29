@@ -5,7 +5,7 @@ import { createServerClient } from '@/lib/supabase/server';
 import { requirePermission } from '@/lib/require-permission';
 import { logAction } from '@/features/audit/actions/log-action';
 import { revalidatePath } from 'next/cache';
-import { taskFormSchema, type TaskFormValues } from '../types';
+import { taskFormSchema, entityIdSchema, type TaskFormValues } from '@/features/tasks/types';
 import { ok, err, type ActionResult } from '@/lib/action-result';
 
 export async function updateTask(id: string, values: TaskFormValues): Promise<ActionResult> {
@@ -14,6 +14,9 @@ export async function updateTask(id: string, values: TaskFormValues): Promise<Ac
   } catch {
     return err('Onvoldoende rechten');
   }
+
+  const parsedId = entityIdSchema.safeParse(id);
+  if (!parsedId.success) return err('Ongeldig ID');
 
   const parsed = taskFormSchema.safeParse(values);
   if (!parsed.success) {

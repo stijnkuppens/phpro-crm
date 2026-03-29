@@ -34,7 +34,12 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Invalid signature' }, { status: 401, headers: { 'Cache-Control': 'no-store' } });
   }
 
-  const payload = JSON.parse(body);
+  let payload: unknown;
+  try {
+    payload = JSON.parse(body);
+  } catch {
+    return NextResponse.json({ error: 'Malformed JSON' }, { status: 400, headers: { 'Cache-Control': 'no-store' } });
+  }
 
   // Handle webhook payload here
   logger.info({ event: 'webhook_received' }, 'Webhook received');

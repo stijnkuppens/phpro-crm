@@ -5,7 +5,7 @@ import { createServerClient } from '@/lib/supabase/server';
 import { requirePermission } from '@/lib/require-permission';
 import { logAction } from '@/features/audit/actions/log-action';
 import { revalidatePath } from 'next/cache';
-import { communicationFormSchema, type CommunicationFormValues } from '../types';
+import { communicationFormSchema, entityIdSchema, type CommunicationFormValues } from '@/features/communications/types';
 import { ok, err, type ActionResult } from '@/lib/action-result';
 
 export async function updateCommunication(id: string, values: CommunicationFormValues): Promise<ActionResult> {
@@ -14,6 +14,9 @@ export async function updateCommunication(id: string, values: CommunicationFormV
   } catch {
     return err('Onvoldoende rechten');
   }
+
+  const parsedId = entityIdSchema.safeParse(id);
+  if (!parsedId.success) return err('Ongeldig ID');
 
   const parsed = communicationFormSchema.safeParse(values);
   if (!parsed.success) {

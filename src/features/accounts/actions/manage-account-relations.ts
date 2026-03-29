@@ -1,23 +1,25 @@
 'use server';
 
+import { z } from 'zod';
 import { createServerClient } from '@/lib/supabase/server';
 import { requirePermission } from '@/lib/require-permission';
 import { logAction } from '@/features/audit/actions/log-action';
 import { revalidatePath } from 'next/cache';
 import { ok, err, type ActionResult } from '@/lib/action-result';
+import { type AccountSubTable, ALLOWED_RELATION_COLUMNS } from '@/features/accounts/types';
 
-type SubTable =
-  | 'account_tech_stacks'
-  | 'account_hosting'
-  | 'account_competence_centers'
-  | 'account_samenwerkingsvormen'
-  | 'account_manual_services'
-  | 'account_services'
-  | 'account_cc_services';
+function sanitizeValues(table: AccountSubTable, values: Record<string, unknown>): Record<string, unknown> {
+  const allowed = ALLOWED_RELATION_COLUMNS[table];
+  const sanitized: Record<string, unknown> = {};
+  for (const key of allowed) {
+    if (key in values) sanitized[key] = values[key];
+  }
+  return sanitized;
+}
 
 export async function addAccountRelation(
   accountId: string,
-  table: SubTable,
+  table: AccountSubTable,
   values: Record<string, unknown>,
 ): Promise<ActionResult<{ id: string }>> {
   try {
@@ -26,11 +28,15 @@ export async function addAccountRelation(
     return err('Onvoldoende rechten');
   }
 
+  const parsed = z.string().min(1).safeParse(accountId);
+  if (!parsed.success) return err('Ongeldig account ID');
+
+  const safe = sanitizeValues(table, values);
   const supabase = await createServerClient();
   // account_cc_services has no account_id column; other tables do
   const insertValues = table === 'account_cc_services'
-    ? values
-    : { ...values, account_id: accountId };
+    ? safe
+    : { ...safe, account_id: accountId };
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { data, error } = await (supabase.from(table) as any)
     .insert(insertValues)
@@ -47,7 +53,7 @@ export async function addAccountRelation(
 }
 
 export async function updateAccountRelation(
-  table: SubTable,
+  table: AccountSubTable,
   id: string,
   values: Record<string, unknown>,
 ): Promise<ActionResult> {
@@ -57,10 +63,14 @@ export async function updateAccountRelation(
     return err('Onvoldoende rechten');
   }
 
+  const parsedId = z.string().min(1).safeParse(id);
+  if (!parsedId.success) return err('Ongeldig ID');
+
+  const safe = sanitizeValues(table, values);
   const supabase = await createServerClient();
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { error } = await (supabase.from(table) as any)
-    .update(values)
+    .update(safe)
     .eq('id', id);
 
   if (error) {
@@ -72,7 +82,7 @@ export async function updateAccountRelation(
 }
 
 export async function deleteAccountRelation(
-  table: SubTable,
+  table: AccountSubTable,
   id: string,
 ): Promise<ActionResult> {
   try {
@@ -80,6 +90,9 @@ export async function deleteAccountRelation(
   } catch {
     return err('Onvoldoende rechten');
   }
+
+  const parsedId = z.string().min(1).safeParse(id);
+  if (!parsedId.success) return err('Ongeldig ID');
 
   const supabase = await createServerClient();
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

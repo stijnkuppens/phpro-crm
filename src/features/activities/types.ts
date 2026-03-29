@@ -1,6 +1,8 @@
 import { z } from 'zod';
 import type { Database } from '@/types/database';
 
+export const entityIdSchema = z.string().min(1);
+
 export type Activity = Database['public']['Tables']['activities']['Row'];
 
 export type ActivityWithRelations = Activity & {

@@ -82,7 +82,23 @@ export function AccountList({ initialData, initialCount, filterOptions }: Accoun
           { icon: Trash2, label: 'Verwijderen', variant: 'destructive' as const, confirm: { title: 'Account verwijderen?', description: 'Dit verwijdert het account en alle gekoppelde gegevens.' }, onClick: () => handleDelete(row.id) },
         ]}
         bulkActions={[
-          { label: 'Verwijderen', variant: 'destructive' as const, confirm: { title: 'Accounts verwijderen?', description: 'Dit verwijdert de geselecteerde accounts permanent.' }, action: (ids) => ids.forEach((id) => handleDelete(id)) },
+          {
+            label: 'Verwijderen',
+            variant: 'destructive' as const,
+            confirm: { title: 'Accounts verwijderen?', description: 'Dit verwijdert de geselecteerde accounts permanent.' },
+            action: async (ids) => {
+              const results = await Promise.allSettled(ids.map((id) => deleteAccount(id)));
+              const failed = results.filter((r) => r.status === 'rejected' || (r.status === 'fulfilled' && !r.value.success));
+              if (failed.length === 0) {
+                toast.success(`${ids.length} account(s) verwijderd`);
+              } else if (failed.length < ids.length) {
+                toast.warning(`${ids.length - failed.length} verwijderd, ${failed.length} mislukt`);
+              } else {
+                toast.error('Verwijderen mislukt');
+              }
+              load();
+            },
+          },
         ]}
       />
     </div>

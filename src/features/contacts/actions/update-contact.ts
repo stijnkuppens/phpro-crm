@@ -5,7 +5,7 @@ import { createServerClient } from '@/lib/supabase/server';
 import { requirePermission } from '@/lib/require-permission';
 import { logAction } from '@/features/audit/actions/log-action';
 import { revalidatePath } from 'next/cache';
-import { contactFormSchema, type ContactFormValues } from '../types';
+import { contactFormSchema, entityIdSchema, type ContactFormValues } from '@/features/contacts/types';
 import { ok, err, type ActionResult } from '@/lib/action-result';
 
 export async function updateContact(id: string, values: ContactFormValues): Promise<ActionResult> {
@@ -14,6 +14,9 @@ export async function updateContact(id: string, values: ContactFormValues): Prom
   } catch {
     return err('Onvoldoende rechten');
   }
+
+  const parsedId = entityIdSchema.safeParse(id);
+  if (!parsedId.success) return err('Ongeldig ID');
 
   const parsed = contactFormSchema.safeParse(values);
   if (!parsed.success) {

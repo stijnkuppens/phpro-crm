@@ -5,7 +5,7 @@ import { createServerClient } from '@/lib/supabase/server';
 import { requirePermission } from '@/lib/require-permission';
 import { logAction } from '@/features/audit/actions/log-action';
 import { revalidatePath } from 'next/cache';
-import { accountFormSchema, type AccountFormValues } from '../types';
+import { accountFormSchema, entityIdSchema, type AccountFormValues } from '@/features/accounts/types';
 import { ok, err, type ActionResult } from '@/lib/action-result';
 
 export async function updateAccount(id: string, values: AccountFormValues): Promise<ActionResult> {
@@ -14,6 +14,9 @@ export async function updateAccount(id: string, values: AccountFormValues): Prom
   } catch {
     return err('Onvoldoende rechten');
   }
+
+  const parsedId = entityIdSchema.safeParse(id);
+  if (!parsedId.success) return err('Ongeldig ID');
 
   const parsed = accountFormSchema.safeParse(values);
   if (!parsed.success) {

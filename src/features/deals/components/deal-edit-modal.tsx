@@ -493,9 +493,9 @@ function ClosedDealBanner() {
     <div
       className={cn(
         'mb-4 rounded-xl px-4 py-3 text-sm font-medium flex items-center justify-between gap-3',
-        deal.closed_type === 'won' && 'bg-green-50 border border-green-200 text-green-800',
-        deal.closed_type === 'lost' && 'bg-red-50 border border-red-200 text-red-800',
-        deal.closed_type === 'longterm' && 'bg-amber-50 border border-amber-200 text-amber-800',
+        deal.closed_type === 'won' && 'bg-green-50 dark:bg-green-950 border border-green-200 dark:border-green-800 text-green-800 dark:text-green-200',
+        deal.closed_type === 'lost' && 'bg-red-50 dark:bg-red-950 border border-red-200 dark:border-red-800 text-red-800 dark:text-red-200',
+        deal.closed_type === 'longterm' && 'bg-amber-50 dark:bg-amber-950 border border-amber-200 dark:border-amber-800 text-amber-800 dark:text-amber-200',
       )}
     >
       <span>
@@ -590,37 +590,40 @@ function CronosDetailsSection() {
   if (state.origin !== 'cronos') return null;
 
   return (
-    <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 space-y-3">
-      <p className="text-xs font-semibold text-amber-700 flex items-center gap-1.5">
+    <div className="bg-amber-50 dark:bg-amber-950 border border-amber-200 dark:border-amber-800 rounded-xl p-3 space-y-3">
+      <p className="text-xs font-semibold text-amber-700 dark:text-amber-300 flex items-center gap-1.5">
         <Network className="h-3.5 w-3.5" />
         Cronos details
       </p>
       <div className="space-y-1">
-        <label className="block text-xs font-medium text-gray-600">Competence Center</label>
+        <label htmlFor="cronos-cc" className="block text-xs font-medium text-gray-600 dark:text-gray-400">Competence Center</label>
         <Input
+          id="cronos-cc"
           value={state.cronosCC}
           onChange={(e) => actions.setCronosCC(e.target.value)}
           placeholder="bv. Induxx, Humix, Osudio..."
-          className="bg-white"
+          className="bg-white dark:bg-background"
         />
       </div>
       <div className="space-y-1">
-        <label className="block text-xs font-medium text-gray-600">Contactpersoon Cronos</label>
+        <label htmlFor="cronos-contact" className="block text-xs font-medium text-gray-600 dark:text-gray-400">Contactpersoon Cronos</label>
         <Input
+          id="cronos-contact"
           value={state.cronosContact}
           onChange={(e) => actions.setCronosContact(e.target.value)}
           placeholder="Naam contactpersoon"
-          className="bg-white"
+          className="bg-white dark:bg-background"
         />
       </div>
       <div className="space-y-1">
-        <label className="block text-xs font-medium text-gray-600">E-mail Cronos</label>
+        <label htmlFor="cronos-email" className="block text-xs font-medium text-gray-600 dark:text-gray-400">E-mail Cronos</label>
         <Input
+          id="cronos-email"
           type="email"
           value={state.cronosEmail}
           onChange={(e) => actions.setCronosEmail(e.target.value)}
           placeholder="contact@cronos.be"
-          className="bg-white"
+          className="bg-white dark:bg-background"
         />
       </div>
     </div>

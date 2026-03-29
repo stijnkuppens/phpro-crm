@@ -1,9 +1,11 @@
 'use server';
 
+import { z } from 'zod';
 import { createServerClient } from '@/lib/supabase/server';
 import { requirePermission } from '@/lib/require-permission';
 import { revalidatePath } from 'next/cache';
 import { ok, err, type ActionResult } from '@/lib/action-result';
+import { entityIdSchema } from '@/features/reference-data/types';
 
 export async function updateInternalPersonAvatar(
   id: string,
@@ -14,6 +16,11 @@ export async function updateInternalPersonAvatar(
   } catch {
     return err('Onvoldoende rechten');
   }
+
+  const parsedId = entityIdSchema.safeParse(id);
+  if (!parsedId.success) return err('Ongeldig ID');
+  const parsedUrl = z.string().min(1).safeParse(avatarUrl);
+  if (!parsedUrl.success) return err('Ongeldige URL');
 
   const supabase = await createServerClient();
   const { error } = await supabase

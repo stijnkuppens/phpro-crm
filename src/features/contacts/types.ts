@@ -1,6 +1,8 @@
 import { z } from 'zod';
 import type { Database } from '@/types/database';
 
+export const entityIdSchema = z.string().min(1);
+
 // ── Row types ───────────────────────────────────────────────────────────────
 export type Contact = Database['public']['Tables']['contacts']['Row'];
 export type ContactPersonalInfo = Database['public']['Tables']['contact_personal_info']['Row'];

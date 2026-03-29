@@ -134,7 +134,7 @@ export function NotificationBell() {
           <>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={() => router.push('/admin/notifications')} className="justify-center text-sm">
-              View all notifications
+              Alle meldingen bekijken
             </DropdownMenuItem>
           </>
         )}

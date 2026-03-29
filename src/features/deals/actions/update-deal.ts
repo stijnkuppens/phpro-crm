@@ -5,7 +5,7 @@ import { createServerClient } from '@/lib/supabase/server';
 import { requirePermission } from '@/lib/require-permission';
 import { logAction } from '@/features/audit/actions/log-action';
 import { revalidatePath } from 'next/cache';
-import { dealFormSchema, type DealFormValues } from '../types';
+import { dealFormSchema, entityIdSchema, type DealFormValues } from '@/features/deals/types';
 import { ok, err, type ActionResult } from '@/lib/action-result';
 
 export async function updateDeal(id: string, values: DealFormValues): Promise<ActionResult> {
@@ -14,6 +14,9 @@ export async function updateDeal(id: string, values: DealFormValues): Promise<Ac
   } catch {
     return err('Onvoldoende rechten');
   }
+
+  const parsedId = entityIdSchema.safeParse(id);
+  if (!parsedId.success) return err('Ongeldig ID');
 
   const parsed = dealFormSchema.safeParse(values);
   if (!parsed.success) {

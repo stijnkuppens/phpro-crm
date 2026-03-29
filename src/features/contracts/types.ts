@@ -34,6 +34,12 @@ export const hourlyRateEntrySchema = z.object({
   rate: z.coerce.number().min(0),
 });
 
+export const upsertHourlyRatesSchema = z.object({
+  accountId: z.string().min(1),
+  year: z.number().int().min(2000).max(2100),
+  rates: z.array(hourlyRateEntrySchema).max(100),
+});
+
 export const slaRateFormSchema = z.object({
   fixed_monthly_rate: z.coerce.number().min(0),
   support_hourly_rate: z.coerce.number().min(0),

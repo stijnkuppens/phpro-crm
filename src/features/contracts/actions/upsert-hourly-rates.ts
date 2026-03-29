@@ -5,6 +5,7 @@ import { requirePermission } from '@/lib/require-permission';
 import { logAction } from '@/features/audit/actions/log-action';
 import { revalidatePath } from 'next/cache';
 import { ok, err, type ActionResult } from '@/lib/action-result';
+import { upsertHourlyRatesSchema } from '@/features/contracts/types';
 
 export async function upsertHourlyRates(
   accountId: string,
@@ -16,6 +17,9 @@ export async function upsertHourlyRates(
   } catch {
     return err('Onvoldoende rechten');
   }
+
+  const parsed = upsertHourlyRatesSchema.safeParse({ accountId, year, rates });
+  if (!parsed.success) return err('Ongeldige invoer');
 
   const supabase = await createServerClient();
 

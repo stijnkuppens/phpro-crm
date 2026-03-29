@@ -1,6 +1,8 @@
 import { z } from 'zod';
 import type { Database } from '@/types/database';
 
+export const entityIdSchema = z.string().min(1);
+
 export type Task = Database['public']['Tables']['tasks']['Row'];
 
 export type TaskWithRelations = Task & {

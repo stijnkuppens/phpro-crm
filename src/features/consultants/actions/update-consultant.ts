@@ -8,10 +8,11 @@ import { revalidatePath } from 'next/cache';
 import {
   benchConsultantFormSchema,
   consultantFormSchema,
+  languageFormSchema,
   type BenchConsultantFormValues,
   type ConsultantFormValues,
   type LanguageFormValues,
-} from '../types';
+} from '@/features/consultants/types';
 import { ok, err, type ActionResult } from '@/lib/action-result';
 
 export async function updateConsultant(
@@ -55,8 +56,11 @@ export async function updateConsultant(
     return err(updateError.message);
   }
 
-  // Update languages if provided
+  // Update languages if provided (validate first)
   if (languages) {
+    const langParsed = z.array(languageFormSchema).max(20).safeParse(languages);
+    if (!langParsed.success) return err('Ongeldige taalgegevens');
+    const validLanguages = langParsed.data;
     const { error: deleteError } = await supabase
       .from('consultant_languages')
       .delete()
@@ -66,10 +70,10 @@ export async function updateConsultant(
       return err(deleteError.message);
     }
 
-    if (languages.length > 0) {
+    if (validLanguages.length > 0) {
       const { error: insertError } = await supabase
         .from('consultant_languages')
-        .insert(languages.map((lang) => ({ ...lang, consultant_id: id })));
+        .insert(validLanguages.map((lang) => ({ ...lang, consultant_id: id })));
 
       if (insertError) {
         return err(insertError.message);

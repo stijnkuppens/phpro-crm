@@ -1,6 +1,8 @@
 import { z } from 'zod';
 import type { Database } from '@/types/database';
 
+export const entityIdSchema = z.string().min(1);
+
 // ── Row types from database ─────────────────────────────────────────────────
 export type Account = Database['public']['Tables']['accounts']['Row'];
 export type AccountManualService = Database['public']['Tables']['account_manual_services']['Row'];
@@ -131,6 +133,27 @@ export type AccountFilters = {
   status?: string;
   owner_id?: string;
   country?: string;
+};
+
+// ── Sub-table column whitelist (for manage-account-relations) ─────────────
+export type AccountSubTable =
+  | 'account_tech_stacks'
+  | 'account_hosting'
+  | 'account_competence_centers'
+  | 'account_samenwerkingsvormen'
+  | 'account_manual_services'
+  | 'account_services'
+  | 'account_cc_services';
+
+/** Allowed columns per sub-table to prevent arbitrary column injection */
+export const ALLOWED_RELATION_COLUMNS: Record<AccountSubTable, string[]> = {
+  account_tech_stacks: ['technology_id'],
+  account_hosting: ['provider', 'environment', 'notes'],
+  account_competence_centers: ['competence_center_id', 'account_id'],
+  account_samenwerkingsvormen: ['collaboration_type_id'],
+  account_manual_services: ['service_name'],
+  account_services: ['service_id'],
+  account_cc_services: ['competence_center_id', 'service_id'],
 };
 
 // ── Shared badge style maps ────────────────────────────────────────────────

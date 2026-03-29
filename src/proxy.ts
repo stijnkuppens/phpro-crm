@@ -15,6 +15,7 @@ const routePermissions: [string, Permission][] = [
   ['/admin/tasks', 'tasks.read'],
   ['/admin/bench', 'bench.read'],
   ['/admin/consultants', 'consultants.read'],
+  ['/admin/reference-data', 'reference_data.write'],
 ];
 
 export async function proxy(request: NextRequest) {

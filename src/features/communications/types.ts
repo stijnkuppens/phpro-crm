@@ -3,6 +3,8 @@ import type { Database } from '@/types/database';
 import { Mail, FileText, Users, Phone } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 
+export const entityIdSchema = z.string().min(1);
+
 // ── Row types ───────────────────────────────────────────────────────────────
 export type Communication = Database['public']['Tables']['communications']['Row'];
 

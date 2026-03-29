@@ -65,7 +65,8 @@
       "Bash(rm -f /Users/stijnkuppens/phpro/ai-projects/phpro_crm/.next/dev/lock)",
       "Bash(task db:reset)",
       "Bash(grep -c 'a0000000\\\\|b0000000\\\\|c0000000\\\\|d0000000\\\\|e0000000\\\\|f0000000' /Users/stijnkuppens/phpro/ai-projects/phpro_crm/supabase/fixtures/*.sql)",
-      "Bash(grep -v ':0$')"
+      "Bash(grep -v ':0$')",
+      "Bash(wc:*)"
     ]
   }
 }

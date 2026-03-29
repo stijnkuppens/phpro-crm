@@ -3,58 +3,23 @@
 import { useActionState, useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
-import { Plus, Trash2 } from 'lucide-react';
-import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { Avatar } from '@/components/admin/avatar';
 import { RefChipInput } from '@/components/admin/ref-chip-input';
 import { StringChipInput } from '@/components/admin/string-chip-input';
-import { accountFormSchema, type AccountFormValues, type AccountReferenceData, type ReferenceOption } from '../types';
-import { createAccount } from '../actions/create-account';
-import { updateAccount } from '../actions/update-account';
+import { accountFormSchema, type AccountFormValues, type AccountReferenceData } from '@/features/accounts/types';
+import { createAccount } from '@/features/accounts/actions/create-account';
+import { updateAccount } from '@/features/accounts/actions/update-account';
 import {
   syncAccountFKRelation,
   addAccountRelation,
   deleteAccountRelation,
-} from '../actions/manage-account-relations';
-import { formatNumber } from '@/lib/format';
-
-// ── Constants (not from ref tables) ─────────────────────────────────────────
-
-const COUNTRY_OPTIONS = [
-  { value: 'BE', label: 'Belgie' },
-  { value: 'NL', label: 'Nederland' },
-  { value: 'FR', label: 'Frankrijk' },
-  { value: 'DE', label: 'Duitsland' },
-];
+} from '@/features/accounts/actions/manage-account-relations';
+import { AccountFormCompanySection } from '@/features/accounts/components/account-form-company-section';
+import { AccountFormPeopleSection } from '@/features/accounts/components/account-form-people-section';
+import { AccountFormCCSection, type CompetenceCenterEntry } from '@/features/accounts/components/account-form-cc-section';
+import { AccountFormHostingSection, type HostingEntry } from '@/features/accounts/components/account-form-hosting-section';
 
 // ── Types ────────────────────────────────────────────────────────────────────
-
-type CompetenceCenterEntry = {
-  id?: string;
-  competence_center_id: string;
-  competence_center_name: string;
-  service_ids: string[];
-};
-
-type HostingEntry = {
-  id?: string;
-  provider_id: string;
-  provider_name: string;
-  environment_id: string;
-  environment_name: string;
-  url: string;
-  notes: string;
-};
 
 type Props = {
   referenceData?: AccountReferenceData;
@@ -70,246 +35,6 @@ type Props = {
   /** External form ref — when provided, the form doesn't render its own FormActions */
   formRef?: React.RefObject<HTMLFormElement | null>;
 };
-
-// ── Private sub-components ──────────────────────────────────────────────────
-
-function InternalTeamSection({
-  defaultValues,
-  internalPeople,
-  teams,
-}: {
-  defaultValues?: Partial<AccountFormValues>;
-  internalPeople?: { id: string; name: string; avatar_url?: string | null }[];
-  teams?: { id: string; name: string }[];
-}) {
-  return (
-    <div className="grid grid-cols-2 gap-3">
-      <div className="space-y-1.5">
-        <Label htmlFor="managing_partner">Managing Partner</Label>
-        <Select name="managing_partner" defaultValue={defaultValues?.managing_partner ?? ''}>
-          <SelectTrigger><SelectValue placeholder="Selecteer..." /></SelectTrigger>
-          <SelectContent>
-            <SelectItem value="">Geen</SelectItem>
-            {internalPeople?.map((p) => (
-              <SelectItem key={p.id} value={p.name}>
-                <Avatar path={p.avatar_url} fallback={p.name.split(/\s+/).map(w => w[0] ?? '').join('').toUpperCase().slice(0, 2)} size="xs" />
-                {p.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
-
-      <div className="space-y-1.5">
-        <Label htmlFor="account_director">Account Director</Label>
-        <Select name="account_director" defaultValue={defaultValues?.account_director ?? ''}>
-          <SelectTrigger><SelectValue placeholder="Selecteer..." /></SelectTrigger>
-          <SelectContent>
-            <SelectItem value="">Geen</SelectItem>
-            {internalPeople?.map((p) => (
-              <SelectItem key={p.id} value={p.name}>
-                <Avatar path={p.avatar_url} fallback={p.name.split(/\s+/).map(w => w[0] ?? '').join('').toUpperCase().slice(0, 2)} size="xs" />
-                {p.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
-
-      <div className="space-y-1.5">
-        <Label htmlFor="project_manager">Project Manager</Label>
-        <Select name="project_manager" defaultValue={defaultValues?.project_manager ?? ''}>
-          <SelectTrigger><SelectValue placeholder="Selecteer..." /></SelectTrigger>
-          <SelectContent>
-            <SelectItem value="">Geen</SelectItem>
-            {internalPeople?.map((p) => (
-              <SelectItem key={p.id} value={p.name}>
-                <Avatar path={p.avatar_url} fallback={p.name.split(/\s+/).map(w => w[0] ?? '').join('').toUpperCase().slice(0, 2)} size="xs" />
-                {p.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
-
-      <div className="space-y-1.5">
-        <Label htmlFor="team">Team</Label>
-        <Select name="team" defaultValue={defaultValues?.team ?? ''}>
-          <SelectTrigger><SelectValue placeholder="Selecteer..." /></SelectTrigger>
-          <SelectContent>
-            <SelectItem value="">Geen</SelectItem>
-            {teams?.map((t) => (
-              <SelectItem key={t.id} value={t.name}>{t.name}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
-    </div>
-  );
-}
-
-function CompetenceCentersSection({
-  entries,
-  onAdd,
-  onRemove,
-  onUpdate,
-  onToggleService,
-  competenceCenters: ccOptions,
-  ccServices,
-}: {
-  entries: CompetenceCenterEntry[];
-  onAdd: () => void;
-  onRemove: (index: number) => void;
-  onUpdate: (index: number, updates: Partial<CompetenceCenterEntry>) => void;
-  onToggleService: (index: number, serviceId: string) => void;
-  competenceCenters: ReferenceOption[];
-  ccServices: ReferenceOption[];
-}) {
-  return (
-    <div className="space-y-2">
-      <div className="flex items-center justify-between">
-        <Label>Andere Competence Centers</Label>
-        <Button type="button" variant="ghost" size="sm" onClick={onAdd}>
-          <Plus className="h-4 w-4 mr-1" /> CC toevoegen
-        </Button>
-      </div>
-      {entries.map((cc, index) => (
-        <div key={index} className="rounded-lg border bg-card p-3 shadow-sm space-y-2">
-          <div className="flex items-center gap-2">
-            <Select
-              value={cc.competence_center_id || undefined}
-              onValueChange={(v) => {
-                if (!v) return;
-                const found = ccOptions.find((o) => o.id === v);
-                onUpdate(index, {
-                  competence_center_id: v,
-                  competence_center_name: found?.name ?? '',
-                });
-              }}
-            >
-              <SelectTrigger>{cc.competence_center_name || <span className="text-muted-foreground">Selecteer CC...</span>}</SelectTrigger>
-              <SelectContent>
-                {ccOptions.map((o) => (
-                  <SelectItem key={o.id} value={o.id}>{o.name}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon"
-              onClick={() => onRemove(index)}
-              className="shrink-0"
-            >
-              <Trash2 className="h-4 w-4 text-muted-foreground" />
-            </Button>
-          </div>
-          <div className="flex flex-wrap gap-1.5">
-            {ccServices.map((service) => (
-              <button
-                key={service.id}
-                type="button"
-                onClick={() => onToggleService(index, service.id)}
-                className={`px-2 py-0.5 text-xs rounded-full border transition-colors ${
-                  cc.service_ids.includes(service.id)
-                    ? 'bg-primary text-primary-foreground border-primary'
-                    : 'bg-background text-muted-foreground border-border hover:bg-accent'
-                }`}
-              >
-                {service.name}
-              </button>
-            ))}
-          </div>
-        </div>
-      ))}
-    </div>
-  );
-}
-
-function HostingSection({
-  entries,
-  onAdd,
-  onRemove,
-  onUpdate,
-  providers,
-  environments,
-}: {
-  entries: HostingEntry[];
-  onAdd: () => void;
-  onRemove: (index: number) => void;
-  onUpdate: (index: number, updates: Partial<HostingEntry>) => void;
-  providers: ReferenceOption[];
-  environments: ReferenceOption[];
-}) {
-  return (
-    <div className="space-y-2">
-      <div className="flex items-center justify-between">
-        <Label>Hosting</Label>
-        <Button type="button" variant="ghost" size="sm" onClick={onAdd}>
-          <Plus className="h-4 w-4 mr-1" /> Hosting toevoegen
-        </Button>
-      </div>
-      {entries.map((entry, index) => (
-        <div key={index} className="rounded-lg border bg-card p-3 shadow-sm space-y-2">
-          <div className="flex items-center gap-2">
-            <div className="flex-1">
-              <Select
-                value={entry.provider_id || undefined}
-                onValueChange={(v) => {
-                  if (!v) return;
-                  const found = providers.find((o) => o.id === v);
-                  onUpdate(index, { provider_id: v, provider_name: found?.name ?? '' });
-                }}
-              >
-                <SelectTrigger>{entry.provider_name || <span className="text-muted-foreground">Provider...</span>}</SelectTrigger>
-                <SelectContent>
-                  {providers.map((o) => (
-                    <SelectItem key={o.id} value={o.id}>{o.name}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="w-36">
-              <Select
-                value={entry.environment_id || undefined}
-                onValueChange={(v) => {
-                  const found = environments.find((o) => o.id === v);
-                  onUpdate(index, { environment_id: v ?? '', environment_name: found?.name ?? '' });
-                }}
-              >
-                <SelectTrigger>{entry.environment_name || <span className="text-muted-foreground">Omgeving</span>}</SelectTrigger>
-                <SelectContent>
-                  {environments.map((env) => (
-                    <SelectItem key={env.id} value={env.id}>{env.name}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon"
-              onClick={() => onRemove(index)}
-              className="shrink-0"
-            >
-              <Trash2 className="h-4 w-4 text-muted-foreground" />
-            </Button>
-          </div>
-          <Input
-            value={entry.url}
-            onChange={(e) => onUpdate(index, { url: e.target.value })}
-            placeholder="URL"
-          />
-          <Input
-            value={entry.notes}
-            onChange={(e) => onUpdate(index, { notes: e.target.value })}
-            placeholder="Notitie"
-          />
-        </div>
-      ))}
-    </div>
-  );
-}
 
 // ── Main form ────────────────────────────────────────────────────────────────
 
@@ -533,127 +258,7 @@ export function AccountForm({ referenceData, defaultValues, onSuccess, formRef: 
     <form id="account-form" ref={formRef} action={formAction}>
       <div className="rounded-xl border bg-card p-6 shadow-sm grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* -- Left Column: Bedrijfsinformatie -- */}
-        <div className="space-y-4">
-          <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-            Bedrijfsinformatie
-          </h3>
-
-          <div className="space-y-1.5">
-            <Label htmlFor="name">Naam *</Label>
-            <Input id="name" name="name" defaultValue={defaultValues?.name ?? ''} required />
-          </div>
-
-          <div className="space-y-1.5">
-            <Label htmlFor="domain">Domein</Label>
-            <Input id="domain" name="domain" defaultValue={defaultValues?.domain ?? ''} placeholder="bv. bedrijf.be" />
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-1.5">
-              <Label htmlFor="type">Type</Label>
-              <Select name="type" defaultValue={defaultValues?.type ?? 'Prospect'}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Klant">Klant</SelectItem>
-                  <SelectItem value="Prospect">Prospect</SelectItem>
-                  <SelectItem value="Partner">Partner</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="status">Status</Label>
-              <Select name="status" defaultValue={defaultValues?.status ?? 'Actief'}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Actief">Actief</SelectItem>
-                  <SelectItem value="Inactief">Inactief</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-
-          <div className="space-y-1.5">
-            <Label htmlFor="industry">Sector</Label>
-            <Input id="industry" name="industry" defaultValue={defaultValues?.industry ?? ''} placeholder="bv. Technology" />
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-1.5">
-              <Label htmlFor="size">Grootte</Label>
-              <Select name="size" defaultValue={defaultValues?.size ?? ''}>
-                <SelectTrigger><SelectValue placeholder="Selecteer..." /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="1-10">1-10</SelectItem>
-                  <SelectItem value="11-50">11-50</SelectItem>
-                  <SelectItem value="51-200">51-200</SelectItem>
-                  <SelectItem value="201-1000">201-1000</SelectItem>
-                  <SelectItem value="1000+">1000+</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="revenue_display">Omzet</Label>
-              <div className="relative">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">€</span>
-                <Input
-                  id="revenue_display"
-                  type="text"
-                  inputMode="numeric"
-                  defaultValue={defaultValues?.revenue ? formatNumber(Number(defaultValues.revenue)) : ''}
-                  placeholder="bv. 1.000.000"
-                  className="pl-7"
-                  onChange={(e) => {
-                    const raw = e.target.value.replace(/\D/g, '');
-                    const hidden = e.target.form?.querySelector<HTMLInputElement>('input[name="revenue"]');
-                    if (hidden) hidden.value = raw;
-                    if (raw) {
-                      e.target.value = formatNumber(Number(raw));
-                    }
-                  }}
-                />
-                <input type="hidden" name="revenue" defaultValue={defaultValues?.revenue ?? ''} />
-              </div>
-            </div>
-          </div>
-
-          <div className="space-y-1.5">
-            <Label htmlFor="phone">Telefoon</Label>
-            <Input id="phone" name="phone" defaultValue={defaultValues?.phone ?? ''} placeholder="+32 ..." />
-          </div>
-
-          <div className="space-y-1.5">
-            <Label htmlFor="website">Website</Label>
-            <Input id="website" name="website" defaultValue={defaultValues?.website ?? ''} placeholder="www.bedrijf.be" />
-          </div>
-
-          <div className="space-y-1.5">
-            <Label htmlFor="address">Adres</Label>
-            <Input id="address" name="address" defaultValue={defaultValues?.address ?? ''} placeholder="Straat 1, 1000 Stad" />
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-1.5">
-              <Label htmlFor="country">Land</Label>
-              <Select name="country" defaultValue={defaultValues?.country ?? ''}>
-                <SelectTrigger><SelectValue placeholder="Selecteer..." /></SelectTrigger>
-                <SelectContent>
-                  {COUNTRY_OPTIONS.map((c) => (
-                    <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="vat_number">BTW-nummer</Label>
-              <Input id="vat_number" name="vat_number" defaultValue={defaultValues?.vat_number ?? ''} placeholder="BE0123.456.789" />
-            </div>
-          </div>
-
-          <div className="space-y-1.5">
-            <Label htmlFor="about">Over dit bedrijf</Label>
-            <Textarea id="about" name="about" rows={3} defaultValue={defaultValues?.about ?? ''} placeholder="Korte omschrijving..." />
-          </div>
-        </div>
+        <AccountFormCompanySection defaultValues={defaultValues} />
 
         {/* -- Right Column: PHPro Intern -- */}
         <div className="space-y-4">
@@ -661,24 +266,11 @@ export function AccountForm({ referenceData, defaultValues, onSuccess, formRef: 
             PHPro Intern
           </h3>
 
-          <InternalTeamSection
+          <AccountFormPeopleSection
             defaultValues={defaultValues}
             internalPeople={referenceData?.internalPeople}
             teams={referenceData?.teams}
           />
-
-          <div className="space-y-1.5">
-            <Label htmlFor="phpro_contract">PHPro Contract status</Label>
-            <Select name="phpro_contract" defaultValue={defaultValues?.phpro_contract ?? 'Geen'}>
-              <SelectTrigger><SelectValue /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="Geen">Geen</SelectItem>
-                <SelectItem value="Actief">Actief</SelectItem>
-                <SelectItem value="Inactief">Inactief</SelectItem>
-                <SelectItem value="In onderhandeling">In onderhandeling</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
 
           {/* Samenwerkingsvorm toggle chips */}
           <div className="space-y-1.5">
@@ -723,7 +315,7 @@ export function AccountForm({ referenceData, defaultValues, onSuccess, formRef: 
           </div>
 
           {/* Competence Centers */}
-          <CompetenceCentersSection
+          <AccountFormCCSection
             entries={competenceCenters}
             onAdd={addCompetenceCenter}
             onRemove={removeCompetenceCenter}
@@ -734,7 +326,7 @@ export function AccountForm({ referenceData, defaultValues, onSuccess, formRef: 
           />
 
           {/* Hosting */}
-          <HostingSection
+          <AccountFormHostingSection
             entries={hosting}
             onAdd={addHosting}
             onRemove={removeHosting}

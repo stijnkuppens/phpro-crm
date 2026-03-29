@@ -33,7 +33,7 @@ const nextConfig: NextConfig = {
           { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
           {
             key: 'Strict-Transport-Security',
-            value: 'max-age=63072000; includeSubDomains',
+            value: 'max-age=63072000; includeSubDomains; preload',
           },
           {
             key: 'Content-Security-Policy',
@@ -43,7 +43,7 @@ const nextConfig: NextConfig = {
               `script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ''}`,
               "style-src 'self' 'unsafe-inline'",
               `img-src 'self' blob: data: ${process.env.NEXT_PUBLIC_SUPABASE_URL ?? ''}`,
-              "font-src 'self' fonts.gstatic.com",
+              "font-src 'self'",
               `connect-src 'self' ${process.env.NEXT_PUBLIC_SUPABASE_URL ?? ''} ws: wss:`,
               "frame-ancestors 'none'",
               "base-uri 'self'",
