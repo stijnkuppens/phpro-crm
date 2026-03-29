@@ -2,13 +2,14 @@
 
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { toast } from 'sonner';
-import { Trash2 } from 'lucide-react';
+import { RotateCcw, Trash2 } from 'lucide-react';
 import DataTable from '@/components/admin/data-table';
 import { buildFilterQuery } from '@/components/admin/data-table-filters';
 import { useEntity } from '@/lib/hooks/use-entity';
 import { useRealtime } from '@/lib/hooks/use-realtime';
 import { jobColumns } from '../columns';
 import { deleteJob } from '../actions/delete-job';
+import { retryJob } from '../actions/retry-job';
 import type { Job } from '../types';
 import dynamic from 'next/dynamic';
 
@@ -92,6 +93,23 @@ export function JobList({ initialData, initialCount, userId }: JobListProps) {
         refreshing={refreshing}
         onRowClick={(row) => setSelectedJobId(row.id)}
         rowActions={(row) => [
+          ...(row.status === 'failed'
+            ? [
+                {
+                  icon: RotateCcw,
+                  label: 'Opnieuw proberen',
+                  onClick: async () => {
+                    const result = await retryJob(row.id);
+                    if (result.error) {
+                      toast.error(typeof result.error === 'string' ? result.error : 'Opnieuw proberen mislukt');
+                    } else {
+                      toast.success('Job opnieuw gestart');
+                      load();
+                    }
+                  },
+                },
+              ]
+            : []),
           {
             icon: Trash2,
             label: 'Verwijderen',

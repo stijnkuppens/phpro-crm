@@ -1,0 +1,67 @@
+<h2>Where should the Export button live?</h2>
+<p class="subtitle">The accounts list page currently has "Nieuw Account" in the PageHeader. Where does "Exporteren" go?</p>
+
+<div class="options">
+  <div class="option" data-choice="a" onclick="toggleSelect(this)">
+    <div class="letter">A</div>
+    <div class="content">
+      <h3>PageHeader actions (next to "Nieuw Account")</h3>
+      <p>A secondary <code>outline</code> button in the top-right, always visible. Simple, no new layout components needed.</p>
+      <div class="mockup" style="margin-top: 12px;">
+        <div class="mockup-body" style="padding: 16px;">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+              <div style="font-size: 11px; color: #888;">Admin &rsaquo; Accounts</div>
+              <div style="font-size: 20px; font-weight: 700;">Accounts</div>
+            </div>
+            <div style="display: flex; gap: 8px;">
+              <button class="mock-button" style="background: transparent; border: 1px solid #ddd; color: #666; font-size: 12px;">⬇ Exporteren</button>
+              <button class="mock-button" style="font-size: 12px;">+ Nieuw Account</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="option" data-choice="b" onclick="toggleSelect(this)">
+    <div class="letter">B</div>
+    <div class="content">
+      <h3>Inside the DataTable filter bar</h3>
+      <p>Right-aligned in the filter bar, next to search/filter controls. Contextually close to what's being exported. Export respects the active filters.</p>
+      <div class="mockup" style="margin-top: 12px;">
+        <div class="mockup-body" style="padding: 16px;">
+          <div style="background: white; border: 1px solid #e5e7eb; border-radius: 12px; padding: 12px; display: flex; justify-content: space-between; align-items: center;">
+            <div style="display: flex; gap: 8px; align-items: center;">
+              <input class="mock-input" placeholder="🔍 Zoeken..." style="width: 180px; font-size: 12px;">
+              <select class="mock-input" style="width: 100px; font-size: 12px;"><option>Type ▾</option></select>
+            </div>
+            <button class="mock-button" style="background: transparent; border: 1px solid #ddd; color: #666; font-size: 12px;">⬇ Exporteren</button>
+          </div>
+          <div style="margin-top: 8px; background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 8px; padding: 8px; font-size: 11px; color: #888;">
+            Table rows...
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="option" data-choice="c" onclick="toggleSelect(this)">
+    <div class="letter">C</div>
+    <div class="content">
+      <h3>Bulk action (select rows first)</h3>
+      <p>Export only appears when rows are selected, as a bulk action alongside "Verwijderen". Gives precise control over what gets exported.</p>
+      <div class="mockup" style="margin-top: 12px;">
+        <div class="mockup-body" style="padding: 16px;">
+          <div style="background: #f0f4ff; border: 1px solid #c7d2fe; border-radius: 8px; padding: 10px; display: flex; justify-content: space-between; align-items: center; font-size: 12px;">
+            <span><strong>12</strong> geselecteerd</span>
+            <div style="display: flex; gap: 8px;">
+              <button class="mock-button" style="background: transparent; border: 1px solid #ddd; color: #666; font-size: 11px;">⬇ Exporteren</button>
+              <button class="mock-button" style="background: #ef4444; font-size: 11px;">Verwijderen</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

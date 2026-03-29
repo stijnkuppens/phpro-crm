@@ -1,10 +1,5 @@
 -- 00011_jobs.sql
--- Job queue infrastructure: jobs table + pgmq export queue
-
-CREATE EXTENSION IF NOT EXISTS pgmq;
-
--- Grant postgres role access to pgmq schema (needed for pgmq.create)
-GRANT USAGE, CREATE ON SCHEMA pgmq TO postgres;
+-- Generic job queue with webhook-based processing
 
 CREATE TABLE public.jobs (
   id            uuid PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -41,16 +36,79 @@ GRANT ALL ON public.jobs TO service_role;
 
 ALTER PUBLICATION supabase_realtime ADD TABLE public.jobs;
 
-SELECT pgmq.create('export_jobs');
-
-CREATE OR REPLACE FUNCTION public.enqueue_export_job(p_job_id uuid)
-RETURNS bigint
-LANGUAGE sql
+-- ──────────────────────────────────────────────────
+-- Helper: dispatch a job to its Edge Function via pg_net
+-- Routes by job type → function name
+-- ──────────────────────────────────────────────────
+CREATE OR REPLACE FUNCTION public.dispatch_job(p_job_id uuid, p_job_type text)
+RETURNS void
+LANGUAGE plpgsql
 SECURITY DEFINER
-SET search_path = public, pgmq
 AS $$
-  SELECT pgmq.send('export_jobs', jsonb_build_object('job_id', p_job_id));
+DECLARE
+  v_function_name text;
+BEGIN
+  -- Map job type to Edge Function name
+  v_function_name := CASE p_job_type
+    WHEN 'export' THEN 'process-export-jobs'
+    -- Future: WHEN 'report' THEN 'process-report-jobs'
+    -- Future: WHEN 'import' THEN 'process-import-jobs'
+    ELSE NULL
+  END;
+
+  IF v_function_name IS NULL THEN
+    RAISE WARNING 'Unknown job type: %', p_job_type;
+    RETURN;
+  END IF;
+
+  PERFORM net.http_post(
+    url := 'http://supabase-edge-functions:9000/functions/v1/' || v_function_name,
+    headers := jsonb_build_object(
+      'Content-Type', 'application/json',
+      'Authorization', 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImV4cCI6MTk4MzgxMjk5Nn0.EGIM96RAZx35lJzdJsyH-qQwv8Hdp7fsn3W0YpN81IU'
+    ),
+    body := jsonb_build_object('job_id', p_job_id)
+  );
+END;
 $$;
 
-REVOKE ALL ON FUNCTION public.enqueue_export_job(uuid) FROM PUBLIC;
-GRANT EXECUTE ON FUNCTION public.enqueue_export_job(uuid) TO service_role;
+-- ──────────────────────────────────────────────────
+-- Trigger: auto-dispatch on new job
+-- ──────────────────────────────────────────────────
+CREATE OR REPLACE FUNCTION public.trigger_process_job()
+RETURNS trigger
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $$
+BEGIN
+  PERFORM public.dispatch_job(NEW.id, NEW.type);
+  RETURN NEW;
+END;
+$$;
+
+CREATE TRIGGER on_job_created
+  AFTER INSERT ON public.jobs
+  FOR EACH ROW
+  EXECUTE FUNCTION public.trigger_process_job();
+
+-- ──────────────────────────────────────────────────
+-- RPC: manual retry (called by retry button)
+-- ──────────────────────────────────────────────────
+CREATE OR REPLACE FUNCTION public.trigger_job_retry(p_job_id uuid)
+RETURNS void
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $$
+DECLARE
+  v_job_type text;
+BEGIN
+  SELECT type INTO v_job_type FROM public.jobs WHERE id = p_job_id;
+  IF v_job_type IS NULL THEN
+    RAISE EXCEPTION 'Job not found: %', p_job_id;
+  END IF;
+  PERFORM public.dispatch_job(p_job_id, v_job_type);
+END;
+$$;
+
+REVOKE ALL ON FUNCTION public.trigger_job_retry(uuid) FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION public.trigger_job_retry(uuid) TO service_role;

@@ -1,13 +1,14 @@
 'use client';
 
 import { useState } from 'react';
-import { Download } from 'lucide-react';
+import { Download, RotateCcw } from 'lucide-react';
 import { toast } from 'sonner';
 import { Modal } from '@/components/admin/modal';
 import { InfoRow } from '@/components/admin/info-row';
 import { StatusBadge } from '@/components/admin/status-badge';
 import { Button } from '@/components/ui/button';
 import { createBrowserClient } from '@/lib/supabase/client';
+import { retryJob } from '../actions/retry-job';
 import type { Job } from '../types';
 import {
   JOB_STATUS_STYLES,
@@ -42,6 +43,7 @@ function formatDate(dateStr: string | null): string {
 
 export function JobDetailModal({ job, open, onClose }: JobDetailModalProps) {
   const [downloading, setDownloading] = useState(false);
+  const [retrying, setRetrying] = useState(false);
 
   const handleDownload = async () => {
     if (!job.file_path) return;
@@ -123,6 +125,27 @@ export function JobDetailModal({ job, open, onClose }: JobDetailModalProps) {
           >
             <Download />
             {downloading ? 'Downloaden...' : 'Download bestand'}
+          </Button>
+        )}
+
+        {job.status === 'failed' && (
+          <Button
+            variant="outline"
+            onClick={async () => {
+              setRetrying(true);
+              const result = await retryJob(job.id);
+              if (result.error) {
+                toast.error(typeof result.error === 'string' ? result.error : 'Opnieuw proberen mislukt');
+              } else {
+                toast.success('Job opnieuw gestart');
+              }
+              setRetrying(false);
+            }}
+            disabled={retrying}
+            className="w-full"
+          >
+            <RotateCcw />
+            {retrying ? 'Bezig...' : 'Opnieuw proberen'}
           </Button>
         )}
       </div>

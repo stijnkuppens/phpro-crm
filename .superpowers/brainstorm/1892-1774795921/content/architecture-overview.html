@@ -1,0 +1,123 @@
+<h2>Architecture Overview</h2>
+<p class="subtitle">Full data flow: from "Exporteren" click to file download</p>
+
+<div class="mockup">
+  <div class="mockup-header">System Architecture — Export Jobs</div>
+  <div class="mockup-body" style="padding: 24px; font-size: 12px;">
+
+    <!-- Row 1: Trigger -->
+    <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 24px;">
+      <div style="background: #eff6ff; border: 2px solid #3b82f6; border-radius: 10px; padding: 12px 16px; min-width: 160px; text-align: center;">
+        <div style="font-weight: 700; color: #1d4ed8;">1. User clicks</div>
+        <div style="color: #64748b; font-size: 11px; margin-top: 4px;">"Exporteren → Excel"<br>on Accounts page</div>
+      </div>
+      <div style="color: #94a3b8; font-size: 18px;">→</div>
+      <div style="background: #f0fdf4; border: 2px solid #22c55e; border-radius: 10px; padding: 12px 16px; min-width: 200px; text-align: center;">
+        <div style="font-weight: 700; color: #16a34a;">2. Server Action</div>
+        <div style="color: #64748b; font-size: 11px; margin-top: 4px;">
+          INSERT into <code>jobs</code> table<br>
+          + <code>pgmq.send('export_jobs')</code><br>
+          → returns job ID to client
+        </div>
+      </div>
+      <div style="color: #94a3b8; font-size: 18px;">→</div>
+      <div style="background: #fefce8; border: 2px solid #eab308; border-radius: 10px; padding: 12px 16px; min-width: 160px; text-align: center;">
+        <div style="font-weight: 700; color: #a16207;">3. toast + redirect</div>
+        <div style="color: #64748b; font-size: 11px; margin-top: 4px;">"Export gestart"<br>optional: navigate to /admin/jobs</div>
+      </div>
+    </div>
+
+    <!-- Row 2: Processing -->
+    <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 24px;">
+      <div style="background: #fdf4ff; border: 2px solid #a855f7; border-radius: 10px; padding: 12px 16px; min-width: 160px; text-align: center;">
+        <div style="font-weight: 700; color: #7e22ce;">4. pg_cron (1 min)</div>
+        <div style="color: #64748b; font-size: 11px; margin-top: 4px;">Calls Edge Function<br>via <code>pg_net.http_post()</code></div>
+      </div>
+      <div style="color: #94a3b8; font-size: 18px;">→</div>
+      <div style="background: #fff7ed; border: 2px solid #f97316; border-radius: 10px; padding: 12px 16px; min-width: 220px; text-align: center;">
+        <div style="font-weight: 700; color: #c2410c;">5. Edge Function</div>
+        <div style="color: #64748b; font-size: 11px; margin-top: 4px; text-align: left;">
+          a. <code>pgmq.read(vt=120)</code><br>
+          b. Query all matching rows<br>
+          c. Generate XLSX or CSV<br>
+          d. Upload to <code>documents</code> bucket<br>
+          e. UPDATE <code>jobs</code> → completed<br>
+          f. INSERT notification<br>
+          g. <code>pgmq.archive()</code>
+        </div>
+      </div>
+    </div>
+
+    <!-- Row 3: Client updates -->
+    <div style="display: flex; align-items: center; gap: 12px;">
+      <div style="background: #f0f9ff; border: 2px solid #0ea5e9; border-radius: 10px; padding: 12px 16px; min-width: 160px; text-align: center;">
+        <div style="font-weight: 700; color: #0284c7;">6. Realtime</div>
+        <div style="color: #64748b; font-size: 11px; margin-top: 4px;"><code>jobs</code> table UPDATE<br>→ client sees status change<br>+ progress %</div>
+      </div>
+      <div style="color: #94a3b8; font-size: 18px;">→</div>
+      <div style="background: #fef2f2; border: 2px solid #ef4444; border-radius: 10px; padding: 12px 16px; min-width: 160px; text-align: center;">
+        <div style="font-weight: 700; color: #dc2626;">7. Notification</div>
+        <div style="color: #64748b; font-size: 11px; margin-top: 4px;">🔔 Bell shows<br>"Export Accounts gereed"<br>links to job detail</div>
+      </div>
+      <div style="color: #94a3b8; font-size: 18px;">→</div>
+      <div style="background: #ecfdf5; border: 2px solid #10b981; border-radius: 10px; padding: 12px 16px; min-width: 160px; text-align: center;">
+        <div style="font-weight: 700; color: #059669;">8. Download</div>
+        <div style="color: #64748b; font-size: 11px; margin-top: 4px;">Click notification or<br>job detail modal<br>→ signed URL download</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div class="section" style="margin-top: 24px;">
+  <h3>Database Tables</h3>
+  <div style="display: flex; gap: 16px;">
+    <div class="mockup" style="flex: 1;">
+      <div class="mockup-header">jobs (new table)</div>
+      <div class="mockup-body" style="padding: 12px; font-size: 11px; font-family: monospace; line-height: 1.8;">
+        id &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;uuid PK<br>
+        type &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text ('export')<br>
+        status &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text (pending → processing → completed | failed)<br>
+        entity &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text ('accounts')<br>
+        format &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text ('xlsx' | 'csv')<br>
+        filters &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;jsonb (orFilter, eqFilters, sort)<br>
+        progress &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;int (0-100)<br>
+        row_count &nbsp;&nbsp;&nbsp;&nbsp;int<br>
+        file_path &nbsp;&nbsp;&nbsp;&nbsp;text (storage path)<br>
+        file_size &nbsp;&nbsp;&nbsp;&nbsp;bigint (bytes)<br>
+        error &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br>
+        requested_by &nbsp;uuid FK → auth.users<br>
+        created_at &nbsp;&nbsp;&nbsp;timestamptz<br>
+        started_at &nbsp;&nbsp;&nbsp;timestamptz<br>
+        completed_at &nbsp;timestamptz
+      </div>
+    </div>
+    <div class="mockup" style="flex: 1;">
+      <div class="mockup-header">pgmq queue: export_jobs</div>
+      <div class="mockup-body" style="padding: 12px; font-size: 11px; font-family: monospace; line-height: 1.8;">
+        msg_id &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;bigint (auto)<br>
+        read_ct &nbsp;&nbsp;&nbsp;&nbsp;int (retry count)<br>
+        enqueued_at timestamptz<br>
+        vt &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;timestamptz<br>
+        message &nbsp;&nbsp;&nbsp;&nbsp;jsonb {<br>
+        &nbsp;&nbsp;job_id: uuid<br>
+        }<br>
+        <br>
+        <span style="color: #888;">Archived messages go to</span><br>
+        <span style="color: #888;">pgmq.a_export_jobs</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section" style="margin-top: 16px;">
+  <h3>Key Design Decisions</h3>
+  <div style="font-size: 13px; line-height: 1.8;">
+    <div>✓ <strong>jobs table = source of truth</strong> for UI, pgmq queue = processing mechanism only</div>
+    <div>✓ <strong>Filters stored as JSONB</strong> — exact same shape as useEntity's fetchList params</div>
+    <div>✓ <strong>documents bucket</strong> reused — exports stored at <code>exports/{job_id}/export.{ext}</code></div>
+    <div>✓ <strong>RLS on jobs</strong> — users see only their own jobs</div>
+    <div>✓ <strong>Realtime on jobs table</strong> — already in supabase_realtime publication pattern</div>
+    <div>✓ <strong>Dead letter after 3 retries</strong> — if read_ct > 3, mark job as failed</div>
+  </div>
+</div>

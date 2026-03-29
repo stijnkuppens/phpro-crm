@@ -1,0 +1,102 @@
+<h2>How should job details be shown?</h2>
+<p class="subtitle">When a user clicks a job row in the table, how do they see the details + download link?</p>
+
+<div class="options">
+  <div class="option" data-choice="a" onclick="toggleSelect(this)">
+    <div class="letter">A</div>
+    <div class="content">
+      <h3>Slide-out modal (drawer)</h3>
+      <p>A panel slides in from the right. Shows status, progress, timestamps, error message, and a download button. User stays on the jobs list page.</p>
+      <div class="mockup" style="margin-top: 12px;">
+        <div class="mockup-body" style="padding: 0; display: flex; height: 260px;">
+          <div style="flex: 1; background: #f9fafb; padding: 16px; font-size: 11px; color: #aaa; display: flex; align-items: center; justify-content: center;">
+            Jobs list (dimmed)
+          </div>
+          <div style="width: 320px; border-left: 1px solid #e5e7eb; background: white; padding: 20px; font-size: 12px;">
+            <div style="font-size: 14px; font-weight: 700; margin-bottom: 16px;">Export Accounts</div>
+            <div style="display: grid; grid-template-columns: 90px 1fr; gap: 8px; margin-bottom: 16px;">
+              <span style="color: #888;">Status</span>
+              <span style="background: #dcfce7; color: #166534; padding: 2px 8px; border-radius: 99px; font-size: 11px; width: fit-content;">Voltooid</span>
+              <span style="color: #888;">Formaat</span>
+              <span>Excel (.xlsx)</span>
+              <span style="color: #888;">Rijen</span>
+              <span>1.247</span>
+              <span style="color: #888;">Grootte</span>
+              <span>342 KB</span>
+              <span style="color: #888;">Aangevraagd</span>
+              <span>29 mrt 2026, 14:32</span>
+              <span style="color: #888;">Voltooid</span>
+              <span>29 mrt 2026, 14:33</span>
+              <span style="color: #888;">Filters</span>
+              <span style="color: #666;">Type = Klant</span>
+            </div>
+            <button class="mock-button" style="width: 100%; font-size: 12px;">⬇ Download bestand</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="option" data-choice="b" onclick="toggleSelect(this)">
+    <div class="letter">B</div>
+    <div class="content">
+      <h3>Detail page (/admin/jobs/[id])</h3>
+      <p>A full dedicated page with breadcrumbs, status card, timeline of events, and download. More room for future complexity (logs, retry history).</p>
+      <div class="mockup" style="margin-top: 12px;">
+        <div class="mockup-body" style="padding: 16px; font-size: 12px;">
+          <div style="font-size: 10px; color: #888; margin-bottom: 4px;">Admin &rsaquo; Jobs &rsaquo; Export Accounts</div>
+          <div style="font-size: 18px; font-weight: 700; margin-bottom: 16px;">Export Accounts</div>
+          <div style="display: flex; gap: 16px;">
+            <div style="flex: 1; background: white; border: 1px solid #e5e7eb; border-radius: 12px; padding: 16px;">
+              <div style="font-weight: 600; margin-bottom: 12px; font-size: 13px;">Details</div>
+              <div style="display: grid; grid-template-columns: 90px 1fr; gap: 6px;">
+                <span style="color: #888;">Status</span>
+                <span style="background: #dcfce7; color: #166534; padding: 2px 8px; border-radius: 99px; font-size: 11px; width: fit-content;">Voltooid</span>
+                <span style="color: #888;">Formaat</span><span>Excel</span>
+                <span style="color: #888;">Rijen</span><span>1.247</span>
+                <span style="color: #888;">Filters</span><span>Type = Klant</span>
+              </div>
+              <button class="mock-button" style="width: 100%; margin-top: 16px; font-size: 12px;">⬇ Download</button>
+            </div>
+            <div style="flex: 1; background: white; border: 1px solid #e5e7eb; border-radius: 12px; padding: 16px;">
+              <div style="font-weight: 600; margin-bottom: 12px; font-size: 13px;">Tijdlijn</div>
+              <div style="border-left: 2px solid #e5e7eb; padding-left: 12px; font-size: 11px;">
+                <div style="margin-bottom: 10px;"><span style="color: #888;">14:32</span> — Job aangemaakt</div>
+                <div style="margin-bottom: 10px;"><span style="color: #888;">14:32</span> — Verwerking gestart</div>
+                <div style="margin-bottom: 10px;"><span style="color: #888;">14:33</span> — 1.247 rijen geëxporteerd</div>
+                <div><span style="color: #888;">14:33</span> — Bestand beschikbaar</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="option" data-choice="c" onclick="toggleSelect(this)">
+    <div class="letter">C</div>
+    <div class="content">
+      <h3>Center modal (dialog)</h3>
+      <p>A standard centered modal overlay. Compact detail view with download button. Same as how other modals work in the CRM (contacts, deals).</p>
+      <div class="mockup" style="margin-top: 12px;">
+        <div class="mockup-body" style="padding: 32px; background: rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center;">
+          <div style="background: white; border-radius: 12px; padding: 24px; width: 380px; font-size: 12px;">
+            <div style="font-size: 15px; font-weight: 700; margin-bottom: 16px;">Export Accounts</div>
+            <div style="display: grid; grid-template-columns: 90px 1fr; gap: 8px; margin-bottom: 20px;">
+              <span style="color: #888;">Status</span>
+              <span style="background: #dcfce7; color: #166534; padding: 2px 8px; border-radius: 99px; font-size: 11px; width: fit-content;">Voltooid</span>
+              <span style="color: #888;">Formaat</span><span>Excel (.xlsx)</span>
+              <span style="color: #888;">Rijen</span><span>1.247</span>
+              <span style="color: #888;">Aangevraagd</span><span>29 mrt, 14:32</span>
+              <span style="color: #888;">Filters</span><span>Type = Klant</span>
+            </div>
+            <div style="display: flex; gap: 8px;">
+              <button class="mock-button" style="flex: 1; background: transparent; border: 1px solid #ddd; color: #666; font-size: 12px;">Sluiten</button>
+              <button class="mock-button" style="flex: 1; font-size: 12px;">⬇ Download</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

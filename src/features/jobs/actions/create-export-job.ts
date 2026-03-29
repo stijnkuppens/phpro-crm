@@ -19,7 +19,6 @@ export async function createExportJob(
   const { entity, format, filters, columns, selectQuery } = parsed.data;
   const supabase = createServiceRoleClient();
 
-  // 1. Insert job row
   const { data: job, error: jobError } = await supabase
     .from('jobs')
     .insert({
@@ -35,18 +34,8 @@ export async function createExportJob(
 
   if (jobError) return err(jobError.message);
 
-  // 2. Enqueue to pgmq
-  const { error: queueError } = await supabase.rpc('enqueue_export_job', {
-    p_job_id: job.id,
-  });
-
-  if (queueError) {
-    await supabase
-      .from('jobs')
-      .update({ status: 'failed', error: `Queue error: ${queueError.message}` })
-      .eq('id', job.id);
-    return err('Kon export niet in de wachtrij plaatsen');
-  }
+  // The AFTER INSERT trigger on the jobs table automatically calls
+  // the Edge Function via pg_net — no manual dispatch needed.
 
   revalidatePath('/admin/jobs');
   return ok({ id: job.id });

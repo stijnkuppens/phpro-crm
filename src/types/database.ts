@@ -2390,7 +2390,10 @@ export type Database = {
         Args: { p_approved_by: string; p_draft_id: string }
         Returns: undefined
       }
-      enqueue_export_job: { Args: { p_job_id: string }; Returns: number }
+      dispatch_job: {
+        Args: { p_job_id: string; p_job_type: string }
+        Returns: undefined
+      }
       get_account_banner_stats: {
         Args: { p_account_id: string }
         Returns: {
@@ -2440,6 +2443,7 @@ export type Database = {
         Args: { p_account_id: string; p_rows: Json; p_table: string }
         Returns: undefined
       }
+      trigger_job_retry: { Args: { p_job_id: string }; Returns: undefined }
       upsert_hourly_rates: {
         Args: { p_account_id: string; p_rates: Json; p_year: number }
         Returns: undefined
