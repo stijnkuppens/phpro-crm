@@ -65,7 +65,7 @@ BEGIN
     url := 'http://supabase-edge-functions:9000/functions/v1/' || v_function_name,
     headers := jsonb_build_object(
       'Content-Type', 'application/json',
-      'Authorization', 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImV4cCI6MTk4MzgxMjk5Nn0.EGIM96RAZx35lJzdJsyH-qQwv8Hdp7fsn3W0YpN81IU'
+      'Authorization', 'Bearer ' || current_setting('app.settings.service_role_key')
     ),
     body := jsonb_build_object('job_id', p_job_id)
   );

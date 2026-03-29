@@ -440,7 +440,9 @@ services:
         "-c",
         "config_file=/etc/postgresql/postgresql.conf",
         "-c",
-        "log_min_messages=fatal"
+        "log_min_messages=fatal",
+        "-c",
+        "app.settings.service_role_key=${SERVICE_ROLE_KEY}"
       ]
 
   # ──────────────────────────────────────────────────
