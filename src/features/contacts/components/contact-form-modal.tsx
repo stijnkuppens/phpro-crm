@@ -11,22 +11,29 @@ import { updateContact } from '../actions/update-contact';
 import { updatePersonalInfo } from '../actions/update-personal-info';
 import { createBrowserClient } from '@/lib/supabase/client';
 import { Save } from 'lucide-react';
+import { Label } from '@/components/ui/label';
+import { ComboboxFilter } from '@/components/admin/combobox-filter';
 import { zodFieldErrors } from '@/lib/form-errors';
 import { contactFormSchema } from '../types';
 import type { ContactFormValues, PersonalInfoFormValues, ContactWithDetails } from '../types';
 
+type AccountOption = { id: string; name: string };
+
 type Props = {
   contactId: string | null;
-  accountId: string;
+  accountId?: string;
+  accounts?: AccountOption[];
   open: boolean;
   onClose: () => void;
   onSaved?: () => void;
 };
 
-export function ContactFormModal({ contactId, accountId, open, onClose, onSaved }: Props) {
+export function ContactFormModal({ contactId, accountId: accountIdProp, accounts = [], open, onClose, onSaved }: Props) {
   const [contact, setContact] = useState<ContactWithDetails | null>(null);
   const [fieldErrors, setFieldErrors] = useState<Record<string, boolean>>({});
+  const [selectedAccountId, setSelectedAccountId] = useState(accountIdProp ?? '');
   const isEdit = !!contactId;
+  const accountId = accountIdProp ?? selectedAccountId;
 
   // Reset contact when contactId changes (render-phase setState to avoid lint error)
   const [prevContactId, setPrevContactId] = useState(contactId);
@@ -139,6 +146,19 @@ export function ContactFormModal({ contactId, accountId, open, onClose, onSaved 
         </p>
       )}
       <form action={formAction} className="space-y-4">
+        {!accountIdProp && (
+          <div className="space-y-2">
+            <Label>Account *</Label>
+            <ComboboxFilter
+              options={accounts.map((a) => ({ value: a.id, label: a.name }))}
+              value={selectedAccountId || 'all'}
+              onValueChange={(v) => setSelectedAccountId(v === 'all' ? '' : v)}
+              placeholder="Selecteer account..."
+              searchPlaceholder="Zoek account..."
+              className="w-full"
+            />
+          </div>
+        )}
         <ContactFormFields
           key={contactId ?? 'new'}
           defaultValues={contact as Partial<ContactFormValues> | undefined ?? undefined}

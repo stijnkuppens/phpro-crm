@@ -2,13 +2,16 @@
 
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { useQueryState, parseAsInteger, parseAsBoolean } from 'nuqs';
-import { SquarePen, Trash2 } from 'lucide-react';
+import { Plus, SquarePen, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useEntity } from '@/lib/hooks/use-entity';
 import DataTable from '@/components/admin/data-table';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { ComboboxFilter } from '@/components/admin/combobox-filter';
+import { ListPageToolbar } from '@/components/admin/list-page-toolbar';
+import { ExportDropdown } from '@/components/admin/export-dropdown';
+import { contactExportColumns, CONTACT_EXPORT_SELECT } from '../export-columns';
 import { Avatar } from '@/components/admin/avatar';
 import { StatusBadge } from '@/components/admin/status-badge';
 import { contactColumns } from '../columns';
@@ -39,6 +42,7 @@ export function ContactList({ initialData, initialCount, accounts = [] }: Contac
   const [viewId, setViewId] = useState<string | null>(null);
   const [editId, setEditId] = useState<string | null>(null);
   const [editFromView, setEditFromView] = useState(false);
+  const [showNew, setShowNew] = useState(false);
   const { data, total, loading, refreshing, fetchList } = useEntity<ContactWithDetails>({
     table: 'contacts',
     select: '*, account:accounts!account_id(id, name)',
@@ -93,6 +97,22 @@ export function ContactList({ initialData, initialCount, accounts = [] }: Contac
 
   return (
     <div className="space-y-4">
+      <ListPageToolbar
+        actions={
+          <div className="flex gap-2">
+            <ExportDropdown
+              entity="contacts"
+              columns={contactExportColumns}
+              filters={{ sort: { column: 'last_name', direction: 'asc' } }}
+              selectQuery={CONTACT_EXPORT_SELECT}
+            />
+            <Button size="sm" onClick={() => setShowNew(true)}>
+              <Plus />
+              Nieuw contact
+            </Button>
+          </div>
+        }
+      />
       <DataTable
         tableId="contacts"
         filterBar={
@@ -187,6 +207,16 @@ export function ContactList({ initialData, initialCount, accounts = [] }: Contac
           open
           onClose={() => { const id = editId; setEditId(null); if (editFromView) { setViewId(id); setEditFromView(false); } }}
           onSaved={() => { const id = editId; setEditId(null); if (editFromView) { setViewId(id); setEditFromView(false); } load(); }}
+        />
+      )}
+      {showNew && (
+        <ContactFormModal
+          key="new"
+          contactId={null}
+          accounts={accounts}
+          open
+          onClose={() => setShowNew(false)}
+          onSaved={() => { setShowNew(false); load(); }}
         />
       )}
     </div>
