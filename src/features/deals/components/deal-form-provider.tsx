@@ -18,6 +18,7 @@ export type DealEditModalProps = {
   accountId?: string;
   pipelines: Pipeline[];
   owners: { id: string; name: string }[];
+  accounts?: { id: string; name: string }[];
   deal?: DealWithRelations;
   initialStageId?: string;
 };
@@ -26,7 +27,7 @@ export const LEAD_SOURCES = ['E-mail', 'Webformulier', 'Partner', 'Campagne', 'S
 
 export const DEAL_TAGS = ['Adobe Commerce', 'Marello', 'Magento', 'OroCommerce', 'Sulu CMS', 'Custom Dev', 'Pimcore', 'PIM', 'ERP Integratie', 'Analytics', 'SEO/SEA', 'UX / Design', 'Support', 'Training', 'Andere'];
 
-export function DealFormProvider({ open, onClose, accountId: propAccountId, pipelines, owners, deal, initialStageId, children }: DealEditModalProps & { children: React.ReactNode }) {
+export function DealFormProvider({ open, onClose, accountId: propAccountId, pipelines, owners, accounts: accountOptions = [], deal, initialStageId, children }: DealEditModalProps & { children: React.ReactNode }) {
   const isEdit = !!deal;
   const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
 
@@ -358,7 +359,7 @@ export function DealFormProvider({ open, onClose, accountId: propAccountId, pipe
 
   const meta: DealFormMeta = {
     isEdit, isClosed, activePipeline, isConsultancy, sortedStages,
-    pipelines, owners, propAccountId, deal, accountSearchRef,
+    pipelines, owners, propAccountId, deal, accountSearchRef, accountOptions,
   };
 
   return (

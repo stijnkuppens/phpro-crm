@@ -75,6 +75,7 @@ export type DealFormMeta = {
   sortedStages: Pipeline['stages'];
   pipelines: Pipeline[];
   owners: { id: string; name: string }[];
+  accountOptions: { id: string; name: string }[];
   propAccountId: string | undefined;
   deal: DealWithRelations | undefined;
   accountSearchRef: React.RefObject<HTMLDivElement | null>;

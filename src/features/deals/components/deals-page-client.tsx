@@ -30,9 +30,10 @@ type Props = {
   initialDeals: DealWithRelations[];
   initialCount: number;
   owners: { id: string; name: string }[];
+  accounts: { id: string; name: string }[];
 };
 
-export function DealsPageClient({ pipelines, initialDeals, initialCount, owners }: Props) {
+export function DealsPageClient({ pipelines, initialDeals, initialCount, owners, accounts }: Props) {
   const [viewMode, setViewMode] = useQueryState('view', { defaultValue: 'list' });
   const [filters, setFilters] = useState<Record<string, string | undefined>>({});
   const [page, setPage] = useQueryState('page', parseAsInteger.withDefault(1));
@@ -191,6 +192,7 @@ export function DealsPageClient({ pipelines, initialDeals, initialCount, owners 
           onClose={() => { setShowQuickDeal(false); load(); }}
           pipelines={pipelines}
           owners={owners}
+          accounts={accounts}
         />
       )}
 
@@ -201,6 +203,7 @@ export function DealsPageClient({ pipelines, initialDeals, initialCount, owners 
           onClose={() => { setKanbanCreateStageId(null); load(); }}
           pipelines={pipelines}
           owners={owners}
+          accounts={accounts}
           initialStageId={kanbanCreateStageId}
         />
       )}
