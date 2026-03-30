@@ -8,7 +8,12 @@ import { requirePermission } from '@/lib/require-permission';
 import { createServiceRoleClient } from '@/lib/supabase/admin';
 
 export async function deleteJob(id: string): Promise<ActionResult> {
-  const { userId } = await requirePermission('jobs.read');
+  let userId: string;
+  try {
+    ({ userId } = await requirePermission('jobs.read'));
+  } catch {
+    return err('Onvoldoende rechten');
+  }
 
   if (!z.string().min(1).safeParse(id).success) {
     return err('Ongeldig job ID');

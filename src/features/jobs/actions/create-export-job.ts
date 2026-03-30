@@ -27,7 +27,12 @@ const ENTITY_SELECT_QUERIES: Record<AllowedExportEntity, string> = {
 export async function createExportJob(
   values: CreateExportJobValues,
 ): Promise<ActionResult<{ id: string }>> {
-  const { userId } = await requirePermission('jobs.read');
+  let userId: string;
+  try {
+    ({ userId } = await requirePermission('jobs.read'));
+  } catch {
+    return err('Onvoldoende rechten');
+  }
 
   const parsed = createExportJobSchema.safeParse(values);
   if (!parsed.success) {
