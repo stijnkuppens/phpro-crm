@@ -47,10 +47,13 @@ export function AccountList({ initialData, initialCount, filterOptions }: Accoun
     load();
   }, [load]);
 
-  const handleFilterChange = useCallback((newFilters: Record<string, string | undefined>) => {
-    setFilters(newFilters);
-    setPage(1);
-  }, [setPage]);
+  const handleFilterChange = useCallback(
+    (newFilters: Record<string, string | undefined>) => {
+      setFilters(newFilters);
+      setPage(1);
+    },
+    [setPage],
+  );
 
   const handleDelete = async (id: string) => {
     const result = await deleteAccount(id);

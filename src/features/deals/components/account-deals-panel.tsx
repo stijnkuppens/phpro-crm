@@ -99,10 +99,13 @@ export function AccountDealsPanel({
     fetchList({ page, orFilter, eqFilters });
   }, [fetchList, page, filters, accountId]);
 
-  const handleFilterChange = useCallback((newFilters: Record<string, string | undefined>) => {
-    setFilters(newFilters);
-    setPage(1);
-  }, [setPage]);
+  const handleFilterChange = useCallback(
+    (newFilters: Record<string, string | undefined>) => {
+      setFilters(newFilters);
+      setPage(1);
+    },
+    [setPage],
+  );
 
   useEffect(() => {
     if (isInitialMount.current) {

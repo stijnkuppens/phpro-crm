@@ -65,10 +65,13 @@ export function JobList({ initialData, initialCount, userId }: JobListProps) {
     load();
   }, [load]);
 
-  const handleFilterChange = useCallback((newFilters: Record<string, string | undefined>) => {
-    setFilters(newFilters);
-    setPage(1);
-  }, [setPage]);
+  const handleFilterChange = useCallback(
+    (newFilters: Record<string, string | undefined>) => {
+      setFilters(newFilters);
+      setPage(1);
+    },
+    [setPage],
+  );
 
   const handleDelete = async (id: string) => {
     const result = await deleteJob(id);
