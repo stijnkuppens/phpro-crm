@@ -1,12 +1,13 @@
 'use server';
 
-import { z } from 'zod';
-import { createServerClient } from '@/lib/supabase/server';
-import { requirePermission } from '@/lib/require-permission';
-import { logAction } from '@/features/audit/actions/log-action';
 import { revalidatePath } from 'next/cache';
-import { contactFormSchema, entityIdSchema, type ContactFormValues } from '@/features/contacts/types';
-import { ok, err, type ActionResult } from '@/lib/action-result';
+import { z } from 'zod';
+import { logAction } from '@/features/audit/actions/log-action';
+import { type ContactFormValues, contactFormSchema, entityIdSchema } from '@/features/contacts/types';
+import { type ActionResult, err, ok } from '@/lib/action-result';
+import { logger } from '@/lib/logger';
+import { requirePermission } from '@/lib/require-permission';
+import { createServerClient } from '@/lib/supabase/server';
 
 export async function updateContact(id: string, values: ContactFormValues): Promise<ActionResult> {
   try {
@@ -25,13 +26,10 @@ export async function updateContact(id: string, values: ContactFormValues): Prom
 
   const supabase = await createServerClient();
   const { data: before } = await supabase.from('contacts').select('*').eq('id', id).single();
-  const { error } = await supabase
-    .from('contacts')
-    .update(parsed.data)
-    .eq('id', id);
+  const { error } = await supabase.from('contacts').update(parsed.data).eq('id', id);
 
   if (error) {
-    console.error('[updateContact]', error);
+    logger.error({ err: error }, '[updateContact] database error');
     return err('Er is een fout opgetreden');
   }
 

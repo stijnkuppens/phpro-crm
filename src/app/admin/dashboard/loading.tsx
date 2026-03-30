@@ -6,6 +6,7 @@ export default function DashboardLoading() {
       <Skeleton className="h-8 w-40" />
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {Array.from({ length: 6 }).map((_, i) => (
+          // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton items with no identity
           <Skeleton key={i} className="h-24" />
         ))}
       </div>

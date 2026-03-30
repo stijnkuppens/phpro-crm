@@ -1,12 +1,12 @@
 'use client';
 
+import { Plus, Save, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { Modal, ModalFooter } from '@/components/admin/modal';
+import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Button } from '@/components/ui/button';
-import { Plus, Save, Trash2 } from 'lucide-react';
 import { upsertSlaRates } from '../actions/upsert-sla-rates';
 import type { SlaRateWithTools } from '../types';
 
@@ -27,7 +27,10 @@ export function SlaRatesEditModal({ accountId, year, existingRate, open, onClose
   const [supportRate, setSupportRate] = useState(existingRate ? String(Number(existingRate.support_hourly_rate)) : '');
   const [tools, setTools] = useState<ToolEntry[]>(() => {
     if (existingRate?.tools && existingRate.tools.length > 0) {
-      return existingRate.tools.map((t) => ({ tool_name: t.tool_name, monthly_price: String(Number(t.monthly_price)) }));
+      return existingRate.tools.map((t) => ({
+        tool_name: t.tool_name,
+        monthly_price: String(Number(t.monthly_price)),
+      }));
     }
     return [];
   });
@@ -88,6 +91,7 @@ export function SlaRatesEditModal({ accountId, year, existingRate, open, onClose
         <div className="space-y-3">
           <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Tools</h4>
           {tools.map((tool, i) => (
+            // biome-ignore lint/suspicious/noArrayIndexKey: dynamically added rows with no stable identity
             <div key={i} className="grid grid-cols-[1fr_120px_40px] gap-2 items-center">
               <Input
                 value={tool.tool_name}
@@ -119,7 +123,9 @@ export function SlaRatesEditModal({ accountId, year, existingRate, open, onClose
       </div>
 
       <ModalFooter>
-        <Button variant="outline" onClick={onClose} disabled={loading}>Annuleer</Button>
+        <Button variant="outline" onClick={onClose} disabled={loading}>
+          Annuleer
+        </Button>
         <Button onClick={handleSubmit} disabled={loading}>
           <Save />
           {loading ? 'Opslaan...' : 'Opslaan'}

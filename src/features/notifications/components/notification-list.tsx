@@ -1,10 +1,10 @@
 'use client';
 
-import { useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { markAsRead, markAllAsRead } from '../actions/mark-as-read';
-import type { Notification } from '../types';
+import { useCallback, useState } from 'react';
 import { Button } from '@/components/ui/button';
+import { markAllAsRead, markAsRead } from '../actions/mark-as-read';
+import type { Notification } from '../types';
 
 type Props = {
   initialData: Notification[];
@@ -18,9 +18,7 @@ export function NotificationList({ initialData }: Props) {
     async (notification: Notification) => {
       if (!notification.read) {
         await markAsRead(notification.id);
-        setNotifications((prev) =>
-          prev.map((n) => (n.id === notification.id ? { ...n, read: true } : n)),
-        );
+        setNotifications((prev) => prev.map((n) => (n.id === notification.id ? { ...n, read: true } : n)));
       }
       const link = (notification.metadata as Record<string, unknown> | null)?.link as string | undefined;
       if (link) {
@@ -51,20 +49,18 @@ export function NotificationList({ initialData }: Props) {
       ) : (
         <ul className="divide-y">
           {notifications.map((n) => (
-            <li
-              key={n.id}
-              className={`flex cursor-pointer flex-col gap-1 p-4 hover:bg-muted/50 ${!n.read ? 'bg-muted/30' : ''}`}
-              onClick={() => handleClick(n)}
-            >
-              <span className={n.read ? 'text-muted-foreground' : 'font-medium'}>
-                {n.title}
-              </span>
-              {n.message && (
-                <span className="text-sm text-muted-foreground">{n.message}</span>
-              )}
-              <span className="text-xs text-muted-foreground">
-                {n.created_at ? new Date(n.created_at).toLocaleDateString() : '—'}
-              </span>
+            <li key={n.id}>
+              <button
+                type="button"
+                className={`flex w-full cursor-pointer flex-col gap-1 p-4 text-left hover:bg-muted/50 ${!n.read ? 'bg-muted/30' : ''}`}
+                onClick={() => handleClick(n)}
+              >
+                <span className={n.read ? 'text-muted-foreground' : 'font-medium'}>{n.title}</span>
+                {n.message && <span className="text-sm text-muted-foreground">{n.message}</span>}
+                <span className="text-xs text-muted-foreground">
+                  {n.created_at ? new Date(n.created_at).toLocaleDateString() : '—'}
+                </span>
+              </button>
             </li>
           ))}
         </ul>

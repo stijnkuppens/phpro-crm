@@ -1,23 +1,23 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
-import { useRouter } from 'next/navigation';
-import { createBrowserClient } from '@/lib/supabase/client';
-import { useAuth } from '@/lib/hooks/use-auth';
-import { markAsRead, markAllAsRead } from '../actions/mark-as-read';
-import type { Notification } from '../types';
 import { Bell } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { useRouter } from 'next/navigation';
+import { useCallback, useEffect, useState } from 'react';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuGroup,
   DropdownMenuItem,
-  DropdownMenuTrigger,
-  DropdownMenuSeparator,
   DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { useAuth } from '@/lib/hooks/use-auth';
+import { createBrowserClient } from '@/lib/supabase/client';
+import { markAllAsRead, markAsRead } from '../actions/mark-as-read';
+import type { Notification } from '../types';
 
 export function NotificationBell() {
   const { user } = useAuth();
@@ -44,7 +44,9 @@ export function NotificationBell() {
           setNotifications(data as Notification[]);
         }
       });
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [user]);
 
   // Realtime subscription with user_id filter
@@ -77,9 +79,7 @@ export function NotificationBell() {
     async (notification: Notification) => {
       if (!notification.read) {
         await markAsRead(notification.id);
-        setNotifications((prev) =>
-          prev.map((n) => (n.id === notification.id ? { ...n, read: true } : n)),
-        );
+        setNotifications((prev) => prev.map((n) => (n.id === notification.id ? { ...n, read: true } : n)));
       }
       const link = (notification.metadata as Record<string, unknown> | null)?.link as string | undefined;
       if (link) {
@@ -101,9 +101,7 @@ export function NotificationBell() {
           <Button variant="ghost" size="sm" className="relative h-8 w-8">
             <Bell className="h-4 w-4" />
             {unreadCount > 0 && (
-              <Badge className="absolute -right-1 -top-1 h-4 w-4 rounded-full p-0 text-[10px]">
-                {unreadCount}
-              </Badge>
+              <Badge className="absolute -right-1 -top-1 h-4 w-4 rounded-full p-0 text-[10px]">{unreadCount}</Badge>
             )}
           </Button>
         }

@@ -7,6 +7,7 @@ export default function ReferenceDataLoading() {
       <div className="flex gap-6">
         <div className="w-56 shrink-0 space-y-2">
           {Array.from({ length: 13 }).map((_, i) => (
+            // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton items with no identity
             <Skeleton key={i} className="h-9 w-full" />
           ))}
         </div>

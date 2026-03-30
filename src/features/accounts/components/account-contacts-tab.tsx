@@ -1,18 +1,18 @@
 'use client';
 
+import { Mail, Plus, SquarePen, Trash2 } from 'lucide-react';
 import { useCallback, useState } from 'react';
-import { SquarePen, Plus, Trash2, Mail } from 'lucide-react';
-import { Avatar } from '@/components/admin/avatar';
-import { StatusBadge } from '@/components/admin/status-badge';
 import { toast } from 'sonner';
-import { useEntity } from '@/lib/hooks/use-entity';
-import { Button } from '@/components/ui/button';
+import { Avatar } from '@/components/admin/avatar';
 import DataTable from '@/components/admin/data-table';
-import { contactColumns } from '@/features/contacts/columns';
+import { StatusBadge } from '@/components/admin/status-badge';
+import { Button } from '@/components/ui/button';
 import { deleteContact } from '@/features/contacts/actions/delete-contact';
+import { contactColumns } from '@/features/contacts/columns';
 import { ContactFormModal } from '@/features/contacts/components/contact-form-modal';
 import { ContactViewModal } from '@/features/contacts/components/contact-view-modal';
 import type { ContactWithDetails } from '@/features/contacts/types';
+import { useEntity } from '@/lib/hooks/use-entity';
 
 type Props = {
   accountId: string;
@@ -65,7 +65,13 @@ export function AccountContactsTab({ accountId, initialData, initialCount }: Pro
         refreshing={refreshing}
         rowActions={(row) => [
           { icon: SquarePen, label: 'Bewerken', onClick: () => setEditId(row.id) },
-          { icon: Trash2, label: 'Verwijderen', variant: 'destructive' as const, confirm: { title: 'Contact verwijderen?', description: 'Dit verwijdert het contact permanent.' }, onClick: () => handleDelete(row.id) },
+          {
+            icon: Trash2,
+            label: 'Verwijderen',
+            variant: 'destructive' as const,
+            confirm: { title: 'Contact verwijderen?', description: 'Dit verwijdert het contact permanent.' },
+            onClick: () => handleDelete(row.id),
+          },
         ]}
         renderMobileCard={(row) => {
           const name = `${row.first_name} ${row.last_name}`;
@@ -96,7 +102,10 @@ export function AccountContactsTab({ accountId, initialData, initialCount }: Pro
         accountId={accountId}
         open={createOpen}
         onClose={() => setCreateOpen(false)}
-        onSaved={() => { setCreateOpen(false); load(); }}
+        onSaved={() => {
+          setCreateOpen(false);
+          load();
+        }}
       />
 
       {viewId && (
@@ -104,7 +113,10 @@ export function AccountContactsTab({ accountId, initialData, initialCount }: Pro
           key={viewId}
           contactId={viewId}
           onClose={() => setViewId(null)}
-          onEdit={(id) => { setViewId(null); setEditId(id); }}
+          onEdit={(id) => {
+            setViewId(null);
+            setEditId(id);
+          }}
         />
       )}
 
@@ -115,7 +127,10 @@ export function AccountContactsTab({ accountId, initialData, initialCount }: Pro
           accountId={accountId}
           open
           onClose={() => setEditId(null)}
-          onSaved={() => { setEditId(null); load(); }}
+          onSaved={() => {
+            setEditId(null);
+            load();
+          }}
         />
       )}
     </div>

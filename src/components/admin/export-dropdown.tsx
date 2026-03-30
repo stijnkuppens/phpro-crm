@@ -1,15 +1,14 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
 import { Download, FileSpreadsheet, FileText } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { useState } from 'react';
 import { toast } from 'sonner';
-import { Button } from '@/components/ui/button';
 import { Modal } from '@/components/admin/modal';
+import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Label } from '@/components/ui/label';
 import { createExportJob } from '@/features/jobs/actions/create-export-job';
-import type { ExportColumn, AllowedExportEntity } from '@/features/jobs/types';
+import type { AllowedExportEntity, ExportColumn } from '@/features/jobs/types';
 
 type ExportDropdownProps = {
   entity: AllowedExportEntity;
@@ -17,17 +16,11 @@ type ExportDropdownProps = {
   filters?: Record<string, unknown>;
 };
 
-export function ExportDropdown({
-  entity,
-  columns,
-  filters = {},
-}: ExportDropdownProps) {
+export function ExportDropdown({ entity, columns, filters = {} }: ExportDropdownProps) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [selectedKeys, setSelectedKeys] = useState<Set<string>>(
-    () => new Set(columns.map((c) => c.key)),
-  );
+  const [selectedKeys, setSelectedKeys] = useState<Set<string>>(() => new Set(columns.map((c) => c.key)));
 
   const toggleColumn = (key: string) => {
     setSelectedKeys((prev) => {
@@ -66,9 +59,7 @@ export function ExportDropdown({
       });
 
       if (result.error) {
-        toast.error(
-          typeof result.error === 'string' ? result.error : 'Export starten mislukt',
-        );
+        toast.error(typeof result.error === 'string' ? result.error : 'Export starten mislukt');
         return;
       }
 
@@ -105,24 +96,15 @@ export function ExportDropdown({
             <div>
               <div className="mb-2 flex items-center justify-between">
                 <span className="text-sm font-medium">Kolommen</span>
-                <button
-                  type="button"
-                  onClick={toggleAll}
-                  className="text-xs text-primary-action hover:underline"
-                >
+                <button type="button" onClick={toggleAll} className="text-xs text-primary-action hover:underline">
                   {selectedKeys.size === columns.length ? 'Geen selecteren' : 'Alles selecteren'}
                 </button>
               </div>
               <div className="space-y-2 rounded-lg border p-3">
                 {columns.map((col) => (
-                  <label
-                    key={col.key}
-                    className="flex cursor-pointer items-center gap-2 text-sm"
-                  >
-                    <Checkbox
-                      checked={selectedKeys.has(col.key)}
-                      onCheckedChange={() => toggleColumn(col.key)}
-                    />
+                  // biome-ignore lint/a11y/noLabelWithoutControl: label wraps Checkbox which renders its own input
+                  <label key={col.key} className="flex cursor-pointer items-center gap-2 text-sm">
+                    <Checkbox checked={selectedKeys.has(col.key)} onCheckedChange={() => toggleColumn(col.key)} />
                     {col.label}
                   </label>
                 ))}

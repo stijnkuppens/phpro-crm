@@ -15,6 +15,7 @@ function getBrandFromCookie(): BrandTheme | null {
 }
 
 function setBrandCookie(brand: BrandTheme) {
+  // biome-ignore lint/suspicious/noDocumentCookie: Cookie Store API is not yet widely available; this is intentional client-side theme persistence
   document.cookie = `${COOKIE_NAME}=${brand};path=/;max-age=31536000;SameSite=Lax`;
 }
 
@@ -23,10 +24,7 @@ let currentBrand: BrandTheme | null = null;
 
 function getSnapshot(): BrandTheme {
   if (currentBrand) return currentBrand;
-  currentBrand =
-    (localStorage.getItem(STORAGE_KEY) as BrandTheme) ??
-    getBrandFromCookie() ??
-    'phpro';
+  currentBrand = (localStorage.getItem(STORAGE_KEY) as BrandTheme) ?? getBrandFromCookie() ?? 'phpro';
   return currentBrand;
 }
 
@@ -44,7 +42,11 @@ const emptySubscribe = () => () => {};
 
 export function useBrandTheme() {
   const brand = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
-  const mounted = useSyncExternalStore(emptySubscribe, () => true, () => false);
+  const mounted = useSyncExternalStore(
+    emptySubscribe,
+    () => true,
+    () => false,
+  );
 
   // Keep data-brand attribute in sync
   useEffect(() => {

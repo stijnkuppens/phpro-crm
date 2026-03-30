@@ -1,31 +1,19 @@
 'use client';
 
+import { Save } from 'lucide-react';
 import { useState, useTransition } from 'react';
 import { toast } from 'sonner';
+import { AvatarUpload } from '@/components/admin/avatar-upload';
+import { ConfirmDialog } from '@/components/admin/confirm-dialog';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
-import { Badge } from '@/components/ui/badge';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
-import { ConfirmDialog } from '@/components/admin/confirm-dialog';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { createBrowserClient } from '@/lib/supabase/client';
-import { AvatarUpload } from '@/components/admin/avatar-upload';
-import { Avatar } from '@/components/admin/avatar';
-import { REF_TABLES, type RefTableKey, type ReferenceItem, type RefItemFormValues } from '../types';
-import { Save } from 'lucide-react';
-import {
-  createReferenceItem,
-  updateReferenceItem,
-  deleteReferenceItem,
-} from '../actions/manage-reference-items';
+import { createReferenceItem, deleteReferenceItem, updateReferenceItem } from '../actions/manage-reference-items';
 import { updateInternalPersonAvatar } from '../actions/update-internal-person-avatar';
+import { REF_TABLES, type ReferenceItem, type RefItemFormValues, type RefTableKey } from '../types';
 
 type FormMode =
   | { mode: 'idle' }
@@ -48,9 +36,11 @@ export function ReferenceDataPage({ initialTable, initialData }: Props) {
   // because pre-fetching all reference tables would be wasteful.
   async function fetchItems(table: RefTableKey) {
     const supabase = createBrowserClient();
-    const columns = table === 'ref_internal_people'
-      ? 'id, name, sort_order, is_active:active, avatar_url, created_at, updated_at'
-      : 'id, name, sort_order, is_active:active, created_at, updated_at';
+    const columns =
+      table === 'ref_internal_people'
+        ? 'id, name, sort_order, is_active:active, avatar_url, created_at, updated_at'
+        : 'id, name, sort_order, is_active:active, created_at, updated_at';
+    // biome-ignore lint/suspicious/noExplicitAny: dynamic table name returns union type that cannot be narrowed
     const { data, error } = await (supabase.from(table) as any)
       .select(columns)
       .order('sort_order', { ascending: true })
@@ -70,7 +60,11 @@ export function ReferenceDataPage({ initialTable, initialData }: Props) {
   }
 
   function startEdit(item: ReferenceItem) {
-    setFormMode({ mode: 'edit', id: item.id, values: { name: item.name, sort_order: item.sort_order, is_active: item.is_active } });
+    setFormMode({
+      mode: 'edit',
+      id: item.id,
+      values: { name: item.name, sort_order: item.sort_order, is_active: item.is_active },
+    });
   }
 
   function cancelEdit() {
@@ -143,11 +137,10 @@ export function ReferenceDataPage({ initialTable, initialData }: Props) {
         {REF_TABLES.map((t) => (
           <button
             key={t.key}
+            type="button"
             onClick={() => handleTableSwitch(t.key)}
             className={`w-full rounded-md px-3 py-2 text-left text-sm transition-colors ${
-              selectedTable === t.key
-                ? 'bg-primary text-primary-foreground'
-                : 'hover:bg-muted'
+              selectedTable === t.key ? 'bg-primary text-primary-foreground' : 'hover:bg-muted'
             }`}
           >
             {t.label}
@@ -159,7 +152,10 @@ export function ReferenceDataPage({ initialTable, initialData }: Props) {
       <div className="flex-1 space-y-4">
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-semibold">{selectedLabel}</h2>
-          <Button size="sm" onClick={() => setFormMode({ mode: 'add', values: { name: '', sort_order: 0, is_active: true } })}>
+          <Button
+            size="sm"
+            onClick={() => setFormMode({ mode: 'add', values: { name: '', sort_order: 0, is_active: true } })}
+          >
             Toevoegen
           </Button>
         </div>
@@ -181,7 +177,11 @@ export function ReferenceDataPage({ initialTable, initialData }: Props) {
                 <TableCell>
                   <Input
                     value={formMode.values.name}
-                    onChange={(e) => setFormMode((prev) => prev.mode === 'add' ? { ...prev, values: { ...prev.values, name: e.target.value } } : prev)}
+                    onChange={(e) =>
+                      setFormMode((prev) =>
+                        prev.mode === 'add' ? { ...prev, values: { ...prev.values, name: e.target.value } } : prev,
+                      )
+                    }
                     placeholder="Naam"
                     autoFocus
                   />
@@ -190,7 +190,13 @@ export function ReferenceDataPage({ initialTable, initialData }: Props) {
                   <Input
                     type="number"
                     value={formMode.values.sort_order}
-                    onChange={(e) => setFormMode((prev) => prev.mode === 'add' ? { ...prev, values: { ...prev.values, sort_order: parseInt(e.target.value) || 0 } } : prev)}
+                    onChange={(e) =>
+                      setFormMode((prev) =>
+                        prev.mode === 'add'
+                          ? { ...prev, values: { ...prev.values, sort_order: parseInt(e.target.value, 10) || 0 } }
+                          : prev,
+                      )
+                    }
                     className="w-20"
                   />
                 </TableCell>
@@ -216,7 +222,12 @@ export function ReferenceDataPage({ initialTable, initialData }: Props) {
                       <TableCell>
                         <AvatarUpload
                           currentPath={item.avatar_url}
-                          fallback={item.name.split(/\s+/).map(w => w[0] ?? '').join('').toUpperCase().slice(0, 2)}
+                          fallback={item.name
+                            .split(/\s+/)
+                            .map((w) => w[0] ?? '')
+                            .join('')
+                            .toUpperCase()
+                            .slice(0, 2)}
                           storagePath={`internal-people/${item.id}`}
                           size="sm"
                           onUploaded={async (path) => {
@@ -225,7 +236,7 @@ export function ReferenceDataPage({ initialTable, initialData }: Props) {
                               toast.error(typeof result.error === 'string' ? result.error : 'Avatar bijwerken mislukt');
                               return;
                             }
-                            setItems((prev) => prev.map((i) => i.id === item.id ? { ...i, avatar_url: path } : i));
+                            setItems((prev) => prev.map((i) => (i.id === item.id ? { ...i, avatar_url: path } : i)));
                           }}
                         />
                       </TableCell>
@@ -233,21 +244,35 @@ export function ReferenceDataPage({ initialTable, initialData }: Props) {
                     <TableCell>
                       <Input
                         value={formMode.values.name}
-                        onChange={(e) => setFormMode((prev) => prev.mode === 'edit' ? { ...prev, values: { ...prev.values, name: e.target.value } } : prev)}
+                        onChange={(e) =>
+                          setFormMode((prev) =>
+                            prev.mode === 'edit' ? { ...prev, values: { ...prev.values, name: e.target.value } } : prev,
+                          )
+                        }
                       />
                     </TableCell>
                     <TableCell>
                       <Input
                         type="number"
                         value={formMode.values.sort_order}
-                        onChange={(e) => setFormMode((prev) => prev.mode === 'edit' ? { ...prev, values: { ...prev.values, sort_order: parseInt(e.target.value) || 0 } } : prev)}
+                        onChange={(e) =>
+                          setFormMode((prev) =>
+                            prev.mode === 'edit'
+                              ? { ...prev, values: { ...prev.values, sort_order: parseInt(e.target.value, 10) || 0 } }
+                              : prev,
+                          )
+                        }
                         className="w-20"
                       />
                     </TableCell>
                     <TableCell>
                       <Switch
                         checked={formMode.values.is_active}
-                        onCheckedChange={(checked) => setFormMode((prev) => prev.mode === 'edit' ? { ...prev, values: { ...prev.values, is_active: checked } } : prev)}
+                        onCheckedChange={(checked) =>
+                          setFormMode((prev) =>
+                            prev.mode === 'edit' ? { ...prev, values: { ...prev.values, is_active: checked } } : prev,
+                          )
+                        }
                       />
                     </TableCell>
                     <TableCell>
@@ -268,7 +293,12 @@ export function ReferenceDataPage({ initialTable, initialData }: Props) {
                       <TableCell>
                         <AvatarUpload
                           currentPath={item.avatar_url}
-                          fallback={item.name.split(/\s+/).map(w => w[0] ?? '').join('').toUpperCase().slice(0, 2)}
+                          fallback={item.name
+                            .split(/\s+/)
+                            .map((w) => w[0] ?? '')
+                            .join('')
+                            .toUpperCase()
+                            .slice(0, 2)}
                           storagePath={`internal-people/${item.id}`}
                           size="sm"
                           onUploaded={async (path) => {
@@ -277,15 +307,12 @@ export function ReferenceDataPage({ initialTable, initialData }: Props) {
                               toast.error(typeof result.error === 'string' ? result.error : 'Avatar bijwerken mislukt');
                               return;
                             }
-                            setItems((prev) => prev.map((i) => i.id === item.id ? { ...i, avatar_url: path } : i));
+                            setItems((prev) => prev.map((i) => (i.id === item.id ? { ...i, avatar_url: path } : i)));
                           }}
                         />
                       </TableCell>
                     )}
-                    <TableCell
-                      className="cursor-pointer"
-                      onClick={() => startEdit(item)}
-                    >
+                    <TableCell className="cursor-pointer" onClick={() => startEdit(item)}>
                       {item.name}
                     </TableCell>
                     <TableCell>{item.sort_order}</TableCell>
@@ -299,12 +326,7 @@ export function ReferenceDataPage({ initialTable, initialData }: Props) {
                         <Button size="sm" variant="ghost" onClick={() => startEdit(item)}>
                           Bewerken
                         </Button>
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          onClick={() => handleToggleActive(item)}
-                          disabled={isPending}
-                        >
+                        <Button size="sm" variant="ghost" onClick={() => handleToggleActive(item)} disabled={isPending}>
                           {item.is_active ? 'Deactiveer' : 'Activeer'}
                         </Button>
                         <ConfirmDialog

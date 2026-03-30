@@ -11,6 +11,7 @@ export default function DealsLoading() {
       </div>
       <div className="flex gap-4 overflow-hidden">
         {Array.from({ length: 5 }).map((_, i) => (
+          // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton items with no identity
           <Skeleton key={i} className="h-[400px] w-72 shrink-0" />
         ))}
       </div>

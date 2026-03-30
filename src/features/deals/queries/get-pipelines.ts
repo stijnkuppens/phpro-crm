@@ -1,6 +1,6 @@
 import { cache } from 'react';
-import { createServerClient } from '@/lib/supabase/server';
 import { logger } from '@/lib/logger';
+import { createServerClient } from '@/lib/supabase/server';
 
 export const getPipelines = cache(async () => {
   const supabase = await createServerClient();

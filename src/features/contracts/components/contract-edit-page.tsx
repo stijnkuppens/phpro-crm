@@ -1,40 +1,50 @@
 'use client';
 
-import { useCallback, useMemo, useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { toast } from 'sonner';
 import { ArrowLeft, Save } from 'lucide-react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { useCallback, useMemo, useState } from 'react';
+import { toast } from 'sonner';
 import { PageHeader } from '@/components/admin/page-header';
+import { PdfUploadField } from '@/components/admin/pdf-upload-field';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { PdfUploadField } from '@/components/admin/pdf-upload-field';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-} from '@/components/ui/select';
+import { Select, SelectContent, SelectItem, SelectTrigger } from '@/components/ui/select';
 import { upsertContract } from '@/features/contracts/actions/upsert-contract';
 import { upsertHourlyRates } from '@/features/contracts/actions/upsert-hourly-rates';
 import { upsertSlaRates } from '@/features/contracts/actions/upsert-sla-rates';
-import { upsertIndexationConfig } from '@/features/indexation/actions/upsert-indexation-config';
 import { ContractFrameworkCard } from '@/features/contracts/components/contract-framework-card';
-import { ContractServiceCard } from '@/features/contracts/components/contract-service-card';
 import { ContractHourlyRatesSection } from '@/features/contracts/components/contract-hourly-rates-section';
+import { ContractServiceCard } from '@/features/contracts/components/contract-service-card';
 import { ContractSlaRatesSection } from '@/features/contracts/components/contract-sla-rates-section';
-import type { Contract, ContractFormValues, HourlyRate, SlaRateWithTools, SlaYearState, ToolEntry } from '@/features/contracts/types';
+import type {
+  Contract,
+  ContractFormValues,
+  HourlyRate,
+  SlaRateWithTools,
+  SlaYearState,
+  ToolEntry,
+} from '@/features/contracts/types';
+import { upsertIndexationConfig } from '@/features/indexation/actions/upsert-indexation-config';
 import type { IndexationConfig } from '@/features/indexation/types';
 
 // ── Constants ──────────────────────────────────────────────────────────────
 
 const MONTHS = [
-  { value: '1', label: 'Januari' }, { value: '2', label: 'Februari' }, { value: '3', label: 'Maart' },
-  { value: '4', label: 'April' }, { value: '5', label: 'Mei' }, { value: '6', label: 'Juni' },
-  { value: '7', label: 'Juli' }, { value: '8', label: 'Augustus' }, { value: '9', label: 'September' },
-  { value: '10', label: 'Oktober' }, { value: '11', label: 'November' }, { value: '12', label: 'December' },
+  { value: '1', label: 'Januari' },
+  { value: '2', label: 'Februari' },
+  { value: '3', label: 'Maart' },
+  { value: '4', label: 'April' },
+  { value: '5', label: 'Mei' },
+  { value: '6', label: 'Juni' },
+  { value: '7', label: 'Juli' },
+  { value: '8', label: 'Augustus' },
+  { value: '9', label: 'September' },
+  { value: '10', label: 'Oktober' },
+  { value: '11', label: 'November' },
+  { value: '12', label: 'December' },
 ];
 
 const INDEX_TYPES = ['Agoria', 'Agoria Digital'];
@@ -152,39 +162,57 @@ export function ContractEditPage({ accountId, contract, hourlyRates, slaRates, i
     return grid;
   });
 
-  const getSlaState = useCallback((year: number): SlaYearState => {
-    return slaGrid[year] ?? { fixed_monthly_rate: '', support_hourly_rate: '', tools: [] };
-  }, [slaGrid]);
+  const getSlaState = useCallback(
+    (year: number): SlaYearState => {
+      return slaGrid[year] ?? { fixed_monthly_rate: '', support_hourly_rate: '', tools: [] };
+    },
+    [slaGrid],
+  );
 
-  const updateSlaField = useCallback((year: number, field: 'fixed_monthly_rate' | 'support_hourly_rate', value: string) => {
-    setSlaGrid((prev) => ({
-      ...prev,
-      [year]: { ...(prev[year] ?? { fixed_monthly_rate: '', support_hourly_rate: '', tools: [] }), [field]: value },
-    }));
-  }, []);
+  const updateSlaField = useCallback(
+    (year: number, field: 'fixed_monthly_rate' | 'support_hourly_rate', value: string) => {
+      setSlaGrid((prev) => ({
+        ...prev,
+        [year]: { ...(prev[year] ?? { fixed_monthly_rate: '', support_hourly_rate: '', tools: [] }), [field]: value },
+      }));
+    },
+    [],
+  );
 
   const emptySla = useMemo<SlaYearState>(() => ({ fixed_monthly_rate: '', support_hourly_rate: '', tools: [] }), []);
 
-  const addSlaTool = useCallback((year: number) => {
-    setSlaGrid((prev) => {
-      const cur = prev[year] ?? emptySla;
-      return { ...prev, [year]: { ...cur, tools: [...cur.tools, { tool_name: '', monthly_price: '' }] } };
-    });
-  }, [emptySla]);
+  const addSlaTool = useCallback(
+    (year: number) => {
+      setSlaGrid((prev) => {
+        const cur = prev[year] ?? emptySla;
+        return { ...prev, [year]: { ...cur, tools: [...cur.tools, { tool_name: '', monthly_price: '' }] } };
+      });
+    },
+    [emptySla],
+  );
 
-  const removeSlaTool = useCallback((year: number, index: number) => {
-    setSlaGrid((prev) => {
-      const cur = prev[year] ?? emptySla;
-      return { ...prev, [year]: { ...cur, tools: cur.tools.filter((_, i) => i !== index) } };
-    });
-  }, [emptySla]);
+  const removeSlaTool = useCallback(
+    (year: number, index: number) => {
+      setSlaGrid((prev) => {
+        const cur = prev[year] ?? emptySla;
+        return { ...prev, [year]: { ...cur, tools: cur.tools.filter((_, i) => i !== index) } };
+      });
+    },
+    [emptySla],
+  );
 
-  const updateSlaTool = useCallback((year: number, index: number, field: keyof ToolEntry, value: string) => {
-    setSlaGrid((prev) => {
-      const cur = prev[year] ?? emptySla;
-      return { ...prev, [year]: { ...cur, tools: cur.tools.map((t, i) => (i === index ? { ...t, [field]: value } : t)) } };
-    });
-  }, [emptySla]);
+  const updateSlaTool = useCallback(
+    (year: number, index: number, field: keyof ToolEntry, value: string) => {
+      setSlaGrid((prev) => {
+        const cur = prev[year] ?? emptySla;
+        return {
+          ...prev,
+          [year]: { ...cur, tools: cur.tools.map((t, i) => (i === index ? { ...t, [field]: value } : t)) },
+        };
+      });
+    },
+    [emptySla],
+  );
 
   // ── Save all ──────────────────────────────────────────────────────────
   async function handleSave() {
@@ -195,15 +223,15 @@ export function ContractEditPage({ accountId, contract, hourlyRates, slaRates, i
       has_framework_contract: contractFields.hasFramework,
       framework_pdf_url: contractFields.frameworkUrl || null,
       framework_doc_path: contractFields.frameworkDoc || null,
-      framework_start: (document.querySelector<HTMLInputElement>('[name="framework_start"]')?.value) || null,
-      framework_end: (document.querySelector<HTMLInputElement>('[name="framework_end"]')?.value) || null,
-      framework_indefinite: (document.querySelector<HTMLInputElement>('#framework_indefinite')?.checked) ?? false,
+      framework_start: document.querySelector<HTMLInputElement>('[name="framework_start"]')?.value || null,
+      framework_end: document.querySelector<HTMLInputElement>('[name="framework_end"]')?.value || null,
+      framework_indefinite: document.querySelector<HTMLInputElement>('#framework_indefinite')?.checked ?? false,
       has_service_contract: contractFields.hasService,
       service_pdf_url: contractFields.serviceUrl || null,
       service_doc_path: contractFields.serviceDoc || null,
-      service_start: (document.querySelector<HTMLInputElement>('[name="service_start"]')?.value) || null,
-      service_end: (document.querySelector<HTMLInputElement>('[name="service_end"]')?.value) || null,
-      service_indefinite: (document.querySelector<HTMLInputElement>('#service_indefinite')?.checked) ?? false,
+      service_start: document.querySelector<HTMLInputElement>('[name="service_start"]')?.value || null,
+      service_end: document.querySelector<HTMLInputElement>('[name="service_end"]')?.value || null,
+      service_indefinite: document.querySelector<HTMLInputElement>('#service_indefinite')?.checked ?? false,
       purchase_orders_url: contractFields.purchaseOrdersUrl || null,
       purchase_orders_doc_path: contractFields.purchaseOrdersDoc || null,
     };
@@ -273,7 +301,11 @@ export function ContractEditPage({ accountId, contract, hourlyRates, slaRates, i
         ]}
         actions={
           <div className="flex gap-2">
-            <Button variant="outline" nativeButton={false} render={<Link href={`/admin/accounts/${accountId}/contracten`} />}>
+            <Button
+              variant="outline"
+              nativeButton={false}
+              render={<Link href={`/admin/accounts/${accountId}/contracten`} />}
+            >
               <ArrowLeft /> Annuleren
             </Button>
             <Button onClick={handleSave} disabled={saving}>
@@ -316,22 +348,37 @@ export function ContractEditPage({ accountId, contract, hourlyRates, slaRates, i
                   <SelectTrigger>{indexation.type || 'Niet ingesteld'}</SelectTrigger>
                   <SelectContent>
                     <SelectItem value="">Niet ingesteld</SelectItem>
-                    {INDEX_TYPES.map((t) => <SelectItem key={t} value={t}>{t}</SelectItem>)}
+                    {INDEX_TYPES.map((t) => (
+                      <SelectItem key={t} value={t}>
+                        {t}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
               <div className="space-y-1.5">
                 <Label>Vanaf maand</Label>
                 <Select value={indexation.month} onValueChange={(v) => updateIndexation({ month: v ?? '' })}>
-                  <SelectTrigger>{indexation.month ? MONTHS.find((m) => m.value === indexation.month)?.label : 'Selecteer...'}</SelectTrigger>
+                  <SelectTrigger>
+                    {indexation.month ? MONTHS.find((m) => m.value === indexation.month)?.label : 'Selecteer...'}
+                  </SelectTrigger>
                   <SelectContent>
-                    {MONTHS.map((m) => <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>)}
+                    {MONTHS.map((m) => (
+                      <SelectItem key={m.value} value={m.value}>
+                        {m.label}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
               <div className="space-y-1.5">
                 <Label>Vanaf jaar</Label>
-                <Input type="number" value={indexation.year} onChange={(e) => updateIndexation({ year: e.target.value })} placeholder={String(currentYear)} />
+                <Input
+                  type="number"
+                  value={indexation.year}
+                  onChange={(e) => updateIndexation({ year: e.target.value })}
+                  placeholder={String(currentYear)}
+                />
               </div>
             </div>
           </CardContent>
@@ -342,11 +389,19 @@ export function ContractEditPage({ accountId, contract, hourlyRates, slaRates, i
             <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Bestelbonnen</h2>
             <div className="space-y-1.5">
               <Label>Link (Confluence URL)</Label>
-              <Input value={contractFields.purchaseOrdersUrl} onChange={(e) => updateContract({ purchaseOrdersUrl: e.target.value })} placeholder="https://confluence.phpro.be/..." />
+              <Input
+                value={contractFields.purchaseOrdersUrl}
+                onChange={(e) => updateContract({ purchaseOrdersUrl: e.target.value })}
+                placeholder="https://confluence.phpro.be/..."
+              />
             </div>
             <div className="space-y-1.5">
               <Label>Document uploaden</Label>
-              <PdfUploadField value={contractFields.purchaseOrdersDoc} onChange={(v) => updateContract({ purchaseOrdersDoc: v })} folder={`contracts/${accountId}`} />
+              <PdfUploadField
+                value={contractFields.purchaseOrdersDoc}
+                onChange={(v) => updateContract({ purchaseOrdersDoc: v })}
+                folder={`contracts/${accountId}`}
+              />
             </div>
           </CardContent>
         </Card>
@@ -380,7 +435,11 @@ export function ContractEditPage({ accountId, contract, hourlyRates, slaRates, i
       {/* ── Acties ─────────────────────────────────────────────────── */}
       <Card>
         <CardContent className="p-5 flex justify-end gap-2">
-          <Button variant="outline" nativeButton={false} render={<Link href={`/admin/accounts/${accountId}/contracten`} />}>
+          <Button
+            variant="outline"
+            nativeButton={false}
+            render={<Link href={`/admin/accounts/${accountId}/contracten`} />}
+          >
             Annuleren
           </Button>
           <Button onClick={handleSave} disabled={saving}>

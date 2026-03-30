@@ -1,12 +1,13 @@
 'use server';
 
-import { z } from 'zod';
-import { createServerClient } from '@/lib/supabase/server';
-import { requirePermission } from '@/lib/require-permission';
-import { logAction } from '@/features/audit/actions/log-action';
 import { revalidatePath } from 'next/cache';
-import { communicationFormSchema, entityIdSchema, type CommunicationFormValues } from '@/features/communications/types';
-import { ok, err, type ActionResult } from '@/lib/action-result';
+import { z } from 'zod';
+import { logAction } from '@/features/audit/actions/log-action';
+import { type CommunicationFormValues, communicationFormSchema, entityIdSchema } from '@/features/communications/types';
+import { type ActionResult, err, ok } from '@/lib/action-result';
+import { logger } from '@/lib/logger';
+import { requirePermission } from '@/lib/require-permission';
+import { createServerClient } from '@/lib/supabase/server';
 import type { Json } from '@/types/database';
 
 export async function updateCommunication(id: string, values: CommunicationFormValues): Promise<ActionResult> {
@@ -32,7 +33,7 @@ export async function updateCommunication(id: string, values: CommunicationFormV
     .eq('id', id);
 
   if (error) {
-    console.error('[updateCommunication]', error);
+    logger.error({ err: error }, '[updateCommunication] database error');
     return err('Er is een fout opgetreden');
   }
 

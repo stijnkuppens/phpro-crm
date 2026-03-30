@@ -5,8 +5,7 @@ type Props = {
 };
 
 export default async function DynamicPage({ params }: Props) {
-  const { slug } = await params;
-
-  // Placeholder — replace with CMS or database content lookup
+  // Consume params to avoid "unused variable" — replace with CMS or database content lookup
+  await params;
   notFound();
 }

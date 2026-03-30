@@ -1,14 +1,15 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import { createServiceRoleClient } from '@/lib/supabase/admin';
-import { requirePermission } from '@/lib/require-permission';
-import { ok, err, type ActionResult } from '@/lib/action-result';
-import { createExportJobSchema, type CreateExportJobValues, type AllowedExportEntity } from '../types';
 import { ACCOUNT_EXPORT_SELECT } from '@/features/accounts/export-columns';
+import { CONSULTANT_EXPORT_SELECT } from '@/features/consultants/export-columns';
 import { CONTACT_EXPORT_SELECT } from '@/features/contacts/export-columns';
 import { DEAL_EXPORT_SELECT } from '@/features/deals/export-columns';
-import { CONSULTANT_EXPORT_SELECT } from '@/features/consultants/export-columns';
+import { type ActionResult, err, ok } from '@/lib/action-result';
+import { logger } from '@/lib/logger';
+import { requirePermission } from '@/lib/require-permission';
+import { createServiceRoleClient } from '@/lib/supabase/admin';
+import { type AllowedExportEntity, type CreateExportJobValues, createExportJobSchema } from '../types';
 
 const ENTITY_SELECT_QUERIES: Record<AllowedExportEntity, string> = {
   accounts: ACCOUNT_EXPORT_SELECT,
@@ -19,9 +20,7 @@ const ENTITY_SELECT_QUERIES: Record<AllowedExportEntity, string> = {
   communications: '*',
 };
 
-export async function createExportJob(
-  values: CreateExportJobValues,
-): Promise<ActionResult<{ id: string }>> {
+export async function createExportJob(values: CreateExportJobValues): Promise<ActionResult<{ id: string }>> {
   const { userId } = await requirePermission('jobs.read');
 
   const parsed = createExportJobSchema.safeParse(values);
@@ -47,7 +46,7 @@ export async function createExportJob(
     .single();
 
   if (jobError) {
-    console.error('[createExportJob]', jobError);
+    logger.error({ err: jobError }, '[createExportJob] database error');
     return err('Er is een fout opgetreden');
   }
 

@@ -1,12 +1,13 @@
 'use server';
 
-import { createServerClient } from '@/lib/supabase/server';
-import { requirePermission } from '@/lib/require-permission';
-import { logAction } from '@/features/audit/actions/log-action';
 import { revalidatePath } from 'next/cache';
-import { closeDealSchema, type CloseDealValues } from '../types';
-import { ok, err, type ActionResult } from '@/lib/action-result';
 import { z } from 'zod';
+import { logAction } from '@/features/audit/actions/log-action';
+import { type ActionResult, err, ok } from '@/lib/action-result';
+import { logger } from '@/lib/logger';
+import { requirePermission } from '@/lib/require-permission';
+import { createServerClient } from '@/lib/supabase/server';
+import { type CloseDealValues, closeDealSchema } from '../types';
 
 export async function closeDeal(dealId: string, values: CloseDealValues): Promise<ActionResult> {
   try {
@@ -27,11 +28,7 @@ export async function closeDeal(dealId: string, values: CloseDealValues): Promis
 
   const supabase = await createServerClient();
 
-  const { data: deal } = await supabase
-    .from('deals')
-    .select('*')
-    .eq('id', dealId)
-    .single();
+  const { data: deal } = await supabase.from('deals').select('*').eq('id', dealId).single();
 
   if (!deal) {
     return err('Deal not found');
@@ -66,12 +63,13 @@ export async function closeDeal(dealId: string, values: CloseDealValues): Promis
       closed_reason: parsed.data.closed_reason,
       closed_notes: parsed.data.closed_notes,
       longterm_date: parsed.data.longterm_date,
-      probability: parsed.data.closed_type === 'won' ? 100 : parsed.data.closed_type === 'longterm' ? stage.probability : 0,
+      probability:
+        parsed.data.closed_type === 'won' ? 100 : parsed.data.closed_type === 'longterm' ? stage.probability : 0,
     })
     .eq('id', dealId);
 
   if (error) {
-    console.error('[closeDeal]', error);
+    logger.error({ err: error }, '[closeDeal] database error');
     return err('Er is een fout opgetreden');
   }
 

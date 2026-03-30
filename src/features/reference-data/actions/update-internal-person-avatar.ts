@@ -1,16 +1,14 @@
 'use server';
 
-import { z } from 'zod';
-import { createServerClient } from '@/lib/supabase/server';
-import { requirePermission } from '@/lib/require-permission';
 import { revalidatePath } from 'next/cache';
-import { ok, err, type ActionResult } from '@/lib/action-result';
+import { z } from 'zod';
 import { entityIdSchema } from '@/features/reference-data/types';
+import { type ActionResult, err, ok } from '@/lib/action-result';
+import { logger } from '@/lib/logger';
+import { requirePermission } from '@/lib/require-permission';
+import { createServerClient } from '@/lib/supabase/server';
 
-export async function updateInternalPersonAvatar(
-  id: string,
-  avatarUrl: string,
-): Promise<ActionResult> {
+export async function updateInternalPersonAvatar(id: string, avatarUrl: string): Promise<ActionResult> {
   try {
     await requirePermission('reference_data.write');
   } catch {
@@ -23,13 +21,10 @@ export async function updateInternalPersonAvatar(
   if (!parsedUrl.success) return err('Ongeldige URL');
 
   const supabase = await createServerClient();
-  const { error } = await supabase
-    .from('ref_internal_people')
-    .update({ avatar_url: avatarUrl })
-    .eq('id', id);
+  const { error } = await supabase.from('ref_internal_people').update({ avatar_url: avatarUrl }).eq('id', id);
 
   if (error) {
-    console.error('[updateInternalPersonAvatar]', error);
+    logger.error({ err: error }, '[updateInternalPersonAvatar] database error');
     return err('Er is een fout opgetreden');
   }
 

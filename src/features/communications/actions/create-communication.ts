@@ -1,13 +1,14 @@
 'use server';
 
-import { z } from 'zod';
-import { createServerClient } from '@/lib/supabase/server';
-import { requirePermission } from '@/lib/require-permission';
-import { logAction } from '@/features/audit/actions/log-action';
 import { revalidatePath } from 'next/cache';
-import { communicationFormSchema, type CommunicationFormValues } from '../types';
-import { ok, err, type ActionResult } from '@/lib/action-result';
+import { z } from 'zod';
+import { logAction } from '@/features/audit/actions/log-action';
+import { type ActionResult, err, ok } from '@/lib/action-result';
+import { logger } from '@/lib/logger';
+import { requirePermission } from '@/lib/require-permission';
+import { createServerClient } from '@/lib/supabase/server';
 import type { Json } from '@/types/database';
+import { type CommunicationFormValues, communicationFormSchema } from '../types';
 
 export async function createCommunication(values: CommunicationFormValues): Promise<ActionResult<{ id: string }>> {
   let userId: string;
@@ -30,7 +31,7 @@ export async function createCommunication(values: CommunicationFormValues): Prom
     .single();
 
   if (error) {
-    console.error('[createCommunication]', error);
+    logger.error({ err: error }, '[createCommunication] database error');
     return err('Er is een fout opgetreden');
   }
 
@@ -38,7 +39,11 @@ export async function createCommunication(values: CommunicationFormValues): Prom
     action: 'communication.created',
     entityType: 'communication',
     entityId: data.id,
-    metadata: { subject: parsed.data.subject, type: parsed.data.type, body: parsed.data as unknown as Record<string, Json> },
+    metadata: {
+      subject: parsed.data.subject,
+      type: parsed.data.type,
+      body: parsed.data as unknown as Record<string, Json>,
+    },
   });
 
   revalidatePath('/admin/accounts');

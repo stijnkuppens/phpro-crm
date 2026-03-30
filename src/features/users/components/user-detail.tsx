@@ -1,19 +1,13 @@
 'use client';
 
 import { useState, useTransition } from 'react';
-import { updateUserRole } from '@/features/users/actions/update-user-role';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { toast } from 'sonner';
-import { useAuth } from '@/lib/hooks/use-auth';
+import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { updateUserRole } from '@/features/users/actions/update-user-role';
 import { roles } from '@/lib/acl';
+import { useAuth } from '@/lib/hooks/use-auth';
 import type { Role } from '@/types/acl';
 import type { Database } from '@/types/database';
 

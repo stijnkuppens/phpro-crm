@@ -1,11 +1,11 @@
 'use client';
 
-import { useMemo, useState } from 'react';
 import { ChevronLeft, ChevronRight, CreditCard } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { useMemo, useState } from 'react';
 import { EmptyState } from '@/components/admin/empty-state';
-import type { HourlyRate } from '../types';
+import { Button } from '@/components/ui/button';
 import { formatEUR } from '@/lib/format';
+import type { HourlyRate } from '../types';
 
 type Props = {
   hourlyRates: HourlyRate[];
@@ -60,7 +60,9 @@ export function HourlyRatesSubTab({ hourlyRates }: Props) {
                 <th key={year} className={`text-right p-3 font-medium ${year === currentYear ? 'bg-primary/5' : ''}`}>
                   <div className="flex items-center justify-end gap-1.5">
                     {year}
-                    {year === currentYear && <span className="text-[10px] text-primary-action font-normal">Huidig</span>}
+                    {year === currentYear && (
+                      <span className="text-[10px] text-primary-action font-normal">Huidig</span>
+                    )}
                   </div>
                 </th>
               ))}
@@ -86,8 +88,11 @@ export function HourlyRatesSubTab({ hourlyRates }: Props) {
                           <span className="inline-flex items-center gap-1.5">
                             {formatEUR(rate)}
                             {i === 0 && diff != null && diff !== 0 && (
-                              <span className={`text-[11px] font-medium ${diff > 0 ? 'text-green-600' : 'text-red-600'}`}>
-                                {diff > 0 ? '+' : ''}{diff}
+                              <span
+                                className={`text-[11px] font-medium ${diff > 0 ? 'text-green-600' : 'text-red-600'}`}
+                              >
+                                {diff > 0 ? '+' : ''}
+                                {diff}
                               </span>
                             )}
                           </span>

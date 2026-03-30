@@ -1,19 +1,20 @@
 'use server';
 
-import { z } from 'zod';
-import { createServerClient } from '@/lib/supabase/server';
-import { requirePermission } from '@/lib/require-permission';
-import { logAction } from '@/features/audit/actions/log-action';
 import { revalidatePath } from 'next/cache';
+import { z } from 'zod';
+import { logAction } from '@/features/audit/actions/log-action';
 import {
-  benchConsultantFormSchema,
-  consultantFormSchema,
-  languageFormSchema,
   type BenchConsultantFormValues,
+  benchConsultantFormSchema,
   type ConsultantFormValues,
+  consultantFormSchema,
   type LanguageFormValues,
+  languageFormSchema,
 } from '@/features/consultants/types';
-import { ok, err, type ActionResult } from '@/lib/action-result';
+import { type ActionResult, err, ok } from '@/lib/action-result';
+import { logger } from '@/lib/logger';
+import { requirePermission } from '@/lib/require-permission';
+import { createServerClient } from '@/lib/supabase/server';
 
 export async function updateConsultant(
   id: string,
@@ -30,11 +31,7 @@ export async function updateConsultant(
   const supabase = await createServerClient();
 
   // Fetch current status to determine validation schema
-  const { data: consultant, error: fetchError } = await supabase
-    .from('consultants')
-    .select('*')
-    .eq('id', id)
-    .single();
+  const { data: consultant, error: fetchError } = await supabase.from('consultants').select('*').eq('id', id).single();
 
   if (fetchError || !consultant) {
     return err('Consultant niet gevonden');
@@ -46,13 +43,10 @@ export async function updateConsultant(
     return err(parsed.error.flatten().fieldErrors);
   }
 
-  const { error: updateError } = await supabase
-    .from('consultants')
-    .update(parsed.data)
-    .eq('id', id);
+  const { error: updateError } = await supabase.from('consultants').update(parsed.data).eq('id', id);
 
   if (updateError) {
-    console.error('[updateConsultant] update', updateError);
+    logger.error({ err: updateError }, '[updateConsultant] update error');
     return err('Er is een fout opgetreden');
   }
 
@@ -61,13 +55,10 @@ export async function updateConsultant(
     const langParsed = z.array(languageFormSchema).max(20).safeParse(languages);
     if (!langParsed.success) return err('Ongeldige taalgegevens');
     const validLanguages = langParsed.data;
-    const { error: deleteError } = await supabase
-      .from('consultant_languages')
-      .delete()
-      .eq('consultant_id', id);
+    const { error: deleteError } = await supabase.from('consultant_languages').delete().eq('consultant_id', id);
 
     if (deleteError) {
-      console.error('[updateConsultant] deleteLanguages', deleteError);
+      logger.error({ err: deleteError }, '[updateConsultant] deleteLanguages error');
       return err('Er is een fout opgetreden');
     }
 
@@ -77,7 +68,7 @@ export async function updateConsultant(
         .insert(validLanguages.map((lang) => ({ ...lang, consultant_id: id })));
 
       if (insertError) {
-        console.error('[updateConsultant] insertLanguages', insertError);
+        logger.error({ err: insertError }, '[updateConsultant] insertLanguages error');
         return err('Er is een fout opgetreden');
       }
     }

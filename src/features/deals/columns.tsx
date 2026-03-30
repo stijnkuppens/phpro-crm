@@ -1,9 +1,9 @@
 'use client';
 
 import type { ColumnDef } from '@tanstack/react-table';
-import type { DealWithRelations } from './types';
-import { formatEUR } from '@/lib/format';
 import { Avatar } from '@/components/admin/avatar';
+import { formatEUR } from '@/lib/format';
+import type { DealWithRelations } from './types';
 
 function getInitials(name: string): string {
   return name
@@ -54,7 +54,7 @@ export const dealColumns: ColumnDef<DealWithRelations>[] = [
     header: 'Herkomst',
     cell: ({ row }) => {
       const origin = row.original.origin;
-      return origin ? ORIGIN_LABELS[origin] ?? origin : <span className="text-muted-foreground">–</span>;
+      return origin ? (ORIGIN_LABELS[origin] ?? origin) : <span className="text-muted-foreground">–</span>;
     },
   },
   {

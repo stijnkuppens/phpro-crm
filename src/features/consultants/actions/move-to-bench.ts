@@ -1,15 +1,14 @@
 'use server';
 
-import { z } from 'zod';
-import { createServerClient } from '@/lib/supabase/server';
-import { requirePermission } from '@/lib/require-permission';
-import { logAction } from '@/features/audit/actions/log-action';
 import { revalidatePath } from 'next/cache';
-import { ok, err, type ActionResult } from '@/lib/action-result';
+import { z } from 'zod';
+import { logAction } from '@/features/audit/actions/log-action';
+import { type ActionResult, err, ok } from '@/lib/action-result';
+import { logger } from '@/lib/logger';
+import { requirePermission } from '@/lib/require-permission';
+import { createServerClient } from '@/lib/supabase/server';
 
-export async function moveToBench(
-  id: string,
-): Promise<ActionResult> {
+export async function moveToBench(id: string): Promise<ActionResult> {
   try {
     await requirePermission('consultants.write');
   } catch {
@@ -20,11 +19,7 @@ export async function moveToBench(
   const supabase = await createServerClient();
 
   // Fetch current consultant to check existing bench fields
-  const { data: consultant, error: fetchError } = await supabase
-    .from('consultants')
-    .select('*')
-    .eq('id', id)
-    .single();
+  const { data: consultant, error: fetchError } = await supabase.from('consultants').select('*').eq('id', id).single();
 
   if (fetchError || !consultant) {
     return err('Consultant niet gevonden');
@@ -54,7 +49,7 @@ export async function moveToBench(
     .eq('id', id);
 
   if (error) {
-    console.error('[moveToBench]', error);
+    logger.error({ err: error }, '[moveToBench] database error');
     return err('Er is een fout opgetreden');
   }
 

@@ -1,6 +1,6 @@
+import { AccountDealsPanel } from '@/features/deals/components/account-deals-panel';
 import { getDeals } from '@/features/deals/queries/get-deals';
 import { getPipelines } from '@/features/deals/queries/get-pipelines';
-import { AccountDealsPanel } from '@/features/deals/components/account-deals-panel';
 import { createServerClient } from '@/lib/supabase/server';
 
 type Props = {

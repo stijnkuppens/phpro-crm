@@ -1,22 +1,25 @@
 'use client';
 
-import { useState, useCallback, useEffect, useMemo, useRef } from 'react';
-import { useQueryState, parseAsInteger } from 'nuqs';
-import { Button } from '@/components/ui/button';
-import { ExportDropdown } from '@/components/admin/export-dropdown';
-import { LayoutGrid, List, Archive, Plus } from 'lucide-react';
-import { dealExportColumns } from '../export-columns';
-import { useEntity } from '@/lib/hooks/use-entity';
+import { Archive, LayoutGrid, List, Plus } from 'lucide-react';
+import dynamic from 'next/dynamic';
+import { parseAsInteger, useQueryState } from 'nuqs';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { buildFilterQuery, type FilterOption } from '@/components/admin/data-table-filters';
+import { ExportDropdown } from '@/components/admin/export-dropdown';
 import { PageHeader } from '@/components/admin/page-header';
 import { SubNav, type SubNavItem } from '@/components/admin/sub-nav';
+import { Button } from '@/components/ui/button';
+import { useEntity } from '@/lib/hooks/use-entity';
 import { dealColumns } from '../columns';
+import { DEAL_SELECT, FORECAST_CATEGORY_OPTIONS, ORIGIN_OPTIONS, PAGE_SIZE } from '../constants';
+import { dealExportColumns } from '../export-columns';
 import { DealKanban } from './deal-kanban';
 import { DealList } from './deal-list';
-import { DEAL_SELECT, ORIGIN_OPTIONS, FORECAST_CATEGORY_OPTIONS, PAGE_SIZE } from '../constants';
-import dynamic from 'next/dynamic';
 
-const DealEditModal = dynamic(() => import('./deal-edit-modal').then(m => ({ default: m.DealEditModal })), { ssr: false });
+const DealEditModal = dynamic(() => import('./deal-edit-modal').then((m) => ({ default: m.DealEditModal })), {
+  ssr: false,
+});
+
 import type { DealCard, DealWithRelations, Pipeline } from '../types';
 
 const VIEW_MODES: SubNavItem[] = [
@@ -54,9 +57,7 @@ export function DealsPageClient({ pipelines, initialDeals, initialCount, owners,
     const pipelineOpts: FilterOption[] = pipelines.map((p) => ({ value: p.id, label: p.name }));
 
     const activePipelineId = filters.pipeline_id;
-    const relevantPipelines = activePipelineId
-      ? pipelines.filter((p) => p.id === activePipelineId)
-      : pipelines;
+    const relevantPipelines = activePipelineId ? pipelines.filter((p) => p.id === activePipelineId) : pipelines;
     const stageOpts: FilterOption[] = relevantPipelines
       .flatMap((p) => p.stages)
       .filter((s) => !s.is_closed)
@@ -89,10 +90,13 @@ export function DealsPageClient({ pipelines, initialDeals, initialCount, owners,
     const eqFilters: Record<string, string> = { ...autoFilters };
 
     // View mode filter: kanban = active only, archief = closed only
+    // biome-ignore lint/suspicious/noExplicitAny: Supabase query builder type is complex; any is intentional here
     let applyFilters: ((query: any) => any) | undefined;
     if (viewMode === 'kanban') {
+      // biome-ignore lint/suspicious/noExplicitAny: Supabase query builder type is complex; any is intentional here
       applyFilters = (q: any) => q.is('closed_at', null);
     } else if (viewMode === 'archief') {
+      // biome-ignore lint/suspicious/noExplicitAny: Supabase query builder type is complex; any is intentional here
       applyFilters = (q: any) => q.not('closed_at', 'is', null);
     }
 
@@ -104,7 +108,7 @@ export function DealsPageClient({ pipelines, initialDeals, initialCount, owners,
       setFilters(newFilters);
       setPage(1);
     },
-    [],
+    [setPage],
   );
 
   useEffect(() => {
@@ -119,28 +123,29 @@ export function DealsPageClient({ pipelines, initialDeals, initialCount, owners,
   const kanbanPipelineId = filters.pipeline_id || pipelines[0]?.id;
   const kanbanPipeline = pipelines.find((p) => p.id === kanbanPipelineId);
 
-  const dealCards: DealCard[] = useMemo(() => data.map((d) => ({
-    id: d.id,
-    title: d.title,
-    amount: Number(d.amount ?? 0),
-    probability: d.probability ?? 0,
-    close_date: d.close_date,
-    account_name: d.account?.name ?? '',
-    owner_name: d.owner?.full_name ?? null,
-    stage_id: d.stage_id,
-    forecast_category: d.forecast_category,
-    origin: d.origin,
-    lead_source: d.lead_source ?? null,
-  })), [data]);
+  const dealCards: DealCard[] = useMemo(
+    () =>
+      data.map((d) => ({
+        id: d.id,
+        title: d.title,
+        amount: Number(d.amount ?? 0),
+        probability: d.probability ?? 0,
+        close_date: d.close_date,
+        account_name: d.account?.name ?? '',
+        owner_name: d.owner?.full_name ?? null,
+        stage_id: d.stage_id,
+        forecast_category: d.forecast_category,
+        origin: d.origin,
+        lead_source: d.lead_source ?? null,
+      })),
+    [data],
+  );
 
   return (
     <div className="space-y-6">
       <PageHeader
         title="Deals"
-        breadcrumbs={[
-          { label: 'Admin', href: '/admin' },
-          { label: 'Deals' },
-        ]}
+        breadcrumbs={[{ label: 'Admin', href: '/admin' }, { label: 'Deals' }]}
         actions={
           <div className="flex gap-2">
             <ExportDropdown
@@ -158,7 +163,10 @@ export function DealsPageClient({ pipelines, initialDeals, initialCount, owners,
       <SubNav
         items={VIEW_MODES}
         activeKey={viewMode}
-        onSelect={(key) => { setViewMode(key); setPage(1); }}
+        onSelect={(key) => {
+          setViewMode(key);
+          setPage(1);
+        }}
       />
 
       {viewMode === 'kanban' && kanbanPipeline ? (
@@ -188,7 +196,10 @@ export function DealsPageClient({ pipelines, initialDeals, initialCount, owners,
       {showQuickDeal && (
         <DealEditModal
           open
-          onClose={() => { setShowQuickDeal(false); load(); }}
+          onClose={() => {
+            setShowQuickDeal(false);
+            load();
+          }}
           pipelines={pipelines}
           owners={owners}
           accounts={accounts}
@@ -199,7 +210,10 @@ export function DealsPageClient({ pipelines, initialDeals, initialCount, owners,
         <DealEditModal
           key={kanbanCreateStageId}
           open
-          onClose={() => { setKanbanCreateStageId(null); load(); }}
+          onClose={() => {
+            setKanbanCreateStageId(null);
+            load();
+          }}
           pipelines={pipelines}
           owners={owners}
           accounts={accounts}

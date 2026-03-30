@@ -1,8 +1,8 @@
 'use client';
 
-import { useAuth } from '@/lib/hooks/use-auth';
-import { can, type Permission } from '@/lib/acl';
 import type { ReactNode } from 'react';
+import { can, type Permission } from '@/lib/acl';
+import { useAuth } from '@/lib/hooks/use-auth';
 
 type RoleGuardProps = {
   permission: Permission;

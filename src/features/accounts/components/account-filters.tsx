@@ -1,8 +1,8 @@
 'use client';
 
 import { Search } from 'lucide-react';
-import { Input } from '@/components/ui/input';
 import { ComboboxFilter } from '@/components/admin/combobox-filter';
+import { Input } from '@/components/ui/input';
 import type { AccountFilters } from '../types';
 
 export type OwnerOption = { id: string; full_name: string };

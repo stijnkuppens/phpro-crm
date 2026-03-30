@@ -1,10 +1,10 @@
 'use client';
 
-import { useState, useCallback, useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useEntity } from '@/lib/hooks/use-entity';
-import { AuditLogTable } from './audit-log-table';
-import { AuditFilters } from './audit-filters';
 import type { AuditLog, AuditLogFilters } from '../types';
+import { AuditFilters } from './audit-filters';
+import { AuditLogTable } from './audit-log-table';
 
 const PAGE_SIZE = 20;
 
@@ -42,7 +42,7 @@ export function AuditList({ initialData, initialCount }: AuditListProps) {
       if (initialData && page === 1) return;
     }
     load();
-  }, [load, initialData, page, filters]);
+  }, [load, initialData, page]);
 
   return (
     <div className="space-y-4">

@@ -1,11 +1,13 @@
 'use client';
 
-import { useSyncExternalStore } from 'react';
+import { Globe, LogOut, Moon, Sun, User } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useLocale } from 'next-intl';
-import { useAuth } from '@/lib/hooks/use-auth';
-import { createBrowserClient } from '@/lib/supabase/client';
+import { useTheme } from 'next-themes';
+import { useSyncExternalStore } from 'react';
 import { Avatar } from '@/components/admin/avatar';
+import { BrandSwitcher } from '@/components/layout/brand-switcher';
+import { ThemeToggle } from '@/components/layout/theme-toggle';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -17,11 +19,9 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { SidebarTrigger } from '@/components/ui/sidebar';
-import { LogOut, User, Globe, Sun, Moon } from 'lucide-react';
-import { ThemeToggle } from '@/components/layout/theme-toggle';
-import { BrandSwitcher } from '@/components/layout/brand-switcher';
 import { NotificationBell } from '@/features/notifications/components/notification-bell';
-import { useTheme } from 'next-themes';
+import { useAuth } from '@/lib/hooks/use-auth';
+import { createBrowserClient } from '@/lib/supabase/client';
 
 const emptySubscribe = () => () => {};
 
@@ -30,6 +30,7 @@ function LocaleSwitcher() {
   const router = useRouter();
 
   const switchLocale = (newLocale: string) => {
+    // biome-ignore lint/suspicious/noDocumentCookie: Cookie Store API is not yet widely available; this is intentional locale persistence
     document.cookie = `locale=${newLocale};path=/;max-age=31536000`;
     router.refresh();
   };
@@ -48,7 +49,11 @@ function LocaleSwitcher() {
 export function AdminTopbar() {
   const { user } = useAuth();
   const router = useRouter();
-  const mounted = useSyncExternalStore(emptySubscribe, () => true, () => false);
+  const mounted = useSyncExternalStore(
+    emptySubscribe,
+    () => true,
+    () => false,
+  );
   const locale = useLocale();
   const { theme, setTheme } = useTheme();
 
@@ -60,6 +65,7 @@ export function AdminTopbar() {
 
   const switchLocale = () => {
     const newLocale = locale === 'nl' ? 'en' : 'nl';
+    // biome-ignore lint/suspicious/noDocumentCookie: Cookie Store API is not yet widely available; this is intentional locale persistence
     document.cookie = `locale=${newLocale};path=/;max-age=31536000`;
     router.refresh();
   };
@@ -74,7 +80,7 @@ export function AdminTopbar() {
         .map((n: string) => n[0])
         .join('')
         .toUpperCase()
-    : user?.email?.[0]?.toUpperCase() ?? '?';
+    : (user?.email?.[0]?.toUpperCase() ?? '?');
 
   return (
     <header className="flex h-14 items-center gap-2 border-b bg-background px-3 sm:gap-4 sm:px-4">
@@ -118,11 +124,7 @@ export function AdminTopbar() {
                 {locale === 'nl' ? 'Switch to English' : 'Wissel naar Nederlands'}
               </DropdownMenuItem>
               <DropdownMenuItem onClick={toggleTheme}>
-                {theme === 'dark' ? (
-                  <Sun className="mr-2 h-4 w-4" />
-                ) : (
-                  <Moon className="mr-2 h-4 w-4" />
-                )}
+                {theme === 'dark' ? <Sun className="mr-2 h-4 w-4" /> : <Moon className="mr-2 h-4 w-4" />}
                 {theme === 'dark' ? 'Light mode' : 'Dark mode'}
               </DropdownMenuItem>
             </div>

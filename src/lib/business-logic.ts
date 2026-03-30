@@ -27,10 +27,7 @@ export function calcContactDatum(einddatum: Date, opzegtermijnDagen: number): Da
 }
 
 /** Determine effective services based on manual list + active consultant flag. */
-export function getEffectiveServices(
-  manualServices: string[],
-  hasActiveConsultants: boolean,
-): string[] {
+export function getEffectiveServices(manualServices: string[], hasActiveConsultants: boolean): string[] {
   const services = [...manualServices];
   if (hasActiveConsultants && !services.includes('Consultancy')) {
     services.push('Consultancy');

@@ -1,7 +1,7 @@
+import { getAccount } from '@/features/accounts/queries/get-account';
+import { AccountConsultantsTab } from '@/features/consultants/components/account-consultants-tab';
 import { getConsultantsByAccount } from '@/features/consultants/queries/get-consultants-by-account';
 import { getReferenceOptions } from '@/features/reference-data/queries/get-reference-options';
-import { AccountConsultantsTab } from '@/features/consultants/components/account-consultants-tab';
-import { getAccount } from '@/features/accounts/queries/get-account';
 
 type Props = {
   params: Promise<{ id: string }>;
@@ -15,5 +15,7 @@ export default async function ConsultantsPage({ params }: Props) {
     getAccount(id),
   ]);
   const roles = rolesRaw.map((r) => ({ value: r.name, label: r.name }));
-  return <AccountConsultantsTab accountId={id} accountName={account?.name ?? ''} consultants={consultants} roles={roles} />;
+  return (
+    <AccountConsultantsTab accountId={id} accountName={account?.name ?? ''} consultants={consultants} roles={roles} />
+  );
 }

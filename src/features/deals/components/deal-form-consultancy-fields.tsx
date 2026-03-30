@@ -2,12 +2,7 @@
 
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-} from '@/components/ui/select';
+import { Select, SelectContent, SelectItem, SelectTrigger } from '@/components/ui/select';
 import { useDealForm } from '@/features/deals/components/deal-form-context';
 
 export function ConsultancyFields() {
@@ -25,7 +20,9 @@ export function ConsultancyFields() {
           <SelectContent>
             <SelectItem value="">— Selecteer consultant —</SelectItem>
             {state.benchConsultants.map((c) => (
-              <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+              <SelectItem key={c.id} value={c.id}>
+                {c.name}
+              </SelectItem>
             ))}
           </SelectContent>
         </Select>

@@ -1,13 +1,9 @@
 'use client';
 
-import { type Table } from '@tanstack/react-table';
-import { Settings2, ChevronLeft, ChevronRight, RotateCcw } from 'lucide-react';
+import type { Table } from '@tanstack/react-table';
+import { ChevronLeft, ChevronRight, RotateCcw, Settings2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 
 type ColumnSettingsProps<T> = {
   table: Table<T>;
@@ -57,9 +53,7 @@ export function ColumnSettings<T>({ table, onOrderChange, onReset }: ColumnSetti
       <PopoverContent align="end" className="w-auto max-w-[480px]">
         <div className="space-y-3">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-medium text-muted-foreground">
-              Zichtbare kolommen &amp; volgorde
-            </span>
+            <span className="text-xs font-medium text-muted-foreground">Zichtbare kolommen &amp; volgorde</span>
             <Button
               variant="ghost"
               size="sm"

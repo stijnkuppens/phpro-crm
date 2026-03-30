@@ -1,8 +1,8 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { PageHeader } from '@/components/admin/page-header';
-import { getUser } from '@/features/users/queries/get-user';
 import { UserDetail } from '@/features/users/components/user-detail';
+import { getUser } from '@/features/users/queries/get-user';
 
 type Props = {
   params: Promise<{ id: string }>;

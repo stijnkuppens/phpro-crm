@@ -1,5 +1,5 @@
-import { getContactsByAccount } from '@/features/contacts/queries/get-contacts-by-account';
 import { AccountContactsTab } from '@/features/accounts/components/account-contacts-tab';
+import { getContactsByAccount } from '@/features/contacts/queries/get-contacts-by-account';
 
 type Props = {
   params: Promise<{ id: string }>;

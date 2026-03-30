@@ -2,11 +2,11 @@
 
 import { AvatarUpload } from '@/components/admin/avatar-upload';
 import { StatusBadge } from '@/components/admin/status-badge';
-import { updateAccountAvatar } from '../actions/update-account-avatar';
 import { formatNumber } from '@/lib/format';
+import { updateAccountAvatar } from '../actions/update-account-avatar';
+import type { AccountBannerStats } from '../queries/get-account-banner-stats';
 import type { AccountWithRelations } from '../types';
 import { ACCOUNT_TYPE_STYLES } from '../types';
-import type { AccountBannerStats } from '../queries/get-account-banner-stats';
 
 type Props = {
   account: AccountWithRelations;
@@ -14,7 +14,11 @@ type Props = {
 };
 
 export function AccountBanner({ account, stats }: Props) {
-  const initials = account.name.split(/\s+/).slice(0, 2).map(w => w[0]?.toUpperCase() ?? '').join('');
+  const initials = account.name
+    .split(/\s+/)
+    .slice(0, 2)
+    .map((w) => w[0]?.toUpperCase() ?? '')
+    .join('');
 
   return (
     <div className="rounded-lg border border-border bg-card overflow-hidden">
@@ -44,9 +48,19 @@ export function AccountBanner({ account, stats }: Props) {
           </div>
           <div className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-xs text-muted-foreground sm:text-sm sm:gap-x-3">
             {account.industry && <span>{account.industry}</span>}
-            {account.size && <><span className="hidden sm:inline">·</span><span>{account.size} mw.</span></>}
+            {account.size && (
+              <>
+                <span className="hidden sm:inline">·</span>
+                <span>{account.size} mw.</span>
+              </>
+            )}
             {account.website && (
-              <a href={`https://${account.website}`} target="_blank" rel="noopener" className="text-primary hover:underline truncate max-w-[140px] sm:max-w-none">
+              <a
+                href={`https://${account.website}`}
+                target="_blank"
+                rel="noopener"
+                className="text-primary hover:underline truncate max-w-[140px] sm:max-w-none"
+              >
                 {account.website}
               </a>
             )}

@@ -1,25 +1,19 @@
 'use client';
 
-import { useActionState, useState } from 'react';
+import { Save } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { useActionState, useState } from 'react';
 import { toast } from 'sonner';
-import { Input } from '@/components/ui/input';
-import { DatePicker } from '@/components/ui/date-picker';
-import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
+import { DatePicker } from '@/components/ui/date-picker';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { SubmitButton } from '@/components/ui/submit-button';
 import { Textarea } from '@/components/ui/textarea';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { Save } from 'lucide-react';
-import { dealFormSchema, type DealFormValues } from '../types';
 import { createDeal } from '../actions/create-deal';
 import { updateDeal } from '../actions/update-deal';
+import { type DealFormValues, dealFormSchema } from '../types';
 
 type Props = {
   defaultValues?: Partial<DealFormValues> & { id?: string };
@@ -58,9 +52,7 @@ export function DealForm({ defaultValues, onSuccess, onCancel }: Props) {
       return null;
     }
 
-    const result = isEdit
-      ? await updateDeal(defaultValues!.id!, parsed.data)
-      : await createDeal(parsed.data);
+    const result = isEdit ? await updateDeal(defaultValues!.id!, parsed.data) : await createDeal(parsed.data);
 
     if ('error' in result && result.error) {
       toast.error(typeof result.error === 'string' ? result.error : 'Er ging iets mis');
@@ -68,7 +60,7 @@ export function DealForm({ defaultValues, onSuccess, onCancel }: Props) {
     }
 
     toast.success(isEdit ? 'Deal bijgewerkt' : 'Deal aangemaakt');
-    const id = 'data' in result && result.data ? result.data.id : defaultValues?.id ?? '';
+    const id = 'data' in result && result.data ? result.data.id : (defaultValues?.id ?? '');
     if (onSuccess) {
       onSuccess(id);
     } else {
@@ -106,7 +98,14 @@ export function DealForm({ defaultValues, onSuccess, onCancel }: Props) {
         </div>
         <div className="space-y-2">
           <Label htmlFor="probability">Kans (%)</Label>
-          <Input id="probability" name="probability" type="number" min="0" max="100" defaultValue={defaultValues?.probability ?? ''} />
+          <Input
+            id="probability"
+            name="probability"
+            type="number"
+            min="0"
+            max="100"
+            defaultValue={defaultValues?.probability ?? ''}
+          />
         </div>
         <div className="space-y-2">
           <Label htmlFor="close_date">Sluitdatum</Label>
@@ -122,8 +121,14 @@ export function DealForm({ defaultValues, onSuccess, onCancel }: Props) {
         </div>
         <div className="space-y-2">
           <Label htmlFor="origin">Origine</Label>
-          <Select name="origin" defaultValue={defaultValues?.origin ?? 'rechtstreeks'} onValueChange={(v) => setOrigin(v ?? 'rechtstreeks')}>
-            <SelectTrigger><SelectValue /></SelectTrigger>
+          <Select
+            name="origin"
+            defaultValue={defaultValues?.origin ?? 'rechtstreeks'}
+            onValueChange={(v) => setOrigin(v ?? 'rechtstreeks')}
+          >
+            <SelectTrigger>
+              <SelectValue />
+            </SelectTrigger>
             <SelectContent>
               <SelectItem value="rechtstreeks">Rechtstreeks</SelectItem>
               <SelectItem value="cronos">Cronos</SelectItem>
@@ -133,7 +138,9 @@ export function DealForm({ defaultValues, onSuccess, onCancel }: Props) {
         <div className="space-y-2">
           <Label htmlFor="forecast_category">Forecast categorie</Label>
           <Select name="forecast_category" defaultValue={defaultValues?.forecast_category ?? ''}>
-            <SelectTrigger><SelectValue placeholder="Selecteer..." /></SelectTrigger>
+            <SelectTrigger>
+              <SelectValue placeholder="Selecteer..." />
+            </SelectTrigger>
             <SelectContent>
               <SelectItem value="Commit">Commit</SelectItem>
               <SelectItem value="Best Case">Best Case</SelectItem>
@@ -154,7 +161,12 @@ export function DealForm({ defaultValues, onSuccess, onCancel }: Props) {
             </div>
             <div className="space-y-2">
               <Label htmlFor="cronos_email">Cronos e-mail</Label>
-              <Input id="cronos_email" name="cronos_email" type="email" defaultValue={defaultValues?.cronos_email ?? ''} />
+              <Input
+                id="cronos_email"
+                name="cronos_email"
+                type="email"
+                defaultValue={defaultValues?.cronos_email ?? ''}
+              />
             </div>
           </>
         )}
@@ -164,9 +176,7 @@ export function DealForm({ defaultValues, onSuccess, onCancel }: Props) {
         <Textarea id="description" name="description" rows={4} defaultValue={defaultValues?.description ?? ''} />
       </div>
       <div className="flex gap-2">
-        <SubmitButton icon={<Save />}>
-          {isEdit ? 'Bijwerken' : 'Aanmaken'}
-        </SubmitButton>
+        <SubmitButton icon={<Save />}>{isEdit ? 'Bijwerken' : 'Aanmaken'}</SubmitButton>
         {onCancel && (
           <Button type="button" variant="outline" onClick={onCancel}>
             Annuleren

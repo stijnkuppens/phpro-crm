@@ -12,9 +12,7 @@ export const getDashboardStats = cache(async (): Promise<DashboardStats> => {
 
   const [dealValueResult, accountsResult, activitiesResult] = await Promise.all([
     supabase.rpc('get_open_deal_value'),
-    supabase
-      .from('accounts')
-      .select('*', { count: 'exact', head: true }),
+    supabase.from('accounts').select('*', { count: 'exact', head: true }),
     supabase
       .from('activities')
       .select('*', { count: 'exact', head: true })

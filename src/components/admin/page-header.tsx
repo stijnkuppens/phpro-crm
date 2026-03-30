@@ -1,3 +1,4 @@
+import { Fragment, type ReactNode } from 'react';
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -6,16 +7,15 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from '@/components/ui/breadcrumb';
-import { Fragment, type ReactNode } from 'react';
 
-type BreadcrumbItem = {
+type BreadcrumbItemDef = {
   label: string;
   href?: string;
 };
 
 type PageHeaderProps = {
   title: string;
-  breadcrumbs?: BreadcrumbItem[];
+  breadcrumbs?: BreadcrumbItemDef[];
   actions?: ReactNode;
 };
 
@@ -27,7 +27,7 @@ export function PageHeader({ title, breadcrumbs, actions }: PageHeaderProps) {
           <Breadcrumb>
             <BreadcrumbList>
               {breadcrumbs.map((item, i) => (
-                <Fragment key={i}>
+                <Fragment key={item.label}>
                   {i > 0 && <BreadcrumbSeparator />}
                   <BreadcrumbItem>
                     {item.href ? (

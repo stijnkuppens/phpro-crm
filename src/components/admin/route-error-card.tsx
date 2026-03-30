@@ -1,8 +1,8 @@
 'use client';
 
 import { AlertTriangle } from 'lucide-react';
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 
 type RouteErrorCardProps = {
   title: string;
@@ -24,9 +24,7 @@ export function RouteErrorCard({ title, description, error, reset }: RouteErrorC
         <CardContent>
           <p className="text-sm text-muted-foreground">{description}</p>
           {process.env.NODE_ENV === 'development' && (
-            <pre className="mt-4 max-h-40 overflow-auto rounded bg-muted p-3 text-xs">
-              {error.message}
-            </pre>
+            <pre className="mt-4 max-h-40 overflow-auto rounded bg-muted p-3 text-xs">{error.message}</pre>
           )}
         </CardContent>
         <CardFooter>

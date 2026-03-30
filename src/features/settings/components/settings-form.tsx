@@ -1,12 +1,12 @@
 'use client';
 
+import { Save } from 'lucide-react';
 import { useActionState } from 'react';
+import { toast } from 'sonner';
+import { RoleGuard } from '@/components/admin/role-guard';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { RoleGuard } from '@/components/admin/role-guard';
 import { SubmitButton } from '@/components/ui/submit-button';
-import { Save } from 'lucide-react';
-import { toast } from 'sonner';
 import { updateSettings } from '../actions/update-settings';
 import type { SettingsValues } from '../types';
 
@@ -36,26 +36,19 @@ export function SettingsForm({ initialData }: Props) {
       <form action={formAction}>
         <CardContent className="space-y-4">
           <div className="space-y-2">
-            <label htmlFor="app_name" className="text-sm font-medium">App Naam</label>
-            <Input
-              id="app_name"
-              name="app_name"
-              defaultValue={initialData.app_name}
-            />
+            <label htmlFor="app_name" className="text-sm font-medium">
+              App Naam
+            </label>
+            <Input id="app_name" name="app_name" defaultValue={initialData.app_name} />
           </div>
           <div className="space-y-2">
-            <label htmlFor="logo_url" className="text-sm font-medium">Logo URL</label>
-            <Input
-              id="logo_url"
-              name="logo_url"
-              defaultValue={initialData.logo_url}
-              placeholder="https://..."
-            />
+            <label htmlFor="logo_url" className="text-sm font-medium">
+              Logo URL
+            </label>
+            <Input id="logo_url" name="logo_url" defaultValue={initialData.logo_url} placeholder="https://..." />
           </div>
           <RoleGuard permission="settings.write">
-            <SubmitButton icon={<Save />}>
-              Opslaan
-            </SubmitButton>
+            <SubmitButton icon={<Save />}>Opslaan</SubmitButton>
           </RoleGuard>
         </CardContent>
       </form>

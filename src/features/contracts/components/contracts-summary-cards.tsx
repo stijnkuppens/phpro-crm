@@ -1,13 +1,13 @@
 'use client';
 
+import { Calendar, Download, ExternalLink, Shield, TrendingUp } from 'lucide-react';
 import { useCallback } from 'react';
 import { toast } from 'sonner';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { FileText, Calendar, Shield, TrendingUp, ExternalLink, Download } from 'lucide-react';
+import type { IndexationConfig } from '@/features/indexation/types';
 import { createBrowserClient } from '@/lib/supabase/client';
 import type { Contract } from '../types';
-import type { IndexationConfig } from '@/features/indexation/types';
 
 type Props = {
   contract: Contract | null;
@@ -45,14 +45,20 @@ export function ContractsSummaryCards({ contract, indexationConfig }: Props) {
         <CardContent className="space-y-2 text-sm">
           <div>
             <span className="text-muted-foreground">Type</span>
-            <div>{indexationConfig?.indexation_type || <span className="text-muted-foreground italic">Niet ingesteld</span>}</div>
+            <div>
+              {indexationConfig?.indexation_type || (
+                <span className="text-muted-foreground italic">Niet ingesteld</span>
+              )}
+            </div>
           </div>
           <div>
             <span className="text-muted-foreground">Geldig vanaf</span>
             <div>
-              {indexationConfig?.start_month && indexationConfig?.start_year
-                ? `${MONTHS[(indexationConfig.start_month - 1) % 12]} ${indexationConfig.start_year}`
-                : <span className="text-muted-foreground italic">Niet ingesteld</span>}
+              {indexationConfig?.start_month && indexationConfig?.start_year ? (
+                `${MONTHS[(indexationConfig.start_month - 1) % 12]} ${indexationConfig.start_year}`
+              ) : (
+                <span className="text-muted-foreground italic">Niet ingesteld</span>
+              )}
             </div>
           </div>
         </CardContent>
@@ -66,7 +72,13 @@ export function ContractsSummaryCards({ contract, indexationConfig }: Props) {
               <Shield className="h-4 w-4 text-muted-foreground" />
               Raamcontract
             </CardTitle>
-            <Badge className={contract?.has_framework_contract ? 'bg-primary/15 text-primary-action border-0' : 'bg-muted text-muted-foreground border-0'}>
+            <Badge
+              className={
+                contract?.has_framework_contract
+                  ? 'bg-primary/15 text-primary-action border-0'
+                  : 'bg-muted text-muted-foreground border-0'
+              }
+            >
               {contract?.has_framework_contract ? 'Ja' : 'Nee'}
             </Badge>
           </div>
@@ -76,7 +88,8 @@ export function ContractsSummaryCards({ contract, indexationConfig }: Props) {
             <>
               <div className="flex items-center gap-1.5 text-muted-foreground">
                 <Calendar className="h-3.5 w-3.5" />
-                {fmtDate(contract.framework_start)} → {contract.framework_indefinite ? 'Onbepaald' : fmtDate(contract.framework_end)}
+                {fmtDate(contract.framework_start)} →{' '}
+                {contract.framework_indefinite ? 'Onbepaald' : fmtDate(contract.framework_end)}
               </div>
               <div className="flex flex-col gap-1.5 mt-1">
                 {contract.framework_doc_path && (
@@ -116,7 +129,13 @@ export function ContractsSummaryCards({ contract, indexationConfig }: Props) {
               <Shield className="h-4 w-4 text-muted-foreground" />
               Service Contract (SLA)
             </CardTitle>
-            <Badge className={contract?.has_service_contract ? 'bg-primary/15 text-primary-action border-0' : 'bg-muted text-muted-foreground border-0'}>
+            <Badge
+              className={
+                contract?.has_service_contract
+                  ? 'bg-primary/15 text-primary-action border-0'
+                  : 'bg-muted text-muted-foreground border-0'
+              }
+            >
               {contract?.has_service_contract ? 'Ja' : 'Nee'}
             </Badge>
           </div>
@@ -126,7 +145,8 @@ export function ContractsSummaryCards({ contract, indexationConfig }: Props) {
             <>
               <div className="flex items-center gap-1.5 text-muted-foreground">
                 <Calendar className="h-3.5 w-3.5" />
-                {fmtDate(contract.service_start)} → {contract.service_indefinite ? 'Onbepaald' : fmtDate(contract.service_end)}
+                {fmtDate(contract.service_start)} →{' '}
+                {contract.service_indefinite ? 'Onbepaald' : fmtDate(contract.service_end)}
               </div>
               <div className="flex flex-col gap-1.5 mt-1">
                 {contract.service_doc_path && (

@@ -1,7 +1,7 @@
 'use client';
 
+import { FileText, FileUp, X } from 'lucide-react';
 import { useRef, useState } from 'react';
-import { FileUp, FileText, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -19,7 +19,7 @@ export function PdfUploadField({ value, onChange, bucket = 'documents', folder =
   const inputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
 
-  const displayName = value ? value.split('/').pop() ?? value : '';
+  const displayName = value ? (value.split('/').pop() ?? value) : '';
 
   const handleFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];

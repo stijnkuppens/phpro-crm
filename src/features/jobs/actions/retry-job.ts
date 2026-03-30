@@ -1,9 +1,10 @@
 'use server';
 
-import { createServiceRoleClient } from '@/lib/supabase/admin';
-import { requirePermission } from '@/lib/require-permission';
-import { ok, err, type ActionResult } from '@/lib/action-result';
 import { z } from 'zod';
+import { type ActionResult, err, ok } from '@/lib/action-result';
+import { logger } from '@/lib/logger';
+import { requirePermission } from '@/lib/require-permission';
+import { createServiceRoleClient } from '@/lib/supabase/admin';
 
 export async function retryJob(id: string): Promise<ActionResult> {
   const { userId } = await requirePermission('jobs.read');
@@ -41,7 +42,7 @@ export async function retryJob(id: string): Promise<ActionResult> {
     .eq('id', id);
 
   if (updateError) {
-    console.error('[retryJob] update', updateError);
+    logger.error({ err: updateError }, '[retryJob] update error');
     return err('Er is een fout opgetreden');
   }
 
@@ -51,7 +52,7 @@ export async function retryJob(id: string): Promise<ActionResult> {
   });
 
   if (triggerError) {
-    console.error('[retryJob] trigger', triggerError);
+    logger.error({ err: triggerError }, '[retryJob] trigger error');
     return err('Er is een fout opgetreden');
   }
 

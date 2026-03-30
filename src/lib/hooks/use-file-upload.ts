@@ -1,8 +1,8 @@
 'use client';
 
-import { useState, useCallback } from 'react';
-import { createBrowserClient } from '@/lib/supabase/client';
+import { useCallback, useState } from 'react';
 import { toast } from 'sonner';
+import { createBrowserClient } from '@/lib/supabase/client';
 
 const ALLOWED_MIME_TYPES = new Set([
   // Documents
@@ -35,11 +35,7 @@ type UseFileUploadOptions = {
   onUpload?: (path: string) => void;
 };
 
-function validateFile(
-  file: File,
-  maxSize: number,
-  allowedTypes: Set<string>,
-): string | null {
+function validateFile(file: File, maxSize: number, allowedTypes: Set<string>): string | null {
   if (file.size > maxSize) {
     const mb = (maxSize / 1024 / 1024).toFixed(0);
     return `"${file.name}" exceeds ${mb}MB limit`;
@@ -74,12 +70,10 @@ export function useFileUpload({
 
       const path = pathPrefix ? `${pathPrefix}/${file.name}` : file.name;
 
-      const { error } = await supabase.storage
-        .from(bucket)
-        .upload(path, file, {
-          upsert: true,
-          contentType: file.type,
-        });
+      const { error } = await supabase.storage.from(bucket).upload(path, file, {
+        upsert: true,
+        contentType: file.type,
+      });
 
       if (error) {
         toast.error('Upload failed');
@@ -117,19 +111,19 @@ export function useFileUpload({
       let completed = 0;
       let failed = 0;
 
-      await Promise.all(valid.map(async (file) => {
-        const path = pathPrefix ? `${pathPrefix}/${file.name}` : file.name;
-        const { error } = await supabase.storage
-          .from(bucket)
-          .upload(path, file, {
+      await Promise.all(
+        valid.map(async (file) => {
+          const path = pathPrefix ? `${pathPrefix}/${file.name}` : file.name;
+          const { error } = await supabase.storage.from(bucket).upload(path, file, {
             upsert: true,
             contentType: file.type,
           });
 
-        if (error) failed++;
-        completed++;
-        setProgress(Math.round((completed / valid.length) * 100));
-      }));
+          if (error) failed++;
+          completed++;
+          setProgress(Math.round((completed / valid.length) * 100));
+        }),
+      );
 
       setUploading(false);
 

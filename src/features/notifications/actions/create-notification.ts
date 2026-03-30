@@ -1,10 +1,11 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
+import { createNotificationSchema } from '@/features/notifications/types';
+import { type ActionResult, err, ok } from '@/lib/action-result';
+import { logger } from '@/lib/logger';
 import { requirePermission } from '@/lib/require-permission';
 import { createServiceRoleClient } from '@/lib/supabase/admin';
-import { ok, err, type ActionResult } from '@/lib/action-result';
-import { createNotificationSchema } from '@/features/notifications/types';
 
 export async function createNotification(params: {
   userId: string;
@@ -30,7 +31,7 @@ export async function createNotification(params: {
   });
 
   if (error) {
-    console.error('[createNotification]', error);
+    logger.error({ err: error }, '[createNotification] database error');
     return err('Er is een fout opgetreden');
   }
 

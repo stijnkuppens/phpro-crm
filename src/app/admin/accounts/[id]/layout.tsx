@@ -1,10 +1,10 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { PageHeader } from '@/components/admin/page-header';
-import { getAccount } from '@/features/accounts/queries/get-account';
-import { getAccountBannerStats } from '@/features/accounts/queries/get-account-banner-stats';
 import { AccountBanner } from '@/features/accounts/components/account-banner';
 import { AccountSubNav } from '@/features/accounts/components/account-sub-nav';
+import { getAccount } from '@/features/accounts/queries/get-account';
+import { getAccountBannerStats } from '@/features/accounts/queries/get-account-banner-stats';
 
 type Props = {
   params: Promise<{ id: string }>;
@@ -20,10 +20,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function AccountDetailLayout({ params, children }: Props) {
   const { id } = await params;
 
-  const [account, stats] = await Promise.all([
-    getAccount(id),
-    getAccountBannerStats(id),
-  ]);
+  const [account, stats] = await Promise.all([getAccount(id), getAccountBannerStats(id)]);
 
   if (!account) notFound();
 

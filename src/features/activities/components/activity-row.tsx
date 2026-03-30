@@ -1,8 +1,8 @@
 'use client';
 
 import { CalendarPlus, CheckCircle2, Circle, SquarePen, Trash2 } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
 import { StatusBadge } from '@/components/admin/status-badge';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import type { ActivityWithRelations } from '../types';
 
@@ -33,7 +33,11 @@ type ActivityRowProps = {
 function downloadIcs(activity: ActivityWithRelations) {
   const start = new Date(activity.date);
   const end = new Date(start.getTime() + (activity.duration_minutes ?? 60) * 60 * 1000);
-  const fmt = (d: Date) => d.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '');
+  const fmt = (d: Date) =>
+    d
+      .toISOString()
+      .replace(/[-:]/g, '')
+      .replace(/\.\d{3}/, '');
   const accountName = activity.account?.name ? ` — ${activity.account.name}` : '';
   const accountUrl = activity.account_id ? `${window.location.origin}/admin/accounts/${activity.account_id}` : '';
 
@@ -75,18 +79,16 @@ export function ActivityRow({ activity, showAccount, onToggleDone, onEdit, onDel
   };
 
   return (
-    <div className={`flex flex-wrap items-start gap-2 px-4 py-3 sm:flex-nowrap sm:items-center sm:gap-3 ${activity.is_done ? 'opacity-60' : ''}`}>
+    <div
+      className={`flex flex-wrap items-start gap-2 px-4 py-3 sm:flex-nowrap sm:items-center sm:gap-3 ${activity.is_done ? 'opacity-60' : ''}`}
+    >
       <button
         type="button"
         onClick={() => onToggleDone(activity)}
         className="shrink-0 text-muted-foreground hover:text-primary-action transition-colors"
         title={activity.is_done ? 'Markeer als niet afgerond' : 'Markeer als afgerond'}
       >
-        {activity.is_done ? (
-          <CheckCircle2 className="h-5 w-5 text-primary-action" />
-        ) : (
-          <Circle className="h-5 w-5" />
-        )}
+        {activity.is_done ? <CheckCircle2 className="h-5 w-5 text-primary-action" /> : <Circle className="h-5 w-5" />}
       </button>
 
       <Badge variant="outline" className={config.className}>
@@ -94,13 +96,9 @@ export function ActivityRow({ activity, showAccount, onToggleDone, onEdit, onDel
       </Badge>
 
       <div className="min-w-0 basis-full sm:flex-1 sm:basis-auto">
-        <span className={`text-sm font-medium ${activity.is_done ? 'line-through' : ''}`}>
-          {activity.subject}
-        </span>
+        <span className={`text-sm font-medium ${activity.is_done ? 'line-through' : ''}`}>{activity.subject}</span>
         {showAccount && activity.account && (
-          <span className="ml-2 text-xs text-muted-foreground">
-            {activity.account.name}
-          </span>
+          <span className="ml-2 text-xs text-muted-foreground">{activity.account.name}</span>
         )}
         {activity.deal && (
           <Badge variant="secondary" className="ml-2 text-xs">
@@ -113,14 +111,18 @@ export function ActivityRow({ activity, showAccount, onToggleDone, onEdit, onDel
           </StatusBadge>
         )}
         {activity.assignee?.full_name && (
-          <span className="ml-2 text-xs text-muted-foreground">
-            → {activity.assignee.full_name}
-          </span>
+          <span className="ml-2 text-xs text-muted-foreground">→ {activity.assignee.full_name}</span>
         )}
       </div>
 
       <span className="text-xs text-muted-foreground shrink-0">
-        {new Date(activity.date).toLocaleString('nl-BE', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
+        {new Date(activity.date).toLocaleString('nl-BE', {
+          day: 'numeric',
+          month: 'short',
+          year: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit',
+        })}
       </span>
 
       <div className="flex shrink-0 items-center gap-0.5">

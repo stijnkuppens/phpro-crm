@@ -1,11 +1,12 @@
 'use server';
 
-import { z } from 'zod';
-import { createServerClient } from '@/lib/supabase/server';
-import { requirePermission } from '@/lib/require-permission';
-import { logAction } from '@/features/audit/actions/log-action';
 import { revalidatePath } from 'next/cache';
-import { ok, err, type ActionResult } from '@/lib/action-result';
+import { z } from 'zod';
+import { logAction } from '@/features/audit/actions/log-action';
+import { type ActionResult, err, ok } from '@/lib/action-result';
+import { logger } from '@/lib/logger';
+import { requirePermission } from '@/lib/require-permission';
+import { createServerClient } from '@/lib/supabase/server';
 
 const schema = z.object({
   consultant_id: z.string().min(1),
@@ -34,7 +35,11 @@ export async function upsertContractAttribution(
   }
 
   const supabase = await createServerClient();
-  const { data: before } = await supabase.from('consultant_contract_attributions').select('*').eq('consultant_id', parsed.data.consultant_id).single();
+  const { data: before } = await supabase
+    .from('consultant_contract_attributions')
+    .select('*')
+    .eq('consultant_id', parsed.data.consultant_id)
+    .single();
   const { data, error } = await supabase
     .from('consultant_contract_attributions')
     .upsert(parsed.data, { onConflict: 'consultant_id' })
@@ -42,7 +47,7 @@ export async function upsertContractAttribution(
     .single();
 
   if (error) {
-    console.error('[upsertContractAttribution]', error);
+    logger.error({ err: error }, '[upsertContractAttribution] database error');
     return err('Er is een fout opgetreden');
   }
 

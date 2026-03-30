@@ -1,26 +1,26 @@
 'use client';
 
-import { useState } from 'react';
 import {
-  DndContext,
   closestCorners,
-  PointerSensor,
+  DndContext,
+  type DragEndEvent,
   KeyboardSensor,
+  PointerSensor,
+  useDraggable,
+  useDroppable,
   useSensor,
   useSensors,
-  type DragEndEvent,
 } from '@dnd-kit/core';
 import { sortableKeyboardCoordinates } from '@dnd-kit/sortable';
-import { useDroppable } from '@dnd-kit/core';
-import { useDraggable } from '@dnd-kit/core';
 import { useRouter } from 'next/navigation';
+import { useState } from 'react';
 import { toast } from 'sonner';
+import { Avatar } from '@/components/admin/avatar';
+import { formatEUR } from '@/lib/format';
 import { cn } from '@/lib/utils';
 import { moveDealStage } from '../actions/move-deal-stage';
-import { CloseDealModal } from './close-deal-modal';
 import type { DealCard } from '../types';
-import { formatEUR } from '@/lib/format';
-import { Avatar } from '@/components/admin/avatar';
+import { CloseDealModal } from './close-deal-modal';
 
 type Stage = {
   id: string;
@@ -56,7 +56,11 @@ function DroppableColumn({
   return (
     <div
       ref={setNodeRef}
-      className={cn('w-72 shrink-0 rounded-lg p-3 transition-colors', !isOver && 'bg-muted/50', isOver && 'ring-2 ring-primary/30')}
+      className={cn(
+        'w-72 shrink-0 rounded-lg p-3 transition-colors',
+        !isOver && 'bg-muted/50',
+        isOver && 'ring-2 ring-primary/30',
+      )}
       style={isOver ? { backgroundColor: `${stage.color}15` } : undefined}
     >
       <div className="flex items-center justify-between mb-3">
@@ -70,6 +74,7 @@ function DroppableColumn({
       <div className="space-y-2 min-h-[100px]">{children}</div>
       {onCreateDeal && (
         <button
+          type="button"
           onClick={() => onCreateDeal(stage.id)}
           className="w-full py-2 text-xs text-muted-foreground hover:text-primary hover:bg-primary/5 rounded-lg border border-dashed border-muted-foreground/25 transition-colors mt-2"
         >
@@ -92,6 +97,8 @@ function DraggableDealCard({ deal, onNavigate }: { deal: DealCard; onNavigate: (
   };
 
   return (
+    // biome-ignore lint/a11y/noStaticElementInteractions: dnd-kit spreads keyboard listeners via {...listeners} and {...attributes}
+    // biome-ignore lint/a11y/useKeyWithClickEvents: dnd-kit spreads keyboard listeners via {...listeners} and {...attributes}
     <div
       ref={setNodeRef}
       style={style}
@@ -117,7 +124,16 @@ function DraggableDealCard({ deal, onNavigate }: { deal: DealCard; onNavigate: (
         <div className="flex items-center gap-1.5">
           <span className="text-muted-foreground">{deal.probability}%</span>
           {deal.owner_name && (
-            <Avatar fallback={deal.owner_name.split(' ').filter(Boolean).map((w) => w[0]).join('').toUpperCase().slice(0, 2)} size="xs" />
+            <Avatar
+              fallback={deal.owner_name
+                .split(' ')
+                .filter(Boolean)
+                .map((w) => w[0])
+                .join('')
+                .toUpperCase()
+                .slice(0, 2)}
+              size="xs"
+            />
           )}
         </div>
       </div>
@@ -134,7 +150,14 @@ function CloseDropZone({ id, label, color }: { id: string; label: string; color:
   };
   const s = styles[color];
   return (
-    <div ref={setNodeRef} className={cn('flex-1 flex items-center justify-center gap-2 py-3 rounded-xl border-2 border-dashed transition-colors', s.border, s.bg)}>
+    <div
+      ref={setNodeRef}
+      className={cn(
+        'flex-1 flex items-center justify-center gap-2 py-3 rounded-xl border-2 border-dashed transition-colors',
+        s.border,
+        s.bg,
+      )}
+    >
       <span className={cn('h-2 w-2 rounded-full', s.dot)} />
       <span className={cn('text-sm font-medium', s.text)}>{label}</span>
     </div>
@@ -144,11 +167,11 @@ function CloseDropZone({ id, label, color }: { id: string; label: string; color:
 export function DealKanban({ stages, deals, onRefresh, onCreateDeal }: Props) {
   const router = useRouter();
   const [isDragging, setIsDragging] = useState(false);
-  const [closeDealData, setCloseDealData] = useState<{ dealId: string; type: 'won' | 'lost' | 'longterm' } | null>(null);
+  const [closeDealData, setCloseDealData] = useState<{ dealId: string; type: 'won' | 'lost' | 'longterm' } | null>(
+    null,
+  );
 
-  const openStages = stages
-    .filter((s) => !s.is_closed)
-    .sort((a, b) => a.sort_order - b.sort_order);
+  const openStages = stages.filter((s) => !s.is_closed).sort((a, b) => a.sort_order - b.sort_order);
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
@@ -204,11 +227,7 @@ export function DealKanban({ stages, deals, onRefresh, onCreateDeal }: Props) {
               stageTotal={stageTotal}
             >
               {stageDeals.map((deal) => (
-                <DraggableDealCard
-                  key={deal.id}
-                  deal={deal}
-                  onNavigate={(id) => router.push(`/admin/deals/${id}`)}
-                />
+                <DraggableDealCard key={deal.id} deal={deal} onNavigate={(id) => router.push(`/admin/deals/${id}`)} />
               ))}
             </DroppableColumn>
           );
@@ -217,7 +236,9 @@ export function DealKanban({ stages, deals, onRefresh, onCreateDeal }: Props) {
 
       {isDragging && (
         <div className="flex items-center gap-4 mt-4 pt-4 border-t border-dashed">
-          <span className="text-xs text-muted-foreground shrink-0 hidden lg:block">Sleep hier om af te sluiten &rarr;</span>
+          <span className="text-xs text-muted-foreground shrink-0 hidden lg:block">
+            Sleep hier om af te sluiten &rarr;
+          </span>
           <CloseDropZone id="close-won" label="Gewonnen" color="green" />
           <CloseDropZone id="close-lost" label="Verloren" color="red" />
           <CloseDropZone id="close-longterm" label="Longterm" color="amber" />
@@ -228,8 +249,13 @@ export function DealKanban({ stages, deals, onRefresh, onCreateDeal }: Props) {
         <CloseDealModal
           dealId={closeDealData.dealId}
           open
-          onOpenChange={(v) => { if (!v) setCloseDealData(null); }}
-          onSuccess={() => { setCloseDealData(null); onRefresh(); }}
+          onOpenChange={(v) => {
+            if (!v) setCloseDealData(null);
+          }}
+          onSuccess={() => {
+            setCloseDealData(null);
+            onRefresh();
+          }}
           initialType={closeDealData.type}
         />
       )}

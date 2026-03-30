@@ -1,13 +1,14 @@
 'use server';
 
-import { z } from 'zod';
-import { createServerClient } from '@/lib/supabase/server';
-import { requirePermission } from '@/lib/require-permission';
-import { logAction } from '@/features/audit/actions/log-action';
 import { revalidatePath } from 'next/cache';
-import { activityFormSchema, type ActivityFormValues } from '../types';
-import { ok, err, type ActionResult } from '@/lib/action-result';
+import { z } from 'zod';
+import { logAction } from '@/features/audit/actions/log-action';
+import { type ActionResult, err, ok } from '@/lib/action-result';
+import { logger } from '@/lib/logger';
+import { requirePermission } from '@/lib/require-permission';
+import { createServerClient } from '@/lib/supabase/server';
 import type { Json } from '@/types/database';
+import { type ActivityFormValues, activityFormSchema } from '../types';
 
 export async function createActivity(values: ActivityFormValues): Promise<ActionResult<{ id: string }>> {
   let userId: string;
@@ -30,7 +31,7 @@ export async function createActivity(values: ActivityFormValues): Promise<Action
     .single();
 
   if (error) {
-    console.error('[createActivity]', error);
+    logger.error({ err: error }, '[createActivity] database error');
     return err('Er is een fout opgetreden');
   }
 
@@ -38,7 +39,11 @@ export async function createActivity(values: ActivityFormValues): Promise<Action
     action: 'activity.created',
     entityType: 'activity',
     entityId: data.id,
-    metadata: { subject: parsed.data.subject, type: parsed.data.type, body: parsed.data as unknown as Record<string, Json> },
+    metadata: {
+      subject: parsed.data.subject,
+      type: parsed.data.type,
+      body: parsed.data as unknown as Record<string, Json>,
+    },
   });
 
   revalidatePath('/admin/activities');

@@ -1,18 +1,13 @@
 'use client';
 
 import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-} from '@/components/ui/select';
-import { cn } from '@/lib/utils';
+import { ConsultancyFields } from '@/features/deals/components/deal-form-consultancy-fields';
 import { useDealForm } from '@/features/deals/components/deal-form-context';
 import { CronosDetailsSection } from '@/features/deals/components/deal-form-cronos-section';
-import { ConsultancyFields } from '@/features/deals/components/deal-form-consultancy-fields';
-import { LEAD_SOURCES, DEAL_TAGS } from '@/features/deals/components/deal-form-provider';
+import { DEAL_TAGS, LEAD_SOURCES } from '@/features/deals/components/deal-form-provider';
+import { cn } from '@/lib/utils';
 
 export function DealFormRightColumn() {
   const { state, actions, meta } = useDealForm();
@@ -32,7 +27,9 @@ export function DealFormRightColumn() {
           <SelectContent>
             <SelectItem value="">— Selecteer contact —</SelectItem>
             {state.contacts.map((c) => (
-              <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+              <SelectItem key={c.id} value={c.id}>
+                {c.name}
+              </SelectItem>
             ))}
           </SelectContent>
         </Select>
@@ -42,13 +39,13 @@ export function DealFormRightColumn() {
       <div className="space-y-1.5">
         <Label>Lead bron</Label>
         <Select value={state.leadSource} onValueChange={(v) => actions.setLeadSource(v ?? '')}>
-          <SelectTrigger>
-            {state.leadSource || '— Selecteer bron —'}
-          </SelectTrigger>
+          <SelectTrigger>{state.leadSource || '— Selecteer bron —'}</SelectTrigger>
           <SelectContent>
             <SelectItem value="">— Selecteer bron —</SelectItem>
             {LEAD_SOURCES.map((s) => (
-              <SelectItem key={s} value={s}>{s}</SelectItem>
+              <SelectItem key={s} value={s}>
+                {s}
+              </SelectItem>
             ))}
           </SelectContent>
         </Select>
@@ -58,7 +55,12 @@ export function DealFormRightColumn() {
       <div className="space-y-1.5">
         <Label>Herkomst</Label>
         <div className="flex gap-2">
-          {([['rechtstreeks', 'Rechtstreeks'], ['cronos', 'Via Cronos']] as const).map(([value, label]) => (
+          {(
+            [
+              ['rechtstreeks', 'Rechtstreeks'],
+              ['cronos', 'Via Cronos'],
+            ] as const
+          ).map(([value, label]) => (
             <button
               key={value}
               type="button"

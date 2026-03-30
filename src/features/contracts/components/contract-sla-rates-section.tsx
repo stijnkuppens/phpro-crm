@@ -6,7 +6,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import type { SlaYearState, ToolEntry } from '@/features/contracts/types';
 
-const SECTION_WHITE = '[&_input]:bg-white [&_[data-slot=select-trigger]]:bg-white [&_button[data-slot=button]]:bg-white dark:[&_input]:bg-background dark:[&_[data-slot=select-trigger]]:bg-background dark:[&_button[data-slot=button]]:bg-background';
+const SECTION_WHITE =
+  '[&_input]:bg-white [&_[data-slot=select-trigger]]:bg-white [&_button[data-slot=button]]:bg-white dark:[&_input]:bg-background dark:[&_[data-slot=select-trigger]]:bg-background dark:[&_button[data-slot=button]]:bg-background';
 
 type Props = {
   slaVisibleYears: number[];
@@ -99,6 +100,7 @@ export function ContractSlaRatesSection({
                 {state.tools.length > 0 && (
                   <div className="space-y-1.5">
                     {state.tools.map((tool, i) => (
+                      // biome-ignore lint/suspicious/noArrayIndexKey: dynamically added rows with no stable identity
                       <div key={i} className="flex items-center gap-1.5">
                         <Input
                           value={tool.tool_name}

@@ -1,11 +1,12 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
+import { logAction } from '@/features/audit/actions/log-action';
+import { updateRoleSchema } from '@/features/users/types';
+import { type ActionResult, err, ok } from '@/lib/action-result';
+import { logger } from '@/lib/logger';
 import { requirePermission } from '@/lib/require-permission';
 import { createServiceRoleClient } from '@/lib/supabase/admin';
-import { logAction } from '@/features/audit/actions/log-action';
-import { ok, err, type ActionResult } from '@/lib/action-result';
-import { updateRoleSchema } from '@/features/users/types';
 
 export async function updateUserRole(userId: string, newRole: string): Promise<ActionResult> {
   try {
@@ -25,7 +26,7 @@ export async function updateUserRole(userId: string, newRole: string): Promise<A
     .eq('id', parsed.data.userId);
 
   if (error) {
-    console.error('[updateUserRole]', error);
+    logger.error({ err: error }, '[updateUserRole] database error');
     return err('Er is een fout opgetreden');
   }
 

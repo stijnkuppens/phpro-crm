@@ -1,8 +1,8 @@
 import { cache } from 'react';
-import { createServerClient } from '@/lib/supabase/server';
 import { logger } from '@/lib/logger';
-import type { ActivityWithRelations, ActivityFilters } from '../types';
+import { createServerClient } from '@/lib/supabase/server';
 import { escapeSearch } from '@/lib/utils/escape-search';
+import type { ActivityFilters, ActivityWithRelations } from '../types';
 
 type GetActivitiesParams = {
   filters?: ActivityFilters;
@@ -22,13 +22,16 @@ export const getActivities = cache(
 
     let query = supabase
       .from('activities')
-      .select(`
+      .select(
+        `
         *,
         account:accounts!account_id(id, name),
         deal:deals!deal_id(id, title),
         owner:user_profiles!owner_id(id, full_name),
         assignee:user_profiles!assigned_to(id, full_name)
-      `, { count: 'exact' })
+      `,
+        { count: 'exact' },
+      )
       .order('date', { ascending: false })
       .range(from, to);
 

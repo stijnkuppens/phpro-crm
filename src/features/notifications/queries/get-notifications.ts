@@ -4,7 +4,9 @@ import type { Notification } from '../types';
 
 export const getNotifications = cache(async (): Promise<Notification[]> => {
   const supabase = await createServerClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
   if (!user) return [];
 
   const { data } = await supabase

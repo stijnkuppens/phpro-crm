@@ -1,13 +1,13 @@
 'use client';
 
+import { Save } from 'lucide-react';
 import { useActionState, useRef } from 'react';
-import { createBrowserClient } from '@/lib/supabase/client';
+import { toast } from 'sonner';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { SubmitButton } from '@/components/ui/submit-button';
-import { Save } from 'lucide-react';
-import { toast } from 'sonner';
+import { createBrowserClient } from '@/lib/supabase/client';
 
 export function ChangePasswordForm() {
   const formRef = useRef<HTMLFormElement>(null);
@@ -67,9 +67,7 @@ export function ChangePasswordForm() {
               autoComplete="new-password"
             />
           </div>
-          <SubmitButton icon={<Save />}>
-            Wachtwoord opslaan
-          </SubmitButton>
+          <SubmitButton icon={<Save />}>Wachtwoord opslaan</SubmitButton>
         </CardContent>
       </form>
     </Card>

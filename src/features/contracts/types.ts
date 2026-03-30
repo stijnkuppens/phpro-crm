@@ -43,10 +43,12 @@ export const upsertHourlyRatesSchema = z.object({
 export const slaRateFormSchema = z.object({
   fixed_monthly_rate: z.coerce.number().min(0),
   support_hourly_rate: z.coerce.number().min(0),
-  tools: z.array(z.object({
-    tool_name: z.string().min(1),
-    monthly_price: z.coerce.number().min(0),
-  })),
+  tools: z.array(
+    z.object({
+      tool_name: z.string().min(1),
+      monthly_price: z.coerce.number().min(0),
+    }),
+  ),
 });
 
 export type SlaRateFormValues = z.infer<typeof slaRateFormSchema>;

@@ -1,5 +1,5 @@
 import { cache } from 'react';
-import { getServerEnv, getClientEnv } from '@/lib/env';
+import { getClientEnv, getServerEnv } from '@/lib/env';
 
 export type OAuthProvider = {
   id: string;

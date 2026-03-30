@@ -1,11 +1,11 @@
 'use client';
 
+import { PdfUploadField } from '@/components/admin/pdf-upload-field';
 import { Card, CardContent } from '@/components/ui/card';
+import { DatePicker } from '@/components/ui/date-picker';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
-import { DatePicker } from '@/components/ui/date-picker';
-import { PdfUploadField } from '@/components/admin/pdf-upload-field';
 import type { Contract } from '@/features/contracts/types';
 
 type Props = {
@@ -46,7 +46,11 @@ export function ContractFrameworkCard({
             </div>
             <div className="space-y-1.5">
               <Label>Document uploaden</Label>
-              <PdfUploadField value={frameworkDoc} onChange={(v) => onChange({ frameworkDoc: v })} folder={`contracts/${accountId}`} />
+              <PdfUploadField
+                value={frameworkDoc}
+                onChange={(v) => onChange({ frameworkDoc: v })}
+                folder={`contracts/${accountId}`}
+              />
             </div>
             <div className="space-y-1.5">
               <Label>Link naar document (URL)</Label>
@@ -57,7 +61,11 @@ export function ContractFrameworkCard({
               />
             </div>
             <div className="flex items-center gap-2">
-              <input type="checkbox" id="framework_indefinite" defaultChecked={contract?.framework_indefinite ?? false} />
+              <input
+                type="checkbox"
+                id="framework_indefinite"
+                defaultChecked={contract?.framework_indefinite ?? false}
+              />
               <Label htmlFor="framework_indefinite">Onbepaalde duur</Label>
             </div>
           </div>

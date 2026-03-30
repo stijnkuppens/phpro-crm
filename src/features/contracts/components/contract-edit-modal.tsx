@@ -1,32 +1,35 @@
 'use client';
 
+import { Save } from 'lucide-react';
 import { useActionState, useState } from 'react';
 import { toast } from 'sonner';
 import { Modal, ModalFooter } from '@/components/admin/modal';
-import { Input } from '@/components/ui/input';
-import { DatePicker } from '@/components/ui/date-picker';
-import { Label } from '@/components/ui/label';
+import { PdfUploadField } from '@/components/admin/pdf-upload-field';
 import { Button } from '@/components/ui/button';
+import { DatePicker } from '@/components/ui/date-picker';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger } from '@/components/ui/select';
 import { SubmitButton } from '@/components/ui/submit-button';
 import { Switch } from '@/components/ui/switch';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-} from '@/components/ui/select';
-import { Save } from 'lucide-react';
-import { PdfUploadField } from '@/components/admin/pdf-upload-field';
-import { upsertContract } from '../actions/upsert-contract';
 import { upsertIndexationConfig } from '@/features/indexation/actions/upsert-indexation-config';
-import type { Contract, ContractFormValues } from '../types';
 import type { IndexationConfig } from '@/features/indexation/types';
+import { upsertContract } from '../actions/upsert-contract';
+import type { Contract, ContractFormValues } from '../types';
 
 const MONTHS = [
-  { value: '1', label: 'Januari' }, { value: '2', label: 'Februari' }, { value: '3', label: 'Maart' },
-  { value: '4', label: 'April' }, { value: '5', label: 'Mei' }, { value: '6', label: 'Juni' },
-  { value: '7', label: 'Juli' }, { value: '8', label: 'Augustus' }, { value: '9', label: 'September' },
-  { value: '10', label: 'Oktober' }, { value: '11', label: 'November' }, { value: '12', label: 'December' },
+  { value: '1', label: 'Januari' },
+  { value: '2', label: 'Februari' },
+  { value: '3', label: 'Maart' },
+  { value: '4', label: 'April' },
+  { value: '5', label: 'Mei' },
+  { value: '6', label: 'Juni' },
+  { value: '7', label: 'Juli' },
+  { value: '8', label: 'Augustus' },
+  { value: '9', label: 'September' },
+  { value: '10', label: 'Oktober' },
+  { value: '11', label: 'November' },
+  { value: '12', label: 'December' },
 ];
 
 const INDEX_TYPES = ['Agoria', 'Agoria Digital'];
@@ -95,13 +98,13 @@ export function ContractEditModal({ accountId, contract, indexationConfig, open,
             <div className="space-y-1.5">
               <Label>Type</Label>
               <Select value={indexType} onValueChange={(v) => setIndexType(v ?? '')}>
-                <SelectTrigger>
-                  {indexType || 'Niet ingesteld'}
-                </SelectTrigger>
+                <SelectTrigger>{indexType || 'Niet ingesteld'}</SelectTrigger>
                 <SelectContent>
                   <SelectItem value="">Niet ingesteld</SelectItem>
                   {INDEX_TYPES.map((t) => (
-                    <SelectItem key={t} value={t}>{t}</SelectItem>
+                    <SelectItem key={t} value={t}>
+                      {t}
+                    </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -114,7 +117,9 @@ export function ContractEditModal({ accountId, contract, indexationConfig, open,
                 </SelectTrigger>
                 <SelectContent>
                   {MONTHS.map((m) => (
-                    <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>
+                    <SelectItem key={m.value} value={m.value}>
+                      {m.label}
+                    </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -149,14 +154,15 @@ export function ContractEditModal({ accountId, contract, indexationConfig, open,
               </div>
               <div className="space-y-1.5">
                 <Label>PDF Document</Label>
-                <PdfUploadField
-                  value={frameworkPdf}
-                  onChange={setFrameworkPdf}
-                  folder={`contracts/${accountId}`}
-                />
+                <PdfUploadField value={frameworkPdf} onChange={setFrameworkPdf} folder={`contracts/${accountId}`} />
               </div>
               <div className="flex items-center gap-2 pt-6">
-                <input type="checkbox" name="framework_indefinite" id="framework_indefinite" defaultChecked={contract?.framework_indefinite ?? false} />
+                <input
+                  type="checkbox"
+                  name="framework_indefinite"
+                  id="framework_indefinite"
+                  defaultChecked={contract?.framework_indefinite ?? false}
+                />
                 <Label htmlFor="framework_indefinite">Onbepaalde duur</Label>
               </div>
             </div>
@@ -166,7 +172,9 @@ export function ContractEditModal({ accountId, contract, indexationConfig, open,
         {/* Service contract */}
         <div className="rounded-lg bg-blue-50 dark:bg-blue-950/30 p-4 space-y-3 [&_input]:bg-white [&_[data-slot=select-trigger]]:bg-white [&_button[data-slot=button]]:bg-white dark:[&_input]:bg-background dark:[&_[data-slot=select-trigger]]:bg-background dark:[&_button[data-slot=button]]:bg-background">
           <div className="flex items-center justify-between">
-            <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Dienstencontract (SLA)</h3>
+            <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              Dienstencontract (SLA)
+            </h3>
             <Switch checked={hasService} onCheckedChange={setHasService} />
           </div>
           {hasService && (
@@ -181,14 +189,15 @@ export function ContractEditModal({ accountId, contract, indexationConfig, open,
               </div>
               <div className="space-y-1.5">
                 <Label>PDF Document</Label>
-                <PdfUploadField
-                  value={servicePdf}
-                  onChange={setServicePdf}
-                  folder={`contracts/${accountId}`}
-                />
+                <PdfUploadField value={servicePdf} onChange={setServicePdf} folder={`contracts/${accountId}`} />
               </div>
               <div className="flex items-center gap-2 pt-6">
-                <input type="checkbox" name="service_indefinite" id="service_indefinite" defaultChecked={contract?.service_indefinite ?? false} />
+                <input
+                  type="checkbox"
+                  name="service_indefinite"
+                  id="service_indefinite"
+                  defaultChecked={contract?.service_indefinite ?? false}
+                />
                 <Label htmlFor="service_indefinite">Onbepaalde duur</Label>
               </div>
             </div>
@@ -198,11 +207,17 @@ export function ContractEditModal({ accountId, contract, indexationConfig, open,
         {/* Purchase orders */}
         <div className="space-y-1.5">
           <Label>Bestelbonnen URL (Confluence)</Label>
-          <Input name="purchase_orders_url" defaultValue={contract?.purchase_orders_url ?? ''} placeholder="https://confluence.phpro.be/..." />
+          <Input
+            name="purchase_orders_url"
+            defaultValue={contract?.purchase_orders_url ?? ''}
+            placeholder="https://confluence.phpro.be/..."
+          />
         </div>
 
         <ModalFooter>
-          <Button type="button" variant="outline" onClick={onClose}>Annuleer</Button>
+          <Button type="button" variant="outline" onClick={onClose}>
+            Annuleer
+          </Button>
           <SubmitButton icon={<Save />}>Opslaan</SubmitButton>
         </ModalFooter>
       </form>

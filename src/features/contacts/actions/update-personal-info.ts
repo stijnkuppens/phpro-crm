@@ -1,12 +1,13 @@
 'use server';
 
-import { z } from 'zod';
-import { createServerClient } from '@/lib/supabase/server';
-import { requirePermission } from '@/lib/require-permission';
-import { logAction } from '@/features/audit/actions/log-action';
 import { revalidatePath } from 'next/cache';
-import { personalInfoFormSchema, type PersonalInfoFormValues } from '../types';
-import { ok, err, type ActionResult } from '@/lib/action-result';
+import { z } from 'zod';
+import { logAction } from '@/features/audit/actions/log-action';
+import { type ActionResult, err, ok } from '@/lib/action-result';
+import { logger } from '@/lib/logger';
+import { requirePermission } from '@/lib/require-permission';
+import { createServerClient } from '@/lib/supabase/server';
+import { type PersonalInfoFormValues, personalInfoFormSchema } from '../types';
 
 export async function updatePersonalInfo(contactId: string, values: PersonalInfoFormValues): Promise<ActionResult> {
   try {
@@ -21,18 +22,19 @@ export async function updatePersonalInfo(contactId: string, values: PersonalInfo
   }
 
   const supabase = await createServerClient();
-  const { data: before } = await supabase.from('contact_personal_info').select('*').eq('contact_id', contactId).single();
+  const { data: before } = await supabase
+    .from('contact_personal_info')
+    .select('*')
+    .eq('contact_id', contactId)
+    .single();
 
   // Upsert: create if not exists, update if exists
   const { error } = await supabase
     .from('contact_personal_info')
-    .upsert(
-      { contact_id: contactId, ...parsed.data },
-      { onConflict: 'contact_id' },
-    );
+    .upsert({ contact_id: contactId, ...parsed.data }, { onConflict: 'contact_id' });
 
   if (error) {
-    console.error('[updatePersonalInfo]', error);
+    logger.error({ err: error }, '[updatePersonalInfo] database error');
     return err('Er is een fout opgetreden');
   }
 
@@ -43,11 +45,7 @@ export async function updatePersonalInfo(contactId: string, values: PersonalInfo
     metadata: { before, after: parsed.data },
   });
 
-  const { data: contact } = await supabase
-    .from('contacts')
-    .select('account_id')
-    .eq('id', contactId)
-    .single();
+  const { data: contact } = await supabase.from('contacts').select('account_id').eq('id', contactId).single();
 
   revalidatePath('/admin/contacts');
   if (contact?.account_id) {

@@ -1,18 +1,20 @@
 'use client';
 
-import { useState, useCallback, useEffect, useMemo, useRef } from 'react';
 import { Plus } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { ListPageToolbar } from '@/components/admin/list-page-toolbar';
-import { useEntity } from '@/lib/hooks/use-entity';
-import { buildFilterQuery, type FilterOption } from '@/components/admin/data-table-filters';
-import { dealColumns } from '../columns';
-import { DealList } from './deal-list';
-import { DEAL_SELECT, ORIGIN_OPTIONS, FORECAST_CATEGORY_OPTIONS, PAGE_SIZE } from '../constants';
-import type { DealWithRelations, Pipeline } from '../types';
 import dynamic from 'next/dynamic';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { buildFilterQuery, type FilterOption } from '@/components/admin/data-table-filters';
+import { ListPageToolbar } from '@/components/admin/list-page-toolbar';
+import { Button } from '@/components/ui/button';
+import { useEntity } from '@/lib/hooks/use-entity';
+import { dealColumns } from '../columns';
+import { DEAL_SELECT, FORECAST_CATEGORY_OPTIONS, ORIGIN_OPTIONS, PAGE_SIZE } from '../constants';
+import type { DealWithRelations, Pipeline } from '../types';
+import { DealList } from './deal-list';
 
-const DealEditModal = dynamic(() => import('./deal-edit-modal').then(m => ({ default: m.DealEditModal })), { ssr: false });
+const DealEditModal = dynamic(() => import('./deal-edit-modal').then((m) => ({ default: m.DealEditModal })), {
+  ssr: false,
+});
 
 type Props = {
   pipelines: Pipeline[];
@@ -40,9 +42,7 @@ export function AccountDealsPanel({ pipelines, initialDeals, initialCount, owner
     const pipelineOpts: FilterOption[] = pipelines.map((p) => ({ value: p.id, label: p.name }));
 
     const activePipelineId = filters.pipeline_id;
-    const relevantPipelines = activePipelineId
-      ? pipelines.filter((p) => p.id === activePipelineId)
-      : pipelines;
+    const relevantPipelines = activePipelineId ? pipelines.filter((p) => p.id === activePipelineId) : pipelines;
     const stageOpts: FilterOption[] = relevantPipelines
       .flatMap((p) => p.stages)
       .filter((s) => !s.is_closed)
@@ -77,13 +77,10 @@ export function AccountDealsPanel({ pipelines, initialDeals, initialCount, owner
     fetchList({ page, orFilter, eqFilters });
   }, [fetchList, page, filters, accountId]);
 
-  const handleFilterChange = useCallback(
-    (newFilters: Record<string, string | undefined>) => {
-      setFilters(newFilters);
-      setPage(1);
-    },
-    [],
-  );
+  const handleFilterChange = useCallback((newFilters: Record<string, string | undefined>) => {
+    setFilters(newFilters);
+    setPage(1);
+  }, []);
 
   useEffect(() => {
     if (isInitialMount.current) {
@@ -122,7 +119,10 @@ export function AccountDealsPanel({ pipelines, initialDeals, initialCount, owner
       {showNewDeal && (
         <DealEditModal
           open
-          onClose={() => { setShowNewDeal(false); load(); }}
+          onClose={() => {
+            setShowNewDeal(false);
+            load();
+          }}
           pipelines={pipelines}
           owners={owners}
           accountId={accountId}

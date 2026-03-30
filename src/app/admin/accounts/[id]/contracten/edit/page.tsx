@@ -1,9 +1,9 @@
 import type { Metadata } from 'next';
+import { ContractEditPage } from '@/features/contracts/components/contract-edit-page';
 import { getContract } from '@/features/contracts/queries/get-contract';
 import { getHourlyRates } from '@/features/contracts/queries/get-hourly-rates';
 import { getSlaRates } from '@/features/contracts/queries/get-sla-rates';
 import { getIndexationConfig } from '@/features/indexation/queries/get-indexation-config';
-import { ContractEditPage } from '@/features/contracts/components/contract-edit-page';
 
 type Props = {
   params: Promise<{ id: string }>;

@@ -31,7 +31,9 @@ export function DealFormFooter() {
         )}
       </div>
       <div className="flex gap-2">
-        <Button type="button" variant="outline" onClick={actions.onClose}>Annuleren</Button>
+        <Button type="button" variant="outline" onClick={actions.onClose}>
+          Annuleren
+        </Button>
         <SubmitButton icon={<Save />} disabled={!state.title}>
           {meta.isEdit ? 'Bijwerken' : 'Aanmaken'}
         </SubmitButton>

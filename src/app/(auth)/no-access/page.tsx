@@ -1,8 +1,8 @@
+import { ShieldX } from 'lucide-react';
 import { redirect } from 'next/navigation';
-import { createServerClient } from '@/lib/supabase/server';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { ShieldX } from 'lucide-react';
+import { createServerClient } from '@/lib/supabase/server';
 
 export const metadata = { title: 'Geen toegang' };
 
@@ -26,8 +26,7 @@ export default function NoAccessPage() {
           </CardHeader>
           <CardContent>
             <p className="text-sm text-muted-foreground">
-              Je account heeft nog geen rol toegewezen. Neem contact op met een
-              administrator om toegang te krijgen.
+              Je account heeft nog geen rol toegewezen. Neem contact op met een administrator om toegang te krijgen.
             </p>
           </CardContent>
           <CardFooter>

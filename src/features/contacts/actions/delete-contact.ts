@@ -1,12 +1,12 @@
 'use server';
 
-import { createServerClient } from '@/lib/supabase/server';
-import { requirePermission } from '@/lib/require-permission';
-import { logAction } from '@/features/audit/actions/log-action';
 import { revalidatePath } from 'next/cache';
-
-import { ok, err, type ActionResult } from '@/lib/action-result';
+import { logAction } from '@/features/audit/actions/log-action';
 import { entityIdSchema } from '@/features/contacts/types';
+import { type ActionResult, err, ok } from '@/lib/action-result';
+import { logger } from '@/lib/logger';
+import { requirePermission } from '@/lib/require-permission';
+import { createServerClient } from '@/lib/supabase/server';
 
 export async function deleteContact(id: string): Promise<ActionResult> {
   try {
@@ -20,13 +20,10 @@ export async function deleteContact(id: string): Promise<ActionResult> {
 
   const supabase = await createServerClient();
   const { data: snapshot } = await supabase.from('contacts').select('*').eq('id', id).single();
-  const { error } = await supabase
-    .from('contacts')
-    .delete()
-    .eq('id', id);
+  const { error } = await supabase.from('contacts').delete().eq('id', id);
 
   if (error) {
-    console.error('[deleteContact]', error);
+    logger.error({ err: error }, '[deleteContact] database error');
     return err('Er is een fout opgetreden');
   }
 

@@ -1,12 +1,12 @@
 'use client';
 
+import { Save } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { Modal, ModalFooter } from '@/components/admin/modal';
+import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Button } from '@/components/ui/button';
-import { Save } from 'lucide-react';
 import { upsertContractAttribution } from '../actions/upsert-contract-attribution';
 import type { ConsultantContractAttribution } from '../types';
 
@@ -20,7 +20,9 @@ type Props = {
 
 export function ContractAttributionModal({ consultantId, existing, open, onClose, onSaved }: Props) {
   const [loading, setLoading] = useState(false);
-  const [type, setType] = useState<'rechtstreeks' | 'cronos'>(existing?.type as 'rechtstreeks' | 'cronos' ?? 'rechtstreeks');
+  const [type, setType] = useState<'rechtstreeks' | 'cronos'>(
+    (existing?.type as 'rechtstreeks' | 'cronos') ?? 'rechtstreeks',
+  );
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -101,7 +103,9 @@ export function ContractAttributionModal({ consultantId, existing, open, onClose
         )}
 
         <ModalFooter>
-          <Button type="button" variant="outline" onClick={onClose}>Annuleren</Button>
+          <Button type="button" variant="outline" onClick={onClose}>
+            Annuleren
+          </Button>
           <Button type="submit" disabled={loading}>
             <Save />
             {loading ? 'Opslaan...' : 'Opslaan'}

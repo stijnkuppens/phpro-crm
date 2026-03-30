@@ -1,11 +1,11 @@
 'use client';
 
+import { Save } from 'lucide-react';
 import { useRef } from 'react';
 import { PageHeader } from '@/components/admin/page-header';
 import { Button } from '@/components/ui/button';
-import { Save } from 'lucide-react';
-import { AccountForm } from './account-form';
 import type { AccountReferenceData } from '../types';
+import { AccountForm } from './account-form';
 
 type Props = {
   referenceData: AccountReferenceData;
@@ -24,19 +24,13 @@ export function AccountCreatePageClient({ referenceData }: Props) {
           { label: 'Nieuw Account' },
         ]}
         actions={
-          <Button
-            type="submit"
-            form="account-form"
-          >
+          <Button type="submit" form="account-form">
             <Save />
             Aanmaken
           </Button>
         }
       />
-      <AccountForm
-        referenceData={referenceData}
-        formRef={formRef}
-      />
+      <AccountForm referenceData={referenceData} formRef={formRef} />
     </div>
   );
 }

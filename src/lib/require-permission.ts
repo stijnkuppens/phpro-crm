@@ -1,17 +1,17 @@
-import type { Role, Permission } from '@/types/acl';
 import { can } from '@/lib/acl';
 import { createServerClient } from '@/lib/supabase/server';
+import type { Permission, Role } from '@/types/acl';
 
 /**
  * Server action guard. Call at the top of any "use server" function.
  * Reads the current user session and checks the permission.
  * Throws if denied. Returns user context for use in the action.
  */
-export async function requirePermission(
-  permission: Permission,
-): Promise<{ userId: string; role: Role }> {
+export async function requirePermission(permission: Permission): Promise<{ userId: string; role: Role }> {
   const supabase = await createServerClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
   if (!user) {
     throw new Error('Unauthorized: not authenticated');

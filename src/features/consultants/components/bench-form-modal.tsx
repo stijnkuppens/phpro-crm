@@ -1,26 +1,26 @@
 'use client';
 
+import { Save } from 'lucide-react';
 import { useActionState, useState } from 'react';
 import { toast } from 'sonner';
-import { Save } from 'lucide-react';
-import { Modal } from '@/components/admin/modal';
 import { AvatarUpload } from '@/components/admin/avatar-upload';
+import { Modal } from '@/components/admin/modal';
 import { PdfUploadField } from '@/components/admin/pdf-upload-field';
-import { Input } from '@/components/ui/input';
-import { DatePicker } from '@/components/ui/date-picker';
-import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
+import { DatePicker } from '@/components/ui/date-picker';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger } from '@/components/ui/select';
 import { SubmitButton } from '@/components/ui/submit-button';
 import { Textarea } from '@/components/ui/textarea';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-} from '@/components/ui/select';
-import { benchConsultantFormSchema, type BenchConsultantFormValues, type ConsultantWithDetails, type LanguageFormValues } from '../types';
 import { createBenchConsultant } from '../actions/create-bench-consultant';
 import { updateConsultant } from '../actions/update-consultant';
+import {
+  type BenchConsultantFormValues,
+  benchConsultantFormSchema,
+  type ConsultantWithDetails,
+  type LanguageFormValues,
+} from '../types';
 
 type Props = {
   open: boolean;
@@ -61,8 +61,18 @@ export function BenchFormModal({ open, onClose, consultant }: Props) {
       available_date: (formData.get('available_date') as string) || null,
       min_hourly_rate: formData.get('min_hourly_rate') ? Number(formData.get('min_hourly_rate')) : null,
       max_hourly_rate: formData.get('max_hourly_rate') ? Number(formData.get('max_hourly_rate')) : null,
-      roles: rolesRaw ? rolesRaw.split(',').map((s) => s.trim()).filter(Boolean) : [],
-      technologies: techsRaw ? techsRaw.split(',').map((s) => s.trim()).filter(Boolean) : [],
+      roles: rolesRaw
+        ? rolesRaw
+            .split(',')
+            .map((s) => s.trim())
+            .filter(Boolean)
+        : [],
+      technologies: techsRaw
+        ? techsRaw
+            .split(',')
+            .map((s) => s.trim())
+            .filter(Boolean)
+        : [],
       description: (formData.get('description') as string) || undefined,
       cv_pdf_url: cvUrl || null,
     };
@@ -90,12 +100,7 @@ export function BenchFormModal({ open, onClose, consultant }: Props) {
   }, null);
 
   return (
-    <Modal
-      open={open}
-      onClose={onClose}
-      title={isEdit ? 'Consultant bewerken' : 'Nieuwe consultant'}
-      size="wide"
-    >
+    <Modal open={open} onClose={onClose} title={isEdit ? 'Consultant bewerken' : 'Nieuwe consultant'} size="wide">
       <form action={formAction} className="space-y-4">
         {/* Avatar — only for edit (need ID for storage path) */}
         {isEdit && (
@@ -132,10 +137,13 @@ export function BenchFormModal({ open, onClose, consultant }: Props) {
           </div>
           <div className="space-y-2">
             <Label htmlFor="priority">Prioriteit</Label>
-            <Select value={priority} onValueChange={(v) => { if (v) setPriority(v as 'High' | 'Medium' | 'Low'); }}>
-              <SelectTrigger>
-                {priority || 'Selecteer...'}
-              </SelectTrigger>
+            <Select
+              value={priority}
+              onValueChange={(v) => {
+                if (v) setPriority(v as 'High' | 'Medium' | 'Low');
+              }}
+            >
+              <SelectTrigger>{priority || 'Selecteer...'}</SelectTrigger>
               <SelectContent>
                 <SelectItem value="High">High</SelectItem>
                 <SelectItem value="Medium">Medium</SelectItem>
@@ -153,24 +161,44 @@ export function BenchFormModal({ open, onClose, consultant }: Props) {
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-2">
             <Label htmlFor="min_hourly_rate">Min uurtarief (EUR)</Label>
-            <Input id="min_hourly_rate" name="min_hourly_rate" type="number" defaultValue={consultant?.min_hourly_rate ?? ''} />
+            <Input
+              id="min_hourly_rate"
+              name="min_hourly_rate"
+              type="number"
+              defaultValue={consultant?.min_hourly_rate ?? ''}
+            />
           </div>
           <div className="space-y-2">
             <Label htmlFor="max_hourly_rate">Max uurtarief (EUR)</Label>
-            <Input id="max_hourly_rate" name="max_hourly_rate" type="number" defaultValue={consultant?.max_hourly_rate ?? ''} />
+            <Input
+              id="max_hourly_rate"
+              name="max_hourly_rate"
+              type="number"
+              defaultValue={consultant?.max_hourly_rate ?? ''}
+            />
           </div>
         </div>
 
         {/* Roles */}
         <div className="space-y-2">
           <Label htmlFor="roles">Rollen (komma-gescheiden)</Label>
-          <Input id="roles" name="roles" defaultValue={consultant?.roles?.join(', ') ?? ''} placeholder="Dev Senior, Tech Lead" />
+          <Input
+            id="roles"
+            name="roles"
+            defaultValue={consultant?.roles?.join(', ') ?? ''}
+            placeholder="Dev Senior, Tech Lead"
+          />
         </div>
 
         {/* Technologies */}
         <div className="space-y-2">
           <Label htmlFor="technologies">Technologieen (komma-gescheiden)</Label>
-          <Input id="technologies" name="technologies" defaultValue={consultant?.technologies?.join(', ') ?? ''} placeholder="PHP, React, Docker" />
+          <Input
+            id="technologies"
+            name="technologies"
+            defaultValue={consultant?.technologies?.join(', ') ?? ''}
+            placeholder="PHP, React, Docker"
+          />
         </div>
 
         {/* Description */}
@@ -194,9 +222,12 @@ export function BenchFormModal({ open, onClose, consultant }: Props) {
         <div className="space-y-2">
           <div className="flex items-center justify-between">
             <Label>Talen</Label>
-            <Button type="button" variant="outline" size="sm" onClick={addLanguage}>+ Taal</Button>
+            <Button type="button" variant="outline" size="sm" onClick={addLanguage}>
+              + Taal
+            </Button>
           </div>
           {languages.map((lang, i) => (
+            // biome-ignore lint/suspicious/noArrayIndexKey: dynamically added rows with no stable identity
             <div key={i} className="flex gap-2 items-center">
               <Input
                 value={lang.language}
@@ -204,10 +235,13 @@ export function BenchFormModal({ open, onClose, consultant }: Props) {
                 placeholder="Taal"
                 className="flex-1"
               />
-              <Select value={lang.level} onValueChange={(v) => { if (v) updateLanguage(i, 'level', v); }}>
-                <SelectTrigger className="w-36">
-                  {lang.level || 'Selecteer...'}
-                </SelectTrigger>
+              <Select
+                value={lang.level}
+                onValueChange={(v) => {
+                  if (v) updateLanguage(i, 'level', v);
+                }}
+              >
+                <SelectTrigger className="w-36">{lang.level || 'Selecteer...'}</SelectTrigger>
                 <SelectContent>
                   <SelectItem value="Basis">Basis</SelectItem>
                   <SelectItem value="Gevorderd">Gevorderd</SelectItem>
@@ -215,7 +249,9 @@ export function BenchFormModal({ open, onClose, consultant }: Props) {
                   <SelectItem value="Moedertaal">Moedertaal</SelectItem>
                 </SelectContent>
               </Select>
-              <Button type="button" variant="ghost" size="sm" onClick={() => removeLanguage(i)}>✕</Button>
+              <Button type="button" variant="ghost" size="sm" onClick={() => removeLanguage(i)}>
+                ✕
+              </Button>
             </div>
           ))}
         </div>

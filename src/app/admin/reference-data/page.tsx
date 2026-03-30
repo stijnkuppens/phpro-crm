@@ -14,10 +14,7 @@ export default async function ReferenceDataRoute() {
     <div className="space-y-6">
       <PageHeader
         title="Referentiegegevens"
-        breadcrumbs={[
-          { label: 'Admin', href: '/admin' },
-          { label: 'Referentiegegevens' },
-        ]}
+        breadcrumbs={[{ label: 'Admin', href: '/admin' }, { label: 'Referentiegegevens' }]}
       />
       <ReferenceDataPage initialTable="ref_competence_centers" initialData={initialData} />
     </div>

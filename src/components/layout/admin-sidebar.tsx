@@ -1,35 +1,35 @@
 'use client';
 
+import {
+  Activity,
+  Bell,
+  Building2,
+  ClipboardList,
+  Contact,
+  Database,
+  LayoutDashboard,
+  ScrollText,
+  Settings,
+  TrendingUp,
+  Users,
+} from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { useBrandTheme } from '@/lib/hooks/use-brand-theme';
 import {
   Sidebar,
   SidebarContent,
+  SidebarFooter,
   SidebarGroup,
   SidebarGroupContent,
   SidebarGroupLabel,
+  SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-  SidebarHeader,
-  SidebarFooter,
 } from '@/components/ui/sidebar';
-import {
-  LayoutDashboard,
-  Building2,
-  Users,
-  TrendingUp,
-  Activity,
-  Settings,
-  Bell,
-  ScrollText,
-  Database,
-  Contact,
-  ClipboardList,
-} from 'lucide-react';
+import { useBrandTheme } from '@/lib/hooks/use-brand-theme';
 
 const brandLogos: Record<string, { src: string; alt: string; width: number; height: number }> = {
   phpro: { src: '/logos/phpro.svg', alt: 'PHPro', width: 100, height: 34 },
@@ -54,9 +54,7 @@ export function AdminSidebar() {
     },
     {
       section: t('consultancy'),
-      items: [
-        { label: t('consultants'), href: '/admin/consultants', icon: Users },
-      ],
+      items: [{ label: t('consultants'), href: '/admin/consultants', icon: Users }],
     },
     {
       section: null, // no label, separator group
@@ -85,24 +83,16 @@ export function AdminSidebar() {
         </Link>
       </SidebarHeader>
       <SidebarContent>
-        {navSections.map((section, idx) => (
-          <SidebarGroup key={idx}>
-            {section.section && (
-              <SidebarGroupLabel>{section.section}</SidebarGroupLabel>
-            )}
+        {navSections.map((section) => (
+          <SidebarGroup key={section.section ?? 'misc'}>
+            {section.section && <SidebarGroupLabel>{section.section}</SidebarGroupLabel>}
             <SidebarGroupContent>
               <SidebarMenu>
                 {section.items.map((item) => {
-                  const isActive =
-                    item.href === '/admin'
-                      ? pathname === '/admin'
-                      : pathname.startsWith(item.href);
+                  const isActive = item.href === '/admin' ? pathname === '/admin' : pathname.startsWith(item.href);
                   return (
                     <SidebarMenuItem key={item.href}>
-                      <SidebarMenuButton
-                        isActive={isActive}
-                        render={<Link href={item.href} />}
-                      >
+                      <SidebarMenuButton isActive={isActive} render={<Link href={item.href} />}>
                         <item.icon className="h-4 w-4" />
                         <span>{item.label}</span>
                       </SidebarMenuButton>
@@ -115,9 +105,7 @@ export function AdminSidebar() {
         ))}
       </SidebarContent>
       <SidebarFooter className="border-t p-4">
-        <p className="text-xs text-muted-foreground">
-          {brand === '25carat' ? '25Carat' : 'PHPro'} CRM
-        </p>
+        <p className="text-xs text-muted-foreground">{brand === '25carat' ? '25Carat' : 'PHPro'} CRM</p>
       </SidebarFooter>
     </Sidebar>
   );

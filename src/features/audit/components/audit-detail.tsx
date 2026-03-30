@@ -1,13 +1,7 @@
 'use client';
 
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetDescription,
-} from '@/components/ui/sheet';
 import { Badge } from '@/components/ui/badge';
+import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import type { AuditLog } from '../types';
 
 type AuditDetailProps = {
@@ -42,9 +36,7 @@ function formatValue(val: unknown): string {
  */
 function UpdateDiff({ before, after }: { before: Record<string, unknown>; after: Record<string, unknown> }) {
   const afterKeys = Object.keys(after);
-  const changed = afterKeys.filter(
-    (key) => JSON.stringify(before[key]) !== JSON.stringify(after[key]),
-  );
+  const changed = afterKeys.filter((key) => JSON.stringify(before[key]) !== JSON.stringify(after[key]));
 
   if (changed.length === 0) {
     return <p className="text-sm text-muted-foreground">Geen wijzigingen.</p>;
@@ -77,17 +69,13 @@ function UpdateDiff({ before, after }: { before: Record<string, unknown>; after:
 
 /** Shows all fields of a created or deleted entity. */
 function BodySnapshot({ data, variant }: { data: Record<string, unknown>; variant: 'created' | 'deleted' }) {
-  const entries = Object.entries(data).filter(
-    ([, val]) => val !== null && val !== undefined && val !== '',
-  );
+  const entries = Object.entries(data).filter(([, val]) => val !== null && val !== undefined && val !== '');
 
   if (entries.length === 0) {
     return <p className="text-sm text-muted-foreground">Geen data.</p>;
   }
 
-  const colorClass = variant === 'created'
-    ? 'text-green-600 dark:text-green-400'
-    : 'text-red-600 dark:text-red-400';
+  const colorClass = variant === 'created' ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400';
 
   return (
     <div className="space-y-1">
@@ -140,8 +128,7 @@ export function AuditDetail({ log, open, onCloseAction }: AuditDetailProps) {
         <SheetHeader>
           <SheetTitle>Audit Log Detail</SheetTitle>
           <SheetDescription>
-            <Badge variant="secondary">{log.action}</Badge>
-            {' '}on {log.entity ?? 'unknown'} at{' '}
+            <Badge variant="secondary">{log.action}</Badge> on {log.entity ?? 'unknown'} at{' '}
             {log.created_at ? new Date(log.created_at).toLocaleString() : '—'}
           </SheetDescription>
         </SheetHeader>
@@ -159,7 +146,8 @@ export function AuditDetail({ log, open, onCloseAction }: AuditDetailProps) {
 
             <dt className="font-medium text-muted-foreground">IP Address</dt>
             <dd className="font-mono text-xs">
-              {(isRecord(log.metadata) ? (log.metadata as Record<string, unknown>).ip_address as string : null) ?? '\u2014'}
+              {(isRecord(log.metadata) ? ((log.metadata as Record<string, unknown>).ip_address as string) : null) ??
+                '\u2014'}
             </dd>
           </dl>
 

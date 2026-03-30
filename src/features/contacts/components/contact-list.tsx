@@ -1,33 +1,45 @@
 'use client';
 
-import { useState, useCallback, useEffect, useRef } from 'react';
-import { useQueryState, parseAsInteger, parseAsBoolean } from 'nuqs';
 import { Plus, SquarePen, Trash2 } from 'lucide-react';
-import { toast } from 'sonner';
-import { useEntity } from '@/lib/hooks/use-entity';
-import DataTable from '@/components/admin/data-table';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { ComboboxFilter } from '@/components/admin/combobox-filter';
-import { PageHeader } from '@/components/admin/page-header';
-import { ExportDropdown } from '@/components/admin/export-dropdown';
-import { contactExportColumns } from '../export-columns';
-import { Avatar } from '@/components/admin/avatar';
-import { StatusBadge } from '@/components/admin/status-badge';
-import { contactColumns } from '../columns';
-import type { ContactWithDetails } from '../types';
 import dynamic from 'next/dynamic';
+import { parseAsBoolean, parseAsInteger, useQueryState } from 'nuqs';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { toast } from 'sonner';
+import { Avatar } from '@/components/admin/avatar';
+import { ComboboxFilter } from '@/components/admin/combobox-filter';
+import DataTable from '@/components/admin/data-table';
+import { ExportDropdown } from '@/components/admin/export-dropdown';
+import { PageHeader } from '@/components/admin/page-header';
+import { StatusBadge } from '@/components/admin/status-badge';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { useEntity } from '@/lib/hooks/use-entity';
 import { deleteContact } from '../actions/delete-contact';
+import { contactColumns } from '../columns';
+import { contactExportColumns } from '../export-columns';
+import type { ContactWithDetails } from '../types';
 
-const ContactViewModal = dynamic(() => import('./contact-view-modal').then(m => ({ default: m.ContactViewModal })), { ssr: false });
-const ContactFormModal = dynamic(() => import('./contact-form-modal').then(m => ({ default: m.ContactFormModal })), { ssr: false });
+const ContactViewModal = dynamic(() => import('./contact-view-modal').then((m) => ({ default: m.ContactViewModal })), {
+  ssr: false,
+});
+const ContactFormModal = dynamic(() => import('./contact-form-modal').then((m) => ({ default: m.ContactFormModal })), {
+  ssr: false,
+});
+
 import { escapeSearch } from '@/lib/utils/escape-search';
 
 const PAGE_SIZE = 25;
 
 const ROLES = [
-  'Decision Maker', 'Influencer', 'Champion', 'Sponsor', 'Steerco Lid',
-  'Technisch', 'Financieel', 'Operationeel', 'Contact',
+  'Decision Maker',
+  'Influencer',
+  'Champion',
+  'Sponsor',
+  'Steerco Lid',
+  'Technisch',
+  'Financieel',
+  'Operationeel',
+  'Contact',
 ] as const;
 
 export type AccountOption = { id: string; name: string };
@@ -65,14 +77,17 @@ export function ContactList({ initialData, initialCount, accounts = [] }: Contac
     if (steercoOnly || roleFilter === 'Steerco Lid') eqFilters.is_steerco = true;
 
     // Multi-word search: each word must match at least one of first_name, last_name, or email
-    const applyFilters = search ? (query: any) => {
-      const words = search.trim().split(/\s+/).filter(Boolean);
-      for (const word of words) {
-        const w = escapeSearch(word);
-        query = query.or(`first_name.ilike.%${w}%,last_name.ilike.%${w}%,email.ilike.%${w}%`);
-      }
-      return query;
-    } : undefined;
+    const applyFilters = search
+      ? // biome-ignore lint/suspicious/noExplicitAny: Supabase query builder type is complex; any is intentional here
+        (query: any) => {
+          const words = search.trim().split(/\s+/).filter(Boolean);
+          for (const word of words) {
+            const w = escapeSearch(word);
+            query = query.or(`first_name.ilike.%${w}%,last_name.ilike.%${w}%,email.ilike.%${w}%`);
+          }
+          return query;
+        }
+      : undefined;
 
     fetchList({ page, eqFilters, applyFilters });
   }, [fetchList, page, search, accountFilter, roleFilter, steercoOnly]);
@@ -99,10 +114,7 @@ export function ContactList({ initialData, initialCount, accounts = [] }: Contac
     <div className="space-y-6">
       <PageHeader
         title="Contacts"
-        breadcrumbs={[
-          { label: 'Admin', href: '/admin' },
-          { label: 'Contacts' },
-        ]}
+        breadcrumbs={[{ label: 'Admin', href: '/admin' }, { label: 'Contacts' }]}
         actions={
           <div className="flex gap-2">
             <ExportDropdown
@@ -124,14 +136,20 @@ export function ContactList({ initialData, initialCount, accounts = [] }: Contac
             <Input
               placeholder="Zoeken op naam of e-mail..."
               value={search}
-              onChange={(e) => { setSearch(e.target.value); setPage(1); }}
+              onChange={(e) => {
+                setSearch(e.target.value);
+                setPage(1);
+              }}
               className="w-full sm:w-64"
             />
             {accounts.length > 0 && (
               <ComboboxFilter
                 options={accounts.map((a) => ({ value: a.id, label: a.name }))}
                 value={accountFilter}
-                onValueChange={(v) => { setAccountFilter(v); setPage(1); }}
+                onValueChange={(v) => {
+                  setAccountFilter(v);
+                  setPage(1);
+                }}
                 placeholder="Alle accounts"
                 searchPlaceholder="Zoek account..."
                 className="w-48"
@@ -140,7 +158,10 @@ export function ContactList({ initialData, initialCount, accounts = [] }: Contac
             <ComboboxFilter
               options={ROLES.map((r) => ({ value: r, label: r }))}
               value={roleFilter}
-              onValueChange={(v) => { setRoleFilter(v); setPage(1); }}
+              onValueChange={(v) => {
+                setRoleFilter(v);
+                setPage(1);
+              }}
               placeholder="Alle rollen"
               searchPlaceholder="Zoek rol..."
               className="w-48"
@@ -148,7 +169,10 @@ export function ContactList({ initialData, initialCount, accounts = [] }: Contac
             <Button
               variant={steercoOnly ? 'default' : 'outline'}
               size="sm"
-              onClick={() => { setSteercoOnly((prev) => !prev); setPage(1); }}
+              onClick={() => {
+                setSteercoOnly((prev) => !prev);
+                setPage(1);
+              }}
             >
               Steerco
             </Button>
@@ -170,29 +194,36 @@ export function ContactList({ initialData, initialCount, accounts = [] }: Contac
                 <Avatar path={row.avatar_url ?? null} fallback={initials} size="sm" round />
                 <div className="flex items-center gap-2 min-w-0">
                   <span className="font-medium text-sm truncate">{name}</span>
-                  {row.is_steerco && (
-                    <StatusBadge positive>Steerco</StatusBadge>
-                  )}
+                  {row.is_steerco && <StatusBadge positive>Steerco</StatusBadge>}
                 </div>
               </div>
-              {row.title && (
-                <span className="text-sm text-foreground pl-10">{row.title}</span>
-              )}
-              {row.account?.name && (
-                <span className="text-xs text-muted-foreground pl-10">{row.account.name}</span>
-              )}
-              {row.email && (
-                <span className="text-xs text-muted-foreground pl-10 truncate">{row.email}</span>
-              )}
+              {row.title && <span className="text-sm text-foreground pl-10">{row.title}</span>}
+              {row.account?.name && <span className="text-xs text-muted-foreground pl-10">{row.account.name}</span>}
+              {row.email && <span className="text-xs text-muted-foreground pl-10 truncate">{row.email}</span>}
             </div>
           );
         }}
         rowActions={(row) => [
           { icon: SquarePen, label: 'Bewerken', onClick: () => setEditId(row.id) },
-          { icon: Trash2, label: 'Verwijderen', variant: 'destructive' as const, confirm: { title: 'Contact verwijderen?', description: 'Dit verwijdert het contact permanent.' }, onClick: () => handleDelete(row.id) },
+          {
+            icon: Trash2,
+            label: 'Verwijderen',
+            variant: 'destructive' as const,
+            confirm: { title: 'Contact verwijderen?', description: 'Dit verwijdert het contact permanent.' },
+            onClick: () => handleDelete(row.id),
+          },
         ]}
         bulkActions={[
-          { label: 'Verwijderen', variant: 'destructive' as const, confirm: { title: 'Contacten verwijderen?', description: 'Dit verwijdert de geselecteerde contacten permanent.' }, action: (ids) => ids.forEach((id) => handleDelete(id)) },
+          {
+            label: 'Verwijderen',
+            variant: 'destructive' as const,
+            confirm: {
+              title: 'Contacten verwijderen?',
+              description: 'Dit verwijdert de geselecteerde contacten permanent.',
+            },
+            // biome-ignore lint/suspicious/useIterableCallbackReturn: forEach callback does not need a return value
+            action: (ids) => ids.forEach((id) => handleDelete(id)),
+          },
         ]}
       />
       {viewId && (
@@ -200,7 +231,11 @@ export function ContactList({ initialData, initialCount, accounts = [] }: Contac
           key={viewId}
           contactId={viewId}
           onClose={() => setViewId(null)}
-          onEdit={(id) => { setViewId(null); setEditId(id); setEditFromView(true); }}
+          onEdit={(id) => {
+            setViewId(null);
+            setEditId(id);
+            setEditFromView(true);
+          }}
         />
       )}
       {editId && (
@@ -209,8 +244,23 @@ export function ContactList({ initialData, initialCount, accounts = [] }: Contac
           contactId={editId}
           accountId={data.find((r) => r.id === editId)?.account_id ?? ''}
           open
-          onClose={() => { const id = editId; setEditId(null); if (editFromView) { setViewId(id); setEditFromView(false); } }}
-          onSaved={() => { const id = editId; setEditId(null); if (editFromView) { setViewId(id); setEditFromView(false); } load(); }}
+          onClose={() => {
+            const id = editId;
+            setEditId(null);
+            if (editFromView) {
+              setViewId(id);
+              setEditFromView(false);
+            }
+          }}
+          onSaved={() => {
+            const id = editId;
+            setEditId(null);
+            if (editFromView) {
+              setViewId(id);
+              setEditFromView(false);
+            }
+            load();
+          }}
         />
       )}
       {showNew && (
@@ -220,7 +270,10 @@ export function ContactList({ initialData, initialCount, accounts = [] }: Contac
           accounts={accounts}
           open
           onClose={() => setShowNew(false)}
-          onSaved={() => { setShowNew(false); load(); }}
+          onSaved={() => {
+            setShowNew(false);
+            load();
+          }}
         />
       )}
     </div>

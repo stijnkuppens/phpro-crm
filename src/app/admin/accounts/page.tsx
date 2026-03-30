@@ -1,27 +1,21 @@
-import Link from 'next/link';
 import { Plus } from 'lucide-react';
+import Link from 'next/link';
+import { ExportDropdown } from '@/components/admin/export-dropdown';
 import { PageHeader } from '@/components/admin/page-header';
 import { Button } from '@/components/ui/button';
-import { ExportDropdown } from '@/components/admin/export-dropdown';
-import { accountExportColumns } from '@/features/accounts/export-columns';
 import { AccountList } from '@/features/accounts/components/account-list';
-import { getAccounts } from '@/features/accounts/queries/get-accounts';
+import { accountExportColumns } from '@/features/accounts/export-columns';
 import { getAccountFilterOptions } from '@/features/accounts/queries/get-account-filter-options';
+import { getAccounts } from '@/features/accounts/queries/get-accounts';
 
 export default async function AccountsPage() {
-  const [{ data, count }, filterOptions] = await Promise.all([
-    getAccounts(),
-    getAccountFilterOptions(),
-  ]);
+  const [{ data, count }, filterOptions] = await Promise.all([getAccounts(), getAccountFilterOptions()]);
 
   return (
     <div className="space-y-6">
       <PageHeader
         title="Accounts"
-        breadcrumbs={[
-          { label: 'Admin', href: '/admin' },
-          { label: 'Accounts' },
-        ]}
+        breadcrumbs={[{ label: 'Admin', href: '/admin' }, { label: 'Accounts' }]}
         actions={
           <div className="flex gap-2">
             <ExportDropdown

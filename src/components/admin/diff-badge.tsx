@@ -15,7 +15,8 @@ export function DiffBadge({ value, format = 'number', className }: DiffBadgeProp
 
   return (
     <span className={`font-medium ${colorClass} ${className ?? ''}`.trim()}>
-      {prefix}{formatted}
+      {prefix}
+      {formatted}
     </span>
   );
 }

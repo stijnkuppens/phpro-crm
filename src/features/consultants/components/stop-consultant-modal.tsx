@@ -3,15 +3,14 @@
 import { useActionState, useState } from 'react';
 import { toast } from 'sonner';
 import { Modal, ModalFooter } from '@/components/admin/modal';
-import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import { DatePicker } from '@/components/ui/date-picker';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Button } from '@/components/ui/button';
 import { SubmitButton } from '@/components/ui/submit-button';
-import { Checkbox } from '@/components/ui/checkbox';
-import { stopConsultant } from '../actions/stop-consultant';
+import { Textarea } from '@/components/ui/textarea';
 import { moveToBench as moveToBenchAction } from '../actions/move-to-bench';
+import { stopConsultant } from '../actions/stop-consultant';
 
 type Props = {
   consultantId: string;
@@ -72,7 +71,9 @@ export function StopConsultantModal({ consultantId, open, onClose, onSuccess }: 
           <Label htmlFor="move_to_bench">Naar bench verplaatsen</Label>
         </div>
         <ModalFooter>
-          <Button type="button" variant="outline" onClick={onClose}>Annuleren</Button>
+          <Button type="button" variant="outline" onClick={onClose}>
+            Annuleren
+          </Button>
           <SubmitButton variant="destructive">Stopzetten</SubmitButton>
         </ModalFooter>
       </form>

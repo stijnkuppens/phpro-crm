@@ -1,10 +1,10 @@
 'use client';
 
 import { useRef } from 'react';
-import { PageHeader } from '@/components/admin/page-header';
 import { FormActions } from '@/components/admin/form-actions';
-import { AccountForm } from './account-form';
+import { PageHeader } from '@/components/admin/page-header';
 import type { AccountReferenceData } from '../types';
+import { AccountForm } from './account-form';
 
 type Props = {
   account: { id: string; name: string };
@@ -35,11 +35,7 @@ export function AccountEditPageClient({ account, referenceData, defaultValues, b
           />
         }
       />
-      <AccountForm
-        referenceData={referenceData}
-        defaultValues={defaultValues}
-        formRef={formRef}
-      />
+      <AccountForm referenceData={referenceData} defaultValues={defaultValues} formRef={formRef} />
     </div>
   );
 }

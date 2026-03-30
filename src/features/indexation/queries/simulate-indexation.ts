@@ -1,24 +1,21 @@
 import { cache } from 'react';
-import { createServerClient } from '@/lib/supabase/server';
+import { type ActionResult, err, ok } from '@/lib/action-result';
+import { logger } from '@/lib/logger';
 import { requirePermission } from '@/lib/require-permission';
-import { ok, err, type ActionResult } from '@/lib/action-result';
+import { createServerClient } from '@/lib/supabase/server';
 import type { SimulationResult } from '../types';
 
-export const simulateIndexation = cache(async (
-  accountId: string,
-  baseYear: number,
-  percentage: number,
-): Promise<ActionResult<SimulationResult>> => {
-  try {
-    await requirePermission('indexation.read');
-  } catch {
-    return err('Onvoldoende rechten');
-  }
+export const simulateIndexation = cache(
+  async (accountId: string, baseYear: number, percentage: number): Promise<ActionResult<SimulationResult>> => {
+    try {
+      await requirePermission('indexation.read');
+    } catch {
+      return err('Onvoldoende rechten');
+    }
 
-  const supabase = await createServerClient();
+    const supabase = await createServerClient();
 
-  const [{ data: hourlyRates, error: ratesError }, { data: slaRates, error: slaError }] =
-    await Promise.all([
+    const [{ data: hourlyRates, error: ratesError }, { data: slaRates, error: slaError }] = await Promise.all([
       supabase
         .from('hourly_rates')
         .select('role, rate')
@@ -33,31 +30,32 @@ export const simulateIndexation = cache(async (
         .maybeSingle(),
     ]);
 
-  if (ratesError) {
-    console.error('[simulateIndexation] rates', ratesError);
-    return err('Er is een fout opgetreden');
-  }
-  if (slaError) {
-    console.error('[simulateIndexation] sla', slaError);
-    return err('Er is een fout opgetreden');
-  }
+    if (ratesError) {
+      logger.error({ err: ratesError }, '[simulateIndexation] rates error');
+      return err('Er is een fout opgetreden');
+    }
+    if (slaError) {
+      logger.error({ err: slaError }, '[simulateIndexation] sla error');
+      return err('Er is een fout opgetreden');
+    }
 
-  const multiplier = 1 + percentage / 100;
+    const multiplier = 1 + percentage / 100;
 
-  const rates = (hourlyRates ?? []).map((r) => ({
-    role: r.role,
-    current_rate: r.rate,
-    proposed_rate: Math.round(r.rate * multiplier),
-  }));
+    const rates = (hourlyRates ?? []).map((r) => ({
+      role: r.role,
+      current_rate: r.rate,
+      proposed_rate: Math.round(r.rate * multiplier),
+    }));
 
-  const sla = slaRates
-    ? {
-        fixed_monthly_rate: slaRates.fixed_monthly_rate,
-        support_hourly_rate: slaRates.support_hourly_rate,
-        proposed_fixed: Math.round(slaRates.fixed_monthly_rate * multiplier),
-        proposed_support: Math.round(slaRates.support_hourly_rate * multiplier),
-      }
-    : null;
+    const sla = slaRates
+      ? {
+          fixed_monthly_rate: slaRates.fixed_monthly_rate,
+          support_hourly_rate: slaRates.support_hourly_rate,
+          proposed_fixed: Math.round(slaRates.fixed_monthly_rate * multiplier),
+          proposed_support: Math.round(slaRates.support_hourly_rate * multiplier),
+        }
+      : null;
 
-  return ok({ rates, sla });
-});
+    return ok({ rates, sla });
+  },
+);

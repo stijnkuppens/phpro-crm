@@ -1,10 +1,10 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import { requirePermission } from '@/lib/require-permission';
-import { getAccount } from '@/features/accounts/queries/get-account';
-import { getReferenceOptions } from '@/features/reference-data/queries/get-reference-options';
 import { AccountEditPageClient } from '@/features/accounts/components/account-edit-page-client';
+import { getAccount } from '@/features/accounts/queries/get-account';
 import type { AccountReferenceData } from '@/features/accounts/types';
+import { getReferenceOptions } from '@/features/reference-data/queries/get-reference-options';
+import { requirePermission } from '@/lib/require-permission';
 
 type Props = {
   params: Promise<{ id: string }>;
@@ -21,7 +21,17 @@ export default async function AccountEditPage({ params }: Props) {
 
   const { id } = await params;
 
-  const [account, technologies, collaborationTypes, hostingProviders, hostingEnvironments, competenceCenters, ccServices, internalPeople, teams] = await Promise.all([
+  const [
+    account,
+    technologies,
+    collaborationTypes,
+    hostingProviders,
+    hostingEnvironments,
+    competenceCenters,
+    ccServices,
+    internalPeople,
+    teams,
+  ] = await Promise.all([
     getAccount(id),
     getReferenceOptions('ref_technologies'),
     getReferenceOptions('ref_collaboration_types'),

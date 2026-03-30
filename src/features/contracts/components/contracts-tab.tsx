@@ -1,25 +1,28 @@
 'use client';
 
-import { useCallback, useState } from 'react';
+import { Download, ExternalLink, SquarePen, TrendingUp } from 'lucide-react';
+import dynamic from 'next/dynamic';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { useCallback, useState } from 'react';
 import { toast } from 'sonner';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Badge } from '@/components/ui/badge';
-import { SquarePen, TrendingUp, ExternalLink, Download } from 'lucide-react';
 import { createBrowserClient } from '@/lib/supabase/client';
-import Link from 'next/link';
+import type { Contract, HourlyRate, SlaRateWithTools } from '../types';
 import { ContractsSummaryCards } from './contracts-summary-cards';
 import { HourlyRatesSubTab } from './hourly-rates-sub-tab';
-import { SlaRatesSubTab } from './sla-rates-sub-tab';
 import { IndexationSubTab } from './indexation-sub-tab';
-import dynamic from 'next/dynamic';
-import type { Contract, HourlyRate, SlaRateWithTools } from '../types';
+import { SlaRatesSubTab } from './sla-rates-sub-tab';
 
-const IndexationWizard = dynamic(() => import('@/features/indexation/components/indexation-wizard').then(m => ({ default: m.IndexationWizard })), { ssr: false });
-import type { IndexationConfig } from '@/features/indexation/types';
-import type { IndexationDraftFull } from '@/features/indexation/types';
+const IndexationWizard = dynamic(
+  () => import('@/features/indexation/components/indexation-wizard').then((m) => ({ default: m.IndexationWizard })),
+  { ssr: false },
+);
+
 import type { IndexationHistoryFull } from '@/features/indexation/queries/get-indexation-history';
+import type { IndexationConfig, IndexationDraftFull } from '@/features/indexation/types';
 
 type Props = {
   accountId: string;
@@ -67,7 +70,12 @@ export function ContractsTab({
             <TrendingUp className="h-4 w-4 mr-1.5" />
             Indexering simuleren
           </Button>
-          <Button variant="outline" size="sm" nativeButton={false} render={<Link href={`/admin/accounts/${accountId}/contracten/edit`} />}>
+          <Button
+            variant="outline"
+            size="sm"
+            nativeButton={false}
+            render={<Link href={`/admin/accounts/${accountId}/contracten/edit`} />}
+          >
             <SquarePen className="h-4 w-4 mr-1.5" />
             Bewerken
           </Button>
@@ -112,7 +120,9 @@ export function ContractsTab({
           <TabsTrigger value="sla">SLA Tarieven</TabsTrigger>
           <TabsTrigger value="indexering" className="flex items-center gap-1.5">
             Indexering
-            <Badge className="bg-primary/15 text-primary-action border-0 text-[10px] h-4 px-1.5">{indexationHistory.length}</Badge>
+            <Badge className="bg-primary/15 text-primary-action border-0 text-[10px] h-4 px-1.5">
+              {indexationHistory.length}
+            </Badge>
           </TabsTrigger>
         </TabsList>
 
@@ -137,12 +147,7 @@ export function ContractsTab({
 
       {/* Modals */}
       {wizardOpen && (
-        <IndexationWizard
-          accountId={accountId}
-          open={wizardOpen}
-          draft={indexationDraft}
-          onClose={handleSaved}
-        />
+        <IndexationWizard accountId={accountId} open={wizardOpen} draft={indexationDraft} onClose={handleSaved} />
       )}
     </div>
   );

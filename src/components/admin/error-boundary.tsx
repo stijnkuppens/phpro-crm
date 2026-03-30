@@ -1,9 +1,9 @@
 'use client';
 
+import { AlertTriangle } from 'lucide-react';
 import { Component, type ReactNode } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { AlertTriangle } from 'lucide-react';
 
 type Props = { children: ReactNode };
 type State = { hasError: boolean; error: Error | null };
@@ -40,9 +40,7 @@ export class ErrorBoundary extends Component<Props, State> {
               )}
             </CardContent>
             <CardFooter>
-              <Button onClick={() => this.setState({ hasError: false, error: null })}>
-                Opnieuw proberen
-              </Button>
+              <Button onClick={() => this.setState({ hasError: false, error: null })}>Opnieuw proberen</Button>
             </CardFooter>
           </Card>
         </div>

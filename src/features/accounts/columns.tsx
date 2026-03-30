@@ -28,9 +28,7 @@ export const accountColumns: ColumnDef<AccountListItem>[] = [
           <Avatar path={row.original.logo_url} fallback={initials} round={false} />
           <div className="min-w-0">
             <div className="truncate font-medium">{name}</div>
-            {domain && (
-              <div className="truncate text-xs text-muted-foreground">{domain}</div>
-            )}
+            {domain && <div className="truncate text-xs text-muted-foreground">{domain}</div>}
           </div>
         </div>
       );
@@ -55,7 +53,9 @@ export const accountColumns: ColumnDef<AccountListItem>[] = [
     cell: ({ row }) => {
       const type = row.original.type;
       return (
-        <StatusBadge colorMap={ACCOUNT_TYPE_STYLES} value={type}>{type}</StatusBadge>
+        <StatusBadge colorMap={ACCOUNT_TYPE_STYLES} value={type}>
+          {type}
+        </StatusBadge>
       );
     },
   },
@@ -76,9 +76,7 @@ export const accountColumns: ColumnDef<AccountListItem>[] = [
     header: 'Status',
     cell: ({ row }) => {
       const isActive = row.original.status === 'Actief';
-      return (
-        <StatusBadge positive={isActive}>{row.original.status}</StatusBadge>
-      );
+      return <StatusBadge positive={isActive}>{row.original.status}</StatusBadge>;
     },
   },
   {
@@ -98,9 +96,7 @@ export const accountColumns: ColumnDef<AccountListItem>[] = [
     header: 'Raamcontract',
     cell: ({ row }) => {
       const has = row.original.has_framework_contract;
-      return (
-        <StatusBadge positive={has}>{has ? 'Ja' : 'Nee'}</StatusBadge>
-      );
+      return <StatusBadge positive={has}>{has ? 'Ja' : 'Nee'}</StatusBadge>;
     },
   },
   {
@@ -120,9 +116,7 @@ export const accountColumns: ColumnDef<AccountListItem>[] = [
     header: 'SLA',
     cell: ({ row }) => {
       const has = row.original.has_service_contract;
-      return (
-        <StatusBadge positive={has}>{has ? 'Ja' : 'Nee'}</StatusBadge>
-      );
+      return <StatusBadge positive={has}>{has ? 'Ja' : 'Nee'}</StatusBadge>;
     },
   },
   {
@@ -131,9 +125,7 @@ export const accountColumns: ColumnDef<AccountListItem>[] = [
     header: 'Consultants',
     cell: ({ row }) => {
       const count = row.original.active_consultant_count;
-      return (
-        <StatusBadge positive={count > 0}>{count > 0 ? `${count} actief` : 'Geen'}</StatusBadge>
-      );
+      return <StatusBadge positive={count > 0}>{count > 0 ? `${count} actief` : 'Geen'}</StatusBadge>;
     },
   },
   {

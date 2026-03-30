@@ -1,11 +1,14 @@
 'use server';
 import { revalidatePath } from 'next/cache';
+import { type ActionResult, err, ok } from '@/lib/action-result';
+import { logger } from '@/lib/logger';
 import { createServerClient } from '@/lib/supabase/server';
-import { ok, err, type ActionResult } from '@/lib/action-result';
 
 export async function markAsRead(notificationId: string): Promise<ActionResult> {
   const supabase = await createServerClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
   if (!user) return err('Niet ingelogd');
 
   const { error } = await supabase
@@ -15,7 +18,7 @@ export async function markAsRead(notificationId: string): Promise<ActionResult> 
     .eq('user_id', user.id);
 
   if (error) {
-    console.error('[markAsRead]', error);
+    logger.error({ err: error }, '[markAsRead] database error');
     return err('Er is een fout opgetreden');
   }
   revalidatePath('/admin', 'layout');
@@ -24,7 +27,9 @@ export async function markAsRead(notificationId: string): Promise<ActionResult> 
 
 export async function markAllAsRead(): Promise<ActionResult> {
   const supabase = await createServerClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
   if (!user) return err('Niet ingelogd');
 
   const { error } = await supabase
@@ -34,7 +39,7 @@ export async function markAllAsRead(): Promise<ActionResult> {
     .eq('read', false);
 
   if (error) {
-    console.error('[markAllAsRead]', error);
+    logger.error({ err: error }, '[markAllAsRead] database error');
     return err('Er is een fout opgetreden');
   }
   revalidatePath('/admin', 'layout');

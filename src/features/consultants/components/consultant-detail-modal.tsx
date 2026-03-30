@@ -1,27 +1,34 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
-import { Modal, ModalFooter } from '@/components/admin/modal';
+import { ExternalLink } from 'lucide-react';
+import { useCallback, useState } from 'react';
 import { Avatar } from '@/components/admin/avatar';
-import { createBrowserClient } from '@/lib/supabase/client';
-import { CONSULTANT_SELECT, CONSULTANT_STATUS_STYLES, CONSULTANT_STATUS_LABELS, CONSULTANT_PRIORITY_STYLES, contractStatusColors, contractStatusDescriptions, type ConsultantWithDetails } from '../types';
+import { Modal, ModalFooter } from '@/components/admin/modal';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from '@/components/ui/tooltip';
-import { ExternalLink } from 'lucide-react';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { formatCurrency } from '@/lib/format';
+import { createBrowserClient } from '@/lib/supabase/client';
+import {
+  CONSULTANT_PRIORITY_STYLES,
+  CONSULTANT_SELECT,
+  CONSULTANT_STATUS_LABELS,
+  CONSULTANT_STATUS_STYLES,
+  type ConsultantWithDetails,
+  contractStatusColors,
+  contractStatusDescriptions,
+} from '../types';
 import { getContractStatus, getCurrentRate } from '../utils';
-import { StopConsultantModal } from './stop-consultant-modal';
+import { ContractAttributionModal } from './contract-attribution-modal';
 import { ExtendConsultantModal } from './extend-consultant-modal';
 import { RateChangeModal } from './rate-change-modal';
-import { ContractAttributionModal } from './contract-attribution-modal';
-import { formatCurrency } from '@/lib/format';
+import { StopConsultantModal } from './stop-consultant-modal';
 
 type Props = {
   consultant: ConsultantWithDetails;
   open: boolean;
   onClose: () => void;
 };
-
 
 function BenchDetail({ consultant }: { consultant: ConsultantWithDetails }) {
   return (
@@ -32,9 +39,13 @@ function BenchDetail({ consultant }: { consultant: ConsultantWithDetails }) {
           <span className="text-muted-foreground">Prioriteit:</span>{' '}
           {consultant.priority ? (
             <Badge className={CONSULTANT_PRIORITY_STYLES[consultant.priority]}>{consultant.priority}</Badge>
-          ) : '-'}
+          ) : (
+            '-'
+          )}
         </div>
-        <div><span className="text-muted-foreground">Stad:</span> {consultant.city ?? '-'}</div>
+        <div>
+          <span className="text-muted-foreground">Stad:</span> {consultant.city ?? '-'}
+        </div>
         <div>
           <span className="text-muted-foreground">Beschikbaar vanaf:</span>{' '}
           {consultant.available_date ? new Date(consultant.available_date).toLocaleDateString('nl-BE') : '-'}
@@ -53,7 +64,9 @@ function BenchDetail({ consultant }: { consultant: ConsultantWithDetails }) {
           <h4 className="text-sm font-medium mb-2">Rollen</h4>
           <div className="flex flex-wrap gap-1">
             {consultant.roles.map((role) => (
-              <Badge key={role} className="bg-primary/15 text-primary-action border-0">{role}</Badge>
+              <Badge key={role} className="bg-primary/15 text-primary-action border-0">
+                {role}
+              </Badge>
             ))}
           </div>
         </div>
@@ -65,7 +78,9 @@ function BenchDetail({ consultant }: { consultant: ConsultantWithDetails }) {
           <h4 className="text-sm font-medium mb-2">Technologieen</h4>
           <div className="flex flex-wrap gap-1">
             {consultant.technologies.map((tech) => (
-              <Badge key={tech} className="bg-muted text-muted-foreground border-0">{tech}</Badge>
+              <Badge key={tech} className="bg-muted text-muted-foreground border-0">
+                {tech}
+              </Badge>
             ))}
           </div>
         </div>
@@ -120,25 +135,42 @@ function ActiveDetail({ consultant }: { consultant: ConsultantWithDetails }) {
     <div className="space-y-6">
       {/* Header info */}
       <div className="grid grid-cols-2 gap-4 text-sm">
-        <div><span className="text-muted-foreground">Rol:</span> {consultant.role ?? '-'}</div>
-        <div><span className="text-muted-foreground">Stad:</span> {consultant.city ?? '-'}</div>
-        <div><span className="text-muted-foreground">Account:</span> {consultant.account?.name ?? consultant.client_name ?? '-'}</div>
+        <div>
+          <span className="text-muted-foreground">Rol:</span> {consultant.role ?? '-'}
+        </div>
+        <div>
+          <span className="text-muted-foreground">Stad:</span> {consultant.city ?? '-'}
+        </div>
+        <div>
+          <span className="text-muted-foreground">Account:</span>{' '}
+          {consultant.account?.name ?? consultant.client_name ?? '-'}
+        </div>
         <div>
           <span className="text-muted-foreground">Contract:</span>{' '}
           <TooltipProvider>
             <Tooltip>
-              <TooltipTrigger render={<Badge className={`cursor-help ${contractStatusColors[status]}`}>{status}</Badge>} />
+              <TooltipTrigger
+                render={<Badge className={`cursor-help ${contractStatusColors[status]}`}>{status}</Badge>}
+              />
               <TooltipContent>{contractStatusDescriptions[status]}</TooltipContent>
             </Tooltip>
           </TooltipProvider>
         </div>
-        <div><span className="text-muted-foreground">Huidig tarief:</span> {formatCurrency(rate)}/u</div>
+        <div>
+          <span className="text-muted-foreground">Huidig tarief:</span> {formatCurrency(rate)}/u
+        </div>
         <div>
           <span className="text-muted-foreground">Periode:</span>{' '}
           {consultant.start_date ? new Date(consultant.start_date).toLocaleDateString('nl-BE') : '-'} -{' '}
-          {consultant.is_indefinite ? 'onbepaald' : consultant.end_date ? new Date(consultant.end_date).toLocaleDateString('nl-BE') : '-'}
+          {consultant.is_indefinite
+            ? 'onbepaald'
+            : consultant.end_date
+              ? new Date(consultant.end_date).toLocaleDateString('nl-BE')
+              : '-'}
         </div>
-        <div><span className="text-muted-foreground">Opzegtermijn:</span> {consultant.notice_period_days ?? 30} dagen</div>
+        <div>
+          <span className="text-muted-foreground">Opzegtermijn:</span> {consultant.notice_period_days ?? 30} dagen
+        </div>
       </div>
 
       {/* Contract Attribution */}
@@ -148,23 +180,39 @@ function ActiveDetail({ consultant }: { consultant: ConsultantWithDetails }) {
           <div className="border rounded-md p-3 text-sm space-y-1">
             <div>
               <span className="text-muted-foreground">Type:</span>{' '}
-              <Badge className={consultant.contract_attribution.type === 'rechtstreeks' ? 'bg-green-100 text-green-800' : 'bg-blue-100 text-blue-800'}>
+              <Badge
+                className={
+                  consultant.contract_attribution.type === 'rechtstreeks'
+                    ? 'bg-green-100 text-green-800'
+                    : 'bg-blue-100 text-blue-800'
+                }
+              >
                 {consultant.contract_attribution.type === 'rechtstreeks' ? 'Rechtstreeks' : 'Cronos'}
               </Badge>
             </div>
             {consultant.contract_attribution.type === 'cronos' && (
               <>
                 {consultant.contract_attribution.cc_name && (
-                  <div><span className="text-muted-foreground">CC Naam:</span> {consultant.contract_attribution.cc_name}</div>
+                  <div>
+                    <span className="text-muted-foreground">CC Naam:</span> {consultant.contract_attribution.cc_name}
+                  </div>
                 )}
                 {consultant.contract_attribution.cc_contact_person && (
-                  <div><span className="text-muted-foreground">CC Contactpersoon:</span> {consultant.contract_attribution.cc_contact_person}</div>
+                  <div>
+                    <span className="text-muted-foreground">CC Contactpersoon:</span>{' '}
+                    {consultant.contract_attribution.cc_contact_person}
+                  </div>
                 )}
                 {consultant.contract_attribution.cc_email && (
-                  <div><span className="text-muted-foreground">CC E-mail:</span> {consultant.contract_attribution.cc_email}</div>
+                  <div>
+                    <span className="text-muted-foreground">CC E-mail:</span> {consultant.contract_attribution.cc_email}
+                  </div>
                 )}
                 {consultant.contract_attribution.cc_phone && (
-                  <div><span className="text-muted-foreground">CC Telefoon:</span> {consultant.contract_attribution.cc_phone}</div>
+                  <div>
+                    <span className="text-muted-foreground">CC Telefoon:</span>{' '}
+                    {consultant.contract_attribution.cc_phone}
+                  </div>
                 )}
               </>
             )}
@@ -269,9 +317,16 @@ function StopgezetDetail({ consultant }: { consultant: ConsultantWithDetails }) 
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-2 gap-4 text-sm">
-        <div><span className="text-muted-foreground">Rol:</span> {consultant.role ?? '-'}</div>
-        <div><span className="text-muted-foreground">Stad:</span> {consultant.city ?? '-'}</div>
-        <div><span className="text-muted-foreground">Account:</span> {consultant.account?.name ?? consultant.client_name ?? '-'}</div>
+        <div>
+          <span className="text-muted-foreground">Rol:</span> {consultant.role ?? '-'}
+        </div>
+        <div>
+          <span className="text-muted-foreground">Stad:</span> {consultant.city ?? '-'}
+        </div>
+        <div>
+          <span className="text-muted-foreground">Account:</span>{' '}
+          {consultant.account?.name ?? consultant.client_name ?? '-'}
+        </div>
         <div>
           <span className="text-muted-foreground">Stopdatum:</span>{' '}
           {consultant.stop_date ? new Date(consultant.stop_date).toLocaleDateString('nl-BE') : '-'}
@@ -308,11 +363,7 @@ export function ConsultantDetailModal({ consultant: initialConsultant, open, onC
   // an already-open modal, so we re-fetch the single consultant directly.
   const refresh = useCallback(async () => {
     const supabase = createBrowserClient();
-    const { data } = await supabase
-      .from('consultants')
-      .select(CONSULTANT_SELECT)
-      .eq('id', consultant.id)
-      .single();
+    const { data } = await supabase.from('consultants').select(CONSULTANT_SELECT).eq('id', consultant.id).single();
     if (data) setConsultant(data as unknown as ConsultantWithDetails);
   }, [consultant.id]);
 
@@ -330,8 +381,12 @@ export function ConsultantDetailModal({ consultant: initialConsultant, open, onC
           <div className="flex items-center gap-3">
             <Avatar path={consultant.avatar_path} fallback={initials} size="md" round />
             <div>
-              <div className="font-medium">{consultant.first_name} {consultant.last_name}</div>
-              <Badge className={CONSULTANT_STATUS_STYLES[consultant.status]}>{CONSULTANT_STATUS_LABELS[consultant.status]}</Badge>
+              <div className="font-medium">
+                {consultant.first_name} {consultant.last_name}
+              </div>
+              <Badge className={CONSULTANT_STATUS_STYLES[consultant.status]}>
+                {CONSULTANT_STATUS_LABELS[consultant.status]}
+              </Badge>
             </div>
           </div>
 

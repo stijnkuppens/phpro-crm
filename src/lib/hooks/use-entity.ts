@@ -1,10 +1,10 @@
 'use client';
 
-import { useState, useCallback, useRef } from 'react';
-import { createBrowserClient } from '@/lib/supabase/client';
+import { useCallback, useRef, useState } from 'react';
 import { toast } from 'sonner';
-import type { Database } from '@/types/database';
+import { createBrowserClient } from '@/lib/supabase/client';
 import { escapeSearch } from '@/lib/utils/escape-search';
+import type { Database } from '@/types/database';
 
 type TableName = keyof Database['public']['Tables'];
 
@@ -26,6 +26,7 @@ export function useEntity<T extends Record<string, unknown>>({
   const supabase = createBrowserClient();
   // Targeted cast: .from() with a dynamic table name returns a union type that TS
   // can't narrow. We cast the query builder, not the entire client.
+  // biome-ignore lint/suspicious/noExplicitAny: dynamic table name returns union type that cannot be narrowed
   const queryTable = useCallback((t: TableName) => supabase.from(t) as any, [supabase]);
   const [data, setData] = useState<T[]>(initialData ?? []);
   const [total, setTotal] = useState(initialCount ?? 0);
@@ -34,14 +35,17 @@ export function useEntity<T extends Record<string, unknown>>({
   const hasDataRef = useRef(!!initialData?.length);
 
   const fetchList = useCallback(
-    async (params: {
-      page?: number;
-      sort?: { column: string; direction: 'asc' | 'desc' };
-      search?: { column: string; query: string };
-      orFilter?: string;
-      eqFilters?: Record<string, string | boolean>;
-      applyFilters?: (query: any) => any;
-    } = {}) => {
+    async (
+      params: {
+        page?: number;
+        sort?: { column: string; direction: 'asc' | 'desc' };
+        search?: { column: string; query: string };
+        orFilter?: string;
+        eqFilters?: Record<string, string | boolean>;
+        // biome-ignore lint/suspicious/noExplicitAny: Supabase query builder type is complex; any is intentional here
+        applyFilters?: (query: any) => any;
+      } = {},
+    ) => {
       if (hasDataRef.current) {
         setRefreshing(true);
       } else {
@@ -51,9 +55,7 @@ export function useEntity<T extends Record<string, unknown>>({
       const from = (page - 1) * pageSize;
       const to = from + pageSize - 1;
 
-      let query = queryTable(table)
-        .select(select, { count: 'exact' })
-        .range(from, to);
+      let query = queryTable(table).select(select, { count: 'exact' }).range(from, to);
 
       if (sort) {
         query = query.order(sort.column, { ascending: sort.direction === 'asc' });
@@ -96,10 +98,7 @@ export function useEntity<T extends Record<string, unknown>>({
 
   const getById = useCallback(
     async (id: string) => {
-      const { data, error } = await queryTable(table)
-        .select('*')
-        .eq('id', id)
-        .single();
+      const { data, error } = await queryTable(table).select('*').eq('id', id).single();
       if (error) {
         toast.error(`Record laden mislukt`);
         return null;

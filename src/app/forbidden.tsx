@@ -1,7 +1,7 @@
 import { ShieldX } from 'lucide-react';
+import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import Link from 'next/link';
 
 export default function ForbiddenPage() {
   return (
@@ -16,8 +16,8 @@ export default function ForbiddenPage() {
           </CardHeader>
           <CardContent>
             <p className="text-sm text-muted-foreground">
-              Je hebt geen toestemming om deze pagina te bekijken. Neem contact op met een
-              administrator als je denkt dat dit een fout is.
+              Je hebt geen toestemming om deze pagina te bekijken. Neem contact op met een administrator als je denkt
+              dat dit een fout is.
             </p>
           </CardContent>
           <CardFooter>

@@ -1,8 +1,8 @@
 'use client';
 
+import { Save } from 'lucide-react';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Save } from 'lucide-react';
 
 type Props = {
   /** Is this an edit form (vs create)? Shows "save and close" only on edit */
@@ -54,7 +54,9 @@ export function FormActions({ isEdit, loading, formRef, onSaveAndClose, formId, 
         type="submit"
         form={formId}
         disabled={loading}
-        onClick={() => { setClosing(false); }}
+        onClick={() => {
+          setClosing(false);
+        }}
       >
         <Save />
         {loading && !closing ? l.saving : isEdit ? l.update : l.create}

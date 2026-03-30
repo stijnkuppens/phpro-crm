@@ -1,8 +1,8 @@
 import { cache } from 'react';
-import { createServerClient } from '@/lib/supabase/server';
 import { logger } from '@/lib/logger';
+import { createServerClient } from '@/lib/supabase/server';
 import { escapeSearch } from '@/lib/utils/escape-search';
-import { CONSULTANT_SELECT, type ConsultantWithDetails, type ConsultantStatus } from '../types';
+import { CONSULTANT_SELECT, type ConsultantStatus, type ConsultantWithDetails } from '../types';
 
 type GetConsultantsParams = {
   page?: number;
@@ -41,9 +41,7 @@ export const getConsultants = cache(
 
     if (search) {
       const s = escapeSearch(search);
-      query = query.or(
-        `first_name.ilike.%${s}%,last_name.ilike.%${s}%,role.ilike.%${s}%,client_name.ilike.%${s}%`,
-      );
+      query = query.or(`first_name.ilike.%${s}%,last_name.ilike.%${s}%,role.ilike.%${s}%,client_name.ilike.%${s}%`);
     }
 
     const { data, count, error } = await query;

@@ -1,12 +1,12 @@
 'use client';
 
-import { useActionState } from 'react';
 import { useRouter } from 'next/navigation';
-import { createBrowserClient } from '@/lib/supabase/client';
+import { useActionState } from 'react';
+import { toast } from 'sonner';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { SubmitButton } from '@/components/ui/submit-button';
-import { toast } from 'sonner';
+import { createBrowserClient } from '@/lib/supabase/client';
 
 export function ResetPasswordForm() {
   const router = useRouter();
@@ -35,20 +35,14 @@ export function ResetPasswordForm() {
       <form action={formAction}>
         <CardContent>
           <div className="space-y-2">
-            <label htmlFor="password" className="text-sm font-medium">New password</label>
-            <Input
-              id="password"
-              name="password"
-              type="password"
-              required
-              minLength={6}
-            />
+            <label htmlFor="password" className="text-sm font-medium">
+              New password
+            </label>
+            <Input id="password" name="password" type="password" required minLength={6} />
           </div>
         </CardContent>
         <CardFooter>
-          <SubmitButton className="w-full">
-            Update password
-          </SubmitButton>
+          <SubmitButton className="w-full">Update password</SubmitButton>
         </CardFooter>
       </form>
     </Card>

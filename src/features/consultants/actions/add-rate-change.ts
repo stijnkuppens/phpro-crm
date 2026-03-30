@@ -1,11 +1,12 @@
 'use server';
 
-import { z } from 'zod';
-import { createServerClient } from '@/lib/supabase/server';
-import { requirePermission } from '@/lib/require-permission';
-import { logAction } from '@/features/audit/actions/log-action';
 import { revalidatePath } from 'next/cache';
-import { ok, err, type ActionResult } from '@/lib/action-result';
+import { z } from 'zod';
+import { logAction } from '@/features/audit/actions/log-action';
+import { type ActionResult, err, ok } from '@/lib/action-result';
+import { logger } from '@/lib/logger';
+import { requirePermission } from '@/lib/require-permission';
+import { createServerClient } from '@/lib/supabase/server';
 
 const rateChangeSchema = z.object({
   date: z.string().min(1, 'Datum is verplicht'),
@@ -14,10 +15,7 @@ const rateChangeSchema = z.object({
   notes: z.string().optional(),
 });
 
-export async function addRateChange(
-  id: string,
-  values: z.infer<typeof rateChangeSchema>,
-): Promise<ActionResult> {
+export async function addRateChange(id: string, values: z.infer<typeof rateChangeSchema>): Promise<ActionResult> {
   try {
     await requirePermission('consultants.write');
   } catch {
@@ -33,18 +31,16 @@ export async function addRateChange(
   const supabase = await createServerClient();
   const { data: before } = await supabase.from('consultants').select('*').eq('id', id).single();
 
-  const { error: historyError } = await supabase
-    .from('consultant_rate_history')
-    .insert({
-      consultant_id: id,
-      date: parsed.data.date,
-      rate: parsed.data.rate,
-      reason: parsed.data.reason ?? null,
-      notes: parsed.data.notes ?? null,
-    });
+  const { error: historyError } = await supabase.from('consultant_rate_history').insert({
+    consultant_id: id,
+    date: parsed.data.date,
+    rate: parsed.data.rate,
+    reason: parsed.data.reason ?? null,
+    notes: parsed.data.notes ?? null,
+  });
 
   if (historyError) {
-    console.error('[addRateChange] insert', historyError);
+    logger.error({ err: historyError }, '[addRateChange] insert error');
     return err('Er is een fout opgetreden');
   }
 
@@ -60,7 +56,7 @@ export async function addRateChange(
       .eq('id', id);
 
     if (updateError) {
-      console.error('[addRateChange] update', updateError);
+      logger.error({ err: updateError }, '[addRateChange] update error');
       return err('Er is een fout opgetreden');
     }
   }

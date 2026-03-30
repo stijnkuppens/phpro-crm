@@ -1,14 +1,9 @@
 'use client';
 
 import { Plus, Trash2 } from 'lucide-react';
-import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-} from '@/components/ui/select';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger } from '@/components/ui/select';
 import type { ReferenceOption } from '@/features/accounts/types';
 
 export type CompetenceCenterEntry = {
@@ -46,6 +41,7 @@ export function AccountFormCCSection({
         </Button>
       </div>
       {entries.map((cc, index) => (
+        // biome-ignore lint/suspicious/noArrayIndexKey: dynamically added rows with no stable identity
         <div key={index} className="rounded-lg border bg-card p-3 shadow-sm space-y-2">
           <div className="flex items-center gap-2">
             <Select
@@ -59,20 +55,18 @@ export function AccountFormCCSection({
                 });
               }}
             >
-              <SelectTrigger>{cc.competence_center_name || <span className="text-muted-foreground">Selecteer CC...</span>}</SelectTrigger>
+              <SelectTrigger>
+                {cc.competence_center_name || <span className="text-muted-foreground">Selecteer CC...</span>}
+              </SelectTrigger>
               <SelectContent>
                 {ccOptions.map((o) => (
-                  <SelectItem key={o.id} value={o.id}>{o.name}</SelectItem>
+                  <SelectItem key={o.id} value={o.id}>
+                    {o.name}
+                  </SelectItem>
                 ))}
               </SelectContent>
             </Select>
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon"
-              onClick={() => onRemove(index)}
-              className="shrink-0"
-            >
+            <Button type="button" variant="ghost" size="icon" onClick={() => onRemove(index)} className="shrink-0">
               <Trash2 className="h-4 w-4 text-muted-foreground" />
             </Button>
           </div>

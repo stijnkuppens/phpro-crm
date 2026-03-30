@@ -1,7 +1,7 @@
+import type { LucideIcon } from 'lucide-react';
+import { FileText, Mail, Phone, Users } from 'lucide-react';
 import { z } from 'zod';
 import type { Database } from '@/types/database';
-import { Mail, FileText, Users, Phone } from 'lucide-react';
-import type { LucideIcon } from 'lucide-react';
 
 export const entityIdSchema = z.string().min(1);
 
@@ -40,9 +40,30 @@ export type CommunicationFilters = {
 };
 
 // ── Shared type config ─────────────────────────────────────────────────────
-export const COMMUNICATION_TYPE_CONFIG: Record<string, { icon: LucideIcon; bg: string; color: string; label: string }> = {
-  email: { icon: Mail, bg: 'bg-blue-50 dark:bg-blue-950', color: 'text-blue-600 dark:text-blue-400', label: 'E-mail' },
-  note: { icon: FileText, bg: 'bg-amber-50 dark:bg-amber-950', color: 'text-amber-600 dark:text-amber-400', label: 'Notitie' },
-  meeting: { icon: Users, bg: 'bg-green-50 dark:bg-green-950', color: 'text-green-600 dark:text-green-400', label: 'Vergadering' },
-  call: { icon: Phone, bg: 'bg-purple-50 dark:bg-purple-950', color: 'text-purple-600 dark:text-purple-400', label: 'Call' },
-};
+export const COMMUNICATION_TYPE_CONFIG: Record<string, { icon: LucideIcon; bg: string; color: string; label: string }> =
+  {
+    email: {
+      icon: Mail,
+      bg: 'bg-blue-50 dark:bg-blue-950',
+      color: 'text-blue-600 dark:text-blue-400',
+      label: 'E-mail',
+    },
+    note: {
+      icon: FileText,
+      bg: 'bg-amber-50 dark:bg-amber-950',
+      color: 'text-amber-600 dark:text-amber-400',
+      label: 'Notitie',
+    },
+    meeting: {
+      icon: Users,
+      bg: 'bg-green-50 dark:bg-green-950',
+      color: 'text-green-600 dark:text-green-400',
+      label: 'Vergadering',
+    },
+    call: {
+      icon: Phone,
+      bg: 'bg-purple-50 dark:bg-purple-950',
+      color: 'text-purple-600 dark:text-purple-400',
+      label: 'Call',
+    },
+  };

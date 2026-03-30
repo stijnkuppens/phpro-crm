@@ -1,9 +1,9 @@
 'use client';
 
-import { useState, useRef } from 'react';
 import { X } from 'lucide-react';
-import { Input } from '@/components/ui/input';
+import { useRef, useState } from 'react';
 import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
 
 type Props = {
   values: string[];
@@ -33,11 +33,7 @@ export function StringChipInput({ values, onChange, placeholder }: Props) {
         {values.map((v) => (
           <Badge key={v} variant="secondary" className="gap-1 pr-1">
             {v}
-            <button
-              type="button"
-              onClick={() => remove(v)}
-              className="ml-0.5 hover:text-destructive"
-            >
+            <button type="button" onClick={() => remove(v)} className="ml-0.5 hover:text-destructive">
               <X className="h-3 w-3" />
             </button>
           </Badge>

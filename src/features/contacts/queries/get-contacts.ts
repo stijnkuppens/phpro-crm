@@ -1,8 +1,8 @@
 import { cache } from 'react';
-import { createServerClient } from '@/lib/supabase/server';
 import { logger } from '@/lib/logger';
+import { createServerClient } from '@/lib/supabase/server';
 import { escapeSearch } from '@/lib/utils/escape-search';
-import type { Contact, ContactWithDetails, ContactFilters } from '../types';
+import type { Contact, ContactFilters, ContactWithDetails } from '../types';
 
 type GetContactsParams = {
   filters?: ContactFilters;
@@ -22,10 +22,13 @@ export const getContacts = cache(
 
     let query = supabase
       .from('contacts')
-      .select(`
+      .select(
+        `
         *,
         account:accounts!account_id(id, name)
-      `, { count: 'exact' })
+      `,
+        { count: 'exact' },
+      )
       .order('last_name', { ascending: true })
       .range(from, to);
 

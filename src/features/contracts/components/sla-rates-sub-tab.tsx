@@ -1,13 +1,13 @@
 'use client';
 
-import { useMemo, useState } from 'react';
-import { Badge } from '@/components/ui/badge';
 import { ChevronLeft, ChevronRight, Wrench } from 'lucide-react';
+import { useMemo, useState } from 'react';
+import { EmptyState } from '@/components/admin/empty-state';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { EmptyState } from '@/components/admin/empty-state';
-import type { SlaRateWithTools } from '../types';
 import { formatEUR } from '@/lib/format';
+import type { SlaRateWithTools } from '../types';
 
 type Props = {
   slaRates: SlaRateWithTools[];
@@ -45,9 +45,15 @@ export function SlaRatesSubTab({ slaRates, hasServiceContract }: Props) {
     return <EmptyState icon={Wrench} title="Geen SLA tarieven geconfigureerd." />;
   }
 
-  const toolCount = current?.tools?.length ?? 0;
-  const fixedDiff = current && prev ? Math.round((Number(current.fixed_monthly_rate) - Number(prev.fixed_monthly_rate)) * 100) / 100 : undefined;
-  const supportDiff = current && prev ? Math.round((Number(current.support_hourly_rate) - Number(prev.support_hourly_rate)) * 100) / 100 : undefined;
+  const _toolCount = current?.tools?.length ?? 0;
+  const _fixedDiff =
+    current && prev
+      ? Math.round((Number(current.fixed_monthly_rate) - Number(prev.fixed_monthly_rate)) * 100) / 100
+      : undefined;
+  const _supportDiff =
+    current && prev
+      ? Math.round((Number(current.support_hourly_rate) - Number(prev.support_hourly_rate)) * 100) / 100
+      : undefined;
 
   function getToolPrice(sla: SlaRateWithTools | null, name: string): number | null {
     if (!sla) return null;
@@ -89,56 +95,57 @@ export function SlaRatesSubTab({ slaRates, hasServiceContract }: Props) {
 
       {/* Year cards */}
       <div className="grid grid-cols-3 gap-4">
-          {visibleYears.map((year, i) => {
-            const sla = visibleRates[i];
-            const prevSla = ratesByYear.get(year - 1);
-            const fixed = sla ? Number(sla.fixed_monthly_rate) : 0;
-            const support = sla ? Number(sla.support_hourly_rate) : 0;
-            const tools = sla?.tools?.length ?? 0;
-            const prevFixed = prevSla ? Number(prevSla.fixed_monthly_rate) : undefined;
-            const fDiff = prevFixed != null && fixed ? Math.round((fixed - prevFixed) * 100) / 100 : undefined;
+        {visibleYears.map((year, i) => {
+          const sla = visibleRates[i];
+          const prevSla = ratesByYear.get(year - 1);
+          const fixed = sla ? Number(sla.fixed_monthly_rate) : 0;
+          const support = sla ? Number(sla.support_hourly_rate) : 0;
+          const tools = sla?.tools?.length ?? 0;
+          const prevFixed = prevSla ? Number(prevSla.fixed_monthly_rate) : undefined;
+          const fDiff = prevFixed != null && fixed ? Math.round((fixed - prevFixed) * 100) / 100 : undefined;
 
-            return (
-              <Card key={year} className={year === currentYear ? 'border-primary/30 bg-primary/5' : ''}>
-                <CardContent className="p-4">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-base font-bold">{year}</span>
-                    {year === currentYear && (
-                      <span className="rounded-full bg-primary/15 px-2 py-0.5 text-[10px] font-medium text-primary-action">
-                        Huidig
-                      </span>
-                    )}
-                  </div>
-                  {sla ? (
-                    <div className="space-y-1.5">
-                      <div className="flex items-baseline justify-between">
-                        <span className="text-[10px] uppercase tracking-wider text-muted-foreground">Vast</span>
-                        <div className="flex items-baseline gap-1.5">
-                          <span className="text-lg font-semibold">{formatEUR(fixed)}</span>
-                          {fDiff != null && fDiff !== 0 && (
-                            <span className={`text-[10px] font-medium ${fDiff > 0 ? 'text-green-600' : 'text-red-600'}`}>
-                              {fDiff > 0 ? '+' : ''}{fDiff}
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                      <div className="flex items-baseline justify-between">
-                        <span className="text-[10px] uppercase tracking-wider text-muted-foreground">Support</span>
-                        <span className="text-lg font-semibold">{formatEUR(support)}/u</span>
-                      </div>
-                      <div className="flex items-baseline justify-between pt-1 border-t">
-                        <span className="text-[10px] uppercase tracking-wider text-muted-foreground">Tools</span>
-                        <span className="text-sm font-medium">{tools}</span>
+          return (
+            <Card key={year} className={year === currentYear ? 'border-primary/30 bg-primary/5' : ''}>
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-base font-bold">{year}</span>
+                  {year === currentYear && (
+                    <span className="rounded-full bg-primary/15 px-2 py-0.5 text-[10px] font-medium text-primary-action">
+                      Huidig
+                    </span>
+                  )}
+                </div>
+                {sla ? (
+                  <div className="space-y-1.5">
+                    <div className="flex items-baseline justify-between">
+                      <span className="text-[10px] uppercase tracking-wider text-muted-foreground">Vast</span>
+                      <div className="flex items-baseline gap-1.5">
+                        <span className="text-lg font-semibold">{formatEUR(fixed)}</span>
+                        {fDiff != null && fDiff !== 0 && (
+                          <span className={`text-[10px] font-medium ${fDiff > 0 ? 'text-green-600' : 'text-red-600'}`}>
+                            {fDiff > 0 ? '+' : ''}
+                            {fDiff}
+                          </span>
+                        )}
                       </div>
                     </div>
-                  ) : (
-                    <p className="text-xs text-muted-foreground italic mt-2">Geen data</p>
-                  )}
-                </CardContent>
-              </Card>
-            );
-          })}
-        </div>
+                    <div className="flex items-baseline justify-between">
+                      <span className="text-[10px] uppercase tracking-wider text-muted-foreground">Support</span>
+                      <span className="text-lg font-semibold">{formatEUR(support)}/u</span>
+                    </div>
+                    <div className="flex items-baseline justify-between pt-1 border-t">
+                      <span className="text-[10px] uppercase tracking-wider text-muted-foreground">Tools</span>
+                      <span className="text-sm font-medium">{tools}</span>
+                    </div>
+                  </div>
+                ) : (
+                  <p className="text-xs text-muted-foreground italic mt-2">Geen data</p>
+                )}
+              </CardContent>
+            </Card>
+          );
+        })}
+      </div>
 
       {/* Multi-year comparison table */}
       <div className="rounded-xl border bg-card shadow-sm overflow-hidden">
@@ -150,7 +157,9 @@ export function SlaRatesSubTab({ slaRates, hasServiceContract }: Props) {
                 <th key={year} className={`text-right p-3 font-medium ${year === currentYear ? 'bg-primary/5' : ''}`}>
                   <div className="flex items-center justify-end gap-1.5">
                     {year}
-                    {year === currentYear && <span className="text-[10px] text-primary-action font-normal">Huidig</span>}
+                    {year === currentYear && (
+                      <span className="text-[10px] text-primary-action font-normal">Huidig</span>
+                    )}
                   </div>
                 </th>
               ))}
@@ -161,14 +170,14 @@ export function SlaRatesSubTab({ slaRates, hasServiceContract }: Props) {
             {/* Fixed monthly */}
             <RateRow
               label="Vast maandtarief"
-              values={visibleRates.map((s) => s ? Number(s.fixed_monthly_rate) : null)}
+              values={visibleRates.map((s) => (s ? Number(s.fixed_monthly_rate) : null))}
               currentYear={currentYear}
               years={visibleYears}
             />
             {/* Support hourly */}
             <RateRow
               label="Support uurtarief"
-              values={visibleRates.map((s) => s ? Number(s.support_hourly_rate) : null)}
+              values={visibleRates.map((s) => (s ? Number(s.support_hourly_rate) : null))}
               suffix="/u"
               currentYear={currentYear}
               years={visibleYears}
@@ -201,18 +210,26 @@ export function SlaRatesSubTab({ slaRates, hasServiceContract }: Props) {
               <td className="p-3">Totaal / maand (excl. support)</td>
               {visibleYears.map((year, i) => (
                 <td key={year} className={`p-3 text-right ${year === currentYear ? 'bg-primary/5' : ''}`}>
-                  {visibleRates[i] ? formatEUR(getYearTotal(visibleRates[i])) : <span className="text-muted-foreground">—</span>}
+                  {visibleRates[i] ? (
+                    formatEUR(getYearTotal(visibleRates[i]))
+                  ) : (
+                    <span className="text-muted-foreground">—</span>
+                  )}
                 </td>
               ))}
               <td className="p-3 text-right">
-                {visibleRates[0] && visibleRates[1] && (() => {
-                  const diff = getYearTotal(visibleRates[0]) - getYearTotal(visibleRates[1]);
-                  return diff !== 0 ? (
-                    <span className={diff > 0 ? 'text-green-600' : 'text-red-600'}>
-                      {diff > 0 ? '+' : ''}€ {Math.abs(diff).toLocaleString('nl-BE')}
-                    </span>
-                  ) : '—';
-                })()}
+                {visibleRates[0] &&
+                  visibleRates[1] &&
+                  (() => {
+                    const diff = getYearTotal(visibleRates[0]) - getYearTotal(visibleRates[1]);
+                    return diff !== 0 ? (
+                      <span className={diff > 0 ? 'text-green-600' : 'text-red-600'}>
+                        {diff > 0 ? '+' : ''}€ {Math.abs(diff).toLocaleString('nl-BE')}
+                      </span>
+                    ) : (
+                      '—'
+                    );
+                  })()}
               </td>
             </tr>
           </tbody>
@@ -222,7 +239,14 @@ export function SlaRatesSubTab({ slaRates, hasServiceContract }: Props) {
   );
 }
 
-function RateRow({ label, values, indent, suffix, currentYear, years }: {
+function RateRow({
+  label,
+  values,
+  indent,
+  suffix,
+  currentYear,
+  years,
+}: {
   label: string;
   values: (number | null)[];
   indent?: boolean;
@@ -232,7 +256,8 @@ function RateRow({ label, values, indent, suffix, currentYear, years }: {
 }) {
   const firstVal = values[0];
   const secondVal = values[1];
-  const evolutionDiff = firstVal != null && secondVal != null ? Math.round((firstVal - secondVal) * 100) / 100 : undefined;
+  const evolutionDiff =
+    firstVal != null && secondVal != null ? Math.round((firstVal - secondVal) * 100) / 100 : undefined;
 
   return (
     <tr className="border-b last:border-0 hover:bg-muted/20">
@@ -241,9 +266,13 @@ function RateRow({ label, values, indent, suffix, currentYear, years }: {
         {label}
       </td>
       {values.map((val, i) => (
+        // biome-ignore lint/suspicious/noArrayIndexKey: year-indexed values with no stable identity
         <td key={i} className={`p-3 text-right ${years[i] === currentYear ? 'bg-primary/5' : ''}`}>
           {val != null ? (
-            <span>{formatEUR(val)}{suffix}</span>
+            <span>
+              {formatEUR(val)}
+              {suffix}
+            </span>
           ) : (
             <span className="text-muted-foreground">—</span>
           )}
@@ -252,13 +281,12 @@ function RateRow({ label, values, indent, suffix, currentYear, years }: {
       <td className="p-3 text-right">
         {evolutionDiff != null && evolutionDiff !== 0 ? (
           <span className={`text-[11px] font-medium ${evolutionDiff > 0 ? 'text-green-600' : 'text-red-600'}`}>
-            {evolutionDiff > 0 ? '+' : ''}{evolutionDiff}
+            {evolutionDiff > 0 ? '+' : ''}
+            {evolutionDiff}
           </span>
-        ) : (
-          firstVal != null && secondVal == null ? (
-            <span className="text-[11px] font-medium text-green-600">+{firstVal}</span>
-          ) : null
-        )}
+        ) : firstVal != null && secondVal == null ? (
+          <span className="text-[11px] font-medium text-green-600">+{firstVal}</span>
+        ) : null}
       </td>
     </tr>
   );

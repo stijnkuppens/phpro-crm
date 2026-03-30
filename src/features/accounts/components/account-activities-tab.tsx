@@ -1,16 +1,16 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { toast } from 'sonner';
-import { Button } from '@/components/ui/button';
-import { Modal } from '@/components/admin/modal';
-import { ActivityForm } from '@/features/activities/components/activity-form';
-import { ActivityCardList } from '@/features/activities/components/activity-card-list';
-import { updateActivity } from '@/features/activities/actions/update-activity';
-import { deleteActivity } from '@/features/activities/actions/delete-activity';
-import type { ActivityWithRelations, ActivityFormValues } from '@/features/activities/types';
 import { Plus, Sparkles } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { useState } from 'react';
+import { toast } from 'sonner';
+import { Modal } from '@/components/admin/modal';
+import { Button } from '@/components/ui/button';
+import { deleteActivity } from '@/features/activities/actions/delete-activity';
+import { updateActivity } from '@/features/activities/actions/update-activity';
+import { ActivityCardList } from '@/features/activities/components/activity-card-list';
+import { ActivityForm } from '@/features/activities/components/activity-form';
+import type { ActivityFormValues, ActivityWithRelations } from '@/features/activities/types';
 
 type Props = {
   accountId: string;
@@ -20,7 +20,13 @@ type Props = {
   deals?: { id: string; title: string }[];
 };
 
-export function AccountActivitiesTab({ accountId, accountName, initialData, initialCount, deals = [] }: Props) {
+export function AccountActivitiesTab({
+  accountId,
+  accountName,
+  initialData,
+  initialCount: _initialCount,
+  deals = [],
+}: Props) {
   const router = useRouter();
   const [data, setData] = useState(initialData);
   const [modalOpen, setModalOpen] = useState(false);
@@ -39,15 +45,11 @@ export function AccountActivitiesTab({ accountId, accountName, initialData, init
     };
 
     // Optimistic update
-    setData((prev) =>
-      prev.map((a) => (a.id === activity.id ? { ...a, is_done: !a.is_done } : a)),
-    );
+    setData((prev) => prev.map((a) => (a.id === activity.id ? { ...a, is_done: !a.is_done } : a)));
 
     const result = await updateActivity(activity.id, values);
     if ('error' in result && result.error) {
-      setData((prev) =>
-        prev.map((a) => (a.id === activity.id ? { ...a, is_done: activity.is_done } : a)),
-      );
+      setData((prev) => prev.map((a) => (a.id === activity.id ? { ...a, is_done: activity.is_done } : a)));
       toast.error('Kon status niet bijwerken');
     }
   }

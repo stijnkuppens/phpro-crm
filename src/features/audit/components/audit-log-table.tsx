@@ -1,11 +1,11 @@
 'use client';
 
-import { useState } from 'react';
-import { type ColumnDef } from '@tanstack/react-table';
+import type { ColumnDef } from '@tanstack/react-table';
 import { Info } from 'lucide-react';
+import { useState } from 'react';
 import DataTable from '@/components/admin/data-table';
-import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import type { AuditLog } from '../types';
 import { AuditDetail } from './audit-detail';
 
@@ -26,14 +26,7 @@ type AuditLogTableProps = {
   filterBar?: React.ReactNode;
 };
 
-export function AuditLogTable({
-  data,
-  pagination,
-  onPageChange,
-  loading,
-  refreshing,
-  filterBar,
-}: AuditLogTableProps) {
+export function AuditLogTable({ data, pagination, onPageChange, loading, refreshing, filterBar }: AuditLogTableProps) {
   const [selectedLog, setSelectedLog] = useState<AuditLog | null>(null);
 
   const columns: ColumnDef<AuditLog>[] = [
@@ -43,9 +36,7 @@ export function AuditLogTable({
       meta: { label: 'Tijdstip' },
       header: 'Timestamp',
       cell: ({ row }) => (
-        <span className="whitespace-nowrap text-muted-foreground">
-          {formatTimestamp(row.original.created_at)}
-        </span>
+        <span className="whitespace-nowrap text-muted-foreground">{formatTimestamp(row.original.created_at)}</span>
       ),
     },
     {
@@ -53,20 +44,14 @@ export function AuditLogTable({
       id: 'user_id',
       meta: { label: 'Gebruiker' },
       header: 'User',
-      cell: ({ row }) => (
-        <span className="font-mono text-xs">
-          {row.original.user_id?.slice(0, 8) ?? 'system'}
-        </span>
-      ),
+      cell: ({ row }) => <span className="font-mono text-xs">{row.original.user_id?.slice(0, 8) ?? 'system'}</span>,
     },
     {
       accessorKey: 'action',
       id: 'action',
       meta: { label: 'Actie' },
       header: 'Action',
-      cell: ({ row }) => (
-        <Badge variant="secondary">{row.original.action}</Badge>
-      ),
+      cell: ({ row }) => <Badge variant="secondary">{row.original.action}</Badge>,
     },
     {
       accessorKey: 'entity',
@@ -80,21 +65,13 @@ export function AuditLogTable({
       id: 'entity_id',
       meta: { label: 'Entiteit ID' },
       header: 'Entity ID',
-      cell: ({ row }) => (
-        <span className="font-mono text-xs">
-          {row.original.entity_id?.slice(0, 8) ?? '\u2014'}
-        </span>
-      ),
+      cell: ({ row }) => <span className="font-mono text-xs">{row.original.entity_id?.slice(0, 8) ?? '\u2014'}</span>,
     },
     {
       id: 'detail',
       header: '',
       cell: ({ row }) => (
-        <Button
-          variant="ghost"
-          size="icon-sm"
-          onClick={() => setSelectedLog(row.original)}
-        >
+        <Button variant="ghost" size="icon-sm" onClick={() => setSelectedLog(row.original)}>
           <Info className="h-4 w-4" />
           <span className="sr-only">View details</span>
         </Button>
@@ -115,11 +92,7 @@ export function AuditLogTable({
         loading={loading}
         refreshing={refreshing}
       />
-      <AuditDetail
-        log={selectedLog}
-        open={selectedLog !== null}
-        onCloseAction={() => setSelectedLog(null)}
-      />
+      <AuditDetail log={selectedLog} open={selectedLog !== null} onCloseAction={() => setSelectedLog(null)} />
     </>
   );
 }

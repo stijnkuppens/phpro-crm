@@ -1,6 +1,6 @@
 import { cache } from 'react';
-import { createServerClient } from '@/lib/supabase/server';
 import { logger } from '@/lib/logger';
+import { createServerClient } from '@/lib/supabase/server';
 import type { DealWithRelations } from '../types';
 
 export const getDealsByAccount = cache(async (accountId: string): Promise<DealWithRelations[]> => {

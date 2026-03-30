@@ -1,11 +1,11 @@
 'use client';
 
-import { useMemo } from 'react';
-import { Clock, CheckCircle2 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
+import { CheckCircle2, Clock } from 'lucide-react';
+import { useMemo } from 'react';
 import { EmptyState } from '@/components/admin/empty-state';
-import { ActivityRow } from './activity-row';
 import type { ActivityWithRelations } from '../types';
+import { ActivityRow } from './activity-row';
 
 type ActivityCardListProps = {
   activities: ActivityWithRelations[];
@@ -42,9 +42,7 @@ function ActivityTable({
     <div>
       <div className="flex items-center gap-2 mb-2">
         <Icon className={`h-4 w-4 ${titleColor}`} />
-        <span className={`text-xs font-semibold uppercase tracking-wide ${titleColor}`}>
-          {title}
-        </span>
+        <span className={`text-xs font-semibold uppercase tracking-wide ${titleColor}`}>{title}</span>
         <span className="text-xs text-muted-foreground">({items.length})</span>
       </div>
       <div className="rounded-xl border bg-card shadow-sm divide-y">
@@ -74,7 +72,11 @@ export function ActivityCardList({
 }: ActivityCardListProps) {
   const { due, planned, done } = useMemo(() => {
     const now = new Date();
-    const groups = { due: [] as ActivityWithRelations[], planned: [] as ActivityWithRelations[], done: [] as ActivityWithRelations[] };
+    const groups = {
+      due: [] as ActivityWithRelations[],
+      planned: [] as ActivityWithRelations[],
+      done: [] as ActivityWithRelations[],
+    };
 
     const sorted = [...activities].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 

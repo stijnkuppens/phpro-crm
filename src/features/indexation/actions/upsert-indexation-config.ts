@@ -1,16 +1,15 @@
 'use server';
 
-import { z } from 'zod';
-import { createServerClient } from '@/lib/supabase/server';
-import { requirePermission } from '@/lib/require-permission';
-import { logAction } from '@/features/audit/actions/log-action';
 import { revalidatePath } from 'next/cache';
-import { indexationConfigFormSchema, type IndexationConfigFormValues } from '../types';
-import { ok, err, type ActionResult } from '@/lib/action-result';
+import { z } from 'zod';
+import { logAction } from '@/features/audit/actions/log-action';
+import { type ActionResult, err, ok } from '@/lib/action-result';
+import { logger } from '@/lib/logger';
+import { requirePermission } from '@/lib/require-permission';
+import { createServerClient } from '@/lib/supabase/server';
+import { type IndexationConfigFormValues, indexationConfigFormSchema } from '../types';
 
-export async function upsertIndexationConfig(
-  values: IndexationConfigFormValues,
-): Promise<ActionResult<void>> {
+export async function upsertIndexationConfig(values: IndexationConfigFormValues): Promise<ActionResult<void>> {
   try {
     await requirePermission('indexation.write');
   } catch {
@@ -23,13 +22,15 @@ export async function upsertIndexationConfig(
   }
 
   const supabase = await createServerClient();
-  const { data: before } = await supabase.from('indexation_config').select('*').eq('account_id', parsed.data.account_id).single();
-  const { error } = await supabase
+  const { data: before } = await supabase
     .from('indexation_config')
-    .upsert(parsed.data, { onConflict: 'account_id' });
+    .select('*')
+    .eq('account_id', parsed.data.account_id)
+    .single();
+  const { error } = await supabase.from('indexation_config').upsert(parsed.data, { onConflict: 'account_id' });
 
   if (error) {
-    console.error('[upsertIndexationConfig]', error);
+    logger.error({ err: error }, '[upsertIndexationConfig] database error');
     return err('Er is een fout opgetreden');
   }
 

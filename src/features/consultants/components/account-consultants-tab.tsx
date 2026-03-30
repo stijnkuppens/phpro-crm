@@ -1,37 +1,53 @@
 'use client';
 
-import { useMemo, useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { toast } from 'sonner';
-import { Button } from '@/components/ui/button';
 import {
-  Plus,
-  CalendarPlus,
-  DollarSign,
-  Square,
-  RotateCcw,
-  Link2,
-  SquarePen,
   Archive,
   ArchiveRestore,
+  CalendarPlus,
+  DollarSign,
+  Link2,
+  Plus,
+  RotateCcw,
+  Square,
+  SquarePen,
 } from 'lucide-react';
+import dynamic from 'next/dynamic';
+import { useRouter } from 'next/navigation';
+import { useMemo, useState } from 'react';
+import { toast } from 'sonner';
+import { Avatar } from '@/components/admin/avatar';
 import DataTable from '@/components/admin/data-table';
+import { FilterPill } from '@/components/admin/filter-pill';
 import { ListPageToolbar } from '@/components/admin/list-page-toolbar';
 import { StatusBadge } from '@/components/admin/status-badge';
-import { Avatar } from '@/components/admin/avatar';
-import { consultantColumns } from '../columns';
-import { type ConsultantWithDetails, type ConsultantStatus, CONSULTANT_STATUS_STYLES } from '../types';
+import { Button } from '@/components/ui/button';
 import { archiveConsultant } from '../actions/archive-consultant';
 import { moveToBench } from '../actions/move-to-bench';
-import { FilterPill } from '@/components/admin/filter-pill';
-import dynamic from 'next/dynamic';
+import { consultantColumns } from '../columns';
+import { CONSULTANT_STATUS_STYLES, type ConsultantStatus, type ConsultantWithDetails } from '../types';
 
-const ConsultantDetailModal = dynamic(() => import('./consultant-detail-modal').then(m => ({ default: m.ConsultantDetailModal })), { ssr: false });
-const BenchFormModal = dynamic(() => import('./bench-form-modal').then(m => ({ default: m.BenchFormModal })), { ssr: false });
-const LinkConsultantWizard = dynamic(() => import('./link-consultant-wizard').then(m => ({ default: m.LinkConsultantWizard })), { ssr: false });
-const StopConsultantModal = dynamic(() => import('./stop-consultant-modal').then(m => ({ default: m.StopConsultantModal })), { ssr: false });
-const ExtendConsultantModal = dynamic(() => import('./extend-consultant-modal').then(m => ({ default: m.ExtendConsultantModal })), { ssr: false });
-const RateChangeModal = dynamic(() => import('./rate-change-modal').then(m => ({ default: m.RateChangeModal })), { ssr: false });
+const ConsultantDetailModal = dynamic(
+  () => import('./consultant-detail-modal').then((m) => ({ default: m.ConsultantDetailModal })),
+  { ssr: false },
+);
+const BenchFormModal = dynamic(() => import('./bench-form-modal').then((m) => ({ default: m.BenchFormModal })), {
+  ssr: false,
+});
+const LinkConsultantWizard = dynamic(
+  () => import('./link-consultant-wizard').then((m) => ({ default: m.LinkConsultantWizard })),
+  { ssr: false },
+);
+const StopConsultantModal = dynamic(
+  () => import('./stop-consultant-modal').then((m) => ({ default: m.StopConsultantModal })),
+  { ssr: false },
+);
+const ExtendConsultantModal = dynamic(
+  () => import('./extend-consultant-modal').then((m) => ({ default: m.ExtendConsultantModal })),
+  { ssr: false },
+);
+const RateChangeModal = dynamic(() => import('./rate-change-modal').then((m) => ({ default: m.RateChangeModal })), {
+  ssr: false,
+});
 
 type Props = {
   accountId: string;
@@ -110,16 +126,23 @@ export function AccountConsultantsTab({ accountId, accountName, consultants, rol
 
   function getRowActions(row: ConsultantWithDetails) {
     if (row.is_archived) {
-      return [
-        { icon: ArchiveRestore, label: 'Herstellen', onClick: () => handleUnarchive(row) },
-      ];
+      return [{ icon: ArchiveRestore, label: 'Herstellen', onClick: () => handleUnarchive(row) }];
     }
     switch (row.status) {
       case 'bench':
         return [
           { icon: Link2, label: 'Koppel', onClick: () => setWizardTarget(row) },
           { icon: SquarePen, label: 'Bewerk', onClick: () => setEditTarget(row) },
-          { icon: Archive, label: 'Archiveer', onClick: () => handleArchive(row), variant: 'destructive' as const, confirm: { title: 'Consultant archiveren?', description: 'Deze consultant wordt gearchiveerd en is niet meer zichtbaar in de lijst.' } },
+          {
+            icon: Archive,
+            label: 'Archiveer',
+            onClick: () => handleArchive(row),
+            variant: 'destructive' as const,
+            confirm: {
+              title: 'Consultant archiveren?',
+              description: 'Deze consultant wordt gearchiveerd en is niet meer zichtbaar in de lijst.',
+            },
+          },
         ];
       case 'actief':
         return [
@@ -128,9 +151,7 @@ export function AccountConsultantsTab({ accountId, accountName, consultants, rol
           { icon: Square, label: 'Stopzetten', onClick: () => setStopTarget(row), variant: 'destructive' as const },
         ];
       case 'stopgezet':
-        return [
-          { icon: RotateCcw, label: 'Naar bench', onClick: () => handleMoveToBench(row) },
-        ];
+        return [{ icon: RotateCcw, label: 'Naar bench', onClick: () => handleMoveToBench(row) }];
       default:
         return [];
     }
@@ -176,14 +197,15 @@ export function AccountConsultantsTab({ accountId, accountName, consultants, rol
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2">
                     <span className="truncate font-medium text-sm">{name}</span>
-                    <StatusBadge colorMap={CONSULTANT_STATUS_STYLES} value={row.status}>{row.status}</StatusBadge>
+                    <StatusBadge colorMap={CONSULTANT_STATUS_STYLES} value={row.status}>
+                      {row.status}
+                    </StatusBadge>
                   </div>
                   <div className="text-xs text-muted-foreground">
-                    {row.role}{row.client_name ? ` · ${row.client_name}` : ''}
+                    {row.role}
+                    {row.client_name ? ` · ${row.client_name}` : ''}
                   </div>
-                  {row.city && (
-                    <div className="text-[11px] text-muted-foreground">{row.city}</div>
-                  )}
+                  {row.city && <div className="text-[11px] text-muted-foreground">{row.city}</div>}
                 </div>
               </div>
             );
@@ -195,7 +217,10 @@ export function AccountConsultantsTab({ accountId, accountName, consultants, rol
         <ConsultantDetailModal
           consultant={selected}
           open={!!selected}
-          onClose={() => { setSelected(null); handleRefresh(); }}
+          onClose={() => {
+            setSelected(null);
+            handleRefresh();
+          }}
         />
       )}
 
@@ -229,7 +254,10 @@ export function AccountConsultantsTab({ accountId, accountName, consultants, rol
       {editTarget && (
         <BenchFormModal
           open={!!editTarget}
-          onClose={() => { setEditTarget(null); handleRefresh(); }}
+          onClose={() => {
+            setEditTarget(null);
+            handleRefresh();
+          }}
           consultant={editTarget}
         />
       )}
@@ -237,7 +265,11 @@ export function AccountConsultantsTab({ accountId, accountName, consultants, rol
       {(wizardOpen || wizardTarget) && (
         <LinkConsultantWizard
           open
-          onClose={() => { setWizardOpen(false); setWizardTarget(null); handleRefresh(); }}
+          onClose={() => {
+            setWizardOpen(false);
+            setWizardTarget(null);
+            handleRefresh();
+          }}
           accounts={[{ id: accountId, name: accountName, domain: null, type: null, city: null }]}
           roles={roles}
           preselectedAccountId={accountId}

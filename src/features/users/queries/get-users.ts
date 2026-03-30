@@ -20,9 +20,7 @@ export const getUsers = cache(async (): Promise<UserWithEmail[]> => {
 
   if (!profiles) return [];
 
-  const emailMap = new Map(
-    (authData?.users ?? []).map((u) => [u.id, u.email ?? '']),
-  );
+  const emailMap = new Map((authData?.users ?? []).map((u) => [u.id, u.email ?? '']));
 
   return profiles.map((p) => ({
     id: p.id,

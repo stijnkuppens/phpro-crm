@@ -1,7 +1,7 @@
 import { cache } from 'react';
-import { createServerClient } from '@/lib/supabase/server';
 import { logger } from '@/lib/logger';
-import type { Communication, CommunicationWithDetails, CommunicationFilters } from '../types';
+import { createServerClient } from '@/lib/supabase/server';
+import type { Communication, CommunicationFilters, CommunicationWithDetails } from '../types';
 
 type GetCommunicationsParams = {
   filters?: CommunicationFilters;
@@ -21,12 +21,15 @@ export const getCommunications = cache(
 
     let query = supabase
       .from('communications')
-      .select(`
+      .select(
+        `
         *,
         contact:contacts!contact_id(id, first_name, last_name),
         deal:deals!deal_id(id, title),
         owner:user_profiles!owner_id(id, full_name)
-      `, { count: 'exact' })
+      `,
+        { count: 'exact' },
+      )
       .order('date', { ascending: false })
       .range(from, to);
 

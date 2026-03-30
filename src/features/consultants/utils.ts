@@ -20,14 +20,10 @@ export function getCurrentRate(consultant: {
     return Number(consultant.hourly_rate ?? 0);
   }
   const now = new Date();
-  const pastRates = consultant.rate_history.filter(
-    (r) => new Date(r.date) <= now,
-  );
+  const pastRates = consultant.rate_history.filter((r) => new Date(r.date) <= now);
   if (pastRates.length === 0) {
     return Number(consultant.hourly_rate ?? 0);
   }
-  const sorted = [...pastRates].sort(
-    (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
-  );
+  const sorted = [...pastRates].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
   return Number(sorted[0].rate);
 }

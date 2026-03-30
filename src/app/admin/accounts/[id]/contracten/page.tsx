@@ -1,10 +1,10 @@
+import { ContractsTab } from '@/features/contracts/components/contracts-tab';
 import { getContract } from '@/features/contracts/queries/get-contract';
 import { getHourlyRates } from '@/features/contracts/queries/get-hourly-rates';
 import { getSlaRates } from '@/features/contracts/queries/get-sla-rates';
 import { getIndexationConfig } from '@/features/indexation/queries/get-indexation-config';
 import { getIndexationDraft } from '@/features/indexation/queries/get-indexation-draft';
 import { getIndexationHistory } from '@/features/indexation/queries/get-indexation-history';
-import { ContractsTab } from '@/features/contracts/components/contracts-tab';
 
 type Props = {
   params: Promise<{ id: string }>;

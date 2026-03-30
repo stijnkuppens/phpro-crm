@@ -1,20 +1,24 @@
 'use client';
 
-import { useState } from 'react';
+import { CheckCircle2, SquarePen, Trash2 } from 'lucide-react';
+import dynamic from 'next/dynamic';
 import { useRouter } from 'next/navigation';
+import { useState } from 'react';
 import { toast } from 'sonner';
-import { SquarePen, Trash2, CheckCircle2 } from 'lucide-react';
 import DataTable from '@/components/admin/data-table';
 import type { FilterOption } from '@/components/admin/data-table-filters';
 import { StatusBadge } from '@/components/admin/status-badge';
-import { dealColumns } from '../columns';
-import { deleteDeal } from '../actions/delete-deal';
 import { formatEUR } from '@/lib/format';
+import { deleteDeal } from '../actions/delete-deal';
+import { dealColumns } from '../columns';
 import type { DealWithRelations, Pipeline } from '../types';
-import dynamic from 'next/dynamic';
 
-const DealEditModal = dynamic(() => import('./deal-edit-modal').then(m => ({ default: m.DealEditModal })), { ssr: false });
-const CloseDealModal = dynamic(() => import('./close-deal-modal').then(m => ({ default: m.CloseDealModal })), { ssr: false });
+const DealEditModal = dynamic(() => import('./deal-edit-modal').then((m) => ({ default: m.DealEditModal })), {
+  ssr: false,
+});
+const CloseDealModal = dynamic(() => import('./close-deal-modal').then((m) => ({ default: m.CloseDealModal })), {
+  ssr: false,
+});
 
 type Props = {
   deals: DealWithRelations[];
@@ -31,7 +35,20 @@ type Props = {
   owners: { id: string; name: string }[];
 };
 
-export function DealList({ deals, page, total, onPageChange, onRefresh, loading, refreshing, filters, onFilterChange, filterOptions, pipelines, owners }: Props) {
+export function DealList({
+  deals,
+  page,
+  total,
+  onPageChange,
+  onRefresh,
+  loading,
+  refreshing,
+  filters,
+  onFilterChange,
+  filterOptions,
+  pipelines,
+  owners,
+}: Props) {
   const router = useRouter();
   const [editDeal, setEditDeal] = useState<DealWithRelations | null>(null);
   const [closeDealId, setCloseDealId] = useState<string | null>(null);
@@ -60,24 +77,34 @@ export function DealList({ deals, page, total, onPageChange, onRefresh, loading,
         onPageChange={onPageChange}
         rowActions={(row) => [
           { icon: SquarePen, label: 'Bewerken', onClick: () => setEditDeal(row) },
-          ...(!row.stage?.is_closed ? [{ icon: CheckCircle2 as typeof SquarePen, label: 'Afsluiten', onClick: () => setCloseDealId(row.id) }] : []),
-          { icon: Trash2, label: 'Verwijderen', variant: 'destructive' as const, confirm: { title: 'Deal verwijderen?', description: 'Dit verwijdert de deal permanent.' }, onClick: () => handleDelete(row.id) },
+          ...(!row.stage?.is_closed
+            ? [{ icon: CheckCircle2 as typeof SquarePen, label: 'Afsluiten', onClick: () => setCloseDealId(row.id) }]
+            : []),
+          {
+            icon: Trash2,
+            label: 'Verwijderen',
+            variant: 'destructive' as const,
+            confirm: { title: 'Deal verwijderen?', description: 'Dit verwijdert de deal permanent.' },
+            onClick: () => handleDelete(row.id),
+          },
         ]}
         bulkActions={[
-          { label: 'Verwijderen', variant: 'destructive' as const, confirm: { title: 'Deals verwijderen?', description: 'Dit verwijdert de geselecteerde deals permanent.' }, action: (ids) => ids.forEach((id) => handleDelete(id)) },
+          {
+            label: 'Verwijderen',
+            variant: 'destructive' as const,
+            confirm: { title: 'Deals verwijderen?', description: 'Dit verwijdert de geselecteerde deals permanent.' },
+            // biome-ignore lint/suspicious/useIterableCallbackReturn: forEach callback does not need a return value
+            action: (ids) => ids.forEach((id) => handleDelete(id)),
+          },
         ]}
         loading={loading}
         refreshing={refreshing}
         renderMobileCard={(row) => (
           <div className="flex flex-col gap-1.5 py-1">
             <span className="font-medium text-sm">{row.title}</span>
-            {row.account?.name && (
-              <span className="text-xs text-muted-foreground">{row.account.name}</span>
-            )}
+            {row.account?.name && <span className="text-xs text-muted-foreground">{row.account.name}</span>}
             <div className="flex flex-wrap items-center gap-1.5">
-              {row.pipeline?.name && (
-                <StatusBadge positive>{row.pipeline.name}</StatusBadge>
-              )}
+              {row.pipeline?.name && <StatusBadge positive>{row.pipeline.name}</StatusBadge>}
               {row.stage && (
                 <span className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium bg-muted text-foreground">
                   <span
@@ -95,7 +122,11 @@ export function DealList({ deals, page, total, onPageChange, onRefresh, loading,
             </div>
             {row.close_date && (
               <span className="text-xs text-muted-foreground">
-                {new Date(row.close_date).toLocaleDateString('nl-BE', { day: 'numeric', month: 'short', year: 'numeric' })}
+                {new Date(row.close_date).toLocaleDateString('nl-BE', {
+                  day: 'numeric',
+                  month: 'short',
+                  year: 'numeric',
+                })}
               </span>
             )}
           </div>
@@ -106,7 +137,10 @@ export function DealList({ deals, page, total, onPageChange, onRefresh, loading,
         <DealEditModal
           key={editDeal.id}
           open
-          onClose={() => { setEditDeal(null); onRefresh?.(); }}
+          onClose={() => {
+            setEditDeal(null);
+            onRefresh?.();
+          }}
           accountId={editDeal.account_id}
           pipelines={pipelines}
           owners={owners}
@@ -118,7 +152,9 @@ export function DealList({ deals, page, total, onPageChange, onRefresh, loading,
         <CloseDealModal
           dealId={closeDealId}
           open
-          onOpenChange={(v) => { if (!v) setCloseDealId(null); }}
+          onOpenChange={(v) => {
+            if (!v) setCloseDealId(null);
+          }}
           onSuccess={onRefresh}
         />
       )}

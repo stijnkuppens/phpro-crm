@@ -1,5 +1,6 @@
 'use client';
 
+import type { ReactElement } from 'react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -12,7 +13,6 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
-import type { ReactElement } from 'react';
 
 type ConfirmDialogProps = {
   title: string;
@@ -37,10 +37,8 @@ export function ConfirmDialog({
 }: ConfirmDialogProps) {
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
-      {(open === undefined) && (
-        <AlertDialogTrigger
-          render={trigger ?? children ?? <Button variant={variant}>Delete</Button>}
-        />
+      {open === undefined && (
+        <AlertDialogTrigger render={trigger ?? children ?? <Button variant={variant}>Delete</Button>} />
       )}
       <AlertDialogContent>
         <AlertDialogHeader>

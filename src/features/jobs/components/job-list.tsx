@@ -1,21 +1,19 @@
 'use client';
 
-import { useState, useCallback, useEffect, useRef } from 'react';
-import { toast } from 'sonner';
 import { RotateCcw, Trash2 } from 'lucide-react';
+import dynamic from 'next/dynamic';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { toast } from 'sonner';
 import DataTable from '@/components/admin/data-table';
 import { buildFilterQuery } from '@/components/admin/data-table-filters';
 import { useEntity } from '@/lib/hooks/use-entity';
 import { useRealtime } from '@/lib/hooks/use-realtime';
-import { jobColumns } from '../columns';
 import { deleteJob } from '../actions/delete-job';
 import { retryJob } from '../actions/retry-job';
+import { jobColumns } from '../columns';
 import type { Job } from '../types';
-import dynamic from 'next/dynamic';
 
-const JobDetailModal = dynamic(
-  () => import('./job-detail-modal').then((m) => ({ default: m.JobDetailModal })),
-);
+const JobDetailModal = dynamic(() => import('./job-detail-modal').then((m) => ({ default: m.JobDetailModal })));
 
 const PAGE_SIZE = 25;
 
@@ -30,7 +28,12 @@ export function JobList({ initialData, initialCount, userId }: JobListProps) {
   const [page, setPage] = useState(1);
   const [filters, setFilters] = useState<Record<string, string | undefined>>({});
 
-  const { data: fetchedData, total, fetchList, refreshing } = useEntity<Job>({
+  const {
+    data: fetchedData,
+    total,
+    fetchList,
+    refreshing,
+  } = useEntity<Job>({
     table: 'jobs',
     pageSize: PAGE_SIZE,
     initialData,
@@ -60,13 +63,10 @@ export function JobList({ initialData, initialCount, userId }: JobListProps) {
     load();
   }, [load]);
 
-  const handleFilterChange = useCallback(
-    (newFilters: Record<string, string | undefined>) => {
-      setFilters(newFilters);
-      setPage(1);
-    },
-    [],
-  );
+  const handleFilterChange = useCallback((newFilters: Record<string, string | undefined>) => {
+    setFilters(newFilters);
+    setPage(1);
+  }, []);
 
   const handleDelete = async (id: string) => {
     const result = await deleteJob(id);
@@ -124,12 +124,7 @@ export function JobList({ initialData, initialCount, userId }: JobListProps) {
       />
 
       {selectedJobId && selectedJob && (
-        <JobDetailModal
-          key={selectedJobId}
-          job={selectedJob}
-          open
-          onClose={() => setSelectedJobId(null)}
-        />
+        <JobDetailModal key={selectedJobId} job={selectedJob} open onClose={() => setSelectedJobId(null)} />
       )}
     </>
   );

@@ -1,11 +1,11 @@
 'use client';
 
+import { Plus, Save, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { Modal } from '@/components/admin/modal';
-import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Plus, Save, Trash2 } from 'lucide-react';
+import { Input } from '@/components/ui/input';
 import { upsertHourlyRates } from '../actions/upsert-hourly-rates';
 import type { HourlyRate } from '../types';
 
@@ -25,7 +25,9 @@ export function HourlyRatesEditModal({ accountId, year, existingRates, open, onC
   const [rows, setRows] = useState<RateEntry[]>(() => {
     const yearRates = existingRates.filter((r) => r.year === year);
     return yearRates.length > 0
-      ? yearRates.sort((a, b) => a.role.localeCompare(b.role)).map((r) => ({ role: r.role, rate: String(Number(r.rate)) }))
+      ? yearRates
+          .sort((a, b) => a.role.localeCompare(b.role))
+          .map((r) => ({ role: r.role, rate: String(Number(r.rate)) }))
       : [{ role: '', rate: '' }];
   });
 
@@ -73,6 +75,7 @@ export function HourlyRatesEditModal({ accountId, year, existingRates, open, onC
           <span />
         </div>
         {rows.map((row, i) => (
+          // biome-ignore lint/suspicious/noArrayIndexKey: dynamically added rows with no stable identity
           <div key={i} className="grid grid-cols-[1fr_120px_40px] gap-2 items-center">
             <Input
               value={row.role}
@@ -103,7 +106,9 @@ export function HourlyRatesEditModal({ accountId, year, existingRates, open, onC
         </Button>
       </div>
       <div className="flex justify-end gap-2 pt-4 mt-4 border-t">
-        <Button variant="outline" onClick={onClose} disabled={loading}>Annuleer</Button>
+        <Button variant="outline" onClick={onClose} disabled={loading}>
+          Annuleer
+        </Button>
         <Button onClick={handleSubmit} disabled={loading}>
           <Save />
           {loading ? 'Opslaan...' : 'Opslaan'}

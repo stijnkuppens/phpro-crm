@@ -1,26 +1,14 @@
 'use client';
 
-import { ComboboxFilter } from '@/components/admin/combobox-filter';
-import { DateRangePicker } from '@/components/ui/date-range-picker';
 import { format } from 'date-fns';
 import type { DateRange } from 'react-day-picker';
+import { ComboboxFilter } from '@/components/admin/combobox-filter';
+import { DateRangePicker } from '@/components/ui/date-range-picker';
 import type { AuditLogFilters } from '../types';
 
-const ACTION_OPTIONS = [
-  'create',
-  'update',
-  'delete',
-  'login',
-  'logout',
-  'export',
-];
+const ACTION_OPTIONS = ['create', 'update', 'delete', 'login', 'logout', 'export'];
 
-const ENTITY_TYPE_OPTIONS = [
-  'contact',
-  'user',
-  'file',
-  'setting',
-];
+const ENTITY_TYPE_OPTIONS = ['contact', 'user', 'file', 'setting'];
 
 type AuditFiltersProps = {
   filters: AuditLogFilters;
@@ -47,6 +35,7 @@ export function AuditFilters({ filters, onFilterChange }: AuditFiltersProps) {
         className="w-44"
       />
       <div className="space-y-1">
+        {/* biome-ignore lint/a11y/noLabelWithoutControl: DateRangePicker renders its own internal inputs */}
         <label className="block text-xs font-medium text-muted-foreground">Periode</label>
         <DateRangePicker
           value={

@@ -1,23 +1,29 @@
 'use client';
 
-import { useActionState, useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
+import { useActionState, useRef, useState } from 'react';
 import { toast } from 'sonner';
-import { Label } from '@/components/ui/label';
 import { RefChipInput } from '@/components/admin/ref-chip-input';
 import { StringChipInput } from '@/components/admin/string-chip-input';
-import { accountFormSchema, type AccountFormValues, type AccountReferenceData } from '@/features/accounts/types';
+import { Label } from '@/components/ui/label';
 import { createAccount } from '@/features/accounts/actions/create-account';
-import { updateAccount } from '@/features/accounts/actions/update-account';
 import {
-  syncAccountFKRelation,
   addAccountRelation,
   deleteAccountRelation,
+  syncAccountFKRelation,
 } from '@/features/accounts/actions/manage-account-relations';
+import { updateAccount } from '@/features/accounts/actions/update-account';
+import {
+  AccountFormCCSection,
+  type CompetenceCenterEntry,
+} from '@/features/accounts/components/account-form-cc-section';
 import { AccountFormCompanySection } from '@/features/accounts/components/account-form-company-section';
+import {
+  AccountFormHostingSection,
+  type HostingEntry,
+} from '@/features/accounts/components/account-form-hosting-section';
 import { AccountFormPeopleSection } from '@/features/accounts/components/account-form-people-section';
-import { AccountFormCCSection, type CompetenceCenterEntry } from '@/features/accounts/components/account-form-cc-section';
-import { AccountFormHostingSection, type HostingEntry } from '@/features/accounts/components/account-form-hosting-section';
+import { type AccountFormValues, type AccountReferenceData, accountFormSchema } from '@/features/accounts/types';
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -28,8 +34,21 @@ type Props = {
     techStackIds?: string[];
     samenwerkingsvormIds?: string[];
     manualServices?: string[];
-    competenceCenters?: Array<{ id: string; competence_center_id: string; competence_center_name: string; service_ids: string[] }>;
-    hosting?: Array<{ id: string; provider_id: string; provider_name: string; environment_id: string; environment_name: string; url: string | null; notes: string | null }>;
+    competenceCenters?: Array<{
+      id: string;
+      competence_center_id: string;
+      competence_center_name: string;
+      service_ids: string[];
+    }>;
+    hosting?: Array<{
+      id: string;
+      provider_id: string;
+      provider_name: string;
+      environment_id: string;
+      environment_name: string;
+      url: string | null;
+      notes: string | null;
+    }>;
   };
   onSuccess?: () => void;
   /** External form ref — when provided, the form doesn't render its own FormActions */
@@ -54,15 +73,9 @@ export function AccountForm({ referenceData, defaultValues, onSuccess, formRef: 
   };
 
   // Controlled state for relation fields
-  const [samenwerkingsvormIds, setSamenwerkingsvormIds] = useState<string[]>(
-    defaultValues?.samenwerkingsvormIds ?? [],
-  );
-  const [techStackIds, setTechStackIds] = useState<string[]>(
-    defaultValues?.techStackIds ?? [],
-  );
-  const [manualServices, setManualServices] = useState<string[]>(
-    defaultValues?.manualServices ?? [],
-  );
+  const [samenwerkingsvormIds, setSamenwerkingsvormIds] = useState<string[]>(defaultValues?.samenwerkingsvormIds ?? []);
+  const [techStackIds, setTechStackIds] = useState<string[]>(defaultValues?.techStackIds ?? []);
+  const [manualServices, setManualServices] = useState<string[]>(defaultValues?.manualServices ?? []);
   const [competenceCenters, setCompetenceCenters] = useState<CompetenceCenterEntry[]>(
     defaultValues?.competenceCenters?.map((cc) => ({
       id: cc.id,
@@ -84,13 +97,14 @@ export function AccountForm({ referenceData, defaultValues, onSuccess, formRef: 
   );
 
   function toggleSamenwerkingsvorm(id: string) {
-    setSamenwerkingsvormIds((prev) =>
-      prev.includes(id) ? prev.filter((v) => v !== id) : [...prev, id],
-    );
+    setSamenwerkingsvormIds((prev) => (prev.includes(id) ? prev.filter((v) => v !== id) : [...prev, id]));
   }
 
   function addCompetenceCenter() {
-    setCompetenceCenters((prev) => [...prev, { competence_center_id: '', competence_center_name: '', service_ids: [] }]);
+    setCompetenceCenters((prev) => [
+      ...prev,
+      { competence_center_id: '', competence_center_name: '', service_ids: [] },
+    ]);
   }
 
   function removeCompetenceCenter(index: number) {
@@ -98,9 +112,7 @@ export function AccountForm({ referenceData, defaultValues, onSuccess, formRef: 
   }
 
   function updateCompetenceCenter(index: number, updates: Partial<CompetenceCenterEntry>) {
-    setCompetenceCenters((prev) =>
-      prev.map((cc, i) => (i === index ? { ...cc, ...updates } : cc)),
-    );
+    setCompetenceCenters((prev) => prev.map((cc, i) => (i === index ? { ...cc, ...updates } : cc)));
   }
 
   function toggleCCService(index: number, serviceId: string) {
@@ -116,7 +128,10 @@ export function AccountForm({ referenceData, defaultValues, onSuccess, formRef: 
   }
 
   function addHosting() {
-    setHosting((prev) => [...prev, { provider_id: '', provider_name: '', environment_id: '', environment_name: '', url: '', notes: '' }]);
+    setHosting((prev) => [
+      ...prev,
+      { provider_id: '', provider_name: '', environment_id: '', environment_name: '', url: '', notes: '' },
+    ]);
   }
 
   function removeHosting(index: number) {
@@ -124,9 +139,7 @@ export function AccountForm({ referenceData, defaultValues, onSuccess, formRef: 
   }
 
   function updateHosting(index: number, updates: Partial<HostingEntry>) {
-    setHosting((prev) =>
-      prev.map((h, i) => (i === index ? { ...h, ...updates } : h)),
-    );
+    setHosting((prev) => prev.map((h, i) => (i === index ? { ...h, ...updates } : h)));
   }
 
   const [, formAction] = useActionState(async (_prev: null, formData: FormData) => {
@@ -158,18 +171,14 @@ export function AccountForm({ referenceData, defaultValues, onSuccess, formRef: 
     }
 
     // 1. Save main account
-    const result = isEdit
-      ? await updateAccount(defaultValues!.id!, parsed.data)
-      : await createAccount(parsed.data);
+    const result = isEdit ? await updateAccount(defaultValues!.id!, parsed.data) : await createAccount(parsed.data);
 
     if ('error' in result && result.error) {
       toast.error(typeof result.error === 'string' ? result.error : 'Er ging iets mis');
       return null;
     }
 
-    const accountId = isEdit
-      ? defaultValues!.id!
-      : (result as { success: true; data?: { id: string } }).data?.id;
+    const accountId = isEdit ? defaultValues!.id! : (result as { success: true; data?: { id: string } }).data?.id;
 
     if (!accountId) {
       toast.error('Kon account ID niet ophalen');
@@ -190,9 +199,7 @@ export function AccountForm({ referenceData, defaultValues, onSuccess, formRef: 
 
     // 3. Sync hosting: delete existing, add new
     if (defaultValues?.hosting) {
-      await Promise.all(
-        defaultValues.hosting.map((h) => deleteAccountRelation('account_hosting', h.id)),
-      );
+      await Promise.all(defaultValues.hosting.map((h) => deleteAccountRelation('account_hosting', h.id)));
     }
     if (hosting.length > 0) {
       await Promise.all(
@@ -212,9 +219,7 @@ export function AccountForm({ referenceData, defaultValues, onSuccess, formRef: 
     // 4. Sync competence centers: delete existing, add new
     if (defaultValues?.competenceCenters) {
       await Promise.all(
-        defaultValues.competenceCenters.map((cc) =>
-          deleteAccountRelation('account_competence_centers', cc.id),
-        ),
+        defaultValues.competenceCenters.map((cc) => deleteAccountRelation('account_competence_centers', cc.id)),
       );
     }
     if (competenceCenters.length > 0) {
@@ -262,9 +267,7 @@ export function AccountForm({ referenceData, defaultValues, onSuccess, formRef: 
 
         {/* -- Right Column: PHPro Intern -- */}
         <div className="space-y-4">
-          <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-            PHPro Intern
-          </h3>
+          <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">PHPro Intern</h3>
 
           <AccountFormPeopleSection
             defaultValues={defaultValues}
@@ -307,11 +310,7 @@ export function AccountForm({ referenceData, defaultValues, onSuccess, formRef: 
           {/* Manual Services chip input */}
           <div className="space-y-1.5">
             <Label>PHPro Services manueel</Label>
-            <StringChipInput
-              values={manualServices}
-              onChange={setManualServices}
-              placeholder="Zoek service..."
-            />
+            <StringChipInput values={manualServices} onChange={setManualServices} placeholder="Zoek service..." />
           </div>
 
           {/* Competence Centers */}

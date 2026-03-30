@@ -1,17 +1,17 @@
 'use client';
 
+import { CalendarDays, Eye, Gift, Mail, Pencil, Phone, ShieldCheck, Star, UtensilsCrossed } from 'lucide-react';
+import Link from 'next/link';
 import { useEffect, useState } from 'react';
+import { AvatarUpload } from '@/components/admin/avatar-upload';
+import { InfoRow } from '@/components/admin/info-row';
 import { Modal } from '@/components/admin/modal';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
-import { Mail, Phone, ShieldCheck, Star, Eye, UtensilsCrossed, CalendarDays, Gift, Pencil } from 'lucide-react';
-import Link from 'next/link';
 import { createBrowserClient } from '@/lib/supabase/client';
-import { AvatarUpload } from '@/components/admin/avatar-upload';
 import { updateContactAvatar } from '../actions/update-contact-avatar';
 import type { ContactWithDetails } from '../types';
-import { InfoRow } from '@/components/admin/info-row';
 
 type Props = {
   contactId: string | null;
@@ -48,13 +48,13 @@ export function ContactViewModal({ contactId, onClose, onEdit }: Props) {
         setContact(data as ContactWithDetails | null);
         setLoading(false);
       });
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [contactId]);
 
   const pi = contact?.personal_info;
-  const initials = contact
-    ? `${contact.first_name[0] ?? ''}${contact.last_name[0] ?? ''}`.toUpperCase()
-    : '';
+  const initials = contact ? `${contact.first_name[0] ?? ''}${contact.last_name[0] ?? ''}`.toUpperCase() : '';
 
   return (
     <Modal
@@ -62,12 +62,18 @@ export function ContactViewModal({ contactId, onClose, onEdit }: Props) {
       onClose={onClose}
       title=""
       size="wide"
-      footer={contact ? (
-        <>
-          <Button variant="outline" onClick={onClose}>Sluiten</Button>
-          <Button onClick={() => onEdit(contact.id)}><Pencil /> Bewerken</Button>
-        </>
-      ) : undefined}
+      footer={
+        contact ? (
+          <>
+            <Button variant="outline" onClick={onClose}>
+              Sluiten
+            </Button>
+            <Button onClick={() => onEdit(contact.id)}>
+              <Pencil /> Bewerken
+            </Button>
+          </>
+        ) : undefined
+      }
     >
       {loading || !contact ? (
         <div className="py-12 text-center text-muted-foreground">Laden...</div>
@@ -81,26 +87,31 @@ export function ContactViewModal({ contactId, onClose, onEdit }: Props) {
               storagePath={`contacts/${contact.id}`}
               onUploaded={async (path) => {
                 await updateContactAvatar(contact.id, path);
-                setContact((prev) => prev ? { ...prev, avatar_url: path } : prev);
+                setContact((prev) => (prev ? { ...prev, avatar_url: path } : prev));
               }}
             />
             <div className="min-w-0">
-              <h2 className="text-lg font-semibold">{contact.first_name} {contact.last_name}</h2>
+              <h2 className="text-lg font-semibold">
+                {contact.first_name} {contact.last_name}
+              </h2>
               {contact.title && <p className="text-sm text-muted-foreground">{contact.title}</p>}
               <div className="mt-1 flex flex-wrap items-center gap-1.5">
                 {contact.role && (
                   <Badge className="bg-primary/15 text-primary-action border-0">
-                    <ShieldCheck className="mr-1 h-3 w-3" />{contact.role}
+                    <ShieldCheck className="mr-1 h-3 w-3" />
+                    {contact.role}
                   </Badge>
                 )}
                 {contact.is_steerco && (
                   <Badge className="bg-primary/15 text-primary-action border-0">
-                    <Star className="mr-1 h-3 w-3" />Steerco
+                    <Star className="mr-1 h-3 w-3" />
+                    Steerco
                   </Badge>
                 )}
                 {contact.is_pinned && (
                   <Badge className="bg-primary/15 text-primary-action border-0">
-                    <Eye className="mr-1 h-3 w-3" />Overview
+                    <Eye className="mr-1 h-3 w-3" />
+                    Overview
                   </Badge>
                 )}
                 {contact.account && (
@@ -135,17 +146,20 @@ export function ContactViewModal({ contactId, onClose, onEdit }: Props) {
               <span className="text-sm text-muted-foreground">Relatiebeheer:</span>
               {pi?.invite_dinner && (
                 <Badge className="bg-primary/15 text-primary-action border-0">
-                  <UtensilsCrossed className="mr-1 h-3 w-3" />Diner
+                  <UtensilsCrossed className="mr-1 h-3 w-3" />
+                  Diner
                 </Badge>
               )}
               {pi?.invite_event && (
                 <Badge className="bg-primary/15 text-primary-action border-0">
-                  <CalendarDays className="mr-1 h-3 w-3" />Event
+                  <CalendarDays className="mr-1 h-3 w-3" />
+                  Event
                 </Badge>
               )}
               {pi?.invite_gift && (
                 <Badge className="bg-primary/15 text-primary-action border-0">
-                  <Gift className="mr-1 h-3 w-3" />Gift
+                  <Gift className="mr-1 h-3 w-3" />
+                  Gift
                 </Badge>
               )}
             </div>
@@ -160,16 +174,20 @@ export function ContactViewModal({ contactId, onClose, onEdit }: Props) {
               <InfoRow label="Hobby's">
                 {pi?.hobbies && pi.hobbies.length > 0 ? (
                   <div className="flex flex-wrap gap-1">
-                    {pi.hobbies.map((h) => <Badge key={h} variant="outline">{h}</Badge>)}
+                    {pi.hobbies.map((h) => (
+                      <Badge key={h} variant="outline">
+                        {h}
+                      </Badge>
+                    ))}
                   </div>
-                ) : '—'}
+                ) : (
+                  '—'
+                )}
               </InfoRow>
               <InfoRow label="Burgerlijke staat">{pi?.marital_status || '—'}</InfoRow>
               <InfoRow label="Verjaardag">{pi?.birthday || '—'}</InfoRow>
               <InfoRow label="Kinderen">
-                {pi?.has_children
-                  ? `Ja${pi.children_count ? ` (${pi.children_count})` : ''}`
-                  : 'Nee'}
+                {pi?.has_children ? `Ja${pi.children_count ? ` (${pi.children_count})` : ''}` : 'Nee'}
               </InfoRow>
               {pi?.children_names && <InfoRow label="Namen kinderen">{pi.children_names}</InfoRow>}
               <InfoRow label="Partner">{pi?.partner_name || '—'}</InfoRow>
@@ -182,10 +200,8 @@ export function ContactViewModal({ contactId, onClose, onEdit }: Props) {
               </div>
             )}
           </div>
-
         </div>
       )}
     </Modal>
   );
 }
-

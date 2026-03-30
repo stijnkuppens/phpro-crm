@@ -37,19 +37,28 @@ export const indexationDraftSchema = z.object({
   info: z.string().optional(),
   adjustment_pct_hourly: z.coerce.number().optional().nullable(),
   adjustment_pct_sla: z.coerce.number().optional().nullable(),
-  rates: z.array(z.object({
-    role: z.string(),
-    current_rate: z.coerce.number(),
-    proposed_rate: z.coerce.number(),
-  })),
-  sla: z.object({
-    fixed_monthly_rate: z.coerce.number(),
-    support_hourly_rate: z.coerce.number(),
-  }).optional().nullable(),
-  sla_tools: z.array(z.object({
-    tool_name: z.string(),
-    proposed_price: z.coerce.number(),
-  })).optional(),
+  rates: z.array(
+    z.object({
+      role: z.string(),
+      current_rate: z.coerce.number(),
+      proposed_rate: z.coerce.number(),
+    }),
+  ),
+  sla: z
+    .object({
+      fixed_monthly_rate: z.coerce.number(),
+      support_hourly_rate: z.coerce.number(),
+    })
+    .optional()
+    .nullable(),
+  sla_tools: z
+    .array(
+      z.object({
+        tool_name: z.string(),
+        proposed_price: z.coerce.number(),
+      }),
+    )
+    .optional(),
 });
 
 export type IndexationDraftValues = z.infer<typeof indexationDraftSchema>;

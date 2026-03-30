@@ -1,12 +1,12 @@
 'use client';
 
-import { useState } from 'react';
-import { Search, SlidersHorizontal, X } from 'lucide-react';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { ComboboxFilter } from '@/components/admin/combobox-filter';
-import { useIsMobile } from '@/hooks/use-mobile';
 import type { ColumnDef, RowData } from '@tanstack/react-table';
+import { Search, SlidersHorizontal, X } from 'lucide-react';
+import { useState } from 'react';
+import { ComboboxFilter } from '@/components/admin/combobox-filter';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { escapeSearch } from '@/lib/utils/escape-search';
 
 // ── Filter meta types ──────────────────────────────────────────────────────
@@ -74,12 +74,7 @@ type DataTableFiltersProps<T> = {
   filterOptions?: Record<string, FilterOption[]>;
 };
 
-export function DataTableFilters<T>({
-  columns,
-  filters,
-  onFilterChange,
-  filterOptions,
-}: DataTableFiltersProps<T>) {
+export function DataTableFilters<T>({ columns, filters, onFilterChange, filterOptions }: DataTableFiltersProps<T>) {
   const isMobile = useIsMobile();
   const [filtersExpanded, setFiltersExpanded] = useState(false);
 
@@ -104,9 +99,7 @@ export function DataTableFilters<T>({
           <Input
             placeholder={meta.placeholder ?? 'Zoeken...'}
             value={filters[key] ?? ''}
-            onChange={(e) =>
-              onFilterChange({ ...filters, [key]: e.target.value || undefined })
-            }
+            onChange={(e) => onFilterChange({ ...filters, [key]: e.target.value || undefined })}
             className="w-full sm:w-48 pl-9"
           />
         </div>
@@ -124,9 +117,7 @@ export function DataTableFilters<T>({
           key={key}
           options={options}
           value={filters[key] ?? 'all'}
-          onValueChange={(v) =>
-            onFilterChange({ ...filters, [key]: v === 'all' ? undefined : v })
-          }
+          onValueChange={(v) => onFilterChange({ ...filters, [key]: v === 'all' ? undefined : v })}
           placeholder={meta.placeholder ?? 'Alles'}
           searchPlaceholder="Zoek..."
         />
@@ -147,9 +138,7 @@ export function DataTableFilters<T>({
             type="button"
             onClick={() => onFilterChange({ ...filters, [key]: undefined })}
             className={`shrink-0 px-3 py-1 text-xs font-medium rounded-full transition-colors ${
-              !active
-                ? 'bg-primary text-primary-foreground'
-                : 'bg-muted/50 text-muted-foreground hover:bg-muted'
+              !active ? 'bg-primary text-primary-foreground' : 'bg-muted/50 text-muted-foreground hover:bg-muted'
             }`}
           >
             {meta.allLabel ?? 'Alle'}
@@ -158,9 +147,7 @@ export function DataTableFilters<T>({
             <button
               key={opt.value}
               type="button"
-              onClick={() =>
-                onFilterChange({ ...filters, [key]: active === opt.value ? undefined : opt.value })
-              }
+              onClick={() => onFilterChange({ ...filters, [key]: active === opt.value ? undefined : opt.value })}
               className={`shrink-0 px-3 py-1 text-xs font-medium rounded-full transition-colors ${
                 active === opt.value
                   ? 'bg-primary text-primary-foreground'
@@ -194,11 +181,7 @@ export function DataTableFilters<T>({
             )}
           </Button>
         </div>
-        {filtersExpanded && (
-          <div className="flex flex-col gap-2">
-            {renderSelects()}
-          </div>
-        )}
+        {filtersExpanded && <div className="flex flex-col gap-2">{renderSelects()}</div>}
         {renderPills()}
       </div>
     );
@@ -222,10 +205,7 @@ export function DataTableFilters<T>({
  * Converts filter state + column meta into Supabase-compatible query params.
  * Use in list components to build orFilter/eqFilters for fetchList().
  */
-export function buildFilterQuery<T>(
-  columns: ColumnDef<T>[],
-  filters: Record<string, string | undefined>,
-) {
+export function buildFilterQuery<T>(columns: ColumnDef<T>[], filters: Record<string, string | undefined>) {
   let orFilter: string | undefined;
   const eqFilters: Record<string, string> = {};
 

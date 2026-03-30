@@ -3,7 +3,9 @@ import { createServerClient } from '@/lib/supabase/server';
 
 export const getUnreadCount = cache(async (): Promise<number> => {
   const supabase = await createServerClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
   if (!user) return 0;
 
   const { count } = await supabase

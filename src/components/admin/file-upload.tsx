@@ -1,11 +1,11 @@
 'use client';
 
-import { useCallback, useState, type DragEvent } from 'react';
-import { useFileUpload } from '@/lib/hooks/use-file-upload';
-import { Card, CardContent } from '@/components/ui/card';
+import { Upload } from 'lucide-react';
+import { type DragEvent, useCallback, useState } from 'react';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
-import { Upload, X } from 'lucide-react';
+import { useFileUpload } from '@/lib/hooks/use-file-upload';
 
 type FileUploadProps = {
   bucket: string;
@@ -65,9 +65,7 @@ export default function FileUpload({
       <CardContent className="flex flex-col items-center justify-center gap-3 py-8">
         <Upload className="h-8 w-8 text-muted-foreground" />
         <div className="text-center">
-          <p className="text-sm text-muted-foreground">
-            Drag and drop files here, or
-          </p>
+          <p className="text-sm text-muted-foreground">Drag and drop files here, or</p>
           <Button
             variant="link"
             className="relative p-0"

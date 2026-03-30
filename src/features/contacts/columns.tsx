@@ -1,8 +1,8 @@
 'use client';
 
 import type { ColumnDef } from '@tanstack/react-table';
-import { Badge } from '@/components/ui/badge';
 import { Avatar } from '@/components/admin/avatar';
+import { Badge } from '@/components/ui/badge';
 import type { ContactWithDetails } from './types';
 
 export const contactColumns: ColumnDef<ContactWithDetails>[] = [
@@ -16,9 +16,13 @@ export const contactColumns: ColumnDef<ContactWithDetails>[] = [
       return (
         <div className="flex items-center gap-2">
           <Avatar path={row.original.avatar_url} fallback={initials} size="sm" />
-          <span>{row.original.first_name} {row.original.last_name}</span>
+          <span>
+            {row.original.first_name} {row.original.last_name}
+          </span>
           {row.original.is_steerco && (
-            <Badge variant="secondary" className="text-[10px]">Steerco</Badge>
+            <Badge variant="secondary" className="text-[10px]">
+              Steerco
+            </Badge>
           )}
         </div>
       );

@@ -1,9 +1,9 @@
 import type { Metadata } from 'next';
-import { getConsultants } from '@/features/consultants/queries/get-consultants';
-import { getConsultantStats } from '@/features/consultants/queries/get-consultant-stats';
 import { getAccountNames } from '@/features/accounts/queries/get-account-names';
-import { getReferenceOptions } from '@/features/reference-data/queries/get-reference-options';
 import { ConsultantListView } from '@/features/consultants/components/consultant-list';
+import { getConsultantStats } from '@/features/consultants/queries/get-consultant-stats';
+import { getConsultants } from '@/features/consultants/queries/get-consultants';
+import { getReferenceOptions } from '@/features/reference-data/queries/get-reference-options';
 
 export const metadata: Metadata = { title: 'Consultants' };
 
@@ -27,12 +27,6 @@ export default async function ConsultantsPage() {
   }));
 
   return (
-    <ConsultantListView
-      initialData={firstPage}
-      initialCount={count}
-      stats={stats}
-      roles={roles}
-      accounts={accounts}
-    />
+    <ConsultantListView initialData={firstPage} initialCount={count} stats={stats} roles={roles} accounts={accounts} />
   );
 }

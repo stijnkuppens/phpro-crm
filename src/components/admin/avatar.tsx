@@ -52,34 +52,36 @@ export function Avatar({ path, fallback, size = 'sm', round = true }: Props) {
     if (!path || getCachedUrl(path)) return;
     let cancelled = false;
     const supabase = createBrowserClient();
-    supabase.storage.from('avatars').createSignedUrl(path, 3600).then(({ data }) => {
-      if (cancelled) return;
-      if (data?.signedUrl) {
-        const finalUrl = withApiKey(data.signedUrl);
-        setCachedUrl(path, finalUrl);
-        setFetchedUrl(finalUrl);
-      }
-    });
-    return () => { cancelled = true; };
+    supabase.storage
+      .from('avatars')
+      .createSignedUrl(path, 3600)
+      .then(({ data }) => {
+        if (cancelled) return;
+        if (data?.signedUrl) {
+          const finalUrl = withApiKey(data.signedUrl);
+          setCachedUrl(path, finalUrl);
+          setFetchedUrl(finalUrl);
+        }
+      });
+    return () => {
+      cancelled = true;
+    };
   }, [path]);
 
   const url = cachedUrl ?? fetchedUrl;
   const hasImage = url && !error;
 
   return (
-    <div className={cn(
-      'flex shrink-0 items-center justify-center font-medium overflow-hidden bg-muted text-muted-foreground',
-      round ? 'rounded-full' : 'rounded-md',
-      sizes[size],
-    )}>
+    <div
+      className={cn(
+        'flex shrink-0 items-center justify-center font-medium overflow-hidden bg-muted text-muted-foreground',
+        round ? 'rounded-full' : 'rounded-md',
+        sizes[size],
+      )}
+    >
       {hasImage ? (
-        /* eslint-disable-next-line @next/next/no-img-element */
-        <img
-          src={url}
-          alt={fallback}
-          className="h-full w-full object-cover"
-          onError={() => setError(true)}
-        />
+        // biome-ignore lint/performance/noImgElement: signed Supabase storage URLs are incompatible with next/image
+        <img src={url} alt={fallback} className="h-full w-full object-cover" onError={() => setError(true)} />
       ) : (
         fallback
       )}

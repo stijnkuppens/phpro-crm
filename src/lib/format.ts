@@ -1,14 +1,20 @@
 // Module-level formatter instances — constructed once, reused everywhere.
 const currencyFormatter = new Intl.NumberFormat('nl-BE', { style: 'currency', currency: 'EUR' });
 const eurFormatter = new Intl.NumberFormat('nl-BE', {
-  style: 'currency', currency: 'EUR', maximumFractionDigits: 0,
+  style: 'currency',
+  currency: 'EUR',
+  maximumFractionDigits: 0,
 });
 const eurPreciseFormatter = new Intl.NumberFormat('nl-BE', {
-  style: 'currency', currency: 'EUR', minimumFractionDigits: 2, maximumFractionDigits: 2,
+  style: 'currency',
+  currency: 'EUR',
+  minimumFractionDigits: 2,
+  maximumFractionDigits: 2,
 });
 const numberFormatter = new Intl.NumberFormat('nl-BE');
 const percentFormatter = new Intl.NumberFormat('nl-BE', {
-  style: 'percent', maximumFractionDigits: 0,
+  style: 'percent',
+  maximumFractionDigits: 0,
 });
 
 /** Format a number as EUR currency */

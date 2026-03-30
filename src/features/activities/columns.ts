@@ -83,6 +83,6 @@ export const activityColumns: ColumnDef<ActivityWithRelations>[] = [
       },
     },
     header: 'Status',
-    cell: ({ getValue }) => getValue<boolean>() ? 'Afgerond' : 'Gepland',
+    cell: ({ getValue }) => (getValue<boolean>() ? 'Afgerond' : 'Gepland'),
   },
 ];

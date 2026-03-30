@@ -6,6 +6,7 @@ export default function AccountDetailLoading() {
       <Skeleton className="h-8 w-64" />
       <div className="flex gap-2">
         {Array.from({ length: 6 }).map((_, i) => (
+          // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton items with no identity
           <Skeleton key={i} className="h-10 w-28" />
         ))}
       </div>

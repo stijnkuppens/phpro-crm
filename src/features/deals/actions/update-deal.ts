@@ -1,12 +1,13 @@
 'use server';
 
-import { z } from 'zod';
-import { createServerClient } from '@/lib/supabase/server';
-import { requirePermission } from '@/lib/require-permission';
-import { logAction } from '@/features/audit/actions/log-action';
 import { revalidatePath } from 'next/cache';
-import { dealFormSchema, entityIdSchema, type DealFormValues } from '@/features/deals/types';
-import { ok, err, type ActionResult } from '@/lib/action-result';
+import { z } from 'zod';
+import { logAction } from '@/features/audit/actions/log-action';
+import { type DealFormValues, dealFormSchema, entityIdSchema } from '@/features/deals/types';
+import { type ActionResult, err, ok } from '@/lib/action-result';
+import { logger } from '@/lib/logger';
+import { requirePermission } from '@/lib/require-permission';
+import { createServerClient } from '@/lib/supabase/server';
 
 export async function updateDeal(id: string, values: DealFormValues): Promise<ActionResult> {
   try {
@@ -33,7 +34,7 @@ export async function updateDeal(id: string, values: DealFormValues): Promise<Ac
     .single();
 
   if (error) {
-    console.error('[updateDeal]', error);
+    logger.error({ err: error }, '[updateDeal] database error');
     return err('Er is een fout opgetreden');
   }
 

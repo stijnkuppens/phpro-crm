@@ -1,28 +1,23 @@
 'use client';
 
-import { createContext, use, useReducer, useState, useMemo, useEffect, useCallback } from 'react';
+import { ArrowLeft, Check, Save, Search } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { createContext, use, useCallback, useEffect, useMemo, useReducer, useState } from 'react';
 import { toast } from 'sonner';
 import { Modal, ModalFooter } from '@/components/admin/modal';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { DatePicker } from '@/components/ui/date-picker';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-} from '@/components/ui/select';
-import { ArrowLeft, Check, Save, Search } from 'lucide-react';
-import { linkConsultantToAccount } from '../actions/link-consultant-to-account';
-import { createBrowserClient } from '@/lib/supabase/client';
-import type { ConsultantWithDetails, ConsultantAccount } from '../types';
-import { CONSULTANT_PRIORITY_STYLES } from '../types';
+import { Button } from '@/components/ui/button';
+import { DatePicker } from '@/components/ui/date-picker';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger } from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
 import { ACCOUNT_TYPE_STYLES } from '@/features/accounts/types';
 import { formatEUR } from '@/lib/format';
+import { createBrowserClient } from '@/lib/supabase/client';
+import { linkConsultantToAccount } from '../actions/link-consultant-to-account';
+import type { ConsultantAccount } from '../types';
+import { CONSULTANT_PRIORITY_STYLES } from '../types';
 
 type BenchConsultant = {
   id: string;
@@ -48,7 +43,6 @@ type Props = {
   /** Pre-select bench consultant (from bench page) — skips step 2 */
   preselectedBenchConsultantId?: string;
 };
-
 
 function calcWorkdays(start: string, end: string | null): number {
   if (!end) return 0;
@@ -172,7 +166,9 @@ function WizardProvider({
     const supabase = createBrowserClient();
     supabase
       .from('consultants')
-      .select('id, first_name, last_name, city, priority, roles, technologies, min_hourly_rate, max_hourly_rate, available_date, languages:consultant_languages(id, language, level)')
+      .select(
+        'id, first_name, last_name, city, priority, roles, technologies, min_hourly_rate, max_hourly_rate, available_date, languages:consultant_languages(id, language, level)',
+      )
       .eq('status', 'bench')
       .eq('is_archived', false)
       .order('available_date', { ascending: true })
@@ -181,13 +177,13 @@ function WizardProvider({
         setBenchConsultants((data as unknown as BenchConsultant[]) ?? []);
         setBenchLoading(false);
       });
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [open]);
 
   // Determine initial step based on preselections
-  const initialStep = preselectedAccountId && preselectedBenchConsultantId ? 3
-    : preselectedAccountId ? 2
-    : 1;
+  const initialStep = preselectedAccountId && preselectedBenchConsultantId ? 3 : preselectedAccountId ? 2 : 1;
 
   type WizardFormState = {
     step: number;
@@ -207,23 +203,26 @@ function WizardProvider({
     notes: string;
   };
 
-  const initialFormState = useMemo<WizardFormState>(() => ({
-    step: initialStep,
-    accountId: preselectedAccountId ?? '',
-    accountSearch: '',
-    accountTypeFilter: '',
-    benchId: preselectedBenchConsultantId ?? '',
-    benchSearch: '',
-    role: '',
-    startDate: '',
-    endDate: '',
-    isIndefinite: false,
-    hourlyRate: '',
-    dailyRate: '',
-    noticePeriod: '30',
-    sowUrl: '',
-    notes: '',
-  }), [initialStep, preselectedAccountId, preselectedBenchConsultantId]);
+  const initialFormState = useMemo<WizardFormState>(
+    () => ({
+      step: initialStep,
+      accountId: preselectedAccountId ?? '',
+      accountSearch: '',
+      accountTypeFilter: '',
+      benchId: preselectedBenchConsultantId ?? '',
+      benchSearch: '',
+      role: '',
+      startDate: '',
+      endDate: '',
+      isIndefinite: false,
+      hourlyRate: '',
+      dailyRate: '',
+      noticePeriod: '30',
+      sowUrl: '',
+      notes: '',
+    }),
+    [initialStep, preselectedAccountId, preselectedBenchConsultantId],
+  );
 
   const [form, updateForm] = useReducer(
     (prev: WizardFormState, updates: Partial<WizardFormState>) => ({ ...prev, ...updates }),
@@ -246,11 +245,7 @@ function WizardProvider({
     }
     if (form.accountSearch) {
       const q = form.accountSearch.toLowerCase();
-      result = result.filter(
-        (a) =>
-          a.name.toLowerCase().includes(q) ||
-          (a.domain?.toLowerCase().includes(q) ?? false),
-      );
+      result = result.filter((a) => a.name.toLowerCase().includes(q) || (a.domain?.toLowerCase().includes(q) ?? false));
     }
     return result;
   }, [accounts, form.accountSearch, form.accountTypeFilter]);
@@ -276,25 +271,25 @@ function WizardProvider({
   }, []);
 
   // Revenue preview
-  const werkdagen = form.startDate && form.endDate && !form.isIndefinite
-    ? calcWorkdays(form.startDate, form.endDate)
-    : 0;
-  const estimatedRevenue = form.hourlyRate
-    ? Number(form.hourlyRate) * 8 * (werkdagen || 21)
-    : 0;
+  const werkdagen =
+    form.startDate && form.endDate && !form.isIndefinite ? calcWorkdays(form.startDate, form.endDate) : 0;
+  const estimatedRevenue = form.hourlyRate ? Number(form.hourlyRate) * 8 * (werkdagen || 21) : 0;
 
   // Pre-fill role from bench consultant when moving to step 3
-  const goToStep3 = useCallback((bench: BenchConsultant) => {
-    const updates: Partial<WizardFormState> = { step: 3 };
-    if (bench && !form.role) {
-      updates.role = bench.roles?.[0] ?? '';
-    }
-    if (bench?.min_hourly_rate && !form.hourlyRate) {
-      updates.hourlyRate = String(bench.min_hourly_rate);
-      updates.dailyRate = String(Math.round(bench.min_hourly_rate * 8));
-    }
-    updateForm(updates);
-  }, [form.role, form.hourlyRate]);
+  const goToStep3 = useCallback(
+    (bench: BenchConsultant) => {
+      const updates: Partial<WizardFormState> = { step: 3 };
+      if (bench && !form.role) {
+        updates.role = bench.roles?.[0] ?? '';
+      }
+      if (bench?.min_hourly_rate && !form.hourlyRate) {
+        updates.hourlyRate = String(bench.min_hourly_rate);
+        updates.dailyRate = String(Math.round(bench.min_hourly_rate * 8));
+      }
+      updateForm(updates);
+    },
+    [form.role, form.hourlyRate],
+  );
 
   // Reset all state when modal closes
   const resetState = useCallback(() => {
@@ -374,11 +369,7 @@ function WizardProvider({
     accountTypes,
   };
 
-  return (
-    <WizardContext value={{ state, actions, meta }}>
-      {children}
-    </WizardContext>
-  );
+  return <WizardContext value={{ state, actions, meta }}>{children}</WizardContext>;
 }
 
 /* ─── Progress Bar ────────────────────────────────────────────────────── */
@@ -439,7 +430,7 @@ function WizardStep1() {
               onClick={() => actions.setAccountTypeFilter(state.accountTypeFilter === t ? '' : t)}
               className={`rounded-full px-2.5 py-1 text-xs font-medium transition-colors ${
                 state.accountTypeFilter === t
-                  ? ACCOUNT_TYPE_STYLES[t] ?? 'bg-gray-200 text-gray-800'
+                  ? (ACCOUNT_TYPE_STYLES[t] ?? 'bg-gray-200 text-gray-800')
                   : 'bg-muted text-muted-foreground hover:bg-muted/80'
               }`}
             >
@@ -461,7 +452,10 @@ function WizardStep1() {
               if (meta.preselectedBenchConsultantId) {
                 // Bench consultant already selected — skip step 2, go to details
                 const bench = state.benchConsultants.find((c) => c.id === meta.preselectedBenchConsultantId);
-                if (bench) { actions.goToStep3(bench); return; }
+                if (bench) {
+                  actions.goToStep3(bench);
+                  return;
+                }
               }
               actions.setStep(2);
             }}
@@ -535,15 +529,16 @@ function WizardStep2() {
                 }}
               >
                 <div className="h-8 w-8 rounded-full bg-primary/10 text-primary flex items-center justify-center text-xs font-medium shrink-0">
-                  {c.first_name[0]}{c.last_name[0]}
+                  {c.first_name[0]}
+                  {c.last_name[0]}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <div className="text-sm font-medium">{c.first_name} {c.last_name}</div>
+                  <div className="text-sm font-medium">
+                    {c.first_name} {c.last_name}
+                  </div>
                   <div className="flex items-center gap-2 text-xs text-muted-foreground">
                     {c.city && <span>{c.city}</span>}
-                    {c.roles && c.roles.length > 0 && (
-                      <span>{c.roles.slice(0, 2).join(', ')}</span>
-                    )}
+                    {c.roles && c.roles.length > 0 && <span>{c.roles.slice(0, 2).join(', ')}</span>}
                   </div>
                 </div>
                 <div className="flex items-center gap-2 shrink-0">
@@ -589,7 +584,9 @@ function WizardStep3() {
         {meta.selectedBench && (
           <div className="bg-muted/50 rounded-lg p-3">
             <span className="text-xs text-muted-foreground">Consultant</span>
-            <div className="text-sm font-medium">{meta.selectedBench.first_name} {meta.selectedBench.last_name}</div>
+            <div className="text-sm font-medium">
+              {meta.selectedBench.first_name} {meta.selectedBench.last_name}
+            </div>
             {!meta.preselectedBenchConsultantId && (
               <Button variant="ghost" size="sm" className="mt-1 h-6 text-xs px-2" onClick={() => actions.setStep(2)}>
                 Wijzigen
@@ -604,12 +601,12 @@ function WizardStep3() {
         <div className="space-y-2">
           <Label>Rol</Label>
           <Select value={state.role} onValueChange={(v) => actions.setRole(v ?? '')}>
-            <SelectTrigger>
-              {meta.roles.find((r) => r.value === state.role)?.label ?? 'Selecteer...'}
-            </SelectTrigger>
+            <SelectTrigger>{meta.roles.find((r) => r.value === state.role)?.label ?? 'Selecteer...'}</SelectTrigger>
             <SelectContent>
               {meta.roles.map((r) => (
-                <SelectItem key={r.value} value={r.value}>{r.label}</SelectItem>
+                <SelectItem key={r.value} value={r.value}>
+                  {r.label}
+                </SelectItem>
               ))}
             </SelectContent>
           </Select>
@@ -644,7 +641,9 @@ function WizardStep3() {
           onChange={(e) => actions.setIsIndefinite(e.target.checked)}
           className="h-4 w-4 rounded border-input"
         />
-        <Label htmlFor="wizard_indefinite" className="font-normal">Onbepaalde duur</Label>
+        <Label htmlFor="wizard_indefinite" className="font-normal">
+          Onbepaalde duur
+        </Label>
       </div>
 
       <div className="grid grid-cols-2 gap-4">
@@ -674,9 +673,7 @@ function WizardStep3() {
       {state.hourlyRate && (
         <div className="bg-muted/50 rounded-lg p-3 text-sm">
           <div className="text-muted-foreground">Geschatte omzet</div>
-          <div className="text-lg font-bold">
-            {formatEUR(meta.estimatedRevenue)}
-          </div>
+          <div className="text-lg font-bold">{formatEUR(meta.estimatedRevenue)}</div>
           <div className="text-xs text-muted-foreground">
             {formatEUR(Number(state.hourlyRate))}/u × 8u × {meta.werkdagen || 21} werkdagen
           </div>
@@ -701,9 +698,10 @@ function WizardStep3() {
 function WizardFooter() {
   const { state, actions, meta } = useWizard();
 
-  const showBack = state.step > 1
-    && !(state.step === 2 && meta.preselectedAccountId)
-    && !(state.step === 3 && meta.preselectedAccountId && meta.preselectedBenchConsultantId);
+  const showBack =
+    state.step > 1 &&
+    !(state.step === 2 && meta.preselectedAccountId) &&
+    !(state.step === 3 && meta.preselectedAccountId && meta.preselectedBenchConsultantId);
 
   return (
     <ModalFooter className="justify-between">
@@ -716,11 +714,20 @@ function WizardFooter() {
         )}
       </div>
       <div className="flex gap-2">
-        <Button variant="outline" onClick={actions.handleClose}>Annuleren</Button>
+        <Button variant="outline" onClick={actions.handleClose}>
+          Annuleren
+        </Button>
         {state.step === 3 && (
           <Button
             onClick={actions.handleSubmit}
-            disabled={state.loading || !state.accountId || !state.benchId || !state.startDate || !state.hourlyRate || Number(state.hourlyRate) <= 0}
+            disabled={
+              state.loading ||
+              !state.accountId ||
+              !state.benchId ||
+              !state.startDate ||
+              !state.hourlyRate ||
+              Number(state.hourlyRate) <= 0
+            }
           >
             <Save />
             {state.loading ? 'Verwerken...' : 'Koppelen'}

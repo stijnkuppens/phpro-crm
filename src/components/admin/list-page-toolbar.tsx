@@ -16,20 +16,11 @@ export function ListPageToolbar({ tabs, activeTab, onTabSelect, getTabHref, acti
   return (
     <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
       {tabs?.length ? (
-        <SubNav
-          items={tabs}
-          activeKey={activeTab ?? ''}
-          onSelect={onTabSelect}
-          getHref={getTabHref}
-        />
+        <SubNav items={tabs} activeKey={activeTab ?? ''} onSelect={onTabSelect} getHref={getTabHref} />
       ) : (
         <div />
       )}
-      {actions && (
-        <div className="flex items-center gap-2">
-          {actions}
-        </div>
-      )}
+      {actions && <div className="flex items-center gap-2">{actions}</div>}
     </div>
   );
 }

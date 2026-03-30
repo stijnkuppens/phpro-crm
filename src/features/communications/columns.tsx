@@ -10,7 +10,7 @@ export const communicationColumns: ColumnDef<CommunicationWithDetails>[] = [
     header: '',
     meta: { label: 'Type' },
     cell: ({ row }) => {
-      const config = COMMUNICATION_TYPE_CONFIG[row.original.type] ?? COMMUNICATION_TYPE_CONFIG['note'];
+      const config = COMMUNICATION_TYPE_CONFIG[row.original.type] ?? COMMUNICATION_TYPE_CONFIG.note;
       const Icon = config.icon;
       return (
         <div className={`flex items-center justify-center h-8 w-8 rounded-md ${config.bg}`}>
@@ -30,8 +30,7 @@ export const communicationColumns: ColumnDef<CommunicationWithDetails>[] = [
     header: 'Onderwerp',
   },
   {
-    accessorFn: (row) =>
-      row.contact ? `${row.contact.first_name} ${row.contact.last_name}` : '',
+    accessorFn: (row) => (row.contact ? `${row.contact.first_name} ${row.contact.last_name}` : ''),
     id: 'contact',
     meta: {
       label: 'Contact',

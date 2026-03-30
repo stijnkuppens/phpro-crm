@@ -1,21 +1,21 @@
 'use client';
 
-import { useActionState, useState, useEffect } from 'react';
+import { Save } from 'lucide-react';
+import { useActionState, useEffect, useState } from 'react';
 import { toast } from 'sonner';
+import { ComboboxFilter } from '@/components/admin/combobox-filter';
 import { Modal, ModalFooter } from '@/components/admin/modal';
 import { Button } from '@/components/ui/button';
+import { Label } from '@/components/ui/label';
 import { SubmitButton } from '@/components/ui/submit-button';
-import { ContactFormFields } from './contact-form-fields';
+import { zodFieldErrors } from '@/lib/form-errors';
+import { createBrowserClient } from '@/lib/supabase/client';
 import { createContact } from '../actions/create-contact';
 import { updateContact } from '../actions/update-contact';
 import { updatePersonalInfo } from '../actions/update-personal-info';
-import { createBrowserClient } from '@/lib/supabase/client';
-import { Save } from 'lucide-react';
-import { Label } from '@/components/ui/label';
-import { ComboboxFilter } from '@/components/admin/combobox-filter';
-import { zodFieldErrors } from '@/lib/form-errors';
+import type { ContactFormValues, ContactWithDetails, PersonalInfoFormValues } from '../types';
 import { contactFormSchema } from '../types';
-import type { ContactFormValues, PersonalInfoFormValues, ContactWithDetails } from '../types';
+import { ContactFormFields } from './contact-form-fields';
 
 type AccountOption = { id: string; name: string };
 
@@ -28,7 +28,14 @@ type Props = {
   onSaved?: () => void;
 };
 
-export function ContactFormModal({ contactId, accountId: accountIdProp, accounts = [], open, onClose, onSaved }: Props) {
+export function ContactFormModal({
+  contactId,
+  accountId: accountIdProp,
+  accounts = [],
+  open,
+  onClose,
+  onSaved,
+}: Props) {
   const [contact, setContact] = useState<ContactWithDetails | null>(null);
   const [fieldErrors, setFieldErrors] = useState<Record<string, boolean>>({});
   const [selectedAccountId, setSelectedAccountId] = useState(accountIdProp ?? '');
@@ -57,7 +64,9 @@ export function ContactFormModal({ contactId, accountId: accountIdProp, accounts
       .then(({ data }) => {
         if (!cancelled) setContact(data as ContactWithDetails | null);
       });
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [contactId, open]);
 
   const [, formAction] = useActionState(async (_prev: null, fd: FormData) => {
@@ -83,7 +92,12 @@ export function ContactFormModal({ contactId, accountId: accountIdProp, accounts
 
     const hobbiesRaw = fd.get('hobbies') as string;
     const personalValues: PersonalInfoFormValues = {
-      hobbies: hobbiesRaw ? hobbiesRaw.split(',').map((s) => s.trim()).filter(Boolean) : [],
+      hobbies: hobbiesRaw
+        ? hobbiesRaw
+            .split(',')
+            .map((s) => s.trim())
+            .filter(Boolean)
+        : [],
       marital_status: (fd.get('marital_status') as string) || undefined,
       has_children: fd.get('has_children') === 'on',
       children_count: fd.get('children_count') ? Number(fd.get('children_count')) : undefined,
@@ -141,9 +155,7 @@ export function ContactFormModal({ contactId, accountId: accountIdProp, accounts
   return (
     <Modal open={open} onClose={onClose} title={isEdit ? 'Contact bewerken' : 'Nieuw contact'} size="wide">
       {isEdit && contact && (
-        <p className="text-sm text-muted-foreground mb-4">
-          Account: {contact.account?.name ?? accountId}
-        </p>
+        <p className="text-sm text-muted-foreground mb-4">Account: {contact.account?.name ?? accountId}</p>
       )}
       <form action={formAction} className="space-y-4">
         {!accountIdProp && (
@@ -161,12 +173,14 @@ export function ContactFormModal({ contactId, accountId: accountIdProp, accounts
         )}
         <ContactFormFields
           key={contactId ?? 'new'}
-          defaultValues={contact as Partial<ContactFormValues> | undefined ?? undefined}
-          defaultPersonalInfo={contact?.personal_info as Partial<PersonalInfoFormValues> | undefined ?? undefined}
+          defaultValues={(contact as Partial<ContactFormValues> | undefined) ?? undefined}
+          defaultPersonalInfo={(contact?.personal_info as Partial<PersonalInfoFormValues> | undefined) ?? undefined}
           errors={fieldErrors}
         />
         <ModalFooter>
-          <Button type="button" variant="outline" onClick={onClose}>Annuleren</Button>
+          <Button type="button" variant="outline" onClick={onClose}>
+            Annuleren
+          </Button>
           <SubmitButton icon={<Save />}>Opslaan</SubmitButton>
         </ModalFooter>
       </form>

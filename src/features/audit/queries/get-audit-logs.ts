@@ -1,6 +1,6 @@
 import { cache } from 'react';
-import { createServerClient } from '@/lib/supabase/server';
 import { logger } from '@/lib/logger';
+import { createServerClient } from '@/lib/supabase/server';
 import type { AuditLog, AuditLogFilters } from '../types';
 
 type GetAuditLogsParams = {

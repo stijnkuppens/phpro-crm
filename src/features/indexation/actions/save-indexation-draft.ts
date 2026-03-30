@@ -1,12 +1,13 @@
 'use server';
 
-import { z } from 'zod';
-import { createServerClient } from '@/lib/supabase/server';
-import { requirePermission } from '@/lib/require-permission';
-import { logAction } from '@/features/audit/actions/log-action';
 import { revalidatePath } from 'next/cache';
-import { indexationDraftSchema, type IndexationDraftValues } from '../types';
-import { ok, err, type ActionResult } from '@/lib/action-result';
+import { z } from 'zod';
+import { logAction } from '@/features/audit/actions/log-action';
+import { type ActionResult, err, ok } from '@/lib/action-result';
+import { logger } from '@/lib/logger';
+import { requirePermission } from '@/lib/require-permission';
+import { createServerClient } from '@/lib/supabase/server';
+import { type IndexationDraftValues, indexationDraftSchema } from '../types';
 
 export async function saveIndexationDraft(
   accountId: string,
@@ -34,7 +35,7 @@ export async function saveIndexationDraft(
     .eq('status', 'draft');
 
   if (deleteError) {
-    console.error('[saveIndexationDraft] delete', deleteError);
+    logger.error({ err: deleteError }, '[saveIndexationDraft] delete error');
     return err('Er is een fout opgetreden');
   }
 
@@ -56,59 +57,53 @@ export async function saveIndexationDraft(
     .single();
 
   if (draftError) {
-    console.error('[saveIndexationDraft] insert', draftError);
+    logger.error({ err: draftError }, '[saveIndexationDraft] insert error');
     return err('Er is een fout opgetreden');
   }
 
   // Insert rates
   if (parsed.data.rates.length > 0) {
-    const { error: ratesError } = await supabase
-      .from('indexation_draft_rates')
-      .insert(
-        parsed.data.rates.map((r) => ({
-          draft_id: draft.id,
-          role: r.role,
-          current_rate: r.current_rate,
-          proposed_rate: r.proposed_rate,
-        })),
-      );
+    const { error: ratesError } = await supabase.from('indexation_draft_rates').insert(
+      parsed.data.rates.map((r) => ({
+        draft_id: draft.id,
+        role: r.role,
+        current_rate: r.current_rate,
+        proposed_rate: r.proposed_rate,
+      })),
+    );
 
     if (ratesError) {
-      console.error('[saveIndexationDraft] rates', ratesError);
+      logger.error({ err: ratesError }, '[saveIndexationDraft] rates error');
       return err('Er is een fout opgetreden');
     }
   }
 
   // Insert SLA
   if (parsed.data.sla) {
-    const { error: slaError } = await supabase
-      .from('indexation_draft_sla')
-      .insert({
-        draft_id: draft.id,
-        fixed_monthly_rate: parsed.data.sla.fixed_monthly_rate,
-        support_hourly_rate: parsed.data.sla.support_hourly_rate,
-      });
+    const { error: slaError } = await supabase.from('indexation_draft_sla').insert({
+      draft_id: draft.id,
+      fixed_monthly_rate: parsed.data.sla.fixed_monthly_rate,
+      support_hourly_rate: parsed.data.sla.support_hourly_rate,
+    });
 
     if (slaError) {
-      console.error('[saveIndexationDraft] sla', slaError);
+      logger.error({ err: slaError }, '[saveIndexationDraft] sla error');
       return err('Er is een fout opgetreden');
     }
   }
 
   // Insert SLA tools
   if (parsed.data.sla_tools && parsed.data.sla_tools.length > 0) {
-    const { error: toolsError } = await supabase
-      .from('indexation_draft_sla_tools')
-      .insert(
-        parsed.data.sla_tools.map((t) => ({
-          draft_id: draft.id,
-          tool_name: t.tool_name,
-          proposed_price: t.proposed_price,
-        })),
-      );
+    const { error: toolsError } = await supabase.from('indexation_draft_sla_tools').insert(
+      parsed.data.sla_tools.map((t) => ({
+        draft_id: draft.id,
+        tool_name: t.tool_name,
+        proposed_price: t.proposed_price,
+      })),
+    );
 
     if (toolsError) {
-      console.error('[saveIndexationDraft] tools', toolsError);
+      logger.error({ err: toolsError }, '[saveIndexationDraft] tools error');
       return err('Er is een fout opgetreden');
     }
   }

@@ -9,7 +9,15 @@ export type DealWithRelations = Deal & {
   account: { id: string; name: string } | null;
   contact: { id: string; first_name: string; last_name: string; title: string | null } | null;
   owner: { id: string; full_name: string | null } | null;
-  stage: { id: string; name: string; color: string; probability: number; is_closed: boolean; is_won: boolean; is_longterm: boolean } | null;
+  stage: {
+    id: string;
+    name: string;
+    color: string;
+    probability: number;
+    is_closed: boolean;
+    is_won: boolean;
+    is_longterm: boolean;
+  } | null;
   pipeline: { id: string; name: string; type: string } | null;
 };
 
@@ -53,15 +61,17 @@ export const dealFormSchema = z.object({
 
 export type DealFormValues = z.infer<typeof dealFormSchema>;
 
-export const closeDealSchema = z.object({
-  closed_type: z.enum(['won', 'lost', 'longterm']),
-  closed_reason: z.string().optional(),
-  closed_notes: z.string().optional(),
-  longterm_date: z.string().optional().nullable(),
-}).refine(
-  (data) => data.closed_type !== 'longterm' || !!data.longterm_date,
-  { message: 'Follow-up datum is verplicht voor longterm deals', path: ['longterm_date'] }
-);
+export const closeDealSchema = z
+  .object({
+    closed_type: z.enum(['won', 'lost', 'longterm']),
+    closed_reason: z.string().optional(),
+    closed_notes: z.string().optional(),
+    longterm_date: z.string().optional().nullable(),
+  })
+  .refine((data) => data.closed_type !== 'longterm' || !!data.longterm_date, {
+    message: 'Follow-up datum is verplicht voor longterm deals',
+    path: ['longterm_date'],
+  });
 
 export type CloseDealValues = z.infer<typeof closeDealSchema>;
 

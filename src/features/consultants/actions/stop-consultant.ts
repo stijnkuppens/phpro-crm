@@ -1,21 +1,19 @@
 'use server';
 
-import { z } from 'zod';
-import { createServerClient } from '@/lib/supabase/server';
-import { requirePermission } from '@/lib/require-permission';
-import { logAction } from '@/features/audit/actions/log-action';
 import { revalidatePath } from 'next/cache';
-import { ok, err, type ActionResult } from '@/lib/action-result';
+import { z } from 'zod';
+import { logAction } from '@/features/audit/actions/log-action';
+import { type ActionResult, err, ok } from '@/lib/action-result';
+import { logger } from '@/lib/logger';
+import { requirePermission } from '@/lib/require-permission';
+import { createServerClient } from '@/lib/supabase/server';
 
 const stopSchema = z.object({
   stop_date: z.string().min(1, 'Stopdatum is verplicht'),
   stop_reason: z.string().optional(),
 });
 
-export async function stopConsultant(
-  id: string,
-  values: z.infer<typeof stopSchema>,
-): Promise<ActionResult> {
+export async function stopConsultant(id: string, values: z.infer<typeof stopSchema>): Promise<ActionResult> {
   try {
     await requirePermission('consultants.write');
   } catch {
@@ -40,7 +38,7 @@ export async function stopConsultant(
     .eq('id', id);
 
   if (error) {
-    console.error('[stopConsultant]', error);
+    logger.error({ err: error }, '[stopConsultant] database error');
     return err('Er is een fout opgetreden');
   }
 

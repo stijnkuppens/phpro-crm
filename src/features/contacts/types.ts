@@ -22,10 +22,19 @@ export const contactFormSchema = z.object({
   email: z.string().email().optional().or(z.literal('')),
   phone: z.string().optional(),
   title: z.string().optional(),
-  role: z.enum([
-    'Decision Maker', 'Influencer', 'Champion', 'Sponsor', 'Steerco Lid',
-    'Technisch', 'Financieel', 'Operationeel', 'Contact',
-  ]).optional(),
+  role: z
+    .enum([
+      'Decision Maker',
+      'Influencer',
+      'Champion',
+      'Sponsor',
+      'Steerco Lid',
+      'Technisch',
+      'Financieel',
+      'Operationeel',
+      'Contact',
+    ])
+    .optional(),
   is_steerco: z.boolean().optional(),
   is_pinned: z.boolean().optional(),
 });

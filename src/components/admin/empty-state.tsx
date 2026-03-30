@@ -1,6 +1,6 @@
 import type { LucideIcon } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import { Plus } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 type EmptyStateProps = {
   icon?: LucideIcon;
@@ -21,9 +21,7 @@ export function EmptyState({ icon: Icon, title, description, action }: EmptyStat
         </div>
       )}
       <p className="text-sm text-muted-foreground">{title}</p>
-      {description && (
-        <p className="text-xs text-muted-foreground mt-1">{description}</p>
-      )}
+      {description && <p className="text-xs text-muted-foreground mt-1">{description}</p>}
       {action && (
         <Button variant="outline" size="sm" className="mt-3" onClick={action.onClick}>
           <Plus />

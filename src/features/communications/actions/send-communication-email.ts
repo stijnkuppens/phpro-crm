@@ -1,10 +1,10 @@
 'use server';
 
 import { z } from 'zod';
+import { type ActionResult, err, ok } from '@/lib/action-result';
 import { sendEmail } from '@/lib/email';
-import { ok, err, type ActionResult } from '@/lib/action-result';
-import { requirePermission } from '@/lib/require-permission';
 import { logger } from '@/lib/logger';
+import { requirePermission } from '@/lib/require-permission';
 
 const schema = z.object({
   to: z.string().email('Ongeldig e-mailadres'),

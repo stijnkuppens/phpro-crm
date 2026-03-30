@@ -1,9 +1,10 @@
 'use server';
 
 import { revalidatePath, updateTag } from 'next/cache';
-import { createServerClient } from '@/lib/supabase/server';
+import { type ActionResult, err, ok } from '@/lib/action-result';
+import { logger } from '@/lib/logger';
 import { requirePermission } from '@/lib/require-permission';
-import { ok, err, type ActionResult } from '@/lib/action-result';
+import { createServerClient } from '@/lib/supabase/server';
 import { settingsSchema } from '../types';
 
 export async function updateSettings(values: { app_name: string; logo_url: string }): Promise<ActionResult<null>> {
@@ -24,7 +25,7 @@ export async function updateSettings(values: { app_name: string; logo_url: strin
 
   const { error } = await supabase.from('app_settings').upsert(upserts);
   if (error) {
-    console.error('[updateSettings]', error);
+    logger.error({ err: error }, '[updateSettings] database error');
     return err('Er is een fout opgetreden');
   }
 

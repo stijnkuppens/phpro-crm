@@ -1,8 +1,8 @@
 'use client';
 
-import { Label } from '@/components/ui/label';
-import { Input } from '@/components/ui/input';
 import { ComboboxFilter } from '@/components/admin/combobox-filter';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { useDealForm } from '@/features/deals/components/deal-form-context';
 
 export function AccountSearchField() {

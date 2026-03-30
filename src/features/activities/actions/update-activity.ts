@@ -1,12 +1,13 @@
 'use server';
 
-import { z } from 'zod';
-import { createServerClient } from '@/lib/supabase/server';
-import { requirePermission } from '@/lib/require-permission';
-import { logAction } from '@/features/audit/actions/log-action';
 import { revalidatePath } from 'next/cache';
-import { activityFormSchema, entityIdSchema, type ActivityFormValues } from '@/features/activities/types';
-import { ok, err, type ActionResult } from '@/lib/action-result';
+import { z } from 'zod';
+import { type ActivityFormValues, activityFormSchema, entityIdSchema } from '@/features/activities/types';
+import { logAction } from '@/features/audit/actions/log-action';
+import { type ActionResult, err, ok } from '@/lib/action-result';
+import { logger } from '@/lib/logger';
+import { requirePermission } from '@/lib/require-permission';
+import { createServerClient } from '@/lib/supabase/server';
 import type { Json } from '@/types/database';
 
 export async function updateActivity(id: string, values: ActivityFormValues): Promise<ActionResult> {
@@ -32,7 +33,7 @@ export async function updateActivity(id: string, values: ActivityFormValues): Pr
     .eq('id', id);
 
   if (error) {
-    console.error('[updateActivity]', error);
+    logger.error({ err: error }, '[updateActivity] database error');
     return err('Er is een fout opgetreden');
   }
 

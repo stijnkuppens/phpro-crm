@@ -3,11 +3,16 @@
 import type { ColumnDef } from '@tanstack/react-table';
 import { Avatar } from '@/components/admin/avatar';
 import { StatusBadge } from '@/components/admin/status-badge';
-import type { ConsultantWithDetails, ConsultantStatus } from './types';
-import { contractStatusColors, contractStatusDescriptions, CONSULTANT_STATUS_STYLES, CONSULTANT_STATUS_LABELS } from './types';
-import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from '@/components/ui/tooltip';
-import { getContractStatus, getCurrentRate } from './utils';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { formatEUR } from '@/lib/format';
+import type { ConsultantWithDetails } from './types';
+import {
+  CONSULTANT_STATUS_LABELS,
+  CONSULTANT_STATUS_STYLES,
+  contractStatusColors,
+  contractStatusDescriptions,
+} from './types';
+import { getContractStatus, getCurrentRate } from './utils';
 
 const dateFmt = (d: string) => new Date(d).toLocaleDateString('nl-BE');
 
@@ -42,9 +47,17 @@ export const consultantColumns: ColumnDef<ConsultantWithDetails>[] = [
     cell: ({ row }) => {
       const c = row.original;
       if (c.is_archived) {
-        return <StatusBadge colorMap={{ Gearchiveerd: 'bg-red-100 text-red-700' }} value="Gearchiveerd">Gearchiveerd</StatusBadge>;
+        return (
+          <StatusBadge colorMap={{ Gearchiveerd: 'bg-red-100 text-red-700' }} value="Gearchiveerd">
+            Gearchiveerd
+          </StatusBadge>
+        );
       }
-      return <StatusBadge colorMap={CONSULTANT_STATUS_STYLES} value={c.status}>{CONSULTANT_STATUS_LABELS[c.status]}</StatusBadge>;
+      return (
+        <StatusBadge colorMap={CONSULTANT_STATUS_STYLES} value={c.status}>
+          {CONSULTANT_STATUS_LABELS[c.status]}
+        </StatusBadge>
+      );
     },
   },
   {
@@ -58,7 +71,9 @@ export const consultantColumns: ColumnDef<ConsultantWithDetails>[] = [
       return (
         <TooltipProvider>
           <Tooltip>
-            <TooltipTrigger className={`inline-flex w-fit cursor-help items-center rounded-full px-2 py-0.5 text-xs font-medium ${contractStatusColors[cs]}`}>
+            <TooltipTrigger
+              className={`inline-flex w-fit cursor-help items-center rounded-full px-2 py-0.5 text-xs font-medium ${contractStatusColors[cs]}`}
+            >
               {cs}
             </TooltipTrigger>
             <TooltipContent>{contractStatusDescriptions[cs]}</TooltipContent>
@@ -78,17 +93,13 @@ export const consultantColumns: ColumnDef<ConsultantWithDetails>[] = [
     cell: ({ row }) => {
       const c = row.original;
       const name = `${c.first_name} ${c.last_name}`;
-      const initials = [c.first_name, c.last_name]
-        .map((w) => w?.[0]?.toUpperCase() ?? '')
-        .join('');
+      const initials = [c.first_name, c.last_name].map((w) => w?.[0]?.toUpperCase() ?? '').join('');
       return (
         <div className="flex items-center gap-3">
           <Avatar fallback={initials} path={c.avatar_path} round />
           <div className="min-w-0">
             <div className="truncate font-medium">{name}</div>
-            {c.city && (
-              <div className="truncate text-xs text-muted-foreground">{c.city}</div>
-            )}
+            {c.city && <div className="truncate text-xs text-muted-foreground">{c.city}</div>}
           </div>
         </div>
       );
@@ -111,9 +122,7 @@ export const consultantColumns: ColumnDef<ConsultantWithDetails>[] = [
     id: 'account',
     meta: { label: 'Klant' },
     header: 'Klant',
-    cell: ({ row }) => (
-      <span className="text-sm">{row.original.account?.name ?? '-'}</span>
-    ),
+    cell: ({ row }) => <span className="text-sm">{row.original.account?.name ?? '-'}</span>,
   },
   {
     id: 'rate',
@@ -136,11 +145,7 @@ export const consultantColumns: ColumnDef<ConsultantWithDetails>[] = [
         return <span className="text-sm text-muted-foreground">-</span>;
       }
       const rate = getCurrentRate(c);
-      return (
-        <span className="text-sm font-medium">
-          {formatEUR(rate)}/u
-        </span>
-      );
+      return <span className="text-sm font-medium">{formatEUR(rate)}/u</span>;
     },
   },
   {

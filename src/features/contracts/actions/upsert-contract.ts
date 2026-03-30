@@ -1,12 +1,13 @@
 'use server';
 
-import { z } from 'zod';
-import { createServerClient } from '@/lib/supabase/server';
-import { requirePermission } from '@/lib/require-permission';
-import { logAction } from '@/features/audit/actions/log-action';
 import { revalidatePath } from 'next/cache';
-import { contractFormSchema, type ContractFormValues } from '../types';
-import { ok, err, type ActionResult } from '@/lib/action-result';
+import { z } from 'zod';
+import { logAction } from '@/features/audit/actions/log-action';
+import { type ActionResult, err, ok } from '@/lib/action-result';
+import { logger } from '@/lib/logger';
+import { requirePermission } from '@/lib/require-permission';
+import { createServerClient } from '@/lib/supabase/server';
+import { type ContractFormValues, contractFormSchema } from '../types';
 
 export async function upsertContract(
   accountId: string,
@@ -32,7 +33,7 @@ export async function upsertContract(
     .single();
 
   if (error) {
-    console.error('[upsertContract]', error);
+    logger.error({ err: error }, '[upsertContract] database error');
     return err('Er is een fout opgetreden');
   }
 

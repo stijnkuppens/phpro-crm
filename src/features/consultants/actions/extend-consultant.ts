@@ -1,21 +1,19 @@
 'use server';
 
-import { z } from 'zod';
-import { createServerClient } from '@/lib/supabase/server';
-import { requirePermission } from '@/lib/require-permission';
-import { logAction } from '@/features/audit/actions/log-action';
 import { revalidatePath } from 'next/cache';
-import { ok, err, type ActionResult } from '@/lib/action-result';
+import { z } from 'zod';
+import { logAction } from '@/features/audit/actions/log-action';
+import { type ActionResult, err, ok } from '@/lib/action-result';
+import { logger } from '@/lib/logger';
+import { requirePermission } from '@/lib/require-permission';
+import { createServerClient } from '@/lib/supabase/server';
 
 const extendSchema = z.object({
   new_end_date: z.string().min(1, 'Nieuwe einddatum is verplicht'),
   notes: z.string().optional(),
 });
 
-export async function extendConsultant(
-  id: string,
-  values: z.infer<typeof extendSchema>,
-): Promise<ActionResult> {
+export async function extendConsultant(id: string, values: z.infer<typeof extendSchema>): Promise<ActionResult> {
   try {
     await requirePermission('consultants.write');
   } catch {
@@ -31,16 +29,14 @@ export async function extendConsultant(
   const supabase = await createServerClient();
   const { data: before } = await supabase.from('consultants').select('*').eq('id', id).single();
 
-  const { error: extensionError } = await supabase
-    .from('consultant_extensions')
-    .insert({
-      consultant_id: id,
-      new_end_date: parsed.data.new_end_date,
-      notes: parsed.data.notes ?? null,
-    });
+  const { error: extensionError } = await supabase.from('consultant_extensions').insert({
+    consultant_id: id,
+    new_end_date: parsed.data.new_end_date,
+    notes: parsed.data.notes ?? null,
+  });
 
   if (extensionError) {
-    console.error('[extendConsultant] insert', extensionError);
+    logger.error({ err: extensionError }, '[extendConsultant] insert error');
     return err('Er is een fout opgetreden');
   }
 
@@ -50,7 +46,7 @@ export async function extendConsultant(
     .eq('id', id);
 
   if (updateError) {
-    console.error('[extendConsultant] update', updateError);
+    logger.error({ err: updateError }, '[extendConsultant] update error');
     return err('Er is een fout opgetreden');
   }
 

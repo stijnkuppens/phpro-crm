@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
-import { createServerClient } from '@/lib/supabase/server';
-import { createServiceRoleClient } from '@/lib/supabase/admin';
 import { logAction } from '@/features/audit/actions/log-action';
+import { createServiceRoleClient } from '@/lib/supabase/admin';
+import { createServerClient } from '@/lib/supabase/server';
 
 /**
  * POST /api/admin/invite
@@ -17,20 +17,21 @@ export async function POST(request: Request) {
   const supabase = await createServerClient();
 
   // Verify the caller is authenticated
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
   if (!user) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401, headers: { 'Cache-Control': 'no-store' } });
   }
 
   // Verify the caller is an admin
-  const { data: profile } = await supabase
-    .from('user_profiles')
-    .select('role')
-    .eq('id', user.id)
-    .single();
+  const { data: profile } = await supabase.from('user_profiles').select('role').eq('id', user.id).single();
 
   if (profile?.role !== 'admin') {
-    return NextResponse.json({ error: 'Forbidden — admin only' }, { status: 403, headers: { 'Cache-Control': 'no-store' } });
+    return NextResponse.json(
+      { error: 'Forbidden — admin only' },
+      { status: 403, headers: { 'Cache-Control': 'no-store' } },
+    );
   }
 
   const { email } = await request.json();
@@ -44,7 +45,10 @@ export async function POST(request: Request) {
 
   if (error) {
     console.error('[POST /api/admin/invite]', error);
-    return NextResponse.json({ error: 'Er is een fout opgetreden' }, { status: 400, headers: { 'Cache-Control': 'no-store' } });
+    return NextResponse.json(
+      { error: 'Er is een fout opgetreden' },
+      { status: 400, headers: { 'Cache-Control': 'no-store' } },
+    );
   }
 
   await logAction({

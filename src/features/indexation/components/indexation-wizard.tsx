@@ -1,18 +1,18 @@
 'use client';
 
-import { useCallback, useMemo, useState } from 'react';
+import { Check, RotateCcw, Save } from 'lucide-react';
+import { useCallback, useState } from 'react';
 import { toast } from 'sonner';
 import { Modal } from '@/components/admin/modal';
+import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { Check, RotateCcw, Save } from 'lucide-react';
-import { simulateIndexation } from '../queries/simulate-indexation';
-import { saveIndexationDraft } from '../actions/save-indexation-draft';
-import { approveIndexation } from '../actions/approve-indexation';
-import type { SimulationResult, IndexationDraftFull, IndexationDraftValues } from '../types';
 import { formatCurrency } from '@/lib/format';
+import { approveIndexation } from '../actions/approve-indexation';
+import { saveIndexationDraft } from '../actions/save-indexation-draft';
+import { simulateIndexation } from '../queries/simulate-indexation';
+import type { IndexationDraftFull, IndexationDraftValues, SimulationResult } from '../types';
 
 type Props = {
   accountId: string;
@@ -95,51 +95,66 @@ export function IndexationWizard({ accountId, open, onClose, draft }: Props) {
   const [draftId, setDraftId] = useState<string | null>(draft?.id ?? null);
 
   // Initialize negotiation state from simulation
-  const initNegotiationFromSim = useCallback((sim: SimulationResult) => {
-    const rates: Record<string, string> = {};
-    for (const r of sim.rates) rates[r.role] = String(r.proposed_rate);
-    updateNegotiation({
-      rates,
-      sla: sim.sla
-        ? {
-            fixed_monthly_rate: String(sim.sla.proposed_fixed),
-            support_hourly_rate: String(sim.sla.proposed_support),
-          }
-        : {},
-      pctHourly: String(percentage),
-      pctSla: String(percentage),
-    });
-  }, [percentage, updateNegotiation]);
+  const initNegotiationFromSim = useCallback(
+    (sim: SimulationResult) => {
+      const rates: Record<string, string> = {};
+      for (const r of sim.rates) rates[r.role] = String(r.proposed_rate);
+      updateNegotiation({
+        rates,
+        sla: sim.sla
+          ? {
+              fixed_monthly_rate: String(sim.sla.proposed_fixed),
+              support_hourly_rate: String(sim.sla.proposed_support),
+            }
+          : {},
+        pctHourly: String(percentage),
+        pctSla: String(percentage),
+      });
+    },
+    [percentage, updateNegotiation],
+  );
 
   // Bulk recalculate hourly rates from a new %
-  const recalcHourly = useCallback((pct: number) => {
-    if (!simulation) return;
-    const rates: Record<string, string> = {};
-    for (const r of simulation.rates) {
-      rates[r.role] = String(applyIndex(r.current_rate, pct));
-    }
-    updateNegotiation({ rates });
-  }, [simulation, updateNegotiation]);
+  const recalcHourly = useCallback(
+    (pct: number) => {
+      if (!simulation) return;
+      const rates: Record<string, string> = {};
+      for (const r of simulation.rates) {
+        rates[r.role] = String(applyIndex(r.current_rate, pct));
+      }
+      updateNegotiation({ rates });
+    },
+    [simulation, updateNegotiation],
+  );
 
   // Bulk recalculate SLA from a new %
-  const recalcSla = useCallback((pct: number) => {
-    if (!simulation?.sla) return;
-    updateNegotiation({
-      sla: {
-        fixed_monthly_rate: String(applyIndex(simulation.sla.fixed_monthly_rate, pct)),
-        support_hourly_rate: String(applyIndex(simulation.sla.support_hourly_rate, pct)),
-      },
-    });
-  }, [simulation, updateNegotiation]);
+  const recalcSla = useCallback(
+    (pct: number) => {
+      if (!simulation?.sla) return;
+      updateNegotiation({
+        sla: {
+          fixed_monthly_rate: String(applyIndex(simulation.sla.fixed_monthly_rate, pct)),
+          support_hourly_rate: String(applyIndex(simulation.sla.support_hourly_rate, pct)),
+        },
+      });
+    },
+    [simulation, updateNegotiation],
+  );
 
   // Get final negotiated value (draft or simulated fallback)
-  const getFinalRate = useCallback((role: string) => {
-    return Number(negotiation.rates[role]) || 0;
-  }, [negotiation.rates]);
+  const getFinalRate = useCallback(
+    (role: string) => {
+      return Number(negotiation.rates[role]) || 0;
+    },
+    [negotiation.rates],
+  );
 
-  const getFinalSla = useCallback((key: string) => {
-    return Number(negotiation.sla[key]) || 0;
-  }, [negotiation.sla]);
+  const getFinalSla = useCallback(
+    (key: string) => {
+      return Number(negotiation.sla[key]) || 0;
+    },
+    [negotiation.sla],
+  );
 
   // Step 1: Simulate
   async function handleSimulate() {
@@ -244,16 +259,12 @@ export function IndexationWizard({ accountId, open, onClose, draft }: Props) {
                 onClick={() => goToStep(s)}
                 disabled={s >= step}
                 className={`h-8 w-8 rounded-full flex items-center justify-center text-sm font-medium transition-colors ${
-                  completed || current
-                    ? 'bg-primary text-primary-foreground'
-                    : 'bg-muted text-muted-foreground'
+                  completed || current ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'
                 } ${completed ? 'cursor-pointer hover:opacity-80' : s > step ? 'cursor-default' : ''}`}
               >
                 {completed ? <Check className="h-4 w-4" /> : s}
               </button>
-              <span className={`text-sm ${current ? 'font-medium' : 'text-muted-foreground'}`}>
-                {title}
-              </span>
+              <span className={`text-sm ${current ? 'font-medium' : 'text-muted-foreground'}`}>{title}</span>
               {i < STEP_TITLES.length - 1 && <div className="w-8 h-px bg-border" />}
             </div>
           );
@@ -296,7 +307,12 @@ export function IndexationWizard({ accountId, open, onClose, draft }: Props) {
             </div>
             <div className="space-y-2">
               <Label>Percentage (%)</Label>
-              <Input type="number" step="0.1" value={percentageStr} onChange={(e) => setPercentageStr(e.target.value)} />
+              <Input
+                type="number"
+                step="0.1"
+                value={percentageStr}
+                onChange={(e) => setPercentageStr(e.target.value)}
+              />
             </div>
           </div>
 
@@ -334,8 +350,11 @@ export function IndexationWizard({ accountId, open, onClose, draft }: Props) {
                       <td className="p-2.5">{r.role}</td>
                       <td className="p-2.5 text-right">{formatCurrency(r.current_rate)}</td>
                       <td className="p-2.5 text-right font-medium">{formatCurrency(r.proposed_rate)}</td>
-                      <td className={`p-2.5 text-right text-xs font-medium ${diff > 0 ? 'text-green-600' : diff < 0 ? 'text-red-600' : ''}`}>
-                        {diff > 0 ? '+' : ''}{diff !== 0 ? formatCurrency(diff) : '—'}
+                      <td
+                        className={`p-2.5 text-right text-xs font-medium ${diff > 0 ? 'text-green-600' : diff < 0 ? 'text-red-600' : ''}`}
+                      >
+                        {diff > 0 ? '+' : ''}
+                        {diff !== 0 ? formatCurrency(diff) : '—'}
                       </td>
                     </tr>
                   );
@@ -358,8 +377,16 @@ export function IndexationWizard({ accountId, open, onClose, draft }: Props) {
                 </thead>
                 <tbody>
                   {[
-                    { label: 'Vast maandtarief', current: simulation.sla.fixed_monthly_rate, proposed: simulation.sla.proposed_fixed },
-                    { label: 'Support uurtarief', current: simulation.sla.support_hourly_rate, proposed: simulation.sla.proposed_support },
+                    {
+                      label: 'Vast maandtarief',
+                      current: simulation.sla.fixed_monthly_rate,
+                      proposed: simulation.sla.proposed_fixed,
+                    },
+                    {
+                      label: 'Support uurtarief',
+                      current: simulation.sla.support_hourly_rate,
+                      proposed: simulation.sla.proposed_support,
+                    },
                   ].map((row) => {
                     const diff = row.proposed - row.current;
                     return (
@@ -368,7 +395,8 @@ export function IndexationWizard({ accountId, open, onClose, draft }: Props) {
                         <td className="p-2.5 text-right">{formatCurrency(row.current)}</td>
                         <td className="p-2.5 text-right font-medium">{formatCurrency(row.proposed)}</td>
                         <td className={`p-2.5 text-right text-xs font-medium ${diff > 0 ? 'text-green-600' : ''}`}>
-                          {diff > 0 ? '+' : ''}{diff !== 0 ? formatCurrency(diff) : '—'}
+                          {diff > 0 ? '+' : ''}
+                          {diff !== 0 ? formatCurrency(diff) : '—'}
                         </td>
                       </tr>
                     );
@@ -379,7 +407,9 @@ export function IndexationWizard({ accountId, open, onClose, draft }: Props) {
           )}
 
           <div className="flex gap-2 justify-end">
-            <Button variant="outline" onClick={() => setStep(1)}>Terug</Button>
+            <Button variant="outline" onClick={() => setStep(1)}>
+              Terug
+            </Button>
             <Button onClick={goToNegotiation}>Onderhandeling →</Button>
           </div>
         </div>
@@ -413,7 +443,10 @@ export function IndexationWizard({ accountId, open, onClose, draft }: Props) {
               <Button
                 variant="ghost"
                 size="icon-sm"
-                onClick={() => { updateNegotiation({ pctHourly: String(percentage) }); recalcHourly(percentage); }}
+                onClick={() => {
+                  updateNegotiation({ pctHourly: String(percentage) });
+                  recalcHourly(percentage);
+                }}
                 title="Reset naar simulatie %"
               >
                 <RotateCcw className="h-3.5 w-3.5" />
@@ -438,7 +471,10 @@ export function IndexationWizard({ accountId, open, onClose, draft }: Props) {
               <Button
                 variant="ghost"
                 size="icon-sm"
-                onClick={() => { updateNegotiation({ pctSla: String(percentage) }); recalcSla(percentage); }}
+                onClick={() => {
+                  updateNegotiation({ pctSla: String(percentage) });
+                  recalcSla(percentage);
+                }}
                 title="Reset naar simulatie %"
               >
                 <RotateCcw className="h-3.5 w-3.5" />
@@ -471,13 +507,21 @@ export function IndexationWizard({ accountId, open, onClose, draft }: Props) {
                           <Input
                             type="number"
                             value={negotiation.rates[r.role] ?? ''}
-                            onChange={(e) => setNegotiation((prev) => ({ ...prev, rates: { ...prev.rates, [r.role]: e.target.value } }))}
+                            onChange={(e) =>
+                              setNegotiation((prev) => ({
+                                ...prev,
+                                rates: { ...prev.rates, [r.role]: e.target.value },
+                              }))
+                            }
                             placeholder={String(r.proposed_rate)}
                             className="h-8 text-right text-sm"
                           />
                           {diff !== 0 && (
-                            <span className={`text-[10px] font-medium shrink-0 ${diff > 0 ? 'text-green-600' : 'text-red-600'}`}>
-                              {diff > 0 ? '+' : ''}{Math.round(diff)}
+                            <span
+                              className={`text-[10px] font-medium shrink-0 ${diff > 0 ? 'text-green-600' : 'text-red-600'}`}
+                            >
+                              {diff > 0 ? '+' : ''}
+                              {Math.round(diff)}
                             </span>
                           )}
                         </div>
@@ -503,8 +547,18 @@ export function IndexationWizard({ accountId, open, onClose, draft }: Props) {
                 </thead>
                 <tbody>
                   {[
-                    { key: 'fixed_monthly_rate', label: 'Vast maandtarief', current: simulation.sla.fixed_monthly_rate, sim: simulation.sla.proposed_fixed },
-                    { key: 'support_hourly_rate', label: 'Support uurtarief', current: simulation.sla.support_hourly_rate, sim: simulation.sla.proposed_support },
+                    {
+                      key: 'fixed_monthly_rate',
+                      label: 'Vast maandtarief',
+                      current: simulation.sla.fixed_monthly_rate,
+                      sim: simulation.sla.proposed_fixed,
+                    },
+                    {
+                      key: 'support_hourly_rate',
+                      label: 'Support uurtarief',
+                      current: simulation.sla.support_hourly_rate,
+                      sim: simulation.sla.proposed_support,
+                    },
                   ].map((row) => (
                     <tr key={row.key} className="border-b last:border-0">
                       <td className="p-2.5">{row.label}</td>
@@ -514,7 +568,9 @@ export function IndexationWizard({ accountId, open, onClose, draft }: Props) {
                         <Input
                           type="number"
                           value={negotiation.sla[row.key] ?? ''}
-                          onChange={(e) => setNegotiation((prev) => ({ ...prev, sla: { ...prev.sla, [row.key]: e.target.value } }))}
+                          onChange={(e) =>
+                            setNegotiation((prev) => ({ ...prev, sla: { ...prev.sla, [row.key]: e.target.value } }))
+                          }
                           placeholder={String(row.sim)}
                           className="h-8 text-right text-sm"
                         />
@@ -538,7 +594,9 @@ export function IndexationWizard({ accountId, open, onClose, draft }: Props) {
           </div>
 
           <div className="flex gap-2 justify-end">
-            <Button variant="outline" onClick={() => setStep(2)}>Terug</Button>
+            <Button variant="outline" onClick={() => setStep(2)}>
+              Terug
+            </Button>
             <Button variant="outline" onClick={handleSaveDraft} disabled={loading}>
               <Save />
               {loading ? 'Opslaan...' : 'Opslaan als draft'}
@@ -568,7 +626,9 @@ export function IndexationWizard({ accountId, open, onClose, draft }: Props) {
                     return (
                       <tr key={r.role} className="border-b last:border-0">
                         <td className="p-2.5">{r.role}</td>
-                        <td className="p-2.5 text-right text-muted-foreground line-through">{formatCurrency(r.current_rate)}</td>
+                        <td className="p-2.5 text-right text-muted-foreground line-through">
+                          {formatCurrency(r.current_rate)}
+                        </td>
                         <td className="p-2.5 text-right font-medium text-green-600">{formatCurrency(final)}</td>
                       </tr>
                     );
@@ -587,12 +647,22 @@ export function IndexationWizard({ accountId, open, onClose, draft }: Props) {
                   <table className="w-full text-sm">
                     <tbody>
                       {[
-                        { label: 'Vast maandtarief', current: simulation.sla.fixed_monthly_rate, final: getFinalSla('fixed_monthly_rate') },
-                        { label: 'Support uurtarief', current: simulation.sla.support_hourly_rate, final: getFinalSla('support_hourly_rate') },
+                        {
+                          label: 'Vast maandtarief',
+                          current: simulation.sla.fixed_monthly_rate,
+                          final: getFinalSla('fixed_monthly_rate'),
+                        },
+                        {
+                          label: 'Support uurtarief',
+                          current: simulation.sla.support_hourly_rate,
+                          final: getFinalSla('support_hourly_rate'),
+                        },
                       ].map((row) => (
                         <tr key={row.label} className="border-b last:border-0">
                           <td className="p-2.5">{row.label}</td>
-                          <td className="p-2.5 text-right text-muted-foreground line-through">{formatCurrency(row.current)}</td>
+                          <td className="p-2.5 text-right text-muted-foreground line-through">
+                            {formatCurrency(row.current)}
+                          </td>
                           <td className="p-2.5 text-right font-medium text-green-600">{formatCurrency(row.final)}</td>
                         </tr>
                       ))}
@@ -604,14 +674,23 @@ export function IndexationWizard({ accountId, open, onClose, draft }: Props) {
               {/* Meta info */}
               <div className="rounded-lg border bg-muted/30 p-4 text-sm space-y-1">
                 <div className="grid grid-cols-2 gap-1">
-                  <span className="text-muted-foreground">Basisjaar:</span><span className="font-medium">{baseYear}</span>
-                  <span className="text-muted-foreground">Doeljaar:</span><span className="font-medium">{targetYear}</span>
-                  <span className="text-muted-foreground">Basis %:</span><span className="font-medium">+{percentage}%</span>
+                  <span className="text-muted-foreground">Basisjaar:</span>
+                  <span className="font-medium">{baseYear}</span>
+                  <span className="text-muted-foreground">Doeljaar:</span>
+                  <span className="font-medium">{targetYear}</span>
+                  <span className="text-muted-foreground">Basis %:</span>
+                  <span className="font-medium">+{percentage}%</span>
                   {negotiation.pctHourly && Number(negotiation.pctHourly) !== percentage && (
-                    <><span className="text-muted-foreground">Aanpassing uurtarieven:</span><span className="font-medium">+{negotiation.pctHourly}%</span></>
+                    <>
+                      <span className="text-muted-foreground">Aanpassing uurtarieven:</span>
+                      <span className="font-medium">+{negotiation.pctHourly}%</span>
+                    </>
                   )}
                   {negotiation.pctSla && Number(negotiation.pctSla) !== percentage && (
-                    <><span className="text-muted-foreground">Aanpassing SLA:</span><span className="font-medium">+{negotiation.pctSla}%</span></>
+                    <>
+                      <span className="text-muted-foreground">Aanpassing SLA:</span>
+                      <span className="font-medium">+{negotiation.pctSla}%</span>
+                    </>
                   )}
                 </div>
               </div>
@@ -626,7 +705,9 @@ export function IndexationWizard({ accountId, open, onClose, draft }: Props) {
           </div>
 
           <div className="flex gap-2 justify-end">
-            <Button variant="outline" onClick={() => setStep(3)}>Terug</Button>
+            <Button variant="outline" onClick={() => setStep(3)}>
+              Terug
+            </Button>
             <Button onClick={handleApprove} disabled={loading}>
               {loading ? 'Goedkeuren...' : 'Bevestigen & tarieven opslaan'}
             </Button>

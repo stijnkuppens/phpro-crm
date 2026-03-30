@@ -1,15 +1,15 @@
 'use client';
 
+import { Calendar, CheckCircle, Clock, FileText } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
+import { ConfirmDialog } from '@/components/admin/confirm-dialog';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ConfirmDialog } from '@/components/admin/confirm-dialog';
-import { Calendar, CheckCircle, Clock, FileText, TrendingUp } from 'lucide-react';
 import { approveIndexation } from '@/features/indexation/actions/approve-indexation';
-import type { IndexationDraftFull } from '@/features/indexation/types';
 import type { IndexationHistoryFull } from '@/features/indexation/queries/get-indexation-history';
+import type { IndexationDraftFull } from '@/features/indexation/types';
 
 type Props = {
   accountId: string;
@@ -75,9 +75,7 @@ export function IndexationSubTab({ accountId, indexationDraft, indexationHistory
                 <div className="font-medium">{indexationDraft.rates?.length ?? 0}</div>
               </div>
             </div>
-            {indexationDraft.info && (
-              <p className="text-sm text-muted-foreground mb-4">{indexationDraft.info}</p>
-            )}
+            {indexationDraft.info && <p className="text-sm text-muted-foreground mb-4">{indexationDraft.info}</p>}
             <div className="flex gap-2">
               <Button size="sm" variant="outline" onClick={onSimulate}>
                 Hervatten
@@ -123,9 +121,7 @@ export function IndexationSubTab({ accountId, indexationDraft, indexationHistory
                           </Badge>
                           <span className="text-muted-foreground">{entry.rates?.length ?? 0} rollen</span>
                         </div>
-                        {entry.info && (
-                          <p className="text-xs text-muted-foreground mt-0.5">{entry.info}</p>
-                        )}
+                        {entry.info && <p className="text-xs text-muted-foreground mt-0.5">{entry.info}</p>}
                       </div>
                     </div>
                     <div className="flex items-center gap-1.5 text-xs text-muted-foreground">

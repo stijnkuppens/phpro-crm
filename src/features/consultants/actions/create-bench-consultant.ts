@@ -1,16 +1,15 @@
 'use server';
 
-import { z } from 'zod';
-import { createServerClient } from '@/lib/supabase/server';
-import { requirePermission } from '@/lib/require-permission';
-import { logAction } from '@/features/audit/actions/log-action';
 import { revalidatePath } from 'next/cache';
-import { benchConsultantFormSchema, type BenchConsultantFormValues } from '../types';
-import { ok, err, type ActionResult } from '@/lib/action-result';
+import { z } from 'zod';
+import { logAction } from '@/features/audit/actions/log-action';
+import { type ActionResult, err, ok } from '@/lib/action-result';
+import { logger } from '@/lib/logger';
+import { requirePermission } from '@/lib/require-permission';
+import { createServerClient } from '@/lib/supabase/server';
+import { type BenchConsultantFormValues, benchConsultantFormSchema } from '../types';
 
-export async function createBenchConsultant(
-  values: BenchConsultantFormValues,
-): Promise<ActionResult<{ id: string }>> {
+export async function createBenchConsultant(values: BenchConsultantFormValues): Promise<ActionResult<{ id: string }>> {
   try {
     await requirePermission('consultants.write');
   } catch {
@@ -30,7 +29,7 @@ export async function createBenchConsultant(
     .single();
 
   if (error) {
-    console.error('[createBenchConsultant]', error);
+    logger.error({ err: error }, '[createBenchConsultant] database error');
     return err('Er is een fout opgetreden');
   }
 

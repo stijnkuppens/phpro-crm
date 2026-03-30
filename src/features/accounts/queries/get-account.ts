@@ -1,15 +1,14 @@
 import { cache } from 'react';
-import { createServerClient } from '@/lib/supabase/server';
 import { logger } from '@/lib/logger';
+import { createServerClient } from '@/lib/supabase/server';
 import type { AccountWithRelations } from '../types';
 
-export const getAccount = cache(
-  async (id: string): Promise<AccountWithRelations | null> => {
-    const supabase = await createServerClient();
+export const getAccount = cache(async (id: string): Promise<AccountWithRelations | null> => {
+  const supabase = await createServerClient();
 
-    const { data: account, error } = await supabase
-      .from('accounts')
-      .select(`
+  const { data: account, error } = await supabase
+    .from('accounts')
+    .select(`
         *,
         owner:user_profiles!owner_id(id, full_name),
         manual_services:account_manual_services(*),
@@ -19,14 +18,13 @@ export const getAccount = cache(
         competence_centers:account_competence_centers(id, cc:ref_competence_centers(id, name), contact_person, email, phone, distribution, cc_services:account_cc_services(service_id)),
         services:account_services(id, service:ref_cc_services(id, name))
       `)
-      .eq('id', id)
-      .single();
+    .eq('id', id)
+    .single();
 
-    if (error) {
-      logger.error({ err: error, entity: 'accounts' }, 'Failed to fetch account');
-      return null;
-    }
+  if (error) {
+    logger.error({ err: error, entity: 'accounts' }, 'Failed to fetch account');
+    return null;
+  }
 
-    return account as unknown as AccountWithRelations;
-  },
-);
+  return account as unknown as AccountWithRelations;
+});

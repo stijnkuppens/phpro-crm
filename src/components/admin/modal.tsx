@@ -1,11 +1,6 @@
 'use client';
 
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { cn } from '@/lib/utils';
 
 type ModalProps = {
@@ -31,9 +26,7 @@ export function Modal({ open, onClose, title, children, size = 'default', footer
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
         </DialogHeader>
-        <div className="flex-1 overflow-y-auto">
-          {children}
-        </div>
+        <div className="flex-1 overflow-y-auto">{children}</div>
         {footer && (
           <div className="flex shrink-0 items-center justify-end gap-2 border-t bg-card px-4 py-3 -mx-4 -mb-4 sm:-mx-6 sm:-mb-6 sm:px-6">
             {footer}
@@ -50,7 +43,12 @@ export function Modal({ open, onClose, title, children, size = 'default', footer
  */
 export function ModalFooter({ children, className }: { children: React.ReactNode; className?: string }) {
   return (
-    <div className={cn('sticky bottom-0 -mx-4 -mb-4 flex items-center justify-end gap-2 border-t bg-card px-4 py-3 sm:-mx-6 sm:-mb-6 sm:px-6 mt-6', className)}>
+    <div
+      className={cn(
+        'sticky bottom-0 -mx-4 -mb-4 flex items-center justify-end gap-2 border-t bg-card px-4 py-3 sm:-mx-6 sm:-mb-6 sm:px-6 mt-6',
+        className,
+      )}
+    >
       {children}
     </div>
   );

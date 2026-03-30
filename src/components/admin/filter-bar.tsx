@@ -7,9 +7,5 @@ type FilterBarProps = {
 };
 
 export function FilterBar({ children, className }: FilterBarProps) {
-  return (
-    <div className={cn('rounded-xl border bg-card p-3 shadow-sm', className)}>
-      {children}
-    </div>
-  );
+  return <div className={cn('rounded-xl border bg-card p-3 shadow-sm', className)}>{children}</div>;
 }

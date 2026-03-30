@@ -1,16 +1,16 @@
 'use client';
 
-import { useReducer, useState, useEffect, useRef, useCallback } from 'react';
+import { useCallback, useEffect, useReducer, useRef, useState } from 'react';
 import { toast } from 'sonner';
-import { createBrowserClient } from '@/lib/supabase/client';
 import { createDeal } from '@/features/deals/actions/create-deal';
-import { updateDeal } from '@/features/deals/actions/update-deal';
 import { deleteDeal } from '@/features/deals/actions/delete-deal';
 import { reopenDeal } from '@/features/deals/actions/reopen-deal';
-import { escapeSearch } from '@/lib/utils/escape-search';
+import { updateDeal } from '@/features/deals/actions/update-deal';
+import type { DealFormActions, DealFormMeta, DealFormState } from '@/features/deals/components/deal-form-context';
 import { DealFormContext } from '@/features/deals/components/deal-form-context';
-import type { DealFormState, DealFormActions, DealFormMeta } from '@/features/deals/components/deal-form-context';
 import type { DealWithRelations, Pipeline } from '@/features/deals/types';
+import { createBrowserClient } from '@/lib/supabase/client';
+import { escapeSearch } from '@/lib/utils/escape-search';
 
 export type DealEditModalProps = {
   open: boolean;
@@ -23,11 +23,48 @@ export type DealEditModalProps = {
   initialStageId?: string;
 };
 
-export const LEAD_SOURCES = ['E-mail', 'Webformulier', 'Partner', 'Campagne', 'Social Media', 'Telefonisch', 'Evenement', 'Referral', 'Cold outreach', 'Andere'];
+export const LEAD_SOURCES = [
+  'E-mail',
+  'Webformulier',
+  'Partner',
+  'Campagne',
+  'Social Media',
+  'Telefonisch',
+  'Evenement',
+  'Referral',
+  'Cold outreach',
+  'Andere',
+];
 
-export const DEAL_TAGS = ['Adobe Commerce', 'Marello', 'Magento', 'OroCommerce', 'Sulu CMS', 'Custom Dev', 'Pimcore', 'PIM', 'ERP Integratie', 'Analytics', 'SEO/SEA', 'UX / Design', 'Support', 'Training', 'Andere'];
+export const DEAL_TAGS = [
+  'Adobe Commerce',
+  'Marello',
+  'Magento',
+  'OroCommerce',
+  'Sulu CMS',
+  'Custom Dev',
+  'Pimcore',
+  'PIM',
+  'ERP Integratie',
+  'Analytics',
+  'SEO/SEA',
+  'UX / Design',
+  'Support',
+  'Training',
+  'Andere',
+];
 
-export function DealFormProvider({ open, onClose, accountId: propAccountId, pipelines, owners, accounts: accountOptions = [], deal, initialStageId, children }: DealEditModalProps & { children: React.ReactNode }) {
+export function DealFormProvider({
+  open: _open,
+  onClose,
+  accountId: propAccountId,
+  pipelines,
+  owners,
+  accounts: accountOptions = [],
+  deal,
+  initialStageId,
+  children,
+}: DealEditModalProps & { children: React.ReactNode }) {
   const isEdit = !!deal;
   const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
 
@@ -77,36 +114,33 @@ export function DealFormProvider({ open, onClose, accountId: propAccountId, pipe
     showAccountDropdown: boolean;
   };
 
-  const [form, updateForm] = useReducer(
-    (prev: FormState, updates: Partial<FormState>) => ({ ...prev, ...updates }),
-    {
-      title: deal?.title ?? '',
-      selectedAccountId: deal?.account_id ?? propAccountId ?? '',
-      pipelineId: deal?.pipeline_id ?? pipelines[0]?.id ?? '',
-      stageId: initialStageIdValue,
-      amount: deal?.amount != null ? String(Number(deal.amount)) : '',
-      probability: initialProbability,
-      closeDate: deal?.close_date ?? '',
-      ownerId: deal?.owner_id ?? '',
-      contactId: deal?.contact_id ?? '',
-      origin: deal?.origin ?? 'rechtstreeks',
-      forecastCategory: deal?.forecast_category ?? '',
-      description: deal?.description ?? '',
-      leadSource: deal?.lead_source ?? '',
-      cronosCC: deal?.cronos_cc ?? '',
-      cronosContact: deal?.cronos_contact ?? '',
-      cronosEmail: deal?.cronos_email ?? '',
-      consultantId: deal?.consultant_id ?? '',
-      consultantRole: deal?.consultant_role ?? '',
-      tags: deal?.tags ?? [],
-      tariefGewenst: deal?.tarief_gewenst != null ? String(Number(deal.tarief_gewenst)) : '',
-      tariefAangeboden: deal?.tarief_aangeboden != null ? String(Number(deal.tarief_aangeboden)) : '',
-      accountSearch: '',
-      accountResults: [],
-      accountName: deal?.account?.name ?? '',
-      showAccountDropdown: false,
-    },
-  );
+  const [form, updateForm] = useReducer((prev: FormState, updates: Partial<FormState>) => ({ ...prev, ...updates }), {
+    title: deal?.title ?? '',
+    selectedAccountId: deal?.account_id ?? propAccountId ?? '',
+    pipelineId: deal?.pipeline_id ?? pipelines[0]?.id ?? '',
+    stageId: initialStageIdValue,
+    amount: deal?.amount != null ? String(Number(deal.amount)) : '',
+    probability: initialProbability,
+    closeDate: deal?.close_date ?? '',
+    ownerId: deal?.owner_id ?? '',
+    contactId: deal?.contact_id ?? '',
+    origin: deal?.origin ?? 'rechtstreeks',
+    forecastCategory: deal?.forecast_category ?? '',
+    description: deal?.description ?? '',
+    leadSource: deal?.lead_source ?? '',
+    cronosCC: deal?.cronos_cc ?? '',
+    cronosContact: deal?.cronos_contact ?? '',
+    cronosEmail: deal?.cronos_email ?? '',
+    consultantId: deal?.consultant_id ?? '',
+    consultantRole: deal?.consultant_role ?? '',
+    tags: deal?.tags ?? [],
+    tariefGewenst: deal?.tarief_gewenst != null ? String(Number(deal.tarief_gewenst)) : '',
+    tariefAangeboden: deal?.tarief_aangeboden != null ? String(Number(deal.tarief_aangeboden)) : '',
+    accountSearch: '',
+    accountResults: [],
+    accountName: deal?.account?.name ?? '',
+    showAccountDropdown: false,
+  });
 
   // --- Derived ---
   const activePipeline = pipelines.find((p) => p.id === form.pipelineId);
@@ -135,7 +169,9 @@ export function DealFormProvider({ open, onClose, accountId: propAccountId, pipe
         if (cancelled) return;
         if (data) updateForm({ accountName: data.name });
       });
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [propAccountId, form.accountName]);
 
   // Client-side search is intentional: search-as-you-type requires debounced queries
@@ -198,7 +234,9 @@ export function DealFormProvider({ open, onClose, accountId: propAccountId, pipe
         if (cancelled) return;
         setContacts((data ?? []).map((c) => ({ id: c.id, name: `${c.first_name} ${c.last_name}` })));
       });
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [form.selectedAccountId]);
 
   // Client-side fetch is intentional: bench consultants are only needed for consultancy
@@ -216,12 +254,16 @@ export function DealFormProvider({ open, onClose, accountId: propAccountId, pipe
       .order('last_name')
       .then(({ data }) => {
         if (cancelled) return;
-        setBenchConsultants((data ?? []).map((c) => ({
-          id: c.id,
-          name: `${c.first_name} ${c.last_name}${c.role ? ` · ${c.role}` : ''}${c.city ? ` · ${c.city}` : ''}`,
-        })));
+        setBenchConsultants(
+          (data ?? []).map((c) => ({
+            id: c.id,
+            name: `${c.first_name} ${c.last_name}${c.role ? ` · ${c.role}` : ''}${c.city ? ` · ${c.city}` : ''}`,
+          })),
+        );
       });
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [isConsultancy]);
 
   // --- Pipeline / Stage handlers ---
@@ -296,8 +338,13 @@ export function DealFormProvider({ open, onClose, accountId: propAccountId, pipe
       probability: form.probability ? Number(form.probability) : undefined,
       owner_id: form.ownerId || undefined,
       contact_id: form.contactId || undefined,
-      origin: (form.origin === 'rechtstreeks' || form.origin === 'cronos') ? form.origin as 'rechtstreeks' | 'cronos' : undefined,
-      forecast_category: (['Commit', 'Best Case', 'Pipeline', 'Omit'].includes(form.forecastCategory) ? form.forecastCategory : undefined) as 'Commit' | 'Best Case' | 'Pipeline' | 'Omit' | undefined,
+      origin:
+        form.origin === 'rechtstreeks' || form.origin === 'cronos'
+          ? (form.origin as 'rechtstreeks' | 'cronos')
+          : undefined,
+      forecast_category: (['Commit', 'Best Case', 'Pipeline', 'Omit'].includes(form.forecastCategory)
+        ? form.forecastCategory
+        : undefined) as 'Commit' | 'Best Case' | 'Pipeline' | 'Omit' | undefined,
       description: form.description || undefined,
       close_date: form.closeDate || undefined,
       lead_source: form.leadSource || undefined,
@@ -326,7 +373,8 @@ export function DealFormProvider({ open, onClose, accountId: propAccountId, pipe
   const state: DealFormState = {
     ...form,
     confirmDeleteOpen,
-    contacts, benchConsultants,
+    contacts,
+    benchConsultants,
   };
 
   const actions: DealFormActions = {
@@ -349,22 +397,32 @@ export function DealFormProvider({ open, onClose, accountId: propAccountId, pipe
     setConsultantRole: (v) => updateForm({ consultantRole: v }),
     setTariefGewenst: (v) => updateForm({ tariefGewenst: v }),
     setTariefAangeboden: (v) => updateForm({ tariefAangeboden: v }),
-    handlePipelineChange, handleStageChange,
+    handlePipelineChange,
+    handleStageChange,
     handleAccountSearch,
     setAccountName: (v) => updateForm({ accountName: v }),
     setAccountSearch: (v) => updateForm({ accountSearch: v }),
     setShowAccountDropdown: (v) => updateForm({ showAccountDropdown: v }),
-    toggleTag, handleReopen, handleDelete, handleSave, onClose,
+    toggleTag,
+    handleReopen,
+    handleDelete,
+    handleSave,
+    onClose,
   };
 
   const meta: DealFormMeta = {
-    isEdit, isClosed, activePipeline, isConsultancy, sortedStages,
-    pipelines, owners, propAccountId, deal, accountSearchRef, accountOptions,
+    isEdit,
+    isClosed,
+    activePipeline,
+    isConsultancy,
+    sortedStages,
+    pipelines,
+    owners,
+    propAccountId,
+    deal,
+    accountSearchRef,
+    accountOptions,
   };
 
-  return (
-    <DealFormContext value={{ state, actions, meta }}>
-      {children}
-    </DealFormContext>
-  );
+  return <DealFormContext value={{ state, actions, meta }}>{children}</DealFormContext>;
 }

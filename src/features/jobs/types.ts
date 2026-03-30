@@ -56,8 +56,15 @@ export type ExportColumn = {
   label: string;
 };
 
-export const ALLOWED_EXPORT_ENTITIES = ['accounts', 'contacts', 'deals', 'consultants', 'activities', 'communications'] as const;
-export type AllowedExportEntity = typeof ALLOWED_EXPORT_ENTITIES[number];
+export const ALLOWED_EXPORT_ENTITIES = [
+  'accounts',
+  'contacts',
+  'deals',
+  'consultants',
+  'activities',
+  'communications',
+] as const;
+export type AllowedExportEntity = (typeof ALLOWED_EXPORT_ENTITIES)[number];
 
 export const createExportJobSchema = z.object({
   entity: z.enum(ALLOWED_EXPORT_ENTITIES),

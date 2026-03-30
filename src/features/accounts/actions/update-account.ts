@@ -1,12 +1,13 @@
 'use server';
 
-import { z } from 'zod';
-import { createServerClient } from '@/lib/supabase/server';
-import { requirePermission } from '@/lib/require-permission';
-import { logAction } from '@/features/audit/actions/log-action';
 import { revalidatePath } from 'next/cache';
-import { accountFormSchema, entityIdSchema, type AccountFormValues } from '@/features/accounts/types';
-import { ok, err, type ActionResult } from '@/lib/action-result';
+import { z } from 'zod';
+import { type AccountFormValues, accountFormSchema, entityIdSchema } from '@/features/accounts/types';
+import { logAction } from '@/features/audit/actions/log-action';
+import { type ActionResult, err, ok } from '@/lib/action-result';
+import { logger } from '@/lib/logger';
+import { requirePermission } from '@/lib/require-permission';
+import { createServerClient } from '@/lib/supabase/server';
 
 export async function updateAccount(id: string, values: AccountFormValues): Promise<ActionResult> {
   try {
@@ -25,13 +26,10 @@ export async function updateAccount(id: string, values: AccountFormValues): Prom
 
   const supabase = await createServerClient();
   const { data: before } = await supabase.from('accounts').select('*').eq('id', id).single();
-  const { error } = await supabase
-    .from('accounts')
-    .update(parsed.data)
-    .eq('id', id);
+  const { error } = await supabase.from('accounts').update(parsed.data).eq('id', id);
 
   if (error) {
-    console.error('[updateAccount]', error);
+    logger.error({ err: error }, '[updateAccount] database error');
     return err('Er is een fout opgetreden');
   }
 

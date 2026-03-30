@@ -1,12 +1,13 @@
 'use server';
 
-import { z } from 'zod';
-import { createServerClient } from '@/lib/supabase/server';
-import { requirePermission } from '@/lib/require-permission';
-import { logAction } from '@/features/audit/actions/log-action';
 import { revalidatePath } from 'next/cache';
-import { slaRateFormSchema, type SlaRateFormValues } from '../types';
-import { ok, err, type ActionResult } from '@/lib/action-result';
+import { z } from 'zod';
+import { logAction } from '@/features/audit/actions/log-action';
+import { type ActionResult, err, ok } from '@/lib/action-result';
+import { logger } from '@/lib/logger';
+import { requirePermission } from '@/lib/require-permission';
+import { createServerClient } from '@/lib/supabase/server';
+import { type SlaRateFormValues, slaRateFormSchema } from '../types';
 
 export async function upsertSlaRates(
   accountId: string,
@@ -25,7 +26,12 @@ export async function upsertSlaRates(
   }
 
   const supabase = await createServerClient();
-  const { data: beforeSla } = await supabase.from('sla_rates').select('*, sla_tools(*)').eq('account_id', accountId).eq('year', year).single();
+  const { data: beforeSla } = await supabase
+    .from('sla_rates')
+    .select('*, sla_tools(*)')
+    .eq('account_id', accountId)
+    .eq('year', year)
+    .single();
 
   const { data: slaRate, error: upsertError } = await supabase
     .from('sla_rates')
@@ -42,33 +48,28 @@ export async function upsertSlaRates(
     .single();
 
   if (upsertError) {
-    console.error('[upsertSlaRates] upsert', upsertError);
+    logger.error({ err: upsertError }, '[upsertSlaRates] upsert error');
     return err('Er is een fout opgetreden');
   }
 
-  const { error: deleteToolsError } = await supabase
-    .from('sla_tools')
-    .delete()
-    .eq('sla_rate_id', slaRate.id);
+  const { error: deleteToolsError } = await supabase.from('sla_tools').delete().eq('sla_rate_id', slaRate.id);
 
   if (deleteToolsError) {
-    console.error('[upsertSlaRates] deleteTools', deleteToolsError);
+    logger.error({ err: deleteToolsError }, '[upsertSlaRates] deleteTools error');
     return err('Er is een fout opgetreden');
   }
 
   if (parsed.data.tools.length > 0) {
-    const { error: insertToolsError } = await supabase
-      .from('sla_tools')
-      .insert(
-        parsed.data.tools.map((t) => ({
-          sla_rate_id: slaRate.id,
-          tool_name: t.tool_name,
-          monthly_price: t.monthly_price,
-        })),
-      );
+    const { error: insertToolsError } = await supabase.from('sla_tools').insert(
+      parsed.data.tools.map((t) => ({
+        sla_rate_id: slaRate.id,
+        tool_name: t.tool_name,
+        monthly_price: t.monthly_price,
+      })),
+    );
 
     if (insertToolsError) {
-      console.error('[upsertSlaRates] insertTools', insertToolsError);
+      logger.error({ err: insertToolsError }, '[upsertSlaRates] insertTools error');
       return err('Er is een fout opgetreden');
     }
   }

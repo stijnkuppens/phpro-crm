@@ -1,15 +1,15 @@
 'use client';
 
+import { Save } from 'lucide-react';
 import { useActionState } from 'react';
 import { toast } from 'sonner';
 import { Modal, ModalFooter } from '@/components/admin/modal';
-import { Input } from '@/components/ui/input';
-import { DatePicker } from '@/components/ui/date-picker';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
+import { DatePicker } from '@/components/ui/date-picker';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { SubmitButton } from '@/components/ui/submit-button';
-import { Save } from 'lucide-react';
+import { Textarea } from '@/components/ui/textarea';
 import { addRateChange } from '../actions/add-rate-change';
 
 type Props = {
@@ -61,7 +61,9 @@ export function RateChangeModal({ consultantId, open, onClose, onSuccess }: Prop
           <Textarea id="notes" name="notes" rows={2} />
         </div>
         <ModalFooter>
-          <Button type="button" variant="outline" onClick={onClose}>Annuleren</Button>
+          <Button type="button" variant="outline" onClick={onClose}>
+            Annuleren
+          </Button>
           <SubmitButton icon={<Save />}>Opslaan</SubmitButton>
         </ModalFooter>
       </form>

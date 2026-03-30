@@ -1,16 +1,14 @@
 'use client';
 
-import { useState, useCallback, useEffect, useRef } from 'react';
+import { Activity as ActivityIcon, Plus, Search } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { useQueryState, parseAsInteger } from 'nuqs';
-import { Plus, Search, Activity as ActivityIcon } from 'lucide-react';
+import { parseAsInteger, useQueryState } from 'nuqs';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
-import { useEntity } from '@/lib/hooks/use-entity';
-import { ListPageToolbar } from '@/components/admin/list-page-toolbar';
 import { FilterBar } from '@/components/admin/filter-bar';
 import { FilterPill } from '@/components/admin/filter-pill';
-import { EmptyState } from '@/components/admin/empty-state';
 import { Modal } from '@/components/admin/modal';
+import { PageHeader } from '@/components/admin/page-header';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -21,12 +19,13 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from '@/components/ui/pagination';
-import { ActivityForm } from './activity-form';
-import { updateActivity } from '../actions/update-activity';
-import { deleteActivity } from '../actions/delete-activity';
-import { ActivityCardList } from './activity-card-list';
+import { useEntity } from '@/lib/hooks/use-entity';
 import { escapeSearch } from '@/lib/utils/escape-search';
-import type { ActivityWithRelations, ActivityFormValues } from '../types';
+import { deleteActivity } from '../actions/delete-activity';
+import { updateActivity } from '../actions/update-activity';
+import type { ActivityFormValues, ActivityWithRelations } from '../types';
+import { ActivityCardList } from './activity-card-list';
+import { ActivityForm } from './activity-form';
 
 const STATUS_PILLS = [
   { value: 'all', label: 'Alle' },
@@ -126,7 +125,9 @@ export function ActivityList({ initialData, initialCount, accounts = [] }: Props
   return (
     <>
       <div className="space-y-6">
-        <ListPageToolbar
+        <PageHeader
+          title="Activiteiten"
+          breadcrumbs={[{ label: 'Admin', href: '/admin' }, { label: 'Activiteiten' }]}
           actions={
             <Button size="sm" onClick={() => setModalOpen(true)}>
               <Plus /> Nieuwe activiteit
@@ -142,7 +143,10 @@ export function ActivityList({ initialData, initialCount, accounts = [] }: Props
                 <Input
                   placeholder="Zoek activiteiten..."
                   value={search}
-                  onChange={(e) => { setSearch(e.target.value); setPage(1); }}
+                  onChange={(e) => {
+                    setSearch(e.target.value);
+                    setPage(1);
+                  }}
                   className="w-full sm:w-48 pl-9"
                 />
               </div>
@@ -153,7 +157,10 @@ export function ActivityList({ initialData, initialCount, accounts = [] }: Props
                   key={pill.value}
                   label={pill.label}
                   active={statusFilter === pill.value}
-                  onClick={() => { setStatusFilter(pill.value); setPage(1); }}
+                  onClick={() => {
+                    setStatusFilter(pill.value);
+                    setPage(1);
+                  }}
                 />
               ))}
             </div>
@@ -188,11 +195,7 @@ export function ActivityList({ initialData, initialCount, accounts = [] }: Props
                   start = Math.max(1, end - maxVisible + 1);
                   return Array.from({ length: end - start + 1 }, (_, i) => start + i).map((p) => (
                     <PaginationItem key={p}>
-                      <PaginationLink
-                        onClick={() => setPage(p)}
-                        isActive={p === page}
-                        className="cursor-pointer"
-                      >
+                      <PaginationLink onClick={() => setPage(p)} isActive={p === page} className="cursor-pointer">
                         {p}
                       </PaginationLink>
                     </PaginationItem>

@@ -1,22 +1,16 @@
 'use client';
 
-import { useState } from 'react';
 import { Download, RotateCcw } from 'lucide-react';
+import { useState } from 'react';
 import { toast } from 'sonner';
-import { Modal } from '@/components/admin/modal';
 import { InfoRow } from '@/components/admin/info-row';
+import { Modal } from '@/components/admin/modal';
 import { StatusBadge } from '@/components/admin/status-badge';
 import { Button } from '@/components/ui/button';
 import { createBrowserClient } from '@/lib/supabase/client';
 import { retryJob } from '../actions/retry-job';
 import type { Job } from '../types';
-import {
-  JOB_STATUS_STYLES,
-  JOB_STATUS_LABELS,
-  JOB_TYPE_LABELS,
-  ENTITY_LABELS,
-  FORMAT_LABELS,
-} from '../types';
+import { ENTITY_LABELS, FORMAT_LABELS, JOB_STATUS_LABELS, JOB_STATUS_STYLES, JOB_TYPE_LABELS } from '../types';
 
 type JobDetailModalProps = {
   job: Job;
@@ -51,9 +45,7 @@ export function JobDetailModal({ job, open, onClose }: JobDetailModalProps) {
     setDownloading(true);
     try {
       const supabase = createBrowserClient();
-      const { data, error } = await supabase.storage
-        .from('documents')
-        .createSignedUrl(job.file_path, 60);
+      const { data, error } = await supabase.storage.from('documents').createSignedUrl(job.file_path, 60);
 
       if (error || !data?.signedUrl) {
         toast.error('Kon download link niet aanmaken');
@@ -71,7 +63,8 @@ export function JobDetailModal({ job, open, onClose }: JobDetailModalProps) {
     }
   };
 
-  const title = `${JOB_TYPE_LABELS[job.type] ?? job.type} ${ENTITY_LABELS[job.entity ?? ''] ?? job.entity ?? ''}`.trim();
+  const title =
+    `${JOB_TYPE_LABELS[job.type] ?? job.type} ${ENTITY_LABELS[job.entity ?? ''] ?? job.entity ?? ''}`.trim();
 
   return (
     <Modal open={open} onClose={onClose} title={title}>
@@ -83,20 +76,11 @@ export function JobDetailModal({ job, open, onClose }: JobDetailModalProps) {
             </StatusBadge>
           </InfoRow>
           <InfoRow label="Formaat" value={job.format ? FORMAT_LABELS[job.format] : '-'} />
-          <InfoRow
-            label="Rijen"
-            value={job.row_count !== null ? job.row_count.toLocaleString('nl-BE') : '-'}
-          />
-          {job.file_size !== null && (
-            <InfoRow label="Grootte" value={formatBytes(job.file_size)} />
-          )}
+          <InfoRow label="Rijen" value={job.row_count !== null ? job.row_count.toLocaleString('nl-BE') : '-'} />
+          {job.file_size !== null && <InfoRow label="Grootte" value={formatBytes(job.file_size)} />}
           <InfoRow label="Aangevraagd" value={formatDate(job.created_at)} />
-          {job.started_at && (
-            <InfoRow label="Gestart" value={formatDate(job.started_at)} />
-          )}
-          {job.completed_at && (
-            <InfoRow label="Voltooid" value={formatDate(job.completed_at)} />
-          )}
+          {job.started_at && <InfoRow label="Gestart" value={formatDate(job.started_at)} />}
+          {job.completed_at && <InfoRow label="Voltooid" value={formatDate(job.completed_at)} />}
           {job.status === 'processing' && (
             <InfoRow label="Voortgang">
               <div className="flex items-center gap-2">
@@ -118,11 +102,7 @@ export function JobDetailModal({ job, open, onClose }: JobDetailModalProps) {
         </div>
 
         {job.status === 'completed' && job.file_path && (
-          <Button
-            onClick={handleDownload}
-            disabled={downloading}
-            className="w-full"
-          >
+          <Button onClick={handleDownload} disabled={downloading} className="w-full">
             <Download />
             {downloading ? 'Downloaden...' : 'Download bestand'}
           </Button>

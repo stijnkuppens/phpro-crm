@@ -1,15 +1,12 @@
+import crypto from 'node:crypto';
 import { NextResponse } from 'next/server';
-import crypto from 'crypto';
 import { logger } from '@/lib/logger';
 
 const WEBHOOK_SECRET = process.env.WEBHOOK_SECRET;
 
 function verifySignature(body: string, signature: string | null): boolean {
   if (!WEBHOOK_SECRET || !signature) return false;
-  const expected = crypto
-    .createHmac('sha256', WEBHOOK_SECRET)
-    .update(body)
-    .digest('hex');
+  const expected = crypto.createHmac('sha256', WEBHOOK_SECRET).update(body).digest('hex');
   const sigBuffer = Buffer.from(signature, 'hex');
   const expectedBuffer = Buffer.from(expected, 'hex');
   if (sigBuffer.length !== expectedBuffer.length) return false;
@@ -34,9 +31,9 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Invalid signature' }, { status: 401, headers: { 'Cache-Control': 'no-store' } });
   }
 
-  let payload: unknown;
+  let _payload: unknown;
   try {
-    payload = JSON.parse(body);
+    _payload = JSON.parse(body);
   } catch {
     return NextResponse.json({ error: 'Malformed JSON' }, { status: 400, headers: { 'Cache-Control': 'no-store' } });
   }

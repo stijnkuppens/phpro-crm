@@ -1,12 +1,12 @@
+import { Pencil } from 'lucide-react';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { Pencil } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { getAccount } from '@/features/accounts/queries/get-account';
-import { getContract } from '@/features/contracts/queries/get-contract';
-import { getContactsByAccount } from '@/features/contacts/queries/get-contacts-by-account';
-import { getReferenceOptions } from '@/features/reference-data/queries/get-reference-options';
 import { AccountOverviewTab } from '@/features/accounts/components/account-overview-tab';
+import { getAccount } from '@/features/accounts/queries/get-account';
+import { getContactsByAccount } from '@/features/contacts/queries/get-contacts-by-account';
+import { getContract } from '@/features/contracts/queries/get-contract';
+import { getReferenceOptions } from '@/features/reference-data/queries/get-reference-options';
 
 type Props = {
   params: Promise<{ id: string }>;

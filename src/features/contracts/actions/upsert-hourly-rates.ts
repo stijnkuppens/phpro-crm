@@ -1,11 +1,12 @@
 'use server';
 
-import { createServerClient } from '@/lib/supabase/server';
-import { requirePermission } from '@/lib/require-permission';
-import { logAction } from '@/features/audit/actions/log-action';
 import { revalidatePath } from 'next/cache';
-import { ok, err, type ActionResult } from '@/lib/action-result';
+import { logAction } from '@/features/audit/actions/log-action';
 import { upsertHourlyRatesSchema } from '@/features/contracts/types';
+import { type ActionResult, err, ok } from '@/lib/action-result';
+import { logger } from '@/lib/logger';
+import { requirePermission } from '@/lib/require-permission';
+import { createServerClient } from '@/lib/supabase/server';
 
 export async function upsertHourlyRates(
   accountId: string,
@@ -31,7 +32,7 @@ export async function upsertHourlyRates(
   });
 
   if (rpcError) {
-    console.error('[upsertHourlyRates]', rpcError);
+    logger.error({ err: rpcError }, '[upsertHourlyRates] database error');
     return err('Er is een fout opgetreden');
   }
 

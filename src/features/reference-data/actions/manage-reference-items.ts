@@ -1,11 +1,12 @@
 'use server';
 
-import { z } from 'zod';
 import { revalidatePath } from 'next/cache';
-import { createServerClient } from '@/lib/supabase/server';
-import { ok, err, type ActionResult } from '@/lib/action-result';
+import { z } from 'zod';
+import { type ActionResult, err, ok } from '@/lib/action-result';
+import { logger } from '@/lib/logger';
 import { requirePermission } from '@/lib/require-permission';
-import { refItemSchema, REF_TABLES, type RefTableKey, type RefItemFormValues } from '../types';
+import { createServerClient } from '@/lib/supabase/server';
+import { REF_TABLES, type RefItemFormValues, type RefTableKey, refItemSchema } from '../types';
 
 function isValidTable(table: string): table is RefTableKey {
   return REF_TABLES.some((t) => t.key === table);
@@ -33,13 +34,11 @@ export async function createReferenceItem(
   if (!parsed.success) return err(z.flattenError(parsed.error).fieldErrors);
 
   const supabase = await createServerClient();
-  const { data, error } = await (supabase.from(table) as any)
-    .insert(toDbRow(parsed.data))
-    .select('id')
-    .single();
+  // biome-ignore lint/suspicious/noExplicitAny: dynamic table name returns union type that cannot be narrowed
+  const { data, error } = await (supabase.from(table) as any).insert(toDbRow(parsed.data)).select('id').single();
 
   if (error) {
-    console.error('[createReferenceItem]', error);
+    logger.error({ err: error }, '[createReferenceItem] database error');
     return err('Er is een fout opgetreden');
   }
 
@@ -64,12 +63,11 @@ export async function updateReferenceItem(
   if (!parsed.success) return err(z.flattenError(parsed.error).fieldErrors);
 
   const supabase = await createServerClient();
-  const { error } = await (supabase.from(table) as any)
-    .update(toDbRow(parsed.data))
-    .eq('id', id);
+  // biome-ignore lint/suspicious/noExplicitAny: dynamic table name returns union type that cannot be narrowed
+  const { error } = await (supabase.from(table) as any).update(toDbRow(parsed.data)).eq('id', id);
 
   if (error) {
-    console.error('[updateReferenceItem]', error);
+    logger.error({ err: error }, '[updateReferenceItem] database error');
     return err('Er is een fout opgetreden');
   }
 
@@ -77,10 +75,7 @@ export async function updateReferenceItem(
   return ok();
 }
 
-export async function deleteReferenceItem(
-  table: RefTableKey,
-  id: string,
-): Promise<ActionResult> {
+export async function deleteReferenceItem(table: RefTableKey, id: string): Promise<ActionResult> {
   try {
     await requirePermission('reference_data.write');
   } catch {
@@ -90,12 +85,11 @@ export async function deleteReferenceItem(
   if (!isValidTable(table)) return err('Invalid table');
 
   const supabase = await createServerClient();
-  const { error } = await (supabase.from(table) as any)
-    .delete()
-    .eq('id', id);
+  // biome-ignore lint/suspicious/noExplicitAny: dynamic table name returns union type that cannot be narrowed
+  const { error } = await (supabase.from(table) as any).delete().eq('id', id);
 
   if (error) {
-    console.error('[deleteReferenceItem]', error);
+    logger.error({ err: error }, '[deleteReferenceItem] database error');
     return err('Er is een fout opgetreden');
   }
 

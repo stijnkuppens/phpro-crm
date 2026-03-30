@@ -1,7 +1,7 @@
+import { AccountActivitiesTab } from '@/features/accounts/components/account-activities-tab';
+import { getAccount } from '@/features/accounts/queries/get-account';
 import { getActivities } from '@/features/activities/queries/get-activities';
 import { getDealsByAccount } from '@/features/deals/queries/get-deals-by-account';
-import { getAccount } from '@/features/accounts/queries/get-account';
-import { AccountActivitiesTab } from '@/features/accounts/components/account-activities-tab';
 
 type Props = {
   params: Promise<{ id: string }>;

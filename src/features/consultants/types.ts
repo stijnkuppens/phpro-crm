@@ -122,4 +122,10 @@ export const CONSULTANT_STATUS_LABELS: Record<ConsultantStatus, string> = {
   stopgezet: 'Stopgezet',
 };
 
-export type ConsultantAccount = { id: string; name: string; domain: string | null; type: string | null; city: string | null };
+export type ConsultantAccount = {
+  id: string;
+  name: string;
+  domain: string | null;
+  type: string | null;
+  city: string | null;
+};

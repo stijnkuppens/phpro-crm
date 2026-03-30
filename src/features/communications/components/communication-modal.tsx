@@ -1,27 +1,21 @@
 'use client';
 
+import { FileText, Mail, Phone, Save, Send, Users } from 'lucide-react';
 import { useActionState, useState } from 'react';
 import { toast } from 'sonner';
 import { Modal, ModalFooter } from '@/components/admin/modal';
+import { Button } from '@/components/ui/button';
+import { DateTimePicker } from '@/components/ui/date-time-picker';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { Mail, FileText, Users, Phone, Save, Send } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger } from '@/components/ui/select';
 import { SubmitButton } from '@/components/ui/submit-button';
-import { DateTimePicker } from '@/components/ui/date-time-picker';
+import { Textarea } from '@/components/ui/textarea';
 import { useBrandTheme } from '@/lib/hooks/use-brand-theme';
-import { communicationFormSchema, type CommunicationFormValues } from '../types';
 import { createCommunication } from '../actions/create-communication';
-import { updateCommunication } from '../actions/update-communication';
 import { sendCommunicationEmail } from '../actions/send-communication-email';
+import { updateCommunication } from '../actions/update-communication';
+import { type CommunicationFormValues, communicationFormSchema } from '../types';
 
 const TYPES = [
   { value: 'email', label: 'E-mail', icon: Mail },
@@ -48,9 +42,10 @@ export function CommunicationModal({ open, onClose, accountId, contacts = [], de
   const [type, setType] = useState<CommunicationFormValues['type']>(defaultValues?.type ?? 'email');
   const [toValue, setToValue] = useState(defaultValues?.to ?? '');
   const [subjectValue, setSubjectValue] = useState(defaultValues?.subject ?? '');
-  const defaultContentText = typeof defaultValues?.content === 'object' && defaultValues.content
-    ? (defaultValues.content as { text?: string }).text ?? ''
-    : '';
+  const defaultContentText =
+    typeof defaultValues?.content === 'object' && defaultValues.content
+      ? ((defaultValues.content as { text?: string }).text ?? '')
+      : '';
   const [contentValue, setContentValue] = useState(defaultContentText);
   const [contactId, setContactId] = useState(defaultValues?.contact_id ?? '');
   const [dealId, setDealId] = useState(defaultValues?.deal_id ?? '');
@@ -136,14 +131,28 @@ export function CommunicationModal({ open, onClose, accountId, contacts = [], de
         {type === 'email' && (
           <div className="space-y-1.5">
             <Label htmlFor="to">Aan (e-mailadres)</Label>
-            <Input id="to" name="to" type="email" value={toValue} onChange={(e) => setToValue(e.target.value)} placeholder="naam@bedrijf.be" />
+            <Input
+              id="to"
+              name="to"
+              type="email"
+              value={toValue}
+              onChange={(e) => setToValue(e.target.value)}
+              placeholder="naam@bedrijf.be"
+            />
           </div>
         )}
 
         {/* Subject */}
         <div className="space-y-1.5">
           <Label htmlFor="subject">Onderwerp *</Label>
-          <Input id="subject" name="subject" value={subjectValue} onChange={(e) => setSubjectValue(e.target.value)} placeholder="Onderwerp..." required />
+          <Input
+            id="subject"
+            name="subject"
+            value={subjectValue}
+            onChange={(e) => setSubjectValue(e.target.value)}
+            placeholder="Onderwerp..."
+            required
+          />
         </div>
 
         {/* Content */}
@@ -170,12 +179,17 @@ export function CommunicationModal({ open, onClose, accountId, contacts = [], de
             <Label htmlFor="contact_id">Contact</Label>
             <Select name="contact_id" value={contactId} onValueChange={(v) => setContactId(v ?? '')}>
               <SelectTrigger>
-                {(() => { const c = contacts.find((c) => c.id === contactId); return c ? `${c.first_name} ${c.last_name}` : '— geen —'; })()}
+                {(() => {
+                  const c = contacts.find((c) => c.id === contactId);
+                  return c ? `${c.first_name} ${c.last_name}` : '— geen —';
+                })()}
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="">— geen —</SelectItem>
                 {contacts.map((c) => (
-                  <SelectItem key={c.id} value={c.id}>{c.first_name} {c.last_name}</SelectItem>
+                  <SelectItem key={c.id} value={c.id}>
+                    {c.first_name} {c.last_name}
+                  </SelectItem>
                 ))}
               </SelectContent>
             </Select>
@@ -188,12 +202,14 @@ export function CommunicationModal({ open, onClose, accountId, contacts = [], de
             <Label htmlFor="deal_id">Gekoppeld aan deal</Label>
             <Select name="deal_id" value={dealId} onValueChange={(v) => setDealId(v ?? '')}>
               <SelectTrigger>
-                {dealId ? deals.find((d) => d.id === dealId)?.title ?? '— geen —' : '— geen —'}
+                {dealId ? (deals.find((d) => d.id === dealId)?.title ?? '— geen —') : '— geen —'}
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="">— geen —</SelectItem>
                 {deals.map((d) => (
-                  <SelectItem key={d.id} value={d.id}>{d.title}</SelectItem>
+                  <SelectItem key={d.id} value={d.id}>
+                    {d.title}
+                  </SelectItem>
                 ))}
               </SelectContent>
             </Select>
@@ -201,21 +217,25 @@ export function CommunicationModal({ open, onClose, accountId, contacts = [], de
           {(type === 'meeting' || type === 'call') && (
             <div className="space-y-1.5">
               <Label htmlFor="duration_minutes">Duur (min)</Label>
-              <Input id="duration_minutes" name="duration_minutes" type="number" value={durationValue} onChange={(e) => setDurationValue(e.target.value)} placeholder="30" />
+              <Input
+                id="duration_minutes"
+                name="duration_minutes"
+                type="number"
+                value={durationValue}
+                onChange={(e) => setDurationValue(e.target.value)}
+                placeholder="30"
+              />
             </div>
           )}
         </div>
 
         {/* Actions */}
         <ModalFooter>
-          <Button type="button" variant="outline" onClick={onClose} disabled={sending}>Annuleer</Button>
+          <Button type="button" variant="outline" onClick={onClose} disabled={sending}>
+            Annuleer
+          </Button>
           {type === 'email' && (
-            <Button
-              type="button"
-              variant="outline"
-              disabled={sending || !canSendEmail}
-              onClick={handleSendEmail}
-            >
+            <Button type="button" variant="outline" disabled={sending || !canSendEmail} onClick={handleSendEmail}>
               <Send className="h-4 w-4 mr-1.5" />
               {sending ? 'Versturen...' : 'Verstuur via mail'}
             </Button>

@@ -1,18 +1,12 @@
 'use client';
 
+import { FormSectionHeading } from '@/components/admin/form-section-heading';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { FormSectionHeading } from '@/components/admin/form-section-heading';
-import { formatNumber } from '@/lib/format';
 import type { AccountFormValues } from '@/features/accounts/types';
+import { formatNumber } from '@/lib/format';
 
 const COUNTRY_OPTIONS = [
   { value: 'BE', label: 'Belgie' },
@@ -44,7 +38,9 @@ export function AccountFormCompanySection({ defaultValues }: Props) {
         <div className="space-y-1.5">
           <Label htmlFor="type">Type</Label>
           <Select name="type" defaultValue={defaultValues?.type ?? 'Prospect'}>
-            <SelectTrigger><SelectValue /></SelectTrigger>
+            <SelectTrigger>
+              <SelectValue />
+            </SelectTrigger>
             <SelectContent>
               <SelectItem value="Klant">Klant</SelectItem>
               <SelectItem value="Prospect">Prospect</SelectItem>
@@ -55,7 +51,9 @@ export function AccountFormCompanySection({ defaultValues }: Props) {
         <div className="space-y-1.5">
           <Label htmlFor="status">Status</Label>
           <Select name="status" defaultValue={defaultValues?.status ?? 'Actief'}>
-            <SelectTrigger><SelectValue /></SelectTrigger>
+            <SelectTrigger>
+              <SelectValue />
+            </SelectTrigger>
             <SelectContent>
               <SelectItem value="Actief">Actief</SelectItem>
               <SelectItem value="Inactief">Inactief</SelectItem>
@@ -66,14 +64,21 @@ export function AccountFormCompanySection({ defaultValues }: Props) {
 
       <div className="space-y-1.5">
         <Label htmlFor="industry">Sector</Label>
-        <Input id="industry" name="industry" defaultValue={defaultValues?.industry ?? ''} placeholder="bv. Technology" />
+        <Input
+          id="industry"
+          name="industry"
+          defaultValue={defaultValues?.industry ?? ''}
+          placeholder="bv. Technology"
+        />
       </div>
 
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-1.5">
           <Label htmlFor="size">Grootte</Label>
           <Select name="size" defaultValue={defaultValues?.size ?? ''}>
-            <SelectTrigger><SelectValue placeholder="Selecteer..." /></SelectTrigger>
+            <SelectTrigger>
+              <SelectValue placeholder="Selecteer..." />
+            </SelectTrigger>
             <SelectContent>
               <SelectItem value="1-10">1-10</SelectItem>
               <SelectItem value="11-50">11-50</SelectItem>
@@ -120,30 +125,50 @@ export function AccountFormCompanySection({ defaultValues }: Props) {
 
       <div className="space-y-1.5">
         <Label htmlFor="address">Adres</Label>
-        <Input id="address" name="address" defaultValue={defaultValues?.address ?? ''} placeholder="Straat 1, 1000 Stad" />
+        <Input
+          id="address"
+          name="address"
+          defaultValue={defaultValues?.address ?? ''}
+          placeholder="Straat 1, 1000 Stad"
+        />
       </div>
 
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-1.5">
           <Label htmlFor="country">Land</Label>
           <Select name="country" defaultValue={defaultValues?.country ?? ''}>
-            <SelectTrigger><SelectValue placeholder="Selecteer..." /></SelectTrigger>
+            <SelectTrigger>
+              <SelectValue placeholder="Selecteer..." />
+            </SelectTrigger>
             <SelectContent>
               {COUNTRY_OPTIONS.map((c) => (
-                <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>
+                <SelectItem key={c.value} value={c.value}>
+                  {c.label}
+                </SelectItem>
               ))}
             </SelectContent>
           </Select>
         </div>
         <div className="space-y-1.5">
           <Label htmlFor="vat_number">BTW-nummer</Label>
-          <Input id="vat_number" name="vat_number" defaultValue={defaultValues?.vat_number ?? ''} placeholder="BE0123.456.789" />
+          <Input
+            id="vat_number"
+            name="vat_number"
+            defaultValue={defaultValues?.vat_number ?? ''}
+            placeholder="BE0123.456.789"
+          />
         </div>
       </div>
 
       <div className="space-y-1.5">
         <Label htmlFor="about">Over dit bedrijf</Label>
-        <Textarea id="about" name="about" rows={3} defaultValue={defaultValues?.about ?? ''} placeholder="Korte omschrijving..." />
+        <Textarea
+          id="about"
+          name="about"
+          rows={3}
+          defaultValue={defaultValues?.about ?? ''}
+          placeholder="Korte omschrijving..."
+        />
       </div>
     </div>
   );

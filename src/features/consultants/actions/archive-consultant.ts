@@ -1,16 +1,14 @@
 'use server';
 
-import { z } from 'zod';
-import { createServerClient } from '@/lib/supabase/server';
-import { requirePermission } from '@/lib/require-permission';
-import { logAction } from '@/features/audit/actions/log-action';
 import { revalidatePath } from 'next/cache';
-import { ok, err, type ActionResult } from '@/lib/action-result';
+import { z } from 'zod';
+import { logAction } from '@/features/audit/actions/log-action';
+import { type ActionResult, err, ok } from '@/lib/action-result';
+import { logger } from '@/lib/logger';
+import { requirePermission } from '@/lib/require-permission';
+import { createServerClient } from '@/lib/supabase/server';
 
-export async function archiveConsultant(
-  id: string,
-  archive: boolean = true,
-): Promise<ActionResult> {
+export async function archiveConsultant(id: string, archive: boolean = true): Promise<ActionResult> {
   try {
     await requirePermission('consultants.write');
   } catch {
@@ -27,7 +25,7 @@ export async function archiveConsultant(
     .eq('status', 'bench');
 
   if (error) {
-    console.error('[archiveConsultant]', error);
+    logger.error({ err: error }, '[archiveConsultant] database error');
     return err('Er is een fout opgetreden');
   }
 

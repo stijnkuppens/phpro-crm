@@ -1,7 +1,7 @@
+import { AccountCommunicationsTab } from '@/features/accounts/components/account-communications-tab';
 import { getCommunications } from '@/features/communications/queries/get-communications';
 import { getContactsByAccount } from '@/features/contacts/queries/get-contacts-by-account';
 import { getDealsByAccount } from '@/features/deals/queries/get-deals-by-account';
-import { AccountCommunicationsTab } from '@/features/accounts/components/account-communications-tab';
 
 type Props = {
   params: Promise<{ id: string }>;

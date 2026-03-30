@@ -1,12 +1,13 @@
 'use server';
 
-import { z } from 'zod';
-import { createServerClient } from '@/lib/supabase/server';
-import { requirePermission } from '@/lib/require-permission';
-import { logAction } from '@/features/audit/actions/log-action';
 import { revalidatePath } from 'next/cache';
-import { contactFormSchema, type ContactFormValues } from '../types';
-import { ok, err, type ActionResult } from '@/lib/action-result';
+import { z } from 'zod';
+import { logAction } from '@/features/audit/actions/log-action';
+import { type ActionResult, err, ok } from '@/lib/action-result';
+import { logger } from '@/lib/logger';
+import { requirePermission } from '@/lib/require-permission';
+import { createServerClient } from '@/lib/supabase/server';
+import { type ContactFormValues, contactFormSchema } from '../types';
 
 export async function createContact(values: ContactFormValues): Promise<ActionResult<{ id: string }>> {
   try {
@@ -21,24 +22,18 @@ export async function createContact(values: ContactFormValues): Promise<ActionRe
   }
 
   const supabase = await createServerClient();
-  const { data, error } = await supabase
-    .from('contacts')
-    .insert(parsed.data)
-    .select('id')
-    .single();
+  const { data, error } = await supabase.from('contacts').insert(parsed.data).select('id').single();
 
   if (error) {
-    console.error('[createContact]', error);
+    logger.error({ err: error }, '[createContact] database error');
     return err('Er is een fout opgetreden');
   }
 
   // Create empty personal info record
-  const { error: personalInfoError } = await supabase
-    .from('contact_personal_info')
-    .insert({ contact_id: data.id });
+  const { error: personalInfoError } = await supabase.from('contact_personal_info').insert({ contact_id: data.id });
 
   if (personalInfoError) {
-    console.error('[createContact] personalInfo', personalInfoError);
+    logger.error({ err: personalInfoError }, '[createContact] personalInfo error');
     return err('Er is een fout opgetreden');
   }
 

@@ -1,21 +1,20 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { Plus, SquarePen, Trash2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { SquarePen, Plus, Trash2 } from 'lucide-react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
-import { useEntity } from '@/lib/hooks/use-entity';
-import { deleteCommunication } from '@/features/communications/actions/delete-communication';
-import { Button } from '@/components/ui/button';
-import { ListPageToolbar } from '@/components/admin/list-page-toolbar';
 import DataTable from '@/components/admin/data-table';
-import { DataTableFilters, buildFilterQuery } from '@/components/admin/data-table-filters';
-import { CommunicationModal } from '@/features/communications/components/communication-modal';
-import { CommunicationDetailModal } from '@/features/communications/components/communication-detail-modal';
-import { communicationColumns } from '@/features/communications/columns';
-import type { CommunicationWithDetails } from '@/features/communications/types';
-import { COMMUNICATION_TYPE_CONFIG } from '@/features/communications/types';
 import type { FilterOption } from '@/components/admin/data-table-filters';
+import { buildFilterQuery, DataTableFilters } from '@/components/admin/data-table-filters';
+import { ListPageToolbar } from '@/components/admin/list-page-toolbar';
+import { Button } from '@/components/ui/button';
+import { deleteCommunication } from '@/features/communications/actions/delete-communication';
+import { communicationColumns } from '@/features/communications/columns';
+import { CommunicationDetailModal } from '@/features/communications/components/communication-detail-modal';
+import { CommunicationModal } from '@/features/communications/components/communication-modal';
+import type { COMMUNICATION_TYPE_CONFIG, CommunicationWithDetails } from '@/features/communications/types';
+import { useEntity } from '@/lib/hooks/use-entity';
 
 type CommType = keyof typeof COMMUNICATION_TYPE_CONFIG;
 
@@ -69,11 +68,7 @@ export function AccountCommunicationsTab({ accountId, initialData, initialCount,
     })),
     deal_id: deals.map((d) => ({ value: d.id, label: d.title })),
     owner_id: Array.from(
-      new Map(
-        initialData
-          .filter((c) => c.owner?.id)
-          .map((c) => [c.owner!.id, c.owner!.full_name ?? 'Onbekend']),
-      ),
+      new Map(initialData.filter((c) => c.owner?.id).map((c) => [c.owner!.id, c.owner!.full_name ?? 'Onbekend'])),
     ).map(([id, name]) => ({ value: id, label: name })),
   };
 
@@ -98,15 +93,14 @@ export function AccountCommunicationsTab({ accountId, initialData, initialCount,
     load();
   }, [load]);
 
-  const handleFilterChange = useCallback(
-    (newFilters: Record<string, string | undefined>) => {
-      setFilters(newFilters);
-      setPage(1);
-    },
-    [],
-  );
+  const handleFilterChange = useCallback((newFilters: Record<string, string | undefined>) => {
+    setFilters(newFilters);
+    setPage(1);
+  }, []);
 
-  useEffect(() => { setPage(1); }, [typeFilter]);
+  useEffect(() => {
+    setPage(1);
+  }, []);
 
   const handleClose = useCallback(() => {
     setCreateOpen(false);
@@ -191,7 +185,9 @@ export function AccountCommunicationsTab({ accountId, initialData, initialCount,
               <span className="truncate font-medium text-sm">{row.subject}</span>
             </div>
             {row.contact && (
-              <div className="text-xs text-muted-foreground">{row.contact.first_name} {row.contact.last_name}</div>
+              <div className="text-xs text-muted-foreground">
+                {row.contact.first_name} {row.contact.last_name}
+              </div>
             )}
             <div className="text-[11px] text-muted-foreground">
               {new Date(row.date).toLocaleDateString('nl-BE', { day: 'numeric', month: 'short', year: 'numeric' })}

@@ -2,8 +2,8 @@
 
 import { usePathname } from 'next/navigation';
 import { SubNav, type SubNavItem } from '@/components/admin/sub-nav';
-import { tabMeta } from './tab-config';
 import type { AccountBannerStats } from '../queries/get-account-banner-stats';
+import { tabMeta } from './tab-config';
 
 type Props = {
   accountId: string;
@@ -21,16 +21,17 @@ export function AccountSubNav({ accountId, stats }: Props) {
     count: tab.countKey ? stats[tab.countKey] : undefined,
   }));
 
-  const activeKey = tabMeta.find((tab) => {
-    const href = tab.key === 'overview' ? basePath : `${basePath}/${tab.key}`;
-    return pathname === href;
-  })?.key ?? 'overview';
+  const activeKey =
+    tabMeta.find((tab) => {
+      const href = tab.key === 'overview' ? basePath : `${basePath}/${tab.key}`;
+      return pathname === href;
+    })?.key ?? 'overview';
 
   return (
     <SubNav
       items={items}
       activeKey={activeKey}
-      getHref={(key) => key === 'overview' ? basePath : `${basePath}/${key}`}
+      getHref={(key) => (key === 'overview' ? basePath : `${basePath}/${key}`)}
     />
   );
 }

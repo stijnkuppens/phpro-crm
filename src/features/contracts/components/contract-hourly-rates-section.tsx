@@ -54,7 +54,10 @@ export function ContractHourlyRatesSection({
               <tr className="border-b bg-muted/30">
                 <th className="text-left p-2.5 font-medium w-56">Rol</th>
                 {hrVisibleYears.map((year) => (
-                  <th key={year} className={`text-right p-2.5 font-medium w-32 ${year === currentYear ? 'bg-primary/5' : ''}`}>
+                  <th
+                    key={year}
+                    className={`text-right p-2.5 font-medium w-32 ${year === currentYear ? 'bg-primary/5' : ''}`}
+                  >
                     {year} (&euro;/u)
                   </th>
                 ))}
@@ -65,11 +68,7 @@ export function ContractHourlyRatesSection({
               {hrRoles.map((role) => (
                 <tr key={role} className="border-b last:border-0">
                   <td className="p-1.5">
-                    <Input
-                      value={role}
-                      onChange={(e) => renameHrRole(role, e.target.value)}
-                      className="h-9 text-sm"
-                    />
+                    <Input value={role} onChange={(e) => renameHrRole(role, e.target.value)} className="h-9 text-sm" />
                   </td>
                   {hrVisibleYears.map((year) => (
                     <td key={year} className={`p-1.5 ${year === currentYear ? 'bg-primary/5' : ''}`}>

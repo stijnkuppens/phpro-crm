@@ -2,10 +2,10 @@
 // Do not add 'use server' — that would expose logAction as a callable endpoint.
 
 import { headers } from 'next/headers';
-import { createServerClient } from '@/lib/supabase/server';
-import { createServiceRoleClient } from '@/lib/supabase/admin';
-import type { Json } from '@/types/database';
 import { logger } from '@/lib/logger';
+import { createServiceRoleClient } from '@/lib/supabase/admin';
+import { createServerClient } from '@/lib/supabase/server';
+import type { Json } from '@/types/database';
 
 export async function logAction(params: {
   action: string;
@@ -29,7 +29,9 @@ export async function logAction(params: {
     }
   }
   const supabase = await createServerClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
   const headersList = await headers();
   const forwardedFor = headersList.get('x-forwarded-for');
@@ -44,6 +46,9 @@ export async function logAction(params: {
     metadata: { ...(params.metadata ?? {}), ip_address: ip },
   });
   if (error) {
-    logger.error({ err: error, action: params.action, entityType: params.entityType, entityId: params.entityId }, 'Failed to write audit log');
+    logger.error(
+      { err: error, action: params.action, entityType: params.entityType, entityId: params.entityId },
+      'Failed to write audit log',
+    );
   }
 }

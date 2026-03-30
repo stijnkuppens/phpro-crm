@@ -11,12 +11,14 @@ export default function AccountEditLoading() {
         <div className="space-y-4">
           <Skeleton className="h-4 w-32" />
           {Array.from({ length: 8 }).map((_, i) => (
+            // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton items with no identity
             <Skeleton key={i} className="h-10 w-full" />
           ))}
         </div>
         <div className="space-y-4">
           <Skeleton className="h-4 w-32" />
           {Array.from({ length: 8 }).map((_, i) => (
+            // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton items with no identity
             <Skeleton key={i} className="h-10 w-full" />
           ))}
         </div>

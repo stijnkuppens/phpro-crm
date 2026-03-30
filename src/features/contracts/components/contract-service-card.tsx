@@ -1,11 +1,11 @@
 'use client';
 
+import { PdfUploadField } from '@/components/admin/pdf-upload-field';
 import { Card, CardContent } from '@/components/ui/card';
+import { DatePicker } from '@/components/ui/date-picker';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
-import { DatePicker } from '@/components/ui/date-picker';
-import { PdfUploadField } from '@/components/admin/pdf-upload-field';
 import type { Contract } from '@/features/contracts/types';
 
 type Props = {
@@ -17,19 +17,14 @@ type Props = {
   accountId: string;
 };
 
-export function ContractServiceCard({
-  hasService,
-  serviceUrl,
-  serviceDoc,
-  onChange,
-  contract,
-  accountId,
-}: Props) {
+export function ContractServiceCard({ hasService, serviceUrl, serviceDoc, onChange, contract, accountId }: Props) {
   return (
     <Card>
       <CardContent className="p-5 space-y-4">
         <div className="flex items-center justify-between">
-          <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Dienstencontract (SLA)</h2>
+          <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+            Dienstencontract (SLA)
+          </h2>
           <Switch checked={hasService} onCheckedChange={(v) => onChange({ hasService: v })} />
         </div>
         {hasService && (
@@ -46,7 +41,11 @@ export function ContractServiceCard({
             </div>
             <div className="space-y-1.5">
               <Label>Document uploaden</Label>
-              <PdfUploadField value={serviceDoc} onChange={(v) => onChange({ serviceDoc: v })} folder={`contracts/${accountId}`} />
+              <PdfUploadField
+                value={serviceDoc}
+                onChange={(v) => onChange({ serviceDoc: v })}
+                folder={`contracts/${accountId}`}
+              />
             </div>
             <div className="space-y-1.5">
               <Label>Link naar document (URL)</Label>

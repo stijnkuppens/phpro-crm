@@ -1,9 +1,9 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
 import { Camera } from 'lucide-react';
-import { createBrowserClient, withApiKey } from '@/lib/supabase/client';
+import { useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
+import { createBrowserClient, withApiKey } from '@/lib/supabase/client';
 import { cn } from '@/lib/utils';
 
 const IMAGE_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp']);
@@ -30,14 +30,7 @@ const sizes = {
   lg: 'h-16 w-16 text-xl',
 };
 
-export function AvatarUpload({
-  currentPath,
-  fallback,
-  storagePath,
-  onUploaded,
-  size = 'md',
-  round = true,
-}: Props) {
+export function AvatarUpload({ currentPath, fallback, storagePath, onUploaded, size = 'md', round = true }: Props) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
   const [imageUrl, setImageUrl] = useState<string | null>(null);
@@ -62,7 +55,9 @@ export function AvatarUpload({
       .then(({ data }) => {
         if (!cancelled && data?.signedUrl) setImageUrl(withApiKey(data.signedUrl));
       });
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [currentPath]);
 
   async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -94,9 +89,7 @@ export function AvatarUpload({
     }
 
     // Get signed URL for display
-    const { data } = await supabase.storage
-      .from('avatars')
-      .createSignedUrl(path, 3600);
+    const { data } = await supabase.storage.from('avatars').createSignedUrl(path, 3600);
 
     if (data?.signedUrl) {
       setImageUrl(withApiKey(data.signedUrl));
@@ -124,7 +117,7 @@ export function AvatarUpload({
         )}
       >
         {hasImage ? (
-          /* eslint-disable-next-line @next/next/no-img-element */
+          // biome-ignore lint/performance/noImgElement: signed Supabase storage URLs are incompatible with next/image
           <img
             src={imageUrl}
             alt={fallback}
@@ -134,10 +127,12 @@ export function AvatarUpload({
         ) : (
           fallback
         )}
-        <div className={cn(
-          'absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 transition-opacity group-hover:opacity-100',
-          round ? 'rounded-full' : 'rounded-lg',
-        )}>
+        <div
+          className={cn(
+            'absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 transition-opacity group-hover:opacity-100',
+            round ? 'rounded-full' : 'rounded-lg',
+          )}
+        >
           <Camera className="h-4 w-4 text-white" />
         </div>
       </button>

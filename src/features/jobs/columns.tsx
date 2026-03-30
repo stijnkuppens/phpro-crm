@@ -1,17 +1,11 @@
 'use client';
 
 import type { ColumnDef } from '@tanstack/react-table';
-import { StatusBadge } from '@/components/admin/status-badge';
 import { formatDistanceToNow } from 'date-fns';
 import { nl } from 'date-fns/locale';
+import { StatusBadge } from '@/components/admin/status-badge';
 import type { Job } from './types';
-import {
-  JOB_STATUS_STYLES,
-  JOB_STATUS_LABELS,
-  JOB_TYPE_LABELS,
-  ENTITY_LABELS,
-  FORMAT_LABELS,
-} from './types';
+import { ENTITY_LABELS, FORMAT_LABELS, JOB_STATUS_LABELS, JOB_STATUS_STYLES, JOB_TYPE_LABELS } from './types';
 
 export const jobColumns: ColumnDef<Job>[] = [
   {

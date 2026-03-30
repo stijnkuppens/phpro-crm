@@ -2,13 +2,13 @@
 
 import { useActionState } from 'react';
 import { Modal } from '@/components/admin/modal';
-import { useDealForm } from '@/features/deals/components/deal-form-context';
-import { DealFormProvider } from '@/features/deals/components/deal-form-provider';
-import type { DealEditModalProps } from '@/features/deals/components/deal-form-provider';
 import { ClosedDealBanner } from '@/features/deals/components/deal-form-closed-banner';
-import { DealFormLeftColumn } from '@/features/deals/components/deal-form-left-column';
-import { DealFormRightColumn } from '@/features/deals/components/deal-form-right-column';
+import { useDealForm } from '@/features/deals/components/deal-form-context';
 import { DealFormFooter } from '@/features/deals/components/deal-form-footer';
+import { DealFormLeftColumn } from '@/features/deals/components/deal-form-left-column';
+import type { DealEditModalProps } from '@/features/deals/components/deal-form-provider';
+import { DealFormProvider } from '@/features/deals/components/deal-form-provider';
+import { DealFormRightColumn } from '@/features/deals/components/deal-form-right-column';
 
 function DealFormContent() {
   const { actions, meta } = useDealForm();

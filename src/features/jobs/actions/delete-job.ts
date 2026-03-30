@@ -1,10 +1,11 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import { createServiceRoleClient } from '@/lib/supabase/admin';
-import { requirePermission } from '@/lib/require-permission';
-import { ok, err, type ActionResult } from '@/lib/action-result';
 import { z } from 'zod';
+import { type ActionResult, err, ok } from '@/lib/action-result';
+import { logger } from '@/lib/logger';
+import { requirePermission } from '@/lib/require-permission';
+import { createServiceRoleClient } from '@/lib/supabase/admin';
 
 export async function deleteJob(id: string): Promise<ActionResult> {
   const { userId } = await requirePermission('jobs.read');
@@ -28,13 +29,10 @@ export async function deleteJob(id: string): Promise<ActionResult> {
     await supabase.storage.from('documents').remove([job.file_path]);
   }
 
-  const { error: deleteError } = await supabase
-    .from('jobs')
-    .delete()
-    .eq('id', id);
+  const { error: deleteError } = await supabase.from('jobs').delete().eq('id', id);
 
   if (deleteError) {
-    console.error('[deleteJob]', deleteError);
+    logger.error({ err: deleteError }, '[deleteJob] database error');
     return err('Er is een fout opgetreden');
   }
 

@@ -4,12 +4,7 @@ import type { LucideIcon } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Badge } from '@/components/ui/badge';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-} from '@/components/ui/select';
+import { Select, SelectContent, SelectItem, SelectTrigger } from '@/components/ui/select';
 import { useIsMobile } from '@/hooks/use-mobile';
 
 export type SubNavItem = {
@@ -109,12 +104,7 @@ export function SubNav({ items, activeKey, onSelect, getHref }: Props) {
         }
 
         return (
-          <button
-            key={item.key}
-            type="button"
-            onClick={() => onSelect?.(item.key)}
-            className={className}
-          >
+          <button key={item.key} type="button" onClick={() => onSelect?.(item.key)} className={className}>
             {content}
           </button>
         );

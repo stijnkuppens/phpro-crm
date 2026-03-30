@@ -27,8 +27,13 @@ jobs:
 
       - run: npm ci
 
-      - run: npm run lint
+      - name: Lint (Biome)
+        run: npx biome lint src/
 
-      - run: npx tsc --noEmit
+      - name: Format check (Biome)
+        run: npx biome format src/
+
+      - name: Type check
+        run: npx tsc --noEmit
 
       - run: npm run build

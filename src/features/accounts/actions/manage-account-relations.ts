@@ -1,12 +1,13 @@
 'use server';
 
-import { z } from 'zod';
-import { createServerClient } from '@/lib/supabase/server';
-import { requirePermission } from '@/lib/require-permission';
-import { logAction } from '@/features/audit/actions/log-action';
 import { revalidatePath } from 'next/cache';
-import { ok, err, type ActionResult } from '@/lib/action-result';
+import { z } from 'zod';
 import { type AccountSubTable, ALLOWED_RELATION_COLUMNS } from '@/features/accounts/types';
+import { logAction } from '@/features/audit/actions/log-action';
+import { type ActionResult, err, ok } from '@/lib/action-result';
+import { logger } from '@/lib/logger';
+import { requirePermission } from '@/lib/require-permission';
+import { createServerClient } from '@/lib/supabase/server';
 
 function sanitizeValues(table: AccountSubTable, values: Record<string, unknown>): Record<string, unknown> {
   const allowed = ALLOWED_RELATION_COLUMNS[table];
@@ -34,16 +35,12 @@ export async function addAccountRelation(
   const safe = sanitizeValues(table, values);
   const supabase = await createServerClient();
   // account_cc_services has no account_id column; other tables do
-  const insertValues = table === 'account_cc_services'
-    ? safe
-    : { ...safe, account_id: accountId };
-  const { data, error } = await (supabase.from(table) as any)
-    .insert(insertValues)
-    .select('id')
-    .single();
+  const insertValues = table === 'account_cc_services' ? safe : { ...safe, account_id: accountId };
+  // biome-ignore lint/suspicious/noExplicitAny: dynamic table name returns union type that cannot be narrowed
+  const { data, error } = await (supabase.from(table) as any).insert(insertValues).select('id').single();
 
   if (error) {
-    console.error('[addAccountRelation]', error);
+    logger.error({ err: error }, '[addAccountRelation] database error');
     return err('Er is een fout opgetreden');
   }
 
@@ -68,12 +65,11 @@ export async function updateAccountRelation(
 
   const safe = sanitizeValues(table, values);
   const supabase = await createServerClient();
-  const { error } = await (supabase.from(table) as any)
-    .update(safe)
-    .eq('id', id);
+  // biome-ignore lint/suspicious/noExplicitAny: dynamic table name returns union type that cannot be narrowed
+  const { error } = await (supabase.from(table) as any).update(safe).eq('id', id);
 
   if (error) {
-    console.error('[updateAccountRelation]', error);
+    logger.error({ err: error }, '[updateAccountRelation] database error');
     return err('Er is een fout opgetreden');
   }
 
@@ -81,10 +77,7 @@ export async function updateAccountRelation(
   return ok();
 }
 
-export async function deleteAccountRelation(
-  table: AccountSubTable,
-  id: string,
-): Promise<ActionResult> {
+export async function deleteAccountRelation(table: AccountSubTable, id: string): Promise<ActionResult> {
   try {
     await requirePermission('accounts.write');
   } catch {
@@ -95,12 +88,11 @@ export async function deleteAccountRelation(
   if (!parsedId.success) return err('Ongeldig ID');
 
   const supabase = await createServerClient();
-  const { error } = await (supabase.from(table) as any)
-    .delete()
-    .eq('id', id);
+  // biome-ignore lint/suspicious/noExplicitAny: dynamic table name returns union type that cannot be narrowed
+  const { error } = await (supabase.from(table) as any).delete().eq('id', id);
 
   if (error) {
-    console.error('[deleteAccountRelation]', error);
+    logger.error({ err: error }, '[deleteAccountRelation] database error');
     return err('Er is een fout opgetreden');
   }
 
@@ -127,6 +119,7 @@ export async function syncAccountFKRelation(
   }
 
   const supabase = await createServerClient();
+  // biome-ignore lint/suspicious/noExplicitAny: dynamic table name returns union type that cannot be narrowed
   const { data: before } = await (supabase.from(table) as any).select('*').eq('account_id', accountId);
   const rows = values.map((v) => ({ account_id: accountId, [field]: v }));
   const { error } = await supabase.rpc('sync_account_fk_relation', {
@@ -136,7 +129,7 @@ export async function syncAccountFKRelation(
   });
 
   if (error) {
-    console.error('[syncAccountFKRelation]', error);
+    logger.error({ err: error }, '[syncAccountFKRelation] database error');
     return err('Er is een fout opgetreden');
   }
 
