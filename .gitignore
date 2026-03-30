@@ -43,8 +43,15 @@ docker/volumes/storage/
 # docs (generated/local only)
 docs/
 
-# claude worktrees
+# claude local (keep .claude/rules/ tracked)
 .claude/worktrees/
+.claude/skills/
+.claude/settings.local.json
+
+# ai planning/dev-flow artifacts
+.planning/
+.dev-flow/
+.claire/
 
 # debug
 npm-debug.log*

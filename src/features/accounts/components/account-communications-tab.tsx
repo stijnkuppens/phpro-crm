@@ -109,13 +109,10 @@ export function AccountCommunicationsTab({
     load();
   }, [load]);
 
-  const handleFilterChange = useCallback(
-    (newFilters: Record<string, string | undefined>) => {
-      setFilters(newFilters);
-      setPage(1);
-    },
-    [setPage],
-  );
+  const handleFilterChange = useCallback((newFilters: Record<string, string | undefined>) => {
+    setFilters(newFilters);
+    setPage(1);
+  }, []);
 
   useEffect(() => {
     setPage(1);

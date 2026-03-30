@@ -156,10 +156,25 @@ tasks:
 
   # ── Quality ────────────────────────────────────────
 
-  lint:
-    desc: "Run ESLint"
+  format:
+    desc: "Format source files with Biome"
     cmds:
-      - npm run lint
+      - npx biome format --write src/
+
+  format:check:
+    desc: "Check formatting without writing (CI)"
+    cmds:
+      - npx biome format src/
+
+  lint:
+    desc: "Run Biome linter"
+    cmds:
+      - npx biome check src/
+
+  lint:fix:
+    desc: "Run Biome linter with auto-fix (safe fixes + formatting)"
+    cmds:
+      - npx biome check --write src/
 
   typecheck:
     desc: "Run TypeScript type checking"
