@@ -15,29 +15,35 @@ const routePermissions: [string, Permission][] = [
   ['/admin/tasks', 'tasks.read'],
   ['/admin/bench', 'bench.read'],
   ['/admin/consultants', 'consultants.read'],
-  ['/admin/reference-data', 'reference_data.write'],
+  ['/admin/settings/reference-data', 'reference_data.write'],
 ];
 
 export async function proxy(request: NextRequest) {
   let response = NextResponse.next({ request });
 
-  const supabase = createServerClient(process.env.SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!, {
-    cookies: {
-      getAll() {
-        return request.cookies.getAll();
-      },
-      setAll(cookiesToSet) {
-        // Set cookies on the request first (for downstream server components)
-        // biome-ignore lint/suspicious/useIterableCallbackReturn: forEach callback does not need a return value
-        cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value));
-        // Create a SINGLE new response with all request cookies forwarded
-        response = NextResponse.next({ request });
-        // Set all cookies on that single response
-        // biome-ignore lint/suspicious/useIterableCallbackReturn: forEach callback does not need a return value
-        cookiesToSet.forEach(({ name, value, options }) => response.cookies.set(name, value, options));
+  const supabase = createServerClient(
+    process.env.SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        getAll() {
+          return request.cookies.getAll();
+        },
+        setAll(cookiesToSet) {
+          // Set cookies on the request first (for downstream server components)
+          // biome-ignore lint/suspicious/useIterableCallbackReturn: forEach callback does not need a return value
+          cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value));
+          // Create a SINGLE new response with all request cookies forwarded
+          response = NextResponse.next({ request });
+          // Set all cookies on that single response
+          // biome-ignore lint/suspicious/useIterableCallbackReturn: forEach callback does not need a return value
+          cookiesToSet.forEach(({ name, value, options }) =>
+            response.cookies.set(name, value, options),
+          );
+        },
       },
     },
-  });
+  );
 
   const {
     data: { user },
@@ -59,7 +65,11 @@ export async function proxy(request: NextRequest) {
     // Transition-safe: prefer JWT claim, fall back to DB during re-login window
     let role = user.app_metadata?.role as Role | undefined;
     if (!role) {
-      const { data } = await supabase.from('user_profiles').select('role').eq('id', user.id).single();
+      const { data } = await supabase
+        .from('user_profiles')
+        .select('role')
+        .eq('id', user.id)
+        .single();
       role = data?.role as Role | undefined;
     }
     if (!role) {

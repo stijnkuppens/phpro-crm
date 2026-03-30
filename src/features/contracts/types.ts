@@ -57,4 +57,8 @@ export type SlaRateFormValues = z.infer<typeof slaRateFormSchema>;
 
 export type RateEntry = { role: string; rate: string };
 export type ToolEntry = { tool_name: string; monthly_price: string };
-export type SlaYearState = { fixed_monthly_rate: string; support_hourly_rate: string; tools: ToolEntry[] };
+export type SlaYearState = {
+  fixed_monthly_rate: string;
+  support_hourly_rate: string;
+  tools: ToolEntry[];
+};

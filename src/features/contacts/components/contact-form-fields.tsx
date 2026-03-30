@@ -4,7 +4,13 @@ import { Baby, CalendarDays, Gift, Pin, Star, UtensilsCrossed } from 'lucide-rea
 import { TogglePill } from '@/components/admin/toggle-pill';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
 import { fieldErrorClass } from '@/lib/form-errors';
@@ -130,12 +136,20 @@ export function ContactFormFields({ defaultValues, defaultPersonalInfo, errors }
       <TabsContent value="persoonlijk" className="space-y-4 mt-4" keepMounted>
         <div className="space-y-2">
           <Label htmlFor="hobbies">Hobby&apos;s (kommagescheiden)</Label>
-          <Input id="hobbies" name="hobbies" defaultValue={defaultPersonalInfo?.hobbies?.join(', ') ?? ''} />
+          <Input
+            id="hobbies"
+            name="hobbies"
+            defaultValue={defaultPersonalInfo?.hobbies?.join(', ') ?? ''}
+          />
         </div>
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-2">
             <Label htmlFor="marital_status">Burgerlijke staat</Label>
-            <Input id="marital_status" name="marital_status" defaultValue={defaultPersonalInfo?.marital_status ?? ''} />
+            <Input
+              id="marital_status"
+              name="marital_status"
+              defaultValue={defaultPersonalInfo?.marital_status ?? ''}
+            />
           </div>
           <div className="space-y-2">
             <Label htmlFor="birthday">Verjaardag</Label>
@@ -166,12 +180,20 @@ export function ContactFormFields({ defaultValues, defaultPersonalInfo, errors }
         </div>
         <div className="space-y-2">
           <Label htmlFor="children_names">Namen kinderen</Label>
-          <Input id="children_names" name="children_names" defaultValue={defaultPersonalInfo?.children_names ?? ''} />
+          <Input
+            id="children_names"
+            name="children_names"
+            defaultValue={defaultPersonalInfo?.children_names ?? ''}
+          />
         </div>
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-2">
             <Label htmlFor="partner_name">Naam partner</Label>
-            <Input id="partner_name" name="partner_name" defaultValue={defaultPersonalInfo?.partner_name ?? ''} />
+            <Input
+              id="partner_name"
+              name="partner_name"
+              defaultValue={defaultPersonalInfo?.partner_name ?? ''}
+            />
           </div>
           <div className="space-y-2">
             <Label htmlFor="partner_profession">Beroep partner</Label>
@@ -184,7 +206,12 @@ export function ContactFormFields({ defaultValues, defaultPersonalInfo, errors }
         </div>
         <div className="space-y-2">
           <Label htmlFor="notes">Algemene info</Label>
-          <Textarea id="notes" name="notes" rows={3} defaultValue={defaultPersonalInfo?.notes ?? ''} />
+          <Textarea
+            id="notes"
+            name="notes"
+            rows={3}
+            defaultValue={defaultPersonalInfo?.notes ?? ''}
+          />
         </div>
       </TabsContent>
     </Tabs>

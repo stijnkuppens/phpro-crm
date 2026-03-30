@@ -9,7 +9,9 @@ import { requirePermission } from '@/lib/require-permission';
 import { createServerClient } from '@/lib/supabase/server';
 import { type IndexationConfigFormValues, indexationConfigFormSchema } from '../types';
 
-export async function upsertIndexationConfig(values: IndexationConfigFormValues): Promise<ActionResult<void>> {
+export async function upsertIndexationConfig(
+  values: IndexationConfigFormValues,
+): Promise<ActionResult<void>> {
   try {
     await requirePermission('indexation.write');
   } catch {
@@ -27,7 +29,9 @@ export async function upsertIndexationConfig(values: IndexationConfigFormValues)
     .select('*')
     .eq('account_id', parsed.data.account_id)
     .single();
-  const { error } = await supabase.from('indexation_config').upsert(parsed.data, { onConflict: 'account_id' });
+  const { error } = await supabase
+    .from('indexation_config')
+    .upsert(parsed.data, { onConflict: 'account_id' });
 
   if (error) {
     logger.error({ err: error }, '[upsertIndexationConfig] database error');

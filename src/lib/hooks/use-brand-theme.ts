@@ -24,7 +24,8 @@ let currentBrand: BrandTheme | null = null;
 
 function getSnapshot(): BrandTheme {
   if (currentBrand) return currentBrand;
-  currentBrand = (localStorage.getItem(STORAGE_KEY) as BrandTheme) ?? getBrandFromCookie() ?? 'phpro';
+  currentBrand =
+    (localStorage.getItem(STORAGE_KEY) as BrandTheme) ?? getBrandFromCookie() ?? 'phpro';
   return currentBrand;
 }
 

@@ -61,7 +61,13 @@ type Props = {
 
 // ── Component ──────────────────────────────────────────────────────────────
 
-export function ContractEditPage({ accountId, contract, hourlyRates, slaRates, indexationConfig }: Props) {
+export function ContractEditPage({
+  accountId,
+  contract,
+  hourlyRates,
+  slaRates,
+  indexationConfig,
+}: Props) {
   const router = useRouter();
   const [saving, setSaving] = useState(false);
 
@@ -156,7 +162,10 @@ export function ContractEditPage({ accountId, contract, hourlyRates, slaRates, i
       grid[s.year] = {
         fixed_monthly_rate: String(Number(s.fixed_monthly_rate)),
         support_hourly_rate: String(Number(s.support_hourly_rate)),
-        tools: (s.tools ?? []).map((t) => ({ tool_name: t.tool_name, monthly_price: String(Number(t.monthly_price)) })),
+        tools: (s.tools ?? []).map((t) => ({
+          tool_name: t.tool_name,
+          monthly_price: String(Number(t.monthly_price)),
+        })),
       };
     }
     return grid;
@@ -164,7 +173,13 @@ export function ContractEditPage({ accountId, contract, hourlyRates, slaRates, i
 
   const getSlaState = useCallback(
     (year: number): SlaYearState => {
-      return slaGrid[year] ?? { fixed_monthly_rate: '', support_hourly_rate: '', tools: [] };
+      return (
+        slaGrid[year] ?? {
+          fixed_monthly_rate: '',
+          support_hourly_rate: '',
+          tools: [],
+        }
+      );
     },
     [slaGrid],
   );
@@ -173,19 +188,35 @@ export function ContractEditPage({ accountId, contract, hourlyRates, slaRates, i
     (year: number, field: 'fixed_monthly_rate' | 'support_hourly_rate', value: string) => {
       setSlaGrid((prev) => ({
         ...prev,
-        [year]: { ...(prev[year] ?? { fixed_monthly_rate: '', support_hourly_rate: '', tools: [] }), [field]: value },
+        [year]: {
+          ...(prev[year] ?? {
+            fixed_monthly_rate: '',
+            support_hourly_rate: '',
+            tools: [],
+          }),
+          [field]: value,
+        },
       }));
     },
     [],
   );
 
-  const emptySla = useMemo<SlaYearState>(() => ({ fixed_monthly_rate: '', support_hourly_rate: '', tools: [] }), []);
+  const emptySla = useMemo<SlaYearState>(
+    () => ({ fixed_monthly_rate: '', support_hourly_rate: '', tools: [] }),
+    [],
+  );
 
   const addSlaTool = useCallback(
     (year: number) => {
       setSlaGrid((prev) => {
         const cur = prev[year] ?? emptySla;
-        return { ...prev, [year]: { ...cur, tools: [...cur.tools, { tool_name: '', monthly_price: '' }] } };
+        return {
+          ...prev,
+          [year]: {
+            ...cur,
+            tools: [...cur.tools, { tool_name: '', monthly_price: '' }],
+          },
+        };
       });
     },
     [emptySla],
@@ -195,7 +226,10 @@ export function ContractEditPage({ accountId, contract, hourlyRates, slaRates, i
     (year: number, index: number) => {
       setSlaGrid((prev) => {
         const cur = prev[year] ?? emptySla;
-        return { ...prev, [year]: { ...cur, tools: cur.tools.filter((_, i) => i !== index) } };
+        return {
+          ...prev,
+          [year]: { ...cur, tools: cur.tools.filter((_, i) => i !== index) },
+        };
       });
     },
     [emptySla],
@@ -207,7 +241,10 @@ export function ContractEditPage({ accountId, contract, hourlyRates, slaRates, i
         const cur = prev[year] ?? emptySla;
         return {
           ...prev,
-          [year]: { ...cur, tools: cur.tools.map((t, i) => (i === index ? { ...t, [field]: value } : t)) },
+          [year]: {
+            ...cur,
+            tools: cur.tools.map((t, i) => (i === index ? { ...t, [field]: value } : t)),
+          },
         };
       });
     },
@@ -223,22 +260,31 @@ export function ContractEditPage({ accountId, contract, hourlyRates, slaRates, i
       has_framework_contract: contractFields.hasFramework,
       framework_pdf_url: contractFields.frameworkUrl || null,
       framework_doc_path: contractFields.frameworkDoc || null,
-      framework_start: document.querySelector<HTMLInputElement>('[name="framework_start"]')?.value || null,
-      framework_end: document.querySelector<HTMLInputElement>('[name="framework_end"]')?.value || null,
-      framework_indefinite: document.querySelector<HTMLInputElement>('#framework_indefinite')?.checked ?? false,
+      framework_start:
+        document.querySelector<HTMLInputElement>('[name="framework_start"]')?.value || null,
+      framework_end:
+        document.querySelector<HTMLInputElement>('[name="framework_end"]')?.value || null,
+      framework_indefinite:
+        document.querySelector<HTMLInputElement>('#framework_indefinite')?.checked ?? false,
       has_service_contract: contractFields.hasService,
       service_pdf_url: contractFields.serviceUrl || null,
       service_doc_path: contractFields.serviceDoc || null,
-      service_start: document.querySelector<HTMLInputElement>('[name="service_start"]')?.value || null,
+      service_start:
+        document.querySelector<HTMLInputElement>('[name="service_start"]')?.value || null,
       service_end: document.querySelector<HTMLInputElement>('[name="service_end"]')?.value || null,
-      service_indefinite: document.querySelector<HTMLInputElement>('#service_indefinite')?.checked ?? false,
+      service_indefinite:
+        document.querySelector<HTMLInputElement>('#service_indefinite')?.checked ?? false,
       purchase_orders_url: contractFields.purchaseOrdersUrl || null,
       purchase_orders_doc_path: contractFields.purchaseOrdersDoc || null,
     };
 
     const contractResult = await upsertContract(accountId, contractValues);
     if (!contractResult.success) {
-      toast.error(typeof contractResult.error === 'string' ? contractResult.error : 'Contract opslaan mislukt');
+      toast.error(
+        typeof contractResult.error === 'string'
+          ? contractResult.error
+          : 'Contract opslaan mislukt',
+      );
       setSaving(false);
       return;
     }
@@ -277,8 +323,15 @@ export function ContractEditPage({ accountId, contract, hourlyRates, slaRates, i
       if (fixed > 0 || support > 0) {
         const tools = state.tools
           .filter((t) => t.tool_name.trim() && Number(t.monthly_price) > 0)
-          .map((t) => ({ tool_name: t.tool_name.trim(), monthly_price: Number(t.monthly_price) }));
-        await upsertSlaRates(accountId, year, { fixed_monthly_rate: fixed, support_hourly_rate: support, tools });
+          .map((t) => ({
+            tool_name: t.tool_name.trim(),
+            monthly_price: Number(t.monthly_price),
+          }));
+        await upsertSlaRates(accountId, year, {
+          fixed_monthly_rate: fixed,
+          support_hourly_rate: support,
+          tools,
+        });
       }
     }
 
@@ -296,7 +349,10 @@ export function ContractEditPage({ accountId, contract, hourlyRates, slaRates, i
           { label: 'Admin', href: '/admin' },
           { label: 'Accounts', href: '/admin/accounts' },
           { label: 'Account', href: `/admin/accounts/${accountId}` },
-          { label: 'Contracten', href: `/admin/accounts/${accountId}/contracten` },
+          {
+            label: 'Contracten',
+            href: `/admin/accounts/${accountId}/contracten`,
+          },
           { label: 'Bewerken' },
         ]}
         actions={
@@ -340,11 +396,16 @@ export function ContractEditPage({ accountId, contract, hourlyRates, slaRates, i
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
         <Card>
           <CardContent className="p-5 space-y-4">
-            <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Indexering</h2>
+            <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              Indexering
+            </h2>
             <div className="grid grid-cols-3 gap-3">
               <div className="space-y-1.5">
                 <Label>Type</Label>
-                <Select value={indexation.type} onValueChange={(v) => updateIndexation({ type: v ?? '' })}>
+                <Select
+                  value={indexation.type}
+                  onValueChange={(v) => updateIndexation({ type: v ?? '' })}
+                >
                   <SelectTrigger>{indexation.type || 'Niet ingesteld'}</SelectTrigger>
                   <SelectContent>
                     <SelectItem value="">Niet ingesteld</SelectItem>
@@ -358,9 +419,14 @@ export function ContractEditPage({ accountId, contract, hourlyRates, slaRates, i
               </div>
               <div className="space-y-1.5">
                 <Label>Vanaf maand</Label>
-                <Select value={indexation.month} onValueChange={(v) => updateIndexation({ month: v ?? '' })}>
+                <Select
+                  value={indexation.month}
+                  onValueChange={(v) => updateIndexation({ month: v ?? '' })}
+                >
                   <SelectTrigger>
-                    {indexation.month ? MONTHS.find((m) => m.value === indexation.month)?.label : 'Selecteer...'}
+                    {indexation.month
+                      ? MONTHS.find((m) => m.value === indexation.month)?.label
+                      : 'Selecteer...'}
                   </SelectTrigger>
                   <SelectContent>
                     {MONTHS.map((m) => (
@@ -386,7 +452,9 @@ export function ContractEditPage({ accountId, contract, hourlyRates, slaRates, i
 
         <Card>
           <CardContent className="p-5 space-y-4">
-            <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Bestelbonnen</h2>
+            <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              Bestelbonnen
+            </h2>
             <div className="space-y-1.5">
               <Label>Link (Confluence URL)</Label>
               <Input

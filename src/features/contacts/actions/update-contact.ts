@@ -3,7 +3,11 @@
 import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 import { logAction } from '@/features/audit/actions/log-action';
-import { type ContactFormValues, contactFormSchema, entityIdSchema } from '@/features/contacts/types';
+import {
+  type ContactFormValues,
+  contactFormSchema,
+  entityIdSchema,
+} from '@/features/contacts/types';
 import { type ActionResult, err, ok } from '@/lib/action-result';
 import { logger } from '@/lib/logger';
 import { requirePermission } from '@/lib/require-permission';
@@ -37,7 +41,11 @@ export async function updateContact(id: string, values: ContactFormValues): Prom
     action: 'contact.updated',
     entityType: 'contact',
     entityId: id,
-    metadata: { name: `${parsed.data.first_name} ${parsed.data.last_name}`, before, after: parsed.data },
+    metadata: {
+      name: `${parsed.data.first_name} ${parsed.data.last_name}`,
+      before,
+      after: parsed.data,
+    },
   });
 
   revalidatePath('/admin/contacts');

@@ -8,7 +8,10 @@ export default async function DashboardPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="Dashboard" breadcrumbs={[{ label: 'Admin', href: '/admin' }, { label: 'Dashboard' }]} />
+      <PageHeader
+        title="Dashboard"
+        breadcrumbs={[{ label: 'Admin', href: '/admin' }, { label: 'Dashboard' }]}
+      />
       <DashboardView stats={stats} recentActivities={recentActivities} />
     </div>
   );

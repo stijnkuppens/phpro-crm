@@ -91,9 +91,15 @@ export function CloseDealModal({ dealId, open, onOpenChange, onSuccess, initialT
         {(closedType === 'won' || closedType === 'lost') && (
           <div className="space-y-2">
             <Label htmlFor="closed_reason">
-              Reden{closedType === 'lost' && <span className="text-red-500 ml-0.5">*</span>}
+              Reden
+              {closedType === 'lost' && <span className="text-red-500 ml-0.5">*</span>}
             </Label>
-            <Input id="closed_reason" name="closed_reason" value={reason} onChange={(e) => setReason(e.target.value)} />
+            <Input
+              id="closed_reason"
+              name="closed_reason"
+              value={reason}
+              onChange={(e) => setReason(e.target.value)}
+            />
           </div>
         )}
         {(closedType === 'lost' || closedType === 'longterm') && (

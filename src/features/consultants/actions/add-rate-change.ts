@@ -15,7 +15,10 @@ const rateChangeSchema = z.object({
   notes: z.string().optional(),
 });
 
-export async function addRateChange(id: string, values: z.infer<typeof rateChangeSchema>): Promise<ActionResult> {
+export async function addRateChange(
+  id: string,
+  values: z.infer<typeof rateChangeSchema>,
+): Promise<ActionResult> {
   try {
     await requirePermission('consultants.write');
   } catch {
@@ -65,7 +68,12 @@ export async function addRateChange(id: string, values: z.infer<typeof rateChang
     action: 'consultant.rate_changed',
     entityType: 'consultant',
     entityId: id,
-    metadata: { date: parsed.data.date, rate: parsed.data.rate, reason: parsed.data.reason ?? null, before },
+    metadata: {
+      date: parsed.data.date,
+      rate: parsed.data.rate,
+      reason: parsed.data.reason ?? null,
+      before,
+    },
   });
 
   revalidatePath('/admin/consultants');

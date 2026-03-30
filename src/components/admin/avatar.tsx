@@ -81,7 +81,12 @@ export function Avatar({ path, fallback, size = 'sm', round = true }: Props) {
     >
       {hasImage ? (
         // biome-ignore lint/performance/noImgElement: signed Supabase storage URLs are incompatible with next/image
-        <img src={url} alt={fallback} className="h-full w-full object-cover" onError={() => setError(true)} />
+        <img
+          src={url}
+          alt={fallback}
+          className="h-full w-full object-cover"
+          onError={() => setError(true)}
+        />
       ) : (
         fallback
       )}

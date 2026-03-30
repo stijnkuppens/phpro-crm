@@ -10,7 +10,13 @@ import { Button } from '@/components/ui/button';
 import { createBrowserClient } from '@/lib/supabase/client';
 import { retryJob } from '../actions/retry-job';
 import type { Job } from '../types';
-import { ENTITY_LABELS, FORMAT_LABELS, JOB_STATUS_LABELS, JOB_STATUS_STYLES, JOB_TYPE_LABELS } from '../types';
+import {
+  ENTITY_LABELS,
+  FORMAT_LABELS,
+  JOB_STATUS_LABELS,
+  JOB_STATUS_STYLES,
+  JOB_TYPE_LABELS,
+} from '../types';
 
 type JobDetailModalProps = {
   job: Job;
@@ -45,7 +51,9 @@ export function JobDetailModal({ job, open, onClose }: JobDetailModalProps) {
     setDownloading(true);
     try {
       const supabase = createBrowserClient();
-      const { data, error } = await supabase.storage.from('documents').createSignedUrl(job.file_path, 60);
+      const { data, error } = await supabase.storage
+        .from('documents')
+        .createSignedUrl(job.file_path, 60);
 
       if (error || !data?.signedUrl) {
         toast.error('Kon download link niet aanmaken');
@@ -76,7 +84,10 @@ export function JobDetailModal({ job, open, onClose }: JobDetailModalProps) {
             </StatusBadge>
           </InfoRow>
           <InfoRow label="Formaat" value={job.format ? FORMAT_LABELS[job.format] : '-'} />
-          <InfoRow label="Rijen" value={job.row_count !== null ? job.row_count.toLocaleString('nl-BE') : '-'} />
+          <InfoRow
+            label="Rijen"
+            value={job.row_count !== null ? job.row_count.toLocaleString('nl-BE') : '-'}
+          />
           {job.file_size !== null && <InfoRow label="Grootte" value={formatBytes(job.file_size)} />}
           <InfoRow label="Aangevraagd" value={formatDate(job.created_at)} />
           {job.started_at && <InfoRow label="Gestart" value={formatDate(job.started_at)} />}
@@ -115,7 +126,9 @@ export function JobDetailModal({ job, open, onClose }: JobDetailModalProps) {
               setRetrying(true);
               const result = await retryJob(job.id);
               if (result.error) {
-                toast.error(typeof result.error === 'string' ? result.error : 'Opnieuw proberen mislukt');
+                toast.error(
+                  typeof result.error === 'string' ? result.error : 'Opnieuw proberen mislukt',
+                );
               } else {
                 toast.success('Job opnieuw gestart');
               }

@@ -57,7 +57,10 @@ export function HourlyRatesSubTab({ hourlyRates }: Props) {
             <tr className="border-b bg-muted/30">
               <th className="text-left p-3 font-medium">Rol</th>
               {visibleYears.map((year) => (
-                <th key={year} className={`text-right p-3 font-medium ${year === currentYear ? 'bg-primary/5' : ''}`}>
+                <th
+                  key={year}
+                  className={`text-right p-3 font-medium ${year === currentYear ? 'bg-primary/5' : ''}`}
+                >
                   <div className="flex items-center justify-end gap-1.5">
                     {year}
                     {year === currentYear && (
@@ -74,7 +77,10 @@ export function HourlyRatesSubTab({ hourlyRates }: Props) {
               const yearMap = rateMap.get(role)!;
               const latestRate = yearMap.get(visibleYears[0]);
               const prevRate = yearMap.get(visibleYears[1]);
-              const diff = latestRate != null && prevRate != null ? Math.round(latestRate - prevRate) : undefined;
+              const diff =
+                latestRate != null && prevRate != null
+                  ? Math.round(latestRate - prevRate)
+                  : undefined;
               const dailyRate = latestRate != null ? latestRate * 8 : undefined;
 
               return (
@@ -83,7 +89,10 @@ export function HourlyRatesSubTab({ hourlyRates }: Props) {
                   {visibleYears.map((year, i) => {
                     const rate = yearMap.get(year);
                     return (
-                      <td key={year} className={`p-3 text-right ${year === currentYear ? 'bg-primary/5' : ''}`}>
+                      <td
+                        key={year}
+                        className={`p-3 text-right ${year === currentYear ? 'bg-primary/5' : ''}`}
+                      >
                         {rate != null ? (
                           <span className="inline-flex items-center gap-1.5">
                             {formatEUR(rate)}

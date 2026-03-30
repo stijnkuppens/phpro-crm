@@ -13,7 +13,12 @@ type Props = {
   breadcrumbs: { label: string; href?: string }[];
 };
 
-export function AccountEditPageClient({ account, referenceData, defaultValues, breadcrumbs }: Props) {
+export function AccountEditPageClient({
+  account,
+  referenceData,
+  defaultValues,
+  breadcrumbs,
+}: Props) {
   const formRef = useRef<HTMLFormElement>(null);
 
   return (

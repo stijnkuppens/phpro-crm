@@ -7,13 +7,34 @@ import { Button } from '@/components/ui/button';
 import type { ActivityWithRelations } from '../types';
 
 export const ACTIVITY_TYPE_CONFIG: Record<string, { label: string; className: string }> = {
-  Meeting: { label: 'Meeting', className: 'bg-green-50 text-green-700 border-green-200' },
-  Call: { label: 'Call', className: 'bg-purple-50 text-purple-700 border-purple-200' },
-  'E-mail': { label: 'E-mail', className: 'bg-blue-50 text-blue-700 border-blue-200' },
-  Demo: { label: 'Demo', className: 'bg-orange-50 text-orange-700 border-orange-200' },
-  Lunch: { label: 'Lunch', className: 'bg-amber-50 text-amber-700 border-amber-200' },
-  Event: { label: 'Event', className: 'bg-pink-50 text-pink-700 border-pink-200' },
-  Taak: { label: 'Taak', className: 'bg-slate-50 text-slate-700 border-slate-200' },
+  Meeting: {
+    label: 'Meeting',
+    className: 'bg-green-50 text-green-700 border-green-200',
+  },
+  Call: {
+    label: 'Call',
+    className: 'bg-purple-50 text-purple-700 border-purple-200',
+  },
+  'E-mail': {
+    label: 'E-mail',
+    className: 'bg-blue-50 text-blue-700 border-blue-200',
+  },
+  Demo: {
+    label: 'Demo',
+    className: 'bg-orange-50 text-orange-700 border-orange-200',
+  },
+  Lunch: {
+    label: 'Lunch',
+    className: 'bg-amber-50 text-amber-700 border-amber-200',
+  },
+  Event: {
+    label: 'Event',
+    className: 'bg-pink-50 text-pink-700 border-pink-200',
+  },
+  Taak: {
+    label: 'Taak',
+    className: 'bg-slate-50 text-slate-700 border-slate-200',
+  },
 };
 
 const PRIORITY_STYLES: Record<string, string> = {
@@ -39,13 +60,21 @@ function downloadIcs(activity: ActivityWithRelations) {
       .replace(/[-:]/g, '')
       .replace(/\.\d{3}/, '');
   const accountName = activity.account?.name ? ` — ${activity.account.name}` : '';
-  const accountUrl = activity.account_id ? `${window.location.origin}/admin/accounts/${activity.account_id}` : '';
+  const accountUrl = activity.account_id
+    ? `${window.location.origin}/admin/accounts/${activity.account_id}`
+    : '';
 
-  const dealUrl = activity.deal_id ? `${window.location.origin}/admin/deals/${activity.deal_id}` : '';
+  const dealUrl = activity.deal_id
+    ? `${window.location.origin}/admin/deals/${activity.deal_id}`
+    : '';
 
   const descParts = [activity.type];
-  if (activity.deal?.title) descParts.push(`Deal: ${activity.deal.title}${dealUrl ? ` — ${dealUrl}` : ''}`);
-  if (accountUrl) descParts.push(`Account: ${activity.account?.name ?? ''}${accountUrl ? ` — ${accountUrl}` : ''}`);
+  if (activity.deal?.title)
+    descParts.push(`Deal: ${activity.deal.title}${dealUrl ? ` — ${dealUrl}` : ''}`);
+  if (accountUrl)
+    descParts.push(
+      `Account: ${activity.account?.name ?? ''}${accountUrl ? ` — ${accountUrl}` : ''}`,
+    );
   const description = descParts.join('\\n');
 
   const ics = [
@@ -72,7 +101,13 @@ function downloadIcs(activity: ActivityWithRelations) {
   URL.revokeObjectURL(url);
 }
 
-export function ActivityRow({ activity, showAccount, onToggleDone, onEdit, onDelete }: ActivityRowProps) {
+export function ActivityRow({
+  activity,
+  showAccount,
+  onToggleDone,
+  onEdit,
+  onDelete,
+}: ActivityRowProps) {
   const config = ACTIVITY_TYPE_CONFIG[activity.type] ?? {
     label: activity.type,
     className: 'bg-gray-50 text-gray-700 border-gray-200',
@@ -88,7 +123,11 @@ export function ActivityRow({ activity, showAccount, onToggleDone, onEdit, onDel
         className="shrink-0 text-muted-foreground hover:text-primary-action transition-colors"
         title={activity.is_done ? 'Markeer als niet afgerond' : 'Markeer als afgerond'}
       >
-        {activity.is_done ? <CheckCircle2 className="h-5 w-5 text-primary-action" /> : <Circle className="h-5 w-5" />}
+        {activity.is_done ? (
+          <CheckCircle2 className="h-5 w-5 text-primary-action" />
+        ) : (
+          <Circle className="h-5 w-5" />
+        )}
       </button>
 
       <Badge variant="outline" className={config.className}>
@@ -96,7 +135,9 @@ export function ActivityRow({ activity, showAccount, onToggleDone, onEdit, onDel
       </Badge>
 
       <div className="min-w-0 basis-full sm:flex-1 sm:basis-auto">
-        <span className={`text-sm font-medium ${activity.is_done ? 'line-through' : ''}`}>{activity.subject}</span>
+        <span className={`text-sm font-medium ${activity.is_done ? 'line-through' : ''}`}>
+          {activity.subject}
+        </span>
         {showAccount && activity.account && (
           <span className="ml-2 text-xs text-muted-foreground">{activity.account.name}</span>
         )}
@@ -106,12 +147,18 @@ export function ActivityRow({ activity, showAccount, onToggleDone, onEdit, onDel
           </Badge>
         )}
         {activity.priority && (
-          <StatusBadge colorMap={PRIORITY_STYLES} value={activity.priority} className="ml-2 text-[10px]">
+          <StatusBadge
+            colorMap={PRIORITY_STYLES}
+            value={activity.priority}
+            className="ml-2 text-[10px]"
+          >
             {activity.priority}
           </StatusBadge>
         )}
         {activity.assignee?.full_name && (
-          <span className="ml-2 text-xs text-muted-foreground">→ {activity.assignee.full_name}</span>
+          <span className="ml-2 text-xs text-muted-foreground">
+            → {activity.assignee.full_name}
+          </span>
         )}
       </div>
 

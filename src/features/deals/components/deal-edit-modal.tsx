@@ -19,7 +19,12 @@ function DealFormContent() {
   }, null);
 
   return (
-    <Modal open title={meta.isEdit ? 'Deal bewerken' : 'Nieuwe deal'} onClose={actions.onClose} size="extra-wide">
+    <Modal
+      open
+      title={meta.isEdit ? 'Deal bewerken' : 'Nieuwe deal'}
+      onClose={actions.onClose}
+      size="extra-wide"
+    >
       <form action={formAction}>
         <ClosedDealBanner />
         <div className="grid grid-cols-2 gap-6">

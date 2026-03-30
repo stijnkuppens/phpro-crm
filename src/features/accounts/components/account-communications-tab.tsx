@@ -13,7 +13,10 @@ import { deleteCommunication } from '@/features/communications/actions/delete-co
 import { communicationColumns } from '@/features/communications/columns';
 import { CommunicationDetailModal } from '@/features/communications/components/communication-detail-modal';
 import { CommunicationModal } from '@/features/communications/components/communication-modal';
-import type { COMMUNICATION_TYPE_CONFIG, CommunicationWithDetails } from '@/features/communications/types';
+import type {
+  COMMUNICATION_TYPE_CONFIG,
+  CommunicationWithDetails,
+} from '@/features/communications/types';
 import { useEntity } from '@/lib/hooks/use-entity';
 
 type CommType = keyof typeof COMMUNICATION_TYPE_CONFIG;
@@ -43,7 +46,13 @@ const TYPE_PILLS: { value: CommType | null; label: string }[] = [
   { value: 'call', label: 'Call' },
 ];
 
-export function AccountCommunicationsTab({ accountId, initialData, initialCount, contacts = [], deals = [] }: Props) {
+export function AccountCommunicationsTab({
+  accountId,
+  initialData,
+  initialCount,
+  contacts = [],
+  deals = [],
+}: Props) {
   const router = useRouter();
   const [typeFilter, setTypeFilter] = useState<CommType | null>(null);
   const [filters, setFilters] = useState<Record<string, string | undefined>>({});
@@ -68,13 +77,20 @@ export function AccountCommunicationsTab({ accountId, initialData, initialCount,
     })),
     deal_id: deals.map((d) => ({ value: d.id, label: d.title })),
     owner_id: Array.from(
-      new Map(initialData.filter((c) => c.owner?.id).map((c) => [c.owner!.id, c.owner!.full_name ?? 'Onbekend'])),
+      new Map(
+        initialData
+          .filter((c) => c.owner?.id)
+          .map((c) => [c.owner!.id, c.owner!.full_name ?? 'Onbekend']),
+      ),
     ).map(([id, name]) => ({ value: id, label: name })),
   };
 
   const load = useCallback(() => {
     const { orFilter, eqFilters: autoFilters } = buildFilterQuery(communicationColumns, filters);
-    const eqFilters: Record<string, string> = { ...autoFilters, account_id: accountId };
+    const eqFilters: Record<string, string> = {
+      ...autoFilters,
+      account_id: accountId,
+    };
     if (typeFilter) eqFilters.type = typeFilter;
 
     fetchList({
@@ -96,7 +112,7 @@ export function AccountCommunicationsTab({ accountId, initialData, initialCount,
   const handleFilterChange = useCallback((newFilters: Record<string, string | undefined>) => {
     setFilters(newFilters);
     setPage(1);
-  }, []);
+  }, [setPage]);
 
   useEffect(() => {
     setPage(1);
@@ -166,7 +182,11 @@ export function AccountCommunicationsTab({ accountId, initialData, initialCount,
         loading={loading}
         refreshing={refreshing}
         rowActions={(row) => [
-          { icon: SquarePen, label: 'Bewerken', onClick: () => setEditRow(row) },
+          {
+            icon: SquarePen,
+            label: 'Bewerken',
+            onClick: () => setEditRow(row),
+          },
           {
             icon: Trash2,
             label: 'Verwijderen',
@@ -181,7 +201,9 @@ export function AccountCommunicationsTab({ accountId, initialData, initialCount,
         renderMobileCard={(row) => (
           <div className="space-y-1 py-1">
             <div className="flex items-center gap-2">
-              <span className="rounded-full bg-muted px-2 py-0.5 text-[11px] font-medium">{row.type}</span>
+              <span className="rounded-full bg-muted px-2 py-0.5 text-[11px] font-medium">
+                {row.type}
+              </span>
               <span className="truncate font-medium text-sm">{row.subject}</span>
             </div>
             {row.contact && (
@@ -190,7 +212,11 @@ export function AccountCommunicationsTab({ accountId, initialData, initialCount,
               </div>
             )}
             <div className="text-[11px] text-muted-foreground">
-              {new Date(row.date).toLocaleDateString('nl-BE', { day: 'numeric', month: 'short', year: 'numeric' })}
+              {new Date(row.date).toLocaleDateString('nl-BE', {
+                day: 'numeric',
+                month: 'short',
+                year: 'numeric',
+              })}
             </div>
           </div>
         )}

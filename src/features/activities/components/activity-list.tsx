@@ -54,7 +54,9 @@ export function ActivityList({ initialData, initialCount, accounts = [] }: Props
   const [modalOpen, setModalOpen] = useState(false);
   const [editTarget, setEditTarget] = useState<ActivityWithRelations | null>(null);
   const [search, setSearch] = useQueryState('q', { defaultValue: '' });
-  const [statusFilter, setStatusFilter] = useQueryState('status', { defaultValue: 'all' });
+  const [statusFilter, setStatusFilter] = useQueryState('status', {
+    defaultValue: 'all',
+  });
   const [page, setPage] = useQueryState('page', parseAsInteger.withDefault(1));
   const isInitialMount = useRef(true);
 
@@ -174,7 +176,10 @@ export function ActivityList({ initialData, initialCount, accounts = [] }: Props
           onEdit={setEditTarget}
           onDelete={handleDelete}
           emptyIcon={ActivityIcon}
-          emptyAction={{ label: 'Nieuwe activiteit', onClick: () => setModalOpen(true) }}
+          emptyAction={{
+            label: 'Nieuwe activiteit',
+            onClick: () => setModalOpen(true),
+          }}
         />
 
         {totalPages > 1 && (
@@ -195,7 +200,11 @@ export function ActivityList({ initialData, initialCount, accounts = [] }: Props
                   start = Math.max(1, end - maxVisible + 1);
                   return Array.from({ length: end - start + 1 }, (_, i) => start + i).map((p) => (
                     <PaginationItem key={p}>
-                      <PaginationLink onClick={() => setPage(p)} isActive={p === page} className="cursor-pointer">
+                      <PaginationLink
+                        onClick={() => setPage(p)}
+                        isActive={p === page}
+                        className="cursor-pointer"
+                      >
                         {p}
                       </PaginationLink>
                     </PaginationItem>
@@ -204,7 +213,9 @@ export function ActivityList({ initialData, initialCount, accounts = [] }: Props
                 <PaginationItem>
                   <PaginationNext
                     onClick={() => setPage(Math.min(totalPages, page + 1))}
-                    className={page >= totalPages ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
+                    className={
+                      page >= totalPages ? 'pointer-events-none opacity-50' : 'cursor-pointer'
+                    }
                   />
                 </PaginationItem>
               </PaginationContent>
@@ -228,7 +239,13 @@ export function ActivityList({ initialData, initialCount, accounts = [] }: Props
       )}
 
       {editTarget && (
-        <Modal key={editTarget.id} open onClose={() => setEditTarget(null)} title="Activiteit bewerken" size="wide">
+        <Modal
+          key={editTarget.id}
+          open
+          onClose={() => setEditTarget(null)}
+          title="Activiteit bewerken"
+          size="wide"
+        >
           <ActivityForm
             defaultValues={{
               id: editTarget.id,

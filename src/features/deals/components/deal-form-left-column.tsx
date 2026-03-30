@@ -15,7 +15,11 @@ export function DealFormLeftColumn() {
       {/* Titel */}
       <div className="space-y-1.5">
         <Label>Titel *</Label>
-        <Input value={state.title} onChange={(e) => actions.setTitle(e.target.value)} placeholder="Deal naam" />
+        <Input
+          value={state.title}
+          onChange={(e) => actions.setTitle(e.target.value)}
+          placeholder="Deal naam"
+        />
       </div>
 
       {/* Account */}
@@ -40,7 +44,9 @@ export function DealFormLeftColumn() {
       <div className="space-y-1.5">
         <Label>Stage *</Label>
         <Select value={state.stageId} onValueChange={actions.handleStageChange}>
-          <SelectTrigger>{meta.sortedStages.find((s) => s.id === state.stageId)?.name ?? 'Selecteer...'}</SelectTrigger>
+          <SelectTrigger>
+            {meta.sortedStages.find((s) => s.id === state.stageId)?.name ?? 'Selecteer...'}
+          </SelectTrigger>
           <SelectContent>
             {meta.sortedStages.map((s) => (
               <SelectItem key={s.id} value={s.id}>
@@ -78,7 +84,12 @@ export function DealFormLeftColumn() {
       ) : (
         <div className="space-y-1.5">
           <Label>Waarde (€)</Label>
-          <Input type="number" min="0" value={state.amount} onChange={(e) => actions.setAmount(e.target.value)} />
+          <Input
+            type="number"
+            min="0"
+            value={state.amount}
+            onChange={(e) => actions.setAmount(e.target.value)}
+          />
         </div>
       )}
 
@@ -104,7 +115,9 @@ export function DealFormLeftColumn() {
       <div className="space-y-1.5">
         <Label>Eigenaar</Label>
         <Select value={state.ownerId} onValueChange={(v) => actions.setOwnerId(v ?? '')}>
-          <SelectTrigger>{meta.owners.find((o) => o.id === state.ownerId)?.name ?? '— geen —'}</SelectTrigger>
+          <SelectTrigger>
+            {meta.owners.find((o) => o.id === state.ownerId)?.name ?? '— geen —'}
+          </SelectTrigger>
           <SelectContent>
             <SelectItem value="">— geen —</SelectItem>
             {meta.owners.map((o) => (

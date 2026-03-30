@@ -27,7 +27,9 @@ export function ChangePasswordForm() {
     }
 
     const supabase = createBrowserClient();
-    const { error } = await supabase.auth.updateUser({ password: newPassword });
+    const { error } = await supabase.auth.updateUser({
+      password: newPassword,
+    });
 
     if (error) {
       toast.error(error.message);

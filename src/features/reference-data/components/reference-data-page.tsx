@@ -9,9 +9,20 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
 import { createBrowserClient } from '@/lib/supabase/client';
-import { createReferenceItem, deleteReferenceItem, updateReferenceItem } from '../actions/manage-reference-items';
+import {
+  createReferenceItem,
+  deleteReferenceItem,
+  updateReferenceItem,
+} from '../actions/manage-reference-items';
 import { updateInternalPersonAvatar } from '../actions/update-internal-person-avatar';
 import { REF_TABLES, type ReferenceItem, type RefItemFormValues, type RefTableKey } from '../types';
 
@@ -63,7 +74,11 @@ export function ReferenceDataPage({ initialTable, initialData }: Props) {
     setFormMode({
       mode: 'edit',
       id: item.id,
-      values: { name: item.name, sort_order: item.sort_order, is_active: item.is_active },
+      values: {
+        name: item.name,
+        sort_order: item.sort_order,
+        is_active: item.is_active,
+      },
     });
   }
 
@@ -154,7 +169,12 @@ export function ReferenceDataPage({ initialTable, initialData }: Props) {
           <h2 className="text-lg font-semibold">{selectedLabel}</h2>
           <Button
             size="sm"
-            onClick={() => setFormMode({ mode: 'add', values: { name: '', sort_order: 0, is_active: true } })}
+            onClick={() =>
+              setFormMode({
+                mode: 'add',
+                values: { name: '', sort_order: 0, is_active: true },
+              })
+            }
           >
             Toevoegen
           </Button>
@@ -179,7 +199,12 @@ export function ReferenceDataPage({ initialTable, initialData }: Props) {
                     value={formMode.values.name}
                     onChange={(e) =>
                       setFormMode((prev) =>
-                        prev.mode === 'add' ? { ...prev, values: { ...prev.values, name: e.target.value } } : prev,
+                        prev.mode === 'add'
+                          ? {
+                              ...prev,
+                              values: { ...prev.values, name: e.target.value },
+                            }
+                          : prev,
                       )
                     }
                     placeholder="Naam"
@@ -193,7 +218,13 @@ export function ReferenceDataPage({ initialTable, initialData }: Props) {
                     onChange={(e) =>
                       setFormMode((prev) =>
                         prev.mode === 'add'
-                          ? { ...prev, values: { ...prev.values, sort_order: parseInt(e.target.value, 10) || 0 } }
+                          ? {
+                              ...prev,
+                              values: {
+                                ...prev.values,
+                                sort_order: parseInt(e.target.value, 10) || 0,
+                              },
+                            }
                           : prev,
                       )
                     }
@@ -233,10 +264,16 @@ export function ReferenceDataPage({ initialTable, initialData }: Props) {
                           onUploaded={async (path) => {
                             const result = await updateInternalPersonAvatar(item.id, path);
                             if (result.error) {
-                              toast.error(typeof result.error === 'string' ? result.error : 'Avatar bijwerken mislukt');
+                              toast.error(
+                                typeof result.error === 'string'
+                                  ? result.error
+                                  : 'Avatar bijwerken mislukt',
+                              );
                               return;
                             }
-                            setItems((prev) => prev.map((i) => (i.id === item.id ? { ...i, avatar_url: path } : i)));
+                            setItems((prev) =>
+                              prev.map((i) => (i.id === item.id ? { ...i, avatar_url: path } : i)),
+                            );
                           }}
                         />
                       </TableCell>
@@ -246,7 +283,15 @@ export function ReferenceDataPage({ initialTable, initialData }: Props) {
                         value={formMode.values.name}
                         onChange={(e) =>
                           setFormMode((prev) =>
-                            prev.mode === 'edit' ? { ...prev, values: { ...prev.values, name: e.target.value } } : prev,
+                            prev.mode === 'edit'
+                              ? {
+                                  ...prev,
+                                  values: {
+                                    ...prev.values,
+                                    name: e.target.value,
+                                  },
+                                }
+                              : prev,
                           )
                         }
                       />
@@ -258,7 +303,13 @@ export function ReferenceDataPage({ initialTable, initialData }: Props) {
                         onChange={(e) =>
                           setFormMode((prev) =>
                             prev.mode === 'edit'
-                              ? { ...prev, values: { ...prev.values, sort_order: parseInt(e.target.value, 10) || 0 } }
+                              ? {
+                                  ...prev,
+                                  values: {
+                                    ...prev.values,
+                                    sort_order: parseInt(e.target.value, 10) || 0,
+                                  },
+                                }
                               : prev,
                           )
                         }
@@ -270,14 +321,26 @@ export function ReferenceDataPage({ initialTable, initialData }: Props) {
                         checked={formMode.values.is_active}
                         onCheckedChange={(checked) =>
                           setFormMode((prev) =>
-                            prev.mode === 'edit' ? { ...prev, values: { ...prev.values, is_active: checked } } : prev,
+                            prev.mode === 'edit'
+                              ? {
+                                  ...prev,
+                                  values: {
+                                    ...prev.values,
+                                    is_active: checked,
+                                  },
+                                }
+                              : prev,
                           )
                         }
                       />
                     </TableCell>
                     <TableCell>
                       <div className="flex gap-1">
-                        <Button size="sm" onClick={() => handleSaveEdit(item.id)} disabled={isPending}>
+                        <Button
+                          size="sm"
+                          onClick={() => handleSaveEdit(item.id)}
+                          disabled={isPending}
+                        >
                           <Save />
                           Opslaan
                         </Button>
@@ -304,10 +367,16 @@ export function ReferenceDataPage({ initialTable, initialData }: Props) {
                           onUploaded={async (path) => {
                             const result = await updateInternalPersonAvatar(item.id, path);
                             if (result.error) {
-                              toast.error(typeof result.error === 'string' ? result.error : 'Avatar bijwerken mislukt');
+                              toast.error(
+                                typeof result.error === 'string'
+                                  ? result.error
+                                  : 'Avatar bijwerken mislukt',
+                              );
                               return;
                             }
-                            setItems((prev) => prev.map((i) => (i.id === item.id ? { ...i, avatar_url: path } : i)));
+                            setItems((prev) =>
+                              prev.map((i) => (i.id === item.id ? { ...i, avatar_url: path } : i)),
+                            );
                           }}
                         />
                       </TableCell>
@@ -326,7 +395,12 @@ export function ReferenceDataPage({ initialTable, initialData }: Props) {
                         <Button size="sm" variant="ghost" onClick={() => startEdit(item)}>
                           Bewerken
                         </Button>
-                        <Button size="sm" variant="ghost" onClick={() => handleToggleActive(item)} disabled={isPending}>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => handleToggleActive(item)}
+                          disabled={isPending}
+                        >
                           {item.is_active ? 'Deactiveer' : 'Activeer'}
                         </Button>
                         <ConfirmDialog
@@ -347,7 +421,10 @@ export function ReferenceDataPage({ initialTable, initialData }: Props) {
             ))}
             {items.length === 0 && formMode.mode !== 'add' && (
               <TableRow>
-                <TableCell colSpan={hasAvatar ? 5 : 4} className="text-center text-muted-foreground py-8">
+                <TableCell
+                  colSpan={hasAvatar ? 5 : 4}
+                  className="text-center text-muted-foreground py-8"
+                >
                   Geen items gevonden
                 </TableCell>
               </TableRow>

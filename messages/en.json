@@ -42,7 +42,9 @@
     "audit": "Audit Log",
     "users": "Users",
     "crm": "CRM",
-    "consultancy": "Consultancy"
+    "consultancy": "Consultancy",
+    "system": "System",
+    "admin": "Admin"
   },
   "auth": {
     "login": "Login",

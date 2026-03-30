@@ -13,7 +13,9 @@ import { retryJob } from '../actions/retry-job';
 import { jobColumns } from '../columns';
 import type { Job } from '../types';
 
-const JobDetailModal = dynamic(() => import('./job-detail-modal').then((m) => ({ default: m.JobDetailModal })));
+const JobDetailModal = dynamic(() =>
+  import('./job-detail-modal').then((m) => ({ default: m.JobDetailModal })),
+);
 
 const PAGE_SIZE = 25;
 
@@ -66,7 +68,7 @@ export function JobList({ initialData, initialCount, userId }: JobListProps) {
   const handleFilterChange = useCallback((newFilters: Record<string, string | undefined>) => {
     setFilters(newFilters);
     setPage(1);
-  }, []);
+  }, [setPage]);
 
   const handleDelete = async (id: string) => {
     const result = await deleteJob(id);
@@ -101,7 +103,11 @@ export function JobList({ initialData, initialCount, userId }: JobListProps) {
                   onClick: async () => {
                     const result = await retryJob(row.id);
                     if (result.error) {
-                      toast.error(typeof result.error === 'string' ? result.error : 'Opnieuw proberen mislukt');
+                      toast.error(
+                        typeof result.error === 'string'
+                          ? result.error
+                          : 'Opnieuw proberen mislukt',
+                      );
                     } else {
                       toast.success('Job opnieuw gestart');
                       load();
@@ -124,7 +130,12 @@ export function JobList({ initialData, initialCount, userId }: JobListProps) {
       />
 
       {selectedJobId && selectedJob && (
-        <JobDetailModal key={selectedJobId} job={selectedJob} open onClose={() => setSelectedJobId(null)} />
+        <JobDetailModal
+          key={selectedJobId}
+          job={selectedJob}
+          open
+          onClose={() => setSelectedJobId(null)}
+        />
       )}
     </>
   );

@@ -47,7 +47,12 @@ export async function logAction(params: {
   });
   if (error) {
     logger.error(
-      { err: error, action: params.action, entityType: params.entityType, entityId: params.entityId },
+      {
+        err: error,
+        action: params.action,
+        entityType: params.entityType,
+        entityId: params.entityId,
+      },
       'Failed to write audit log',
     );
   }

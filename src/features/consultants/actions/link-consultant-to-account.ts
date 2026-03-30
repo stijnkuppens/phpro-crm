@@ -36,7 +36,11 @@ export async function linkConsultantToAccount(
   if (!parsed.success) return err(z.flattenError(parsed.error).fieldErrors);
 
   const supabase = await createServerClient();
-  const { data: before } = await supabase.from('consultants').select('*').eq('id', parsed.data.consultant_id).single();
+  const { data: before } = await supabase
+    .from('consultants')
+    .select('*')
+    .eq('id', parsed.data.consultant_id)
+    .single();
 
   const { data, error } = await supabase.rpc('link_consultant_to_account', {
     p_consultant_id: parsed.data.consultant_id,

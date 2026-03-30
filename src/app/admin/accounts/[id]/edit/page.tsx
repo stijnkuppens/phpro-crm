@@ -77,7 +77,8 @@ export default async function AccountEditPage({ params }: Props) {
     account_director: account.account_director ?? undefined,
     project_manager: account.project_manager_id ?? undefined,
     team: account.team ?? undefined,
-    phpro_contract: (account.phpro_contract as 'Geen' | 'Actief' | 'Inactief' | 'In onderhandeling') ?? undefined,
+    phpro_contract:
+      (account.phpro_contract as 'Geen' | 'Actief' | 'Inactief' | 'In onderhandeling') ?? undefined,
     techStackIds: account.tech_stacks.map((t) => t.technology.id),
     samenwerkingsvormIds: account.samenwerkingsvormen.map((s) => s.collaboration_type.id),
     manualServices: account.manual_services.map((s) => s.service_name),

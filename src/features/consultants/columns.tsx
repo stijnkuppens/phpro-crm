@@ -66,7 +66,8 @@ export const consultantColumns: ColumnDef<ConsultantWithDetails>[] = [
     header: 'Contract',
     cell: ({ row }) => {
       const c = row.original;
-      if (c.status !== 'actief' || c.is_archived) return <span className="text-sm text-muted-foreground">—</span>;
+      if (c.status !== 'actief' || c.is_archived)
+        return <span className="text-sm text-muted-foreground">—</span>;
       const cs = getContractStatus(c);
       return (
         <TooltipProvider>
@@ -87,7 +88,11 @@ export const consultantColumns: ColumnDef<ConsultantWithDetails>[] = [
     id: 'consultant',
     meta: {
       label: 'Consultant',
-      filter: { type: 'search', placeholder: 'Zoek consultant...', searchColumns: ['first_name', 'last_name'] },
+      filter: {
+        type: 'search',
+        placeholder: 'Zoek consultant...',
+        searchColumns: ['first_name', 'last_name'],
+      },
     },
     header: 'Consultant',
     cell: ({ row }) => {
@@ -140,7 +145,8 @@ export const consultantColumns: ColumnDef<ConsultantWithDetails>[] = [
             </span>
           );
         }
-        if (min != null) return <span className="text-sm font-medium">vanaf {formatEUR(min)}/u</span>;
+        if (min != null)
+          return <span className="text-sm font-medium">vanaf {formatEUR(min)}/u</span>;
         if (max != null) return <span className="text-sm font-medium">tot {formatEUR(max)}/u</span>;
         return <span className="text-sm text-muted-foreground">-</span>;
       }

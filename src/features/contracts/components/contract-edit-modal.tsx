@@ -43,7 +43,14 @@ type Props = {
   onSaved: () => void;
 };
 
-export function ContractEditModal({ accountId, contract, indexationConfig, open, onClose, onSaved }: Props) {
+export function ContractEditModal({
+  accountId,
+  contract,
+  indexationConfig,
+  open,
+  onClose,
+  onSaved,
+}: Props) {
   const [hasFramework, setHasFramework] = useState(contract?.has_framework_contract ?? false);
   const [hasService, setHasService] = useState(contract?.has_service_contract ?? false);
   const [indexType, setIndexType] = useState(indexationConfig?.indexation_type ?? '');
@@ -69,7 +76,9 @@ export function ContractEditModal({ accountId, contract, indexationConfig, open,
 
     const contractResult = await upsertContract(accountId, values);
     if (!contractResult.success) {
-      toast.error(typeof contractResult.error === 'string' ? contractResult.error : 'Opslaan mislukt');
+      toast.error(
+        typeof contractResult.error === 'string' ? contractResult.error : 'Opslaan mislukt',
+      );
       return null;
     }
 
@@ -93,7 +102,9 @@ export function ContractEditModal({ accountId, contract, indexationConfig, open,
       <form action={formAction} className="space-y-6">
         {/* Indexation config */}
         <div className="rounded-lg bg-amber-50 dark:bg-amber-950/30 p-4 space-y-3 [&_input]:bg-white [&_[data-slot=select-trigger]]:bg-white [&_button[data-slot=button]]:bg-white dark:[&_input]:bg-background dark:[&_[data-slot=select-trigger]]:bg-background dark:[&_button[data-slot=button]]:bg-background">
-          <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Indexering</h3>
+          <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+            Indexering
+          </h3>
           <div className="grid grid-cols-3 gap-3">
             <div className="space-y-1.5">
               <Label>Type</Label>
@@ -139,7 +150,9 @@ export function ContractEditModal({ accountId, contract, indexationConfig, open,
         {/* Raamcontract */}
         <div className="rounded-lg bg-primary/5 p-4 space-y-3 [&_input]:bg-white [&_[data-slot=select-trigger]]:bg-white [&_button[data-slot=button]]:bg-white dark:[&_input]:bg-background dark:[&_[data-slot=select-trigger]]:bg-background dark:[&_button[data-slot=button]]:bg-background">
           <div className="flex items-center justify-between">
-            <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Raamcontract</h3>
+            <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              Raamcontract
+            </h3>
             <Switch checked={hasFramework} onCheckedChange={setHasFramework} />
           </div>
           {hasFramework && (
@@ -154,7 +167,11 @@ export function ContractEditModal({ accountId, contract, indexationConfig, open,
               </div>
               <div className="space-y-1.5">
                 <Label>PDF Document</Label>
-                <PdfUploadField value={frameworkPdf} onChange={setFrameworkPdf} folder={`contracts/${accountId}`} />
+                <PdfUploadField
+                  value={frameworkPdf}
+                  onChange={setFrameworkPdf}
+                  folder={`contracts/${accountId}`}
+                />
               </div>
               <div className="flex items-center gap-2 pt-6">
                 <input
@@ -189,7 +206,11 @@ export function ContractEditModal({ accountId, contract, indexationConfig, open,
               </div>
               <div className="space-y-1.5">
                 <Label>PDF Document</Label>
-                <PdfUploadField value={servicePdf} onChange={setServicePdf} folder={`contracts/${accountId}`} />
+                <PdfUploadField
+                  value={servicePdf}
+                  onChange={setServicePdf}
+                  folder={`contracts/${accountId}`}
+                />
               </div>
               <div className="flex items-center gap-2 pt-6">
                 <input

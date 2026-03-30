@@ -7,7 +7,12 @@ type ExternalLinkButtonProps = {
   className?: string;
 };
 
-export function ExternalLinkButton({ href, onClick, children, className }: ExternalLinkButtonProps) {
+export function ExternalLinkButton({
+  href,
+  onClick,
+  children,
+  className,
+}: ExternalLinkButtonProps) {
   const classes =
     `inline-flex items-center gap-1.5 text-xs text-primary-action hover:underline ${className ?? ''}`.trim();
 

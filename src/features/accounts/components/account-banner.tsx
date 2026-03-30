@@ -39,7 +39,11 @@ export function AccountBanner({ account, stats }: Props) {
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
             <h2 className="text-base font-semibold sm:text-lg">{account.name}</h2>
-            <StatusBadge colorMap={ACCOUNT_TYPE_STYLES} value={account.type} className="text-[11px]">
+            <StatusBadge
+              colorMap={ACCOUNT_TYPE_STYLES}
+              value={account.type}
+              className="text-[11px]"
+            >
               {account.type}
             </StatusBadge>
             <StatusBadge positive={account.status === 'Actief'} className="text-[11px]">
@@ -92,11 +96,15 @@ export function AccountBanner({ account, stats }: Props) {
           <p className="text-[10px] text-muted-foreground">Consultants</p>
         </div>
         <div className="bg-primary/5 px-2 py-2 text-center">
-          <p className="truncate text-sm font-bold text-primary">€{formatNumber(stats.monthlyRevenue)}</p>
+          <p className="truncate text-sm font-bold text-primary">
+            €{formatNumber(stats.monthlyRevenue)}
+          </p>
           <p className="text-[10px] text-muted-foreground">Omzet/mnd</p>
         </div>
         <div className="bg-primary/5 px-2 py-2 text-center">
-          <p className="truncate text-sm font-bold text-primary">€{formatNumber(stats.pipelineValue)}</p>
+          <p className="truncate text-sm font-bold text-primary">
+            €{formatNumber(stats.pipelineValue)}
+          </p>
           <p className="text-[10px] text-muted-foreground">Pipeline</p>
         </div>
       </div>

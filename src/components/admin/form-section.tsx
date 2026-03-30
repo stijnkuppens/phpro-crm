@@ -21,7 +21,9 @@ export function FormSection({ title, color = 'neutral', action, children }: Form
   return (
     <div className={`rounded-lg p-4 space-y-3 ${colorStyles[color]}`}>
       <div className="flex items-center justify-between">
-        <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">{title}</h3>
+        <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+          {title}
+        </h3>
         {action}
       </div>
       {children}

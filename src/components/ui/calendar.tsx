@@ -6,7 +6,12 @@ import { DayPicker } from 'react-day-picker';
 import { buttonVariants } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
-function Calendar({ className, classNames, showOutsideDays = true, ...props }: React.ComponentProps<typeof DayPicker>) {
+function Calendar({
+  className,
+  classNames,
+  showOutsideDays = true,
+  ...props
+}: React.ComponentProps<typeof DayPicker>) {
   return (
     <DayPicker
       showOutsideDays={showOutsideDays}
@@ -35,7 +40,10 @@ function Calendar({ className, classNames, showOutsideDays = true, ...props }: R
             ? '[&:has(>.day-range-end)]:rounded-r-md [&:has(>.day-range-start)]:rounded-l-md first:[&:has([aria-selected])]:rounded-l-md last:[&:has([aria-selected])]:rounded-r-md'
             : '[&:has([aria-selected])]:rounded-md',
         ),
-        day_button: cn(buttonVariants({ variant: 'ghost' }), 'size-8 p-0 font-normal aria-selected:opacity-100'),
+        day_button: cn(
+          buttonVariants({ variant: 'ghost' }),
+          'size-8 p-0 font-normal aria-selected:opacity-100',
+        ),
         range_start: 'day-range-start rounded-l-md',
         range_end: 'day-range-end rounded-r-md',
         selected:

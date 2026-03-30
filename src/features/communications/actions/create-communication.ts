@@ -10,7 +10,9 @@ import { createServerClient } from '@/lib/supabase/server';
 import type { Json } from '@/types/database';
 import { type CommunicationFormValues, communicationFormSchema } from '../types';
 
-export async function createCommunication(values: CommunicationFormValues): Promise<ActionResult<{ id: string }>> {
+export async function createCommunication(
+  values: CommunicationFormValues,
+): Promise<ActionResult<{ id: string }>> {
   let userId: string;
   try {
     ({ userId } = await requirePermission('communications.write'));
@@ -26,7 +28,11 @@ export async function createCommunication(values: CommunicationFormValues): Prom
   const supabase = await createServerClient();
   const { data, error } = await supabase
     .from('communications')
-    .insert({ ...parsed.data, content: parsed.data.content as Json, owner_id: userId })
+    .insert({
+      ...parsed.data,
+      content: parsed.data.content as Json,
+      owner_id: userId,
+    })
     .select('id')
     .single();
 

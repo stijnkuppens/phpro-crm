@@ -8,7 +8,10 @@ import { logger } from '@/lib/logger';
 import { requirePermission } from '@/lib/require-permission';
 import { createServerClient } from '@/lib/supabase/server';
 
-export async function approveIndexation(accountId: string, draftId: string): Promise<ActionResult<void>> {
+export async function approveIndexation(
+  accountId: string,
+  draftId: string,
+): Promise<ActionResult<void>> {
   let userId: string;
   try {
     ({ userId } = await requirePermission('indexation.approve'));

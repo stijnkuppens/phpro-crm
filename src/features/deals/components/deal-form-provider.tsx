@@ -6,7 +6,11 @@ import { createDeal } from '@/features/deals/actions/create-deal';
 import { deleteDeal } from '@/features/deals/actions/delete-deal';
 import { reopenDeal } from '@/features/deals/actions/reopen-deal';
 import { updateDeal } from '@/features/deals/actions/update-deal';
-import type { DealFormActions, DealFormMeta, DealFormState } from '@/features/deals/components/deal-form-context';
+import type {
+  DealFormActions,
+  DealFormMeta,
+  DealFormState,
+} from '@/features/deals/components/deal-form-context';
 import { DealFormContext } from '@/features/deals/components/deal-form-context';
 import type { DealWithRelations, Pipeline } from '@/features/deals/types';
 import { createBrowserClient } from '@/lib/supabase/client';
@@ -72,7 +76,9 @@ export function DealFormProvider({
   const initialStageIdValue = (() => {
     if (initialStageId) return initialStageId;
     if (deal?.stage_id) return deal.stage_id;
-    const first = pipelines[0]?.stages.filter((s) => !s.is_closed).sort((a, b) => a.sort_order - b.sort_order)[0];
+    const first = pipelines[0]?.stages
+      .filter((s) => !s.is_closed)
+      .sort((a, b) => a.sort_order - b.sort_order)[0];
     return first?.id ?? '';
   })();
 
@@ -82,7 +88,9 @@ export function DealFormProvider({
       const stage = pipelines.flatMap((p) => p.stages).find((s) => s.id === initialStageId);
       return stage ? String(stage.probability) : '';
     }
-    const first = pipelines[0]?.stages.filter((s) => !s.is_closed).sort((a, b) => a.sort_order - b.sort_order)[0];
+    const first = pipelines[0]?.stages
+      .filter((s) => !s.is_closed)
+      .sort((a, b) => a.sort_order - b.sort_order)[0];
     return first ? String(first.probability) : '';
   })();
 
@@ -114,33 +122,37 @@ export function DealFormProvider({
     showAccountDropdown: boolean;
   };
 
-  const [form, updateForm] = useReducer((prev: FormState, updates: Partial<FormState>) => ({ ...prev, ...updates }), {
-    title: deal?.title ?? '',
-    selectedAccountId: deal?.account_id ?? propAccountId ?? '',
-    pipelineId: deal?.pipeline_id ?? pipelines[0]?.id ?? '',
-    stageId: initialStageIdValue,
-    amount: deal?.amount != null ? String(Number(deal.amount)) : '',
-    probability: initialProbability,
-    closeDate: deal?.close_date ?? '',
-    ownerId: deal?.owner_id ?? '',
-    contactId: deal?.contact_id ?? '',
-    origin: deal?.origin ?? 'rechtstreeks',
-    forecastCategory: deal?.forecast_category ?? '',
-    description: deal?.description ?? '',
-    leadSource: deal?.lead_source ?? '',
-    cronosCC: deal?.cronos_cc ?? '',
-    cronosContact: deal?.cronos_contact ?? '',
-    cronosEmail: deal?.cronos_email ?? '',
-    consultantId: deal?.consultant_id ?? '',
-    consultantRole: deal?.consultant_role ?? '',
-    tags: deal?.tags ?? [],
-    tariefGewenst: deal?.tarief_gewenst != null ? String(Number(deal.tarief_gewenst)) : '',
-    tariefAangeboden: deal?.tarief_aangeboden != null ? String(Number(deal.tarief_aangeboden)) : '',
-    accountSearch: '',
-    accountResults: [],
-    accountName: deal?.account?.name ?? '',
-    showAccountDropdown: false,
-  });
+  const [form, updateForm] = useReducer(
+    (prev: FormState, updates: Partial<FormState>) => ({ ...prev, ...updates }),
+    {
+      title: deal?.title ?? '',
+      selectedAccountId: deal?.account_id ?? propAccountId ?? '',
+      pipelineId: deal?.pipeline_id ?? pipelines[0]?.id ?? '',
+      stageId: initialStageIdValue,
+      amount: deal?.amount != null ? String(Number(deal.amount)) : '',
+      probability: initialProbability,
+      closeDate: deal?.close_date ?? '',
+      ownerId: deal?.owner_id ?? '',
+      contactId: deal?.contact_id ?? '',
+      origin: deal?.origin ?? 'rechtstreeks',
+      forecastCategory: deal?.forecast_category ?? '',
+      description: deal?.description ?? '',
+      leadSource: deal?.lead_source ?? '',
+      cronosCC: deal?.cronos_cc ?? '',
+      cronosContact: deal?.cronos_contact ?? '',
+      cronosEmail: deal?.cronos_email ?? '',
+      consultantId: deal?.consultant_id ?? '',
+      consultantRole: deal?.consultant_role ?? '',
+      tags: deal?.tags ?? [],
+      tariefGewenst: deal?.tarief_gewenst != null ? String(Number(deal.tarief_gewenst)) : '',
+      tariefAangeboden:
+        deal?.tarief_aangeboden != null ? String(Number(deal.tarief_aangeboden)) : '',
+      accountSearch: '',
+      accountResults: [],
+      accountName: deal?.account?.name ?? '',
+      showAccountDropdown: false,
+    },
+  );
 
   // --- Derived ---
   const activePipeline = pipelines.find((p) => p.id === form.pipelineId);
@@ -232,7 +244,12 @@ export function DealFormProvider({
       .order('last_name')
       .then(({ data }) => {
         if (cancelled) return;
-        setContacts((data ?? []).map((c) => ({ id: c.id, name: `${c.first_name} ${c.last_name}` })));
+        setContacts(
+          (data ?? []).map((c) => ({
+            id: c.id,
+            name: `${c.first_name} ${c.last_name}`,
+          })),
+        );
       });
     return () => {
       cancelled = true;
@@ -270,7 +287,9 @@ export function DealFormProvider({
   function handlePipelineChange(id: string | null) {
     const pid = id ?? '';
     const p = pipelines.find((pp) => pp.id === pid);
-    const first = p?.stages.filter((s) => !s.is_closed).sort((a, b) => a.sort_order - b.sort_order)[0];
+    const first = p?.stages
+      .filter((s) => !s.is_closed)
+      .sort((a, b) => a.sort_order - b.sort_order)[0];
     updateForm({
       pipelineId: pid,
       stageId: first?.id ?? '',
@@ -342,7 +361,9 @@ export function DealFormProvider({
         form.origin === 'rechtstreeks' || form.origin === 'cronos'
           ? (form.origin as 'rechtstreeks' | 'cronos')
           : undefined,
-      forecast_category: (['Commit', 'Best Case', 'Pipeline', 'Omit'].includes(form.forecastCategory)
+      forecast_category: (['Commit', 'Best Case', 'Pipeline', 'Omit'].includes(
+        form.forecastCategory,
+      )
         ? form.forecastCategory
         : undefined) as 'Commit' | 'Best Case' | 'Pipeline' | 'Omit' | undefined,
       description: form.description || undefined,

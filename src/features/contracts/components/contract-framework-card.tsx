@@ -12,7 +12,11 @@ type Props = {
   hasFramework: boolean;
   frameworkUrl: string;
   frameworkDoc: string;
-  onChange: (updates: { hasFramework?: boolean; frameworkUrl?: string; frameworkDoc?: string }) => void;
+  onChange: (updates: {
+    hasFramework?: boolean;
+    frameworkUrl?: string;
+    frameworkDoc?: string;
+  }) => void;
   contract: Contract | null;
   accountId: string;
 };
@@ -29,7 +33,9 @@ export function ContractFrameworkCard({
     <Card>
       <CardContent className="p-5 space-y-4">
         <div className="flex items-center justify-between">
-          <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Raamcontract</h2>
+          <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+            Raamcontract
+          </h2>
           <Switch checked={hasFramework} onCheckedChange={(v) => onChange({ hasFramework: v })} />
         </div>
         {hasFramework && (

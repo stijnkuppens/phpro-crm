@@ -18,7 +18,13 @@ type Props = {
   onSaved: () => void;
 };
 
-export function ContractAttributionModal({ consultantId, existing, open, onClose, onSaved }: Props) {
+export function ContractAttributionModal({
+  consultantId,
+  existing,
+  open,
+  onClose,
+  onSaved,
+}: Props) {
   const [loading, setLoading] = useState(false);
   const [type, setType] = useState<'rechtstreeks' | 'cronos'>(
     (existing?.type as 'rechtstreeks' | 'cronos') ?? 'rechtstreeks',
@@ -33,7 +39,8 @@ export function ContractAttributionModal({ consultantId, existing, open, onClose
       consultant_id: consultantId,
       type,
       cc_name: type === 'cronos' ? (formData.get('cc_name') as string) || null : null,
-      cc_contact_person: type === 'cronos' ? (formData.get('cc_contact_person') as string) || null : null,
+      cc_contact_person:
+        type === 'cronos' ? (formData.get('cc_contact_person') as string) || null : null,
       cc_email: type === 'cronos' ? (formData.get('cc_email') as string) || null : null,
       cc_phone: type === 'cronos' ? (formData.get('cc_phone') as string) || null : null,
       cc_distribution: null,
@@ -89,11 +96,20 @@ export function ContractAttributionModal({ consultantId, existing, open, onClose
             </div>
             <div className="space-y-2">
               <Label htmlFor="cc_contact_person">CC Contactpersoon</Label>
-              <Input id="cc_contact_person" name="cc_contact_person" defaultValue={existing?.cc_contact_person ?? ''} />
+              <Input
+                id="cc_contact_person"
+                name="cc_contact_person"
+                defaultValue={existing?.cc_contact_person ?? ''}
+              />
             </div>
             <div className="space-y-2">
               <Label htmlFor="cc_email">CC E-mail</Label>
-              <Input id="cc_email" name="cc_email" type="email" defaultValue={existing?.cc_email ?? ''} />
+              <Input
+                id="cc_email"
+                name="cc_email"
+                type="email"
+                defaultValue={existing?.cc_email ?? ''}
+              />
             </div>
             <div className="space-y-2">
               <Label htmlFor="cc_phone">CC Telefoon</Label>

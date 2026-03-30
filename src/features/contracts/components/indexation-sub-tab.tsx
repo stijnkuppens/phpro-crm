@@ -26,7 +26,13 @@ function fmtDate(d: string): string {
   return `${date.getDate()} ${MONTHS[date.getMonth()]} ${date.getFullYear()}`;
 }
 
-export function IndexationSubTab({ accountId, indexationDraft, indexationHistory, onSimulate, onApproved }: Props) {
+export function IndexationSubTab({
+  accountId,
+  indexationDraft,
+  indexationHistory,
+  onSimulate,
+  onApproved,
+}: Props) {
   const [approving, setApproving] = useState(false);
 
   async function handleApprove() {
@@ -68,14 +74,18 @@ export function IndexationSubTab({ accountId, indexationDraft, indexationHistory
               </div>
               <div>
                 <span className="text-muted-foreground">Percentage</span>
-                <div className="font-medium text-primary-action">+{Number(indexationDraft.percentage)}%</div>
+                <div className="font-medium text-primary-action">
+                  +{Number(indexationDraft.percentage)}%
+                </div>
               </div>
               <div>
                 <span className="text-muted-foreground">Rollen</span>
                 <div className="font-medium">{indexationDraft.rates?.length ?? 0}</div>
               </div>
             </div>
-            {indexationDraft.info && <p className="text-sm text-muted-foreground mb-4">{indexationDraft.info}</p>}
+            {indexationDraft.info && (
+              <p className="text-sm text-muted-foreground mb-4">{indexationDraft.info}</p>
+            )}
             <div className="flex gap-2">
               <Button size="sm" variant="outline" onClick={onSimulate}>
                 Hervatten
@@ -102,7 +112,9 @@ export function IndexationSubTab({ accountId, indexationDraft, indexationHistory
           Indexatie geschiedenis
         </h3>
         {indexationHistory.length === 0 ? (
-          <p className="text-sm text-muted-foreground py-4 text-center">Geen indexatie geschiedenis.</p>
+          <p className="text-sm text-muted-foreground py-4 text-center">
+            Geen indexatie geschiedenis.
+          </p>
         ) : (
           <div className="space-y-2">
             {indexationHistory.map((entry) => (
@@ -119,9 +131,13 @@ export function IndexationSubTab({ accountId, indexationDraft, indexationHistory
                           <Badge className="bg-primary/15 text-primary-action border-0 text-xs">
                             +{Number(entry.percentage)}%
                           </Badge>
-                          <span className="text-muted-foreground">{entry.rates?.length ?? 0} rollen</span>
+                          <span className="text-muted-foreground">
+                            {entry.rates?.length ?? 0} rollen
+                          </span>
                         </div>
-                        {entry.info && <p className="text-xs text-muted-foreground mt-0.5">{entry.info}</p>}
+                        {entry.info && (
+                          <p className="text-xs text-muted-foreground mt-0.5">{entry.info}</p>
+                        )}
                       </div>
                     </div>
                     <div className="flex items-center gap-1.5 text-xs text-muted-foreground">

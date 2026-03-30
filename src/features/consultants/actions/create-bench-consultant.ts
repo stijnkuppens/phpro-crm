@@ -9,7 +9,9 @@ import { requirePermission } from '@/lib/require-permission';
 import { createServerClient } from '@/lib/supabase/server';
 import { type BenchConsultantFormValues, benchConsultantFormSchema } from '../types';
 
-export async function createBenchConsultant(values: BenchConsultantFormValues): Promise<ActionResult<{ id: string }>> {
+export async function createBenchConsultant(
+  values: BenchConsultantFormValues,
+): Promise<ActionResult<{ id: string }>> {
   try {
     await requirePermission('consultants.write');
   } catch {
@@ -37,7 +39,10 @@ export async function createBenchConsultant(values: BenchConsultantFormValues): 
     action: 'consultant.created',
     entityType: 'consultant',
     entityId: data.id,
-    metadata: { name: `${parsed.data.first_name} ${parsed.data.last_name}`, body: parsed.data },
+    metadata: {
+      name: `${parsed.data.first_name} ${parsed.data.last_name}`,
+      body: parsed.data,
+    },
   });
 
   revalidatePath('/admin/consultants');

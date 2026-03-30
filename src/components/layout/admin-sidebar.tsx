@@ -6,7 +6,6 @@ import {
   Building2,
   ClipboardList,
   Contact,
-  Database,
   LayoutDashboard,
   ScrollText,
   Settings,
@@ -33,7 +32,12 @@ import { useBrandTheme } from '@/lib/hooks/use-brand-theme';
 
 const brandLogos: Record<string, { src: string; alt: string; width: number; height: number }> = {
   phpro: { src: '/logos/phpro.svg', alt: 'PHPro', width: 100, height: 34 },
-  '25carat': { src: '/logos/25carat-wordmark.svg', alt: '25Carat', width: 120, height: 39 },
+  '25carat': {
+    src: '/logos/25carat-wordmark.svg',
+    alt: '25Carat',
+    width: 120,
+    height: 39,
+  },
 };
 
 export function AdminSidebar() {
@@ -57,14 +61,18 @@ export function AdminSidebar() {
       items: [{ label: t('consultants'), href: '/admin/consultants', icon: Users }],
     },
     {
-      section: null, // no label, separator group
+      section: t('system'),
       items: [
         { label: t('notifications'), href: '/admin/notifications', icon: Bell },
         { label: t('jobs'), href: '/admin/jobs', icon: ClipboardList },
         { label: t('audit'), href: '/admin/audit', icon: ScrollText },
+      ],
+    },
+    {
+      section: t('admin'),
+      items: [
         { label: t('users'), href: '/admin/users', icon: Users },
         { label: t('settings'), href: '/admin/settings', icon: Settings },
-        { label: 'Referentiedata', href: '/admin/reference-data', icon: Database },
       ],
     },
   ];
@@ -89,7 +97,8 @@ export function AdminSidebar() {
             <SidebarGroupContent>
               <SidebarMenu>
                 {section.items.map((item) => {
-                  const isActive = item.href === '/admin' ? pathname === '/admin' : pathname.startsWith(item.href);
+                  const isActive =
+                    item.href === '/admin' ? pathname === '/admin' : pathname.startsWith(item.href);
                   return (
                     <SidebarMenuItem key={item.href}>
                       <SidebarMenuButton isActive={isActive} render={<Link href={item.href} />}>
@@ -105,7 +114,9 @@ export function AdminSidebar() {
         ))}
       </SidebarContent>
       <SidebarFooter className="border-t p-4">
-        <p className="text-xs text-muted-foreground">{brand === '25carat' ? '25Carat' : 'PHPro'} CRM</p>
+        <p className="text-xs text-muted-foreground">
+          {brand === '25carat' ? '25Carat' : 'PHPro'} CRM
+        </p>
       </SidebarFooter>
     </Sidebar>
   );

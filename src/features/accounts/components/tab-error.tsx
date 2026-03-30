@@ -6,7 +6,13 @@ import { Button } from '@/components/ui/button';
 import { logger } from '@/lib/logger';
 
 /** Shared tab error boundary — used by all account tab routes */
-export function TabError({ error, reset }: { error: Error & { digest?: string }; reset: () => void }) {
+export function TabError({
+  error,
+  reset,
+}: {
+  error: Error & { digest?: string };
+  reset: () => void;
+}) {
   useEffect(() => {
     logger.error({ err: error }, 'Tab error');
   }, [error]);

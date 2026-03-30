@@ -12,7 +12,8 @@ export const contactColumns: ColumnDef<ContactWithDetails>[] = [
     meta: { label: 'Naam' },
     header: 'Naam',
     cell: ({ row }) => {
-      const initials = `${row.original.first_name[0] ?? ''}${row.original.last_name[0] ?? ''}`.toUpperCase();
+      const initials =
+        `${row.original.first_name[0] ?? ''}${row.original.last_name[0] ?? ''}`.toUpperCase();
       return (
         <div className="flex items-center gap-2">
           <Avatar path={row.original.avatar_url} fallback={initials} size="sm" />

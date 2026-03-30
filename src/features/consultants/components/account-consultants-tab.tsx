@@ -24,30 +24,52 @@ import { Button } from '@/components/ui/button';
 import { archiveConsultant } from '../actions/archive-consultant';
 import { moveToBench } from '../actions/move-to-bench';
 import { consultantColumns } from '../columns';
-import { CONSULTANT_STATUS_STYLES, type ConsultantStatus, type ConsultantWithDetails } from '../types';
+import {
+  CONSULTANT_STATUS_STYLES,
+  type ConsultantStatus,
+  type ConsultantWithDetails,
+} from '../types';
 
 const ConsultantDetailModal = dynamic(
-  () => import('./consultant-detail-modal').then((m) => ({ default: m.ConsultantDetailModal })),
+  () =>
+    import('./consultant-detail-modal').then((m) => ({
+      default: m.ConsultantDetailModal,
+    })),
   { ssr: false },
 );
-const BenchFormModal = dynamic(() => import('./bench-form-modal').then((m) => ({ default: m.BenchFormModal })), {
-  ssr: false,
-});
+const BenchFormModal = dynamic(
+  () => import('./bench-form-modal').then((m) => ({ default: m.BenchFormModal })),
+  {
+    ssr: false,
+  },
+);
 const LinkConsultantWizard = dynamic(
-  () => import('./link-consultant-wizard').then((m) => ({ default: m.LinkConsultantWizard })),
+  () =>
+    import('./link-consultant-wizard').then((m) => ({
+      default: m.LinkConsultantWizard,
+    })),
   { ssr: false },
 );
 const StopConsultantModal = dynamic(
-  () => import('./stop-consultant-modal').then((m) => ({ default: m.StopConsultantModal })),
+  () =>
+    import('./stop-consultant-modal').then((m) => ({
+      default: m.StopConsultantModal,
+    })),
   { ssr: false },
 );
 const ExtendConsultantModal = dynamic(
-  () => import('./extend-consultant-modal').then((m) => ({ default: m.ExtendConsultantModal })),
+  () =>
+    import('./extend-consultant-modal').then((m) => ({
+      default: m.ExtendConsultantModal,
+    })),
   { ssr: false },
 );
-const RateChangeModal = dynamic(() => import('./rate-change-modal').then((m) => ({ default: m.RateChangeModal })), {
-  ssr: false,
-});
+const RateChangeModal = dynamic(
+  () => import('./rate-change-modal').then((m) => ({ default: m.RateChangeModal })),
+  {
+    ssr: false,
+  },
+);
 
 type Props = {
   accountId: string;
@@ -72,7 +94,9 @@ export function AccountConsultantsTab({ accountId, accountName, consultants, rol
   const [stopTarget, setStopTarget] = useState<ConsultantWithDetails | null>(null);
   const [extendTarget, setExtendTarget] = useState<ConsultantWithDetails | null>(null);
   const [rateTarget, setRateTarget] = useState<ConsultantWithDetails | null>(null);
-  const [selectedStatuses, setSelectedStatuses] = useState<Set<string>>(new Set(['actief', 'bench', 'stopgezet']));
+  const [selectedStatuses, setSelectedStatuses] = useState<Set<string>>(
+    new Set(['actief', 'bench', 'stopgezet']),
+  );
 
   function toggleStatus(s: string) {
     setSelectedStatuses((prev) => {
@@ -126,13 +150,23 @@ export function AccountConsultantsTab({ accountId, accountName, consultants, rol
 
   function getRowActions(row: ConsultantWithDetails) {
     if (row.is_archived) {
-      return [{ icon: ArchiveRestore, label: 'Herstellen', onClick: () => handleUnarchive(row) }];
+      return [
+        {
+          icon: ArchiveRestore,
+          label: 'Herstellen',
+          onClick: () => handleUnarchive(row),
+        },
+      ];
     }
     switch (row.status) {
       case 'bench':
         return [
           { icon: Link2, label: 'Koppel', onClick: () => setWizardTarget(row) },
-          { icon: SquarePen, label: 'Bewerk', onClick: () => setEditTarget(row) },
+          {
+            icon: SquarePen,
+            label: 'Bewerk',
+            onClick: () => setEditTarget(row),
+          },
           {
             icon: Archive,
             label: 'Archiveer',
@@ -140,18 +174,38 @@ export function AccountConsultantsTab({ accountId, accountName, consultants, rol
             variant: 'destructive' as const,
             confirm: {
               title: 'Consultant archiveren?',
-              description: 'Deze consultant wordt gearchiveerd en is niet meer zichtbaar in de lijst.',
+              description:
+                'Deze consultant wordt gearchiveerd en is niet meer zichtbaar in de lijst.',
             },
           },
         ];
       case 'actief':
         return [
-          { icon: CalendarPlus, label: 'Verlengen', onClick: () => setExtendTarget(row) },
-          { icon: DollarSign, label: 'Tariefwijziging', onClick: () => setRateTarget(row) },
-          { icon: Square, label: 'Stopzetten', onClick: () => setStopTarget(row), variant: 'destructive' as const },
+          {
+            icon: CalendarPlus,
+            label: 'Verlengen',
+            onClick: () => setExtendTarget(row),
+          },
+          {
+            icon: DollarSign,
+            label: 'Tariefwijziging',
+            onClick: () => setRateTarget(row),
+          },
+          {
+            icon: Square,
+            label: 'Stopzetten',
+            onClick: () => setStopTarget(row),
+            variant: 'destructive' as const,
+          },
         ];
       case 'stopgezet':
-        return [{ icon: RotateCcw, label: 'Naar bench', onClick: () => handleMoveToBench(row) }];
+        return [
+          {
+            icon: RotateCcw,
+            label: 'Naar bench',
+            onClick: () => handleMoveToBench(row),
+          },
+        ];
       default:
         return [];
     }
@@ -190,7 +244,8 @@ export function AccountConsultantsTab({ accountId, accountName, consultants, rol
           }
           renderMobileCard={(row) => {
             const name = `${row.first_name} ${row.last_name}`;
-            const initials = `${row.first_name?.[0] ?? ''}${row.last_name?.[0] ?? ''}`.toUpperCase();
+            const initials =
+              `${row.first_name?.[0] ?? ''}${row.last_name?.[0] ?? ''}`.toUpperCase();
             return (
               <div className="flex items-center gap-3">
                 <Avatar path={null} fallback={initials} size="sm" round />
@@ -270,7 +325,15 @@ export function AccountConsultantsTab({ accountId, accountName, consultants, rol
             setWizardTarget(null);
             handleRefresh();
           }}
-          accounts={[{ id: accountId, name: accountName, domain: null, type: null, city: null }]}
+          accounts={[
+            {
+              id: accountId,
+              name: accountName,
+              domain: null,
+              type: null,
+              city: null,
+            },
+          ]}
           roles={roles}
           preselectedAccountId={accountId}
           preselectedBenchConsultantId={wizardTarget?.id}

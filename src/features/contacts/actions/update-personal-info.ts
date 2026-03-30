@@ -9,7 +9,10 @@ import { requirePermission } from '@/lib/require-permission';
 import { createServerClient } from '@/lib/supabase/server';
 import { type PersonalInfoFormValues, personalInfoFormSchema } from '../types';
 
-export async function updatePersonalInfo(contactId: string, values: PersonalInfoFormValues): Promise<ActionResult> {
+export async function updatePersonalInfo(
+  contactId: string,
+  values: PersonalInfoFormValues,
+): Promise<ActionResult> {
   try {
     await requirePermission('contacts.write');
   } catch {
@@ -45,7 +48,11 @@ export async function updatePersonalInfo(contactId: string, values: PersonalInfo
     metadata: { before, after: parsed.data },
   });
 
-  const { data: contact } = await supabase.from('contacts').select('account_id').eq('id', contactId).single();
+  const { data: contact } = await supabase
+    .from('contacts')
+    .select('account_id')
+    .eq('id', contactId)
+    .single();
 
   revalidatePath('/admin/contacts');
   if (contact?.account_id) {

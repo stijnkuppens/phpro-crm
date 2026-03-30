@@ -45,7 +45,12 @@ export function SettingsForm({ initialData }: Props) {
             <label htmlFor="logo_url" className="text-sm font-medium">
               Logo URL
             </label>
-            <Input id="logo_url" name="logo_url" defaultValue={initialData.logo_url} placeholder="https://..." />
+            <Input
+              id="logo_url"
+              name="logo_url"
+              defaultValue={initialData.logo_url}
+              placeholder="https://..."
+            />
           </div>
           <RoleGuard permission="settings.write">
             <SubmitButton icon={<Save />}>Opslaan</SubmitButton>

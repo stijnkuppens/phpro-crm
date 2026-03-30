@@ -59,7 +59,8 @@ export function useRealtime<T extends Record<string, unknown>>(
             case 'UPDATE':
               setData((prev) =>
                 prev.map((row) =>
-                  (row as Record<string, unknown>).id === (payload.new as Record<string, unknown>).id
+                  (row as Record<string, unknown>).id ===
+                  (payload.new as Record<string, unknown>).id
                     ? (payload.new as T)
                     : row,
                 ),
@@ -68,7 +69,9 @@ export function useRealtime<T extends Record<string, unknown>>(
             case 'DELETE':
               setData((prev) =>
                 prev.filter(
-                  (row) => (row as Record<string, unknown>).id !== (payload.old as Record<string, unknown>).id,
+                  (row) =>
+                    (row as Record<string, unknown>).id !==
+                    (payload.old as Record<string, unknown>).id,
                 ),
               );
               break;

@@ -53,7 +53,12 @@ export function AccountFiltersBar({ filters, onFilterChange, owners = [], countr
         <ComboboxFilter
           options={owners.map((o) => ({ value: o.id, label: o.full_name }))}
           value={filters.owner_id ?? 'all'}
-          onValueChange={(v) => onFilterChange({ ...filters, owner_id: v === 'all' ? undefined : v })}
+          onValueChange={(v) =>
+            onFilterChange({
+              ...filters,
+              owner_id: v === 'all' ? undefined : v,
+            })
+          }
           placeholder="Alle owners"
           searchPlaceholder="Zoek owner..."
           className="w-48"
@@ -63,7 +68,9 @@ export function AccountFiltersBar({ filters, onFilterChange, owners = [], countr
         <ComboboxFilter
           options={countries.map((c) => ({ value: c, label: c }))}
           value={filters.country ?? 'all'}
-          onValueChange={(v) => onFilterChange({ ...filters, country: v === 'all' ? undefined : v })}
+          onValueChange={(v) =>
+            onFilterChange({ ...filters, country: v === 'all' ? undefined : v })
+          }
           placeholder="Alle landen"
           searchPlaceholder="Zoek land..."
           className="w-40"

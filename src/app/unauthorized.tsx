@@ -16,7 +16,8 @@ export default function UnauthorizedPage() {
           </CardHeader>
           <CardContent>
             <p className="text-sm text-muted-foreground">
-              Je hebt geen toegang tot deze pagina. Log in met een account dat de benodigde rechten heeft.
+              Je hebt geen toegang tot deze pagina. Log in met een account dat de benodigde rechten
+              heeft.
             </p>
           </CardContent>
           <CardFooter>

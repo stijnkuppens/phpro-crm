@@ -110,7 +110,9 @@ export function CommunicationDetailModal({ communication: comm, onClose, onEdit 
             <Separator />
             <div>
               <div className="text-xs font-medium text-muted-foreground mb-2">Inhoud</div>
-              <div className="rounded-lg border bg-muted/30 p-4 text-sm whitespace-pre-wrap">{contentText}</div>
+              <div className="rounded-lg border bg-muted/30 p-4 text-sm whitespace-pre-wrap">
+                {contentText}
+              </div>
             </div>
           </>
         )}

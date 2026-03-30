@@ -12,9 +12,12 @@ import { DEAL_SELECT, FORECAST_CATEGORY_OPTIONS, ORIGIN_OPTIONS, PAGE_SIZE } fro
 import type { DealWithRelations, Pipeline } from '../types';
 import { DealList } from './deal-list';
 
-const DealEditModal = dynamic(() => import('./deal-edit-modal').then((m) => ({ default: m.DealEditModal })), {
-  ssr: false,
-});
+const DealEditModal = dynamic(
+  () => import('./deal-edit-modal').then((m) => ({ default: m.DealEditModal })),
+  {
+    ssr: false,
+  },
+);
 
 type Props = {
   pipelines: Pipeline[];
@@ -24,7 +27,13 @@ type Props = {
   accountId: string;
 };
 
-export function AccountDealsPanel({ pipelines, initialDeals, initialCount, owners, accountId }: Props) {
+export function AccountDealsPanel({
+  pipelines,
+  initialDeals,
+  initialCount,
+  owners,
+  accountId,
+}: Props) {
   const [filters, setFilters] = useState<Record<string, string | undefined>>({});
   const [page, setPage] = useState(1);
   const [showNewDeal, setShowNewDeal] = useState(false);
@@ -39,10 +48,15 @@ export function AccountDealsPanel({ pipelines, initialDeals, initialCount, owner
   });
 
   const filterOptions = useMemo<Record<string, FilterOption[]>>(() => {
-    const pipelineOpts: FilterOption[] = pipelines.map((p) => ({ value: p.id, label: p.name }));
+    const pipelineOpts: FilterOption[] = pipelines.map((p) => ({
+      value: p.id,
+      label: p.name,
+    }));
 
     const activePipelineId = filters.pipeline_id;
-    const relevantPipelines = activePipelineId ? pipelines.filter((p) => p.id === activePipelineId) : pipelines;
+    const relevantPipelines = activePipelineId
+      ? pipelines.filter((p) => p.id === activePipelineId)
+      : pipelines;
     const stageOpts: FilterOption[] = relevantPipelines
       .flatMap((p) => p.stages)
       .filter((s) => !s.is_closed)
@@ -52,13 +66,18 @@ export function AccountDealsPanel({ pipelines, initialDeals, initialCount, owner
     for (const d of data) {
       if (d.owner?.id && d.owner.full_name) ownerMap.set(d.owner.id, d.owner.full_name);
     }
-    const ownerOpts: FilterOption[] = [...ownerMap.entries()].map(([id, name]) => ({ value: id, label: name }));
+    const ownerOpts: FilterOption[] = [...ownerMap.entries()].map(([id, name]) => ({
+      value: id,
+      label: name,
+    }));
 
     const leadSources = new Set<string>();
     for (const d of data) {
       if (d.lead_source) leadSources.add(d.lead_source);
     }
-    const leadSourceOpts: FilterOption[] = [...leadSources].sort().map((s) => ({ value: s, label: s }));
+    const leadSourceOpts: FilterOption[] = [...leadSources]
+      .sort()
+      .map((s) => ({ value: s, label: s }));
 
     return {
       pipeline_id: pipelineOpts,
@@ -72,7 +91,10 @@ export function AccountDealsPanel({ pipelines, initialDeals, initialCount, owner
 
   const load = useCallback(() => {
     const { orFilter, eqFilters: autoFilters } = buildFilterQuery(dealColumns, filters);
-    const eqFilters: Record<string, string> = { ...autoFilters, account_id: accountId };
+    const eqFilters: Record<string, string> = {
+      ...autoFilters,
+      account_id: accountId,
+    };
 
     fetchList({ page, orFilter, eqFilters });
   }, [fetchList, page, filters, accountId]);
@@ -80,7 +102,7 @@ export function AccountDealsPanel({ pipelines, initialDeals, initialCount, owner
   const handleFilterChange = useCallback((newFilters: Record<string, string | undefined>) => {
     setFilters(newFilters);
     setPage(1);
-  }, []);
+  }, [setPage]);
 
   useEffect(() => {
     if (isInitialMount.current) {

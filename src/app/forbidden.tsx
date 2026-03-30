@@ -16,8 +16,8 @@ export default function ForbiddenPage() {
           </CardHeader>
           <CardContent>
             <p className="text-sm text-muted-foreground">
-              Je hebt geen toestemming om deze pagina te bekijken. Neem contact op met een administrator als je denkt
-              dat dit een fout is.
+              Je hebt geen toestemming om deze pagina te bekijken. Neem contact op met een
+              administrator als je denkt dat dit een fout is.
             </p>
           </CardContent>
           <CardFooter>

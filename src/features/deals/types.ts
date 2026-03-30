@@ -7,7 +7,12 @@ export type Deal = Database['public']['Tables']['deals']['Row'];
 
 export type DealWithRelations = Deal & {
   account: { id: string; name: string } | null;
-  contact: { id: string; first_name: string; last_name: string; title: string | null } | null;
+  contact: {
+    id: string;
+    first_name: string;
+    last_name: string;
+    title: string | null;
+  } | null;
   owner: { id: string; full_name: string | null } | null;
   stage: {
     id: string;

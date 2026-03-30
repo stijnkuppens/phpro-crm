@@ -14,7 +14,10 @@ export const getCommunications = cache(
     filters,
     page = 1,
     pageSize = 25,
-  }: GetCommunicationsParams = {}): Promise<{ data: CommunicationWithDetails[]; count: number }> => {
+  }: GetCommunicationsParams = {}): Promise<{
+    data: CommunicationWithDetails[];
+    count: number;
+  }> => {
     const supabase = await createServerClient();
     const from = (page - 1) * pageSize;
     const to = from + pageSize - 1;
@@ -53,6 +56,9 @@ export const getCommunications = cache(
       return { data: [], count: 0 };
     }
 
-    return { data: (data as unknown as CommunicationWithDetails[]) ?? [], count: count ?? 0 };
+    return {
+      data: (data as unknown as CommunicationWithDetails[]) ?? [],
+      count: count ?? 0,
+    };
   },
 );

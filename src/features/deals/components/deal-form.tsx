@@ -8,7 +8,13 @@ import { Button } from '@/components/ui/button';
 import { DatePicker } from '@/components/ui/date-picker';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { SubmitButton } from '@/components/ui/submit-button';
 import { Textarea } from '@/components/ui/textarea';
 import { createDeal } from '../actions/create-deal';
@@ -43,7 +49,8 @@ export function DealForm({ defaultValues, onSuccess, onCancel }: Props) {
       cronos_cc: (formData.get('cronos_cc') as string) || undefined,
       cronos_contact: (formData.get('cronos_contact') as string) || undefined,
       cronos_email: (formData.get('cronos_email') as string) || undefined,
-      forecast_category: (formData.get('forecast_category') as DealFormValues['forecast_category']) || undefined,
+      forecast_category:
+        (formData.get('forecast_category') as DealFormValues['forecast_category']) || undefined,
     };
 
     const parsed = dealFormSchema.safeParse(values);
@@ -52,7 +59,9 @@ export function DealForm({ defaultValues, onSuccess, onCancel }: Props) {
       return null;
     }
 
-    const result = isEdit ? await updateDeal(defaultValues!.id!, parsed.data) : await createDeal(parsed.data);
+    const result = isEdit
+      ? await updateDeal(defaultValues!.id!, parsed.data)
+      : await createDeal(parsed.data);
 
     if ('error' in result && result.error) {
       toast.error(typeof result.error === 'string' ? result.error : 'Er ging iets mis');
@@ -78,7 +87,12 @@ export function DealForm({ defaultValues, onSuccess, onCancel }: Props) {
         </div>
         <div className="space-y-2">
           <Label htmlFor="account_id">Account ID *</Label>
-          <Input id="account_id" name="account_id" defaultValue={defaultValues?.account_id ?? ''} required />
+          <Input
+            id="account_id"
+            name="account_id"
+            defaultValue={defaultValues?.account_id ?? ''}
+            required
+          />
         </div>
         <div className="space-y-2">
           <Label htmlFor="contact_id">Contact ID</Label>
@@ -86,15 +100,31 @@ export function DealForm({ defaultValues, onSuccess, onCancel }: Props) {
         </div>
         <div className="space-y-2">
           <Label htmlFor="pipeline_id">Pipeline ID *</Label>
-          <Input id="pipeline_id" name="pipeline_id" defaultValue={defaultValues?.pipeline_id ?? ''} required />
+          <Input
+            id="pipeline_id"
+            name="pipeline_id"
+            defaultValue={defaultValues?.pipeline_id ?? ''}
+            required
+          />
         </div>
         <div className="space-y-2">
           <Label htmlFor="stage_id">Stage ID *</Label>
-          <Input id="stage_id" name="stage_id" defaultValue={defaultValues?.stage_id ?? ''} required />
+          <Input
+            id="stage_id"
+            name="stage_id"
+            defaultValue={defaultValues?.stage_id ?? ''}
+            required
+          />
         </div>
         <div className="space-y-2">
           <Label htmlFor="amount">Bedrag</Label>
-          <Input id="amount" name="amount" type="number" min="0" defaultValue={defaultValues?.amount ?? ''} />
+          <Input
+            id="amount"
+            name="amount"
+            type="number"
+            min="0"
+            defaultValue={defaultValues?.amount ?? ''}
+          />
         </div>
         <div className="space-y-2">
           <Label htmlFor="probability">Kans (%)</Label>
@@ -117,7 +147,11 @@ export function DealForm({ defaultValues, onSuccess, onCancel }: Props) {
         </div>
         <div className="space-y-2">
           <Label htmlFor="lead_source">Lead bron</Label>
-          <Input id="lead_source" name="lead_source" defaultValue={defaultValues?.lead_source ?? ''} />
+          <Input
+            id="lead_source"
+            name="lead_source"
+            defaultValue={defaultValues?.lead_source ?? ''}
+          />
         </div>
         <div className="space-y-2">
           <Label htmlFor="origin">Origine</Label>
@@ -153,11 +187,19 @@ export function DealForm({ defaultValues, onSuccess, onCancel }: Props) {
           <>
             <div className="space-y-2">
               <Label htmlFor="cronos_cc">Cronos CC</Label>
-              <Input id="cronos_cc" name="cronos_cc" defaultValue={defaultValues?.cronos_cc ?? ''} />
+              <Input
+                id="cronos_cc"
+                name="cronos_cc"
+                defaultValue={defaultValues?.cronos_cc ?? ''}
+              />
             </div>
             <div className="space-y-2">
               <Label htmlFor="cronos_contact">Cronos contact</Label>
-              <Input id="cronos_contact" name="cronos_contact" defaultValue={defaultValues?.cronos_contact ?? ''} />
+              <Input
+                id="cronos_contact"
+                name="cronos_contact"
+                defaultValue={defaultValues?.cronos_contact ?? ''}
+              />
             </div>
             <div className="space-y-2">
               <Label htmlFor="cronos_email">Cronos e-mail</Label>
@@ -173,7 +215,12 @@ export function DealForm({ defaultValues, onSuccess, onCancel }: Props) {
       </div>
       <div className="space-y-2">
         <Label htmlFor="description">Beschrijving</Label>
-        <Textarea id="description" name="description" rows={4} defaultValue={defaultValues?.description ?? ''} />
+        <Textarea
+          id="description"
+          name="description"
+          rows={4}
+          defaultValue={defaultValues?.description ?? ''}
+        />
       </div>
       <div className="flex gap-2">
         <SubmitButton icon={<Save />}>{isEdit ? 'Bijwerken' : 'Aanmaken'}</SubmitButton>

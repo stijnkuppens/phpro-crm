@@ -2,7 +2,11 @@
 
 import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
-import { type ActivityFormValues, activityFormSchema, entityIdSchema } from '@/features/activities/types';
+import {
+  type ActivityFormValues,
+  activityFormSchema,
+  entityIdSchema,
+} from '@/features/activities/types';
 import { logAction } from '@/features/audit/actions/log-action';
 import { type ActionResult, err, ok } from '@/lib/action-result';
 import { logger } from '@/lib/logger';
@@ -10,7 +14,10 @@ import { requirePermission } from '@/lib/require-permission';
 import { createServerClient } from '@/lib/supabase/server';
 import type { Json } from '@/types/database';
 
-export async function updateActivity(id: string, values: ActivityFormValues): Promise<ActionResult> {
+export async function updateActivity(
+  id: string,
+  values: ActivityFormValues,
+): Promise<ActionResult> {
   try {
     await requirePermission('activities.write');
   } catch {

@@ -19,12 +19,24 @@ import { contactColumns } from '../columns';
 import { contactExportColumns } from '../export-columns';
 import type { ContactWithDetails } from '../types';
 
-const ContactViewModal = dynamic(() => import('./contact-view-modal').then((m) => ({ default: m.ContactViewModal })), {
-  ssr: false,
-});
-const ContactFormModal = dynamic(() => import('./contact-form-modal').then((m) => ({ default: m.ContactFormModal })), {
-  ssr: false,
-});
+const ContactViewModal = dynamic(
+  () =>
+    import('./contact-view-modal').then((m) => ({
+      default: m.ContactViewModal,
+    })),
+  {
+    ssr: false,
+  },
+);
+const ContactFormModal = dynamic(
+  () =>
+    import('./contact-form-modal').then((m) => ({
+      default: m.ContactFormModal,
+    })),
+  {
+    ssr: false,
+  },
+);
 
 import { escapeSearch } from '@/lib/utils/escape-search';
 
@@ -65,8 +77,12 @@ export function ContactList({ initialData, initialCount, accounts = [] }: Contac
 
   const [page, setPage] = useQueryState('page', parseAsInteger.withDefault(1));
   const [search, setSearch] = useQueryState('q', { defaultValue: '' });
-  const [accountFilter, setAccountFilter] = useQueryState('account', { defaultValue: 'all' });
-  const [roleFilter, setRoleFilter] = useQueryState('role', { defaultValue: 'all' });
+  const [accountFilter, setAccountFilter] = useQueryState('account', {
+    defaultValue: 'all',
+  });
+  const [roleFilter, setRoleFilter] = useQueryState('role', {
+    defaultValue: 'all',
+  });
   const [steercoOnly, setSteercoOnly] = useQueryState('steerco', parseAsBoolean.withDefault(false));
   const isInitialMount = useRef(true);
 
@@ -198,18 +214,29 @@ export function ContactList({ initialData, initialCount, accounts = [] }: Contac
                 </div>
               </div>
               {row.title && <span className="text-sm text-foreground pl-10">{row.title}</span>}
-              {row.account?.name && <span className="text-xs text-muted-foreground pl-10">{row.account.name}</span>}
-              {row.email && <span className="text-xs text-muted-foreground pl-10 truncate">{row.email}</span>}
+              {row.account?.name && (
+                <span className="text-xs text-muted-foreground pl-10">{row.account.name}</span>
+              )}
+              {row.email && (
+                <span className="text-xs text-muted-foreground pl-10 truncate">{row.email}</span>
+              )}
             </div>
           );
         }}
         rowActions={(row) => [
-          { icon: SquarePen, label: 'Bewerken', onClick: () => setEditId(row.id) },
+          {
+            icon: SquarePen,
+            label: 'Bewerken',
+            onClick: () => setEditId(row.id),
+          },
           {
             icon: Trash2,
             label: 'Verwijderen',
             variant: 'destructive' as const,
-            confirm: { title: 'Contact verwijderen?', description: 'Dit verwijdert het contact permanent.' },
+            confirm: {
+              title: 'Contact verwijderen?',
+              description: 'Dit verwijdert het contact permanent.',
+            },
             onClick: () => handleDelete(row.id),
           },
         ]}

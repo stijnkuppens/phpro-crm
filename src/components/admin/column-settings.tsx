@@ -17,7 +17,10 @@ const EXCLUDED_IDS = new Set(['select', '_select', '_actions']);
 export function ColumnSettings<T>({ table, onOrderChange, onReset }: ColumnSettingsProps<T>) {
   const orderedColumns = table
     .getAllLeafColumns()
-    .filter((col) => !EXCLUDED_IDS.has(col.id) && (col.columnDef.meta as { label?: string } | undefined)?.label);
+    .filter(
+      (col) =>
+        !EXCLUDED_IDS.has(col.id) && (col.columnDef.meta as { label?: string } | undefined)?.label,
+    );
 
   const handleSwap = (index: number, direction: -1 | 1) => {
     const targetIndex = index + direction;
@@ -53,7 +56,9 @@ export function ColumnSettings<T>({ table, onOrderChange, onReset }: ColumnSetti
       <PopoverContent align="end" className="w-auto max-w-[480px]">
         <div className="space-y-3">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-medium text-muted-foreground">Zichtbare kolommen &amp; volgorde</span>
+            <span className="text-xs font-medium text-muted-foreground">
+              Zichtbare kolommen &amp; volgorde
+            </span>
             <Button
               variant="ghost"
               size="sm"

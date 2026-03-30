@@ -13,12 +13,18 @@ import { deleteDeal } from '../actions/delete-deal';
 import { dealColumns } from '../columns';
 import type { DealWithRelations, Pipeline } from '../types';
 
-const DealEditModal = dynamic(() => import('./deal-edit-modal').then((m) => ({ default: m.DealEditModal })), {
-  ssr: false,
-});
-const CloseDealModal = dynamic(() => import('./close-deal-modal').then((m) => ({ default: m.CloseDealModal })), {
-  ssr: false,
-});
+const DealEditModal = dynamic(
+  () => import('./deal-edit-modal').then((m) => ({ default: m.DealEditModal })),
+  {
+    ssr: false,
+  },
+);
+const CloseDealModal = dynamic(
+  () => import('./close-deal-modal').then((m) => ({ default: m.CloseDealModal })),
+  {
+    ssr: false,
+  },
+);
 
 type Props = {
   deals: DealWithRelations[];
@@ -76,15 +82,28 @@ export function DealList({
         pagination={{ page, pageSize: 50, total }}
         onPageChange={onPageChange}
         rowActions={(row) => [
-          { icon: SquarePen, label: 'Bewerken', onClick: () => setEditDeal(row) },
+          {
+            icon: SquarePen,
+            label: 'Bewerken',
+            onClick: () => setEditDeal(row),
+          },
           ...(!row.stage?.is_closed
-            ? [{ icon: CheckCircle2 as typeof SquarePen, label: 'Afsluiten', onClick: () => setCloseDealId(row.id) }]
+            ? [
+                {
+                  icon: CheckCircle2 as typeof SquarePen,
+                  label: 'Afsluiten',
+                  onClick: () => setCloseDealId(row.id),
+                },
+              ]
             : []),
           {
             icon: Trash2,
             label: 'Verwijderen',
             variant: 'destructive' as const,
-            confirm: { title: 'Deal verwijderen?', description: 'Dit verwijdert de deal permanent.' },
+            confirm: {
+              title: 'Deal verwijderen?',
+              description: 'Dit verwijdert de deal permanent.',
+            },
             onClick: () => handleDelete(row.id),
           },
         ]}
@@ -92,7 +111,10 @@ export function DealList({
           {
             label: 'Verwijderen',
             variant: 'destructive' as const,
-            confirm: { title: 'Deals verwijderen?', description: 'Dit verwijdert de geselecteerde deals permanent.' },
+            confirm: {
+              title: 'Deals verwijderen?',
+              description: 'Dit verwijdert de geselecteerde deals permanent.',
+            },
             // biome-ignore lint/suspicious/useIterableCallbackReturn: forEach callback does not need a return value
             action: (ids) => ids.forEach((id) => handleDelete(id)),
           },
@@ -102,7 +124,9 @@ export function DealList({
         renderMobileCard={(row) => (
           <div className="flex flex-col gap-1.5 py-1">
             <span className="font-medium text-sm">{row.title}</span>
-            {row.account?.name && <span className="text-xs text-muted-foreground">{row.account.name}</span>}
+            {row.account?.name && (
+              <span className="text-xs text-muted-foreground">{row.account.name}</span>
+            )}
             <div className="flex flex-wrap items-center gap-1.5">
               {row.pipeline?.name && <StatusBadge positive>{row.pipeline.name}</StatusBadge>}
               {row.stage && (

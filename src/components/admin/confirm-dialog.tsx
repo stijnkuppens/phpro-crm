@@ -38,7 +38,9 @@ export function ConfirmDialog({
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
       {open === undefined && (
-        <AlertDialogTrigger render={trigger ?? children ?? <Button variant={variant}>Delete</Button>} />
+        <AlertDialogTrigger
+          render={trigger ?? children ?? <Button variant={variant}>Delete</Button>}
+        />
       )}
       <AlertDialogContent>
         <AlertDialogHeader>
@@ -49,7 +51,9 @@ export function ConfirmDialog({
           <AlertDialogCancel>Annuleren</AlertDialogCancel>
           <AlertDialogAction
             onClick={onConfirm}
-            className={variant === 'destructive' ? 'bg-destructive text-white hover:bg-destructive/90' : ''}
+            className={
+              variant === 'destructive' ? 'bg-destructive text-white hover:bg-destructive/90' : ''
+            }
           >
             Bevestigen
           </AlertDialogAction>

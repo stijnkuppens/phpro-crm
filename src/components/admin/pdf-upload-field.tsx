@@ -15,7 +15,13 @@ type PdfUploadFieldProps = {
   className?: string;
 };
 
-export function PdfUploadField({ value, onChange, bucket = 'documents', folder = '', className }: PdfUploadFieldProps) {
+export function PdfUploadField({
+  value,
+  onChange,
+  bucket = 'documents',
+  folder = '',
+  className,
+}: PdfUploadFieldProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
 
@@ -51,7 +57,9 @@ export function PdfUploadField({ value, onChange, bucket = 'documents', folder =
       const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
       const path = folder ? `${folder}/${timestamp}_${safeName}` : `${timestamp}_${safeName}`;
 
-      const { error } = await supabase.storage.from(bucket).upload(path, file, { contentType: file.type });
+      const { error } = await supabase.storage
+        .from(bucket)
+        .upload(path, file, { contentType: file.type });
       if (error) throw error;
 
       onChange(path);

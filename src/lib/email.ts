@@ -1,7 +1,11 @@
 import nodemailer from 'nodemailer';
 
 function escapeHtml(text: string): string {
-  return text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  return text
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
 }
 
 const transporter = nodemailer.createTransport({
@@ -104,7 +108,8 @@ function wrapInTemplate(body: string, brand: Brand): string {
 
 export async function sendEmail({ to, subject, body, from, brand = 'phpro' }: SendEmailParams) {
   const b = brandConfig[brand];
-  const sender = from ?? process.env.SMTP_FROM ?? `${b.name} CRM <noreply@${b.name.toLowerCase()}.be>`;
+  const sender =
+    from ?? process.env.SMTP_FROM ?? `${b.name} CRM <noreply@${b.name.toLowerCase()}.be>`;
 
   const html = wrapInTemplate(body, brand);
 

@@ -1,6 +1,16 @@
 'use client';
 
-import { CalendarDays, Eye, Gift, Mail, Pencil, Phone, ShieldCheck, Star, UtensilsCrossed } from 'lucide-react';
+import {
+  CalendarDays,
+  Eye,
+  Gift,
+  Mail,
+  Pencil,
+  Phone,
+  ShieldCheck,
+  Star,
+  UtensilsCrossed,
+} from 'lucide-react';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { AvatarUpload } from '@/components/admin/avatar-upload';
@@ -54,7 +64,9 @@ export function ContactViewModal({ contactId, onClose, onEdit }: Props) {
   }, [contactId]);
 
   const pi = contact?.personal_info;
-  const initials = contact ? `${contact.first_name[0] ?? ''}${contact.last_name[0] ?? ''}`.toUpperCase() : '';
+  const initials = contact
+    ? `${contact.first_name[0] ?? ''}${contact.last_name[0] ?? ''}`.toUpperCase()
+    : '';
 
   return (
     <Modal
@@ -187,7 +199,9 @@ export function ContactViewModal({ contactId, onClose, onEdit }: Props) {
               <InfoRow label="Burgerlijke staat">{pi?.marital_status || '—'}</InfoRow>
               <InfoRow label="Verjaardag">{pi?.birthday || '—'}</InfoRow>
               <InfoRow label="Kinderen">
-                {pi?.has_children ? `Ja${pi.children_count ? ` (${pi.children_count})` : ''}` : 'Nee'}
+                {pi?.has_children
+                  ? `Ja${pi.children_count ? ` (${pi.children_count})` : ''}`
+                  : 'Nee'}
               </InfoRow>
               {pi?.children_names && <InfoRow label="Namen kinderen">{pi.children_names}</InfoRow>}
               <InfoRow label="Partner">{pi?.partner_name || '—'}</InfoRow>

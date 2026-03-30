@@ -1,4 +1,10 @@
-export const roles = ['admin', 'sales_manager', 'sales_rep', 'customer_success', 'marketing'] as const;
+export const roles = [
+  'admin',
+  'sales_manager',
+  'sales_rep',
+  'customer_success',
+  'marketing',
+] as const;
 export type Role = (typeof roles)[number];
 
 export type Permission =

@@ -17,7 +17,10 @@ import { IndexationSubTab } from './indexation-sub-tab';
 import { SlaRatesSubTab } from './sla-rates-sub-tab';
 
 const IndexationWizard = dynamic(
-  () => import('@/features/indexation/components/indexation-wizard').then((m) => ({ default: m.IndexationWizard })),
+  () =>
+    import('@/features/indexation/components/indexation-wizard').then((m) => ({
+      default: m.IndexationWizard,
+    })),
   { ssr: false },
 );
 
@@ -107,7 +110,8 @@ export function ContractsTab({
               className="inline-flex items-center gap-1.5 text-sm text-primary-action hover:underline cursor-pointer"
             >
               <Download className="h-3.5 w-3.5" />
-              {contract.purchase_orders_doc_path.split('/').pop()?.replace(/^\d+_/, '') ?? 'Document'}
+              {contract.purchase_orders_doc_path.split('/').pop()?.replace(/^\d+_/, '') ??
+                'Document'}
             </button>
           )}
         </div>
@@ -131,7 +135,10 @@ export function ContractsTab({
         </TabsContent>
 
         <TabsContent value="sla">
-          <SlaRatesSubTab slaRates={slaRates} hasServiceContract={contract?.has_service_contract ?? false} />
+          <SlaRatesSubTab
+            slaRates={slaRates}
+            hasServiceContract={contract?.has_service_contract ?? false}
+          />
         </TabsContent>
 
         <TabsContent value="indexering">
@@ -147,7 +154,12 @@ export function ContractsTab({
 
       {/* Modals */}
       {wizardOpen && (
-        <IndexationWizard accountId={accountId} open={wizardOpen} draft={indexationDraft} onClose={handleSaved} />
+        <IndexationWizard
+          accountId={accountId}
+          open={wizardOpen}
+          draft={indexationDraft}
+          onClose={handleSaved}
+        />
       )}
     </div>
   );

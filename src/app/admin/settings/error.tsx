@@ -2,7 +2,13 @@
 
 import { RouteErrorCard } from '@/components/admin/route-error-card';
 
-export default function SettingsError({ error, reset }: { error: Error & { digest?: string }; reset: () => void }) {
+export default function SettingsError({
+  error,
+  reset,
+}: {
+  error: Error & { digest?: string };
+  reset: () => void;
+}) {
   return (
     <RouteErrorCard
       title="Fout bij laden van instellingen"

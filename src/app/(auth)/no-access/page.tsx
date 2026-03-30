@@ -26,7 +26,8 @@ export default function NoAccessPage() {
           </CardHeader>
           <CardContent>
             <p className="text-sm text-muted-foreground">
-              Je account heeft nog geen rol toegewezen. Neem contact op met een administrator om toegang te krijgen.
+              Je account heeft nog geen rol toegewezen. Neem contact op met een administrator om
+              toegang te krijgen.
             </p>
           </CardContent>
           <CardFooter>

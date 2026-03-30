@@ -1,8 +1,8 @@
+import { Plus } from 'lucide-react';
 import Link from 'next/link';
-import DataTable from '@/components/admin/data-table';
 import { PageHeader } from '@/components/admin/page-header';
 import { Button } from '@/components/ui/button';
-import { userColumns } from '@/features/users/columns';
+import { UserList } from '@/features/users/components/user-list';
 import { getUsers } from '@/features/users/queries/get-users';
 
 export default async function UsersPage() {
@@ -14,12 +14,12 @@ export default async function UsersPage() {
         title="Gebruikers"
         breadcrumbs={[{ label: 'Admin', href: '/admin' }, { label: 'Gebruikers' }]}
         actions={
-          <Button nativeButton={false} render={<Link href="/admin/users/invite" />}>
-            Gebruiker uitnodigen
+          <Button size="sm" nativeButton={false} render={<Link href="/admin/users/invite" />}>
+            <Plus /> Uitnodigen
           </Button>
         }
       />
-      <DataTable tableId="users" columns={userColumns} data={users} />
+      <UserList initialData={users} />
     </div>
   );
 }

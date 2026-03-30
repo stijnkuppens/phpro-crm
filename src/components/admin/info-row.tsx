@@ -17,7 +17,12 @@ export function InfoRow({ label, value, children, icon: Icon, href, mono }: Info
       <span className="w-28 flex-shrink-0 text-xs font-medium text-muted-foreground">{label}</span>
       <span className={cn('min-w-0 flex-1 text-sm', mono && 'font-mono text-xs')}>
         {href ? (
-          <a href={href} target="_blank" rel="noopener noreferrer" className="truncate text-primary hover:underline">
+          <a
+            href={href}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="truncate text-primary hover:underline"
+          >
             {children ?? value}
           </a>
         ) : (

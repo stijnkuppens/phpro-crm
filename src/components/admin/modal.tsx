@@ -22,7 +22,9 @@ const sizeClasses = {
 export function Modal({ open, onClose, title, children, size = 'default', footer }: ModalProps) {
   return (
     <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
-      <DialogContent className={cn(sizeClasses[size], 'flex max-h-[92vh] flex-col overflow-hidden')}>
+      <DialogContent
+        className={cn(sizeClasses[size], 'flex max-h-[92vh] flex-col overflow-hidden')}
+      >
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
         </DialogHeader>
@@ -41,7 +43,13 @@ export function Modal({ open, onClose, title, children, size = 'default', footer
  * Standalone footer for use inside modal children when the footer prop isn't convenient
  * (e.g. when buttons are inside a <form> that wraps the modal content).
  */
-export function ModalFooter({ children, className }: { children: React.ReactNode; className?: string }) {
+export function ModalFooter({
+  children,
+  className,
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) {
   return (
     <div
       className={cn(

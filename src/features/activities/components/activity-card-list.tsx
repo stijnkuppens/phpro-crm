@@ -42,7 +42,9 @@ function ActivityTable({
     <div>
       <div className="flex items-center gap-2 mb-2">
         <Icon className={`h-4 w-4 ${titleColor}`} />
-        <span className={`text-xs font-semibold uppercase tracking-wide ${titleColor}`}>{title}</span>
+        <span className={`text-xs font-semibold uppercase tracking-wide ${titleColor}`}>
+          {title}
+        </span>
         <span className="text-xs text-muted-foreground">({items.length})</span>
       </div>
       <div className="rounded-xl border bg-card shadow-sm divide-y">
@@ -78,7 +80,9 @@ export function ActivityCardList({
       done: [] as ActivityWithRelations[],
     };
 
-    const sorted = [...activities].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+    const sorted = [...activities].sort(
+      (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime(),
+    );
 
     for (const a of sorted) {
       if (a.is_done) {

@@ -153,9 +153,16 @@ export function ContactFormModal({
   }
 
   return (
-    <Modal open={open} onClose={onClose} title={isEdit ? 'Contact bewerken' : 'Nieuw contact'} size="wide">
+    <Modal
+      open={open}
+      onClose={onClose}
+      title={isEdit ? 'Contact bewerken' : 'Nieuw contact'}
+      size="wide"
+    >
       {isEdit && contact && (
-        <p className="text-sm text-muted-foreground mb-4">Account: {contact.account?.name ?? accountId}</p>
+        <p className="text-sm text-muted-foreground mb-4">
+          Account: {contact.account?.name ?? accountId}
+        </p>
       )}
       <form action={formAction} className="space-y-4">
         {!accountIdProp && (
@@ -174,7 +181,9 @@ export function ContactFormModal({
         <ContactFormFields
           key={contactId ?? 'new'}
           defaultValues={(contact as Partial<ContactFormValues> | undefined) ?? undefined}
-          defaultPersonalInfo={(contact?.personal_info as Partial<PersonalInfoFormValues> | undefined) ?? undefined}
+          defaultPersonalInfo={
+            (contact?.personal_info as Partial<PersonalInfoFormValues> | undefined) ?? undefined
+          }
           errors={fieldErrors}
         />
         <ModalFooter>

@@ -55,7 +55,11 @@ export async function upsertContractAttribution(
     action: 'consultant.contract_attribution_upserted',
     entityType: 'consultant',
     entityId: data.id,
-    metadata: { consultant_id: parsed.data.consultant_id, before, after: parsed.data },
+    metadata: {
+      consultant_id: parsed.data.consultant_id,
+      before,
+      after: parsed.data,
+    },
   });
 
   revalidatePath('/admin/consultants');

@@ -47,7 +47,7 @@ function LocaleSwitcher() {
 }
 
 export function AdminTopbar() {
-  const { user } = useAuth();
+  const { user, avatarPath, fullName } = useAuth();
   const router = useRouter();
   const mounted = useSyncExternalStore(
     emptySubscribe,
@@ -74,8 +74,9 @@ export function AdminTopbar() {
     setTheme(theme === 'dark' ? 'light' : 'dark');
   };
 
-  const initials = user?.user_metadata?.full_name
-    ? user.user_metadata.full_name
+  const displayName = fullName || user?.user_metadata?.full_name || '';
+  const initials = displayName
+    ? displayName
         .split(' ')
         .map((n: string) => n[0])
         .join('')
@@ -98,7 +99,12 @@ export function AdminTopbar() {
           <DropdownMenuTrigger
             render={
               <Button variant="ghost" className="relative h-8 w-8 rounded-full p-0">
-                <Avatar path={user?.user_metadata?.avatar_url} fallback={initials} size="sm" round />
+                <Avatar
+                  path={avatarPath || user?.user_metadata?.avatar_url}
+                  fallback={initials}
+                  size="sm"
+                  round
+                />
               </Button>
             }
           />
@@ -106,7 +112,7 @@ export function AdminTopbar() {
             <DropdownMenuGroup>
               <DropdownMenuLabel>
                 <div className="flex flex-col space-y-1">
-                  <p className="text-sm font-medium">{user?.user_metadata?.full_name ?? 'User'}</p>
+                  <p className="text-sm font-medium">{displayName || 'User'}</p>
                   <p className="text-xs text-muted-foreground">{user?.email}</p>
                 </div>
               </DropdownMenuLabel>
@@ -124,7 +130,11 @@ export function AdminTopbar() {
                 {locale === 'nl' ? 'Switch to English' : 'Wissel naar Nederlands'}
               </DropdownMenuItem>
               <DropdownMenuItem onClick={toggleTheme}>
-                {theme === 'dark' ? <Sun className="mr-2 h-4 w-4" /> : <Moon className="mr-2 h-4 w-4" />}
+                {theme === 'dark' ? (
+                  <Sun className="mr-2 h-4 w-4" />
+                ) : (
+                  <Moon className="mr-2 h-4 w-4" />
+                )}
                 {theme === 'dark' ? 'Light mode' : 'Dark mode'}
               </DropdownMenuItem>
             </div>

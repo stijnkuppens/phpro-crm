@@ -24,7 +24,12 @@ export function DealFormFooter() {
           />
         )}
         {meta.isEdit && (
-          <Button type="button" variant="destructive" size="sm" onClick={() => actions.setConfirmDeleteOpen(true)}>
+          <Button
+            type="button"
+            variant="destructive"
+            size="sm"
+            onClick={() => actions.setConfirmDeleteOpen(true)}
+          >
             <Trash2 />
             Verwijderen
           </Button>

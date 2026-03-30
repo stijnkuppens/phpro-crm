@@ -52,7 +52,10 @@ export async function upsertSlaRates(
     return err('Er is een fout opgetreden');
   }
 
-  const { error: deleteToolsError } = await supabase.from('sla_tools').delete().eq('sla_rate_id', slaRate.id);
+  const { error: deleteToolsError } = await supabase
+    .from('sla_tools')
+    .delete()
+    .eq('sla_rate_id', slaRate.id);
 
   if (deleteToolsError) {
     logger.error({ err: deleteToolsError }, '[upsertSlaRates] deleteTools error');

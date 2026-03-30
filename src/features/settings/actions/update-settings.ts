@@ -7,7 +7,10 @@ import { requirePermission } from '@/lib/require-permission';
 import { createServerClient } from '@/lib/supabase/server';
 import { settingsSchema } from '../types';
 
-export async function updateSettings(values: { app_name: string; logo_url: string }): Promise<ActionResult<null>> {
+export async function updateSettings(values: {
+  app_name: string;
+  logo_url: string;
+}): Promise<ActionResult<null>> {
   try {
     await requirePermission('settings.write');
   } catch {

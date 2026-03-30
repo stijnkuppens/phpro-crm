@@ -6,7 +6,11 @@ import { createServerClient } from '@/lib/supabase/server';
 import type { SimulationResult } from '../types';
 
 export const simulateIndexation = cache(
-  async (accountId: string, baseYear: number, percentage: number): Promise<ActionResult<SimulationResult>> => {
+  async (
+    accountId: string,
+    baseYear: number,
+    percentage: number,
+  ): Promise<ActionResult<SimulationResult>> => {
     try {
       await requirePermission('indexation.read');
     } catch {
@@ -15,20 +19,21 @@ export const simulateIndexation = cache(
 
     const supabase = await createServerClient();
 
-    const [{ data: hourlyRates, error: ratesError }, { data: slaRates, error: slaError }] = await Promise.all([
-      supabase
-        .from('hourly_rates')
-        .select('role, rate')
-        .eq('account_id', accountId)
-        .eq('year', baseYear)
-        .order('role', { ascending: true }),
-      supabase
-        .from('sla_rates')
-        .select('fixed_monthly_rate, support_hourly_rate')
-        .eq('account_id', accountId)
-        .eq('year', baseYear)
-        .maybeSingle(),
-    ]);
+    const [{ data: hourlyRates, error: ratesError }, { data: slaRates, error: slaError }] =
+      await Promise.all([
+        supabase
+          .from('hourly_rates')
+          .select('role, rate')
+          .eq('account_id', accountId)
+          .eq('year', baseYear)
+          .order('role', { ascending: true }),
+        supabase
+          .from('sla_rates')
+          .select('fixed_monthly_rate, support_hourly_rate')
+          .eq('account_id', accountId)
+          .eq('year', baseYear)
+          .maybeSingle(),
+      ]);
 
     if (ratesError) {
       logger.error({ err: ratesError }, '[simulateIndexation] rates error');

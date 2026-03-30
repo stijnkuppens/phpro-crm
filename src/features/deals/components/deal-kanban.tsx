@@ -65,9 +65,14 @@ function DroppableColumn({
     >
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
-          <span className="inline-block h-2.5 w-2.5 rounded-full" style={{ backgroundColor: stage.color }} />
+          <span
+            className="inline-block h-2.5 w-2.5 rounded-full"
+            style={{ backgroundColor: stage.color }}
+          />
           <h3 className="text-sm font-semibold">{stage.name}</h3>
-          <span className="text-xs bg-muted text-muted-foreground px-1.5 py-0.5 rounded-full">{dealCount}</span>
+          <span className="text-xs bg-muted text-muted-foreground px-1.5 py-0.5 rounded-full">
+            {dealCount}
+          </span>
         </div>
         <span className="text-xs text-muted-foreground">{formatEUR(stageTotal)}</span>
       </div>
@@ -85,7 +90,13 @@ function DroppableColumn({
   );
 }
 
-function DraggableDealCard({ deal, onNavigate }: { deal: DealCard; onNavigate: (id: string) => void }) {
+function DraggableDealCard({
+  deal,
+  onNavigate,
+}: {
+  deal: DealCard;
+  onNavigate: (id: string) => void;
+}) {
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
     id: deal.id,
     data: deal,
@@ -113,7 +124,10 @@ function DraggableDealCard({ deal, onNavigate }: { deal: DealCard; onNavigate: (
         <span className="font-semibold">{formatEUR(deal.amount)}</span>
         {deal.close_date && (
           <span className="text-muted-foreground">
-            {new Date(deal.close_date).toLocaleDateString('nl-BE', { day: 'numeric', month: 'short' })}
+            {new Date(deal.close_date).toLocaleDateString('nl-BE', {
+              day: 'numeric',
+              month: 'short',
+            })}
           </span>
         )}
       </div>
@@ -141,12 +155,35 @@ function DraggableDealCard({ deal, onNavigate }: { deal: DealCard; onNavigate: (
   );
 }
 
-function CloseDropZone({ id, label, color }: { id: string; label: string; color: 'green' | 'red' | 'amber' }) {
+function CloseDropZone({
+  id,
+  label,
+  color,
+}: {
+  id: string;
+  label: string;
+  color: 'green' | 'red' | 'amber';
+}) {
   const { setNodeRef, isOver } = useDroppable({ id });
   const styles = {
-    green: { border: 'border-green-300', bg: isOver ? 'bg-green-50' : '', text: 'text-green-600', dot: 'bg-green-500' },
-    red: { border: 'border-red-300', bg: isOver ? 'bg-red-50' : '', text: 'text-red-600', dot: 'bg-red-500' },
-    amber: { border: 'border-amber-300', bg: isOver ? 'bg-amber-50' : '', text: 'text-amber-600', dot: 'bg-amber-500' },
+    green: {
+      border: 'border-green-300',
+      bg: isOver ? 'bg-green-50' : '',
+      text: 'text-green-600',
+      dot: 'bg-green-500',
+    },
+    red: {
+      border: 'border-red-300',
+      bg: isOver ? 'bg-red-50' : '',
+      text: 'text-red-600',
+      dot: 'bg-red-500',
+    },
+    amber: {
+      border: 'border-amber-300',
+      bg: isOver ? 'bg-amber-50' : '',
+      text: 'text-amber-600',
+      dot: 'bg-amber-500',
+    },
   };
   const s = styles[color];
   return (
@@ -167,15 +204,18 @@ function CloseDropZone({ id, label, color }: { id: string; label: string; color:
 export function DealKanban({ stages, deals, onRefresh, onCreateDeal }: Props) {
   const router = useRouter();
   const [isDragging, setIsDragging] = useState(false);
-  const [closeDealData, setCloseDealData] = useState<{ dealId: string; type: 'won' | 'lost' | 'longterm' } | null>(
-    null,
-  );
+  const [closeDealData, setCloseDealData] = useState<{
+    dealId: string;
+    type: 'won' | 'lost' | 'longterm';
+  } | null>(null);
 
   const openStages = stages.filter((s) => !s.is_closed).sort((a, b) => a.sort_order - b.sort_order);
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
-    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    }),
   );
 
   async function handleDragEnd(event: DragEndEvent) {
@@ -227,7 +267,11 @@ export function DealKanban({ stages, deals, onRefresh, onCreateDeal }: Props) {
               stageTotal={stageTotal}
             >
               {stageDeals.map((deal) => (
-                <DraggableDealCard key={deal.id} deal={deal} onNavigate={(id) => router.push(`/admin/deals/${id}`)} />
+                <DraggableDealCard
+                  key={deal.id}
+                  deal={deal}
+                  onNavigate={(id) => router.push(`/admin/deals/${id}`)}
+                />
               ))}
             </DroppableColumn>
           );

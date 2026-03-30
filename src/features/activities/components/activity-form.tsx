@@ -1,6 +1,16 @@
 'use client';
 
-import { Activity, Calendar, CalendarCheck, Check, ClipboardList, FileText, Mail, Phone, Zap } from 'lucide-react';
+import {
+  Activity,
+  Calendar,
+  CalendarCheck,
+  Check,
+  ClipboardList,
+  FileText,
+  Mail,
+  Phone,
+  Zap,
+} from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useActionState, useState } from 'react';
 import { toast } from 'sonner';
@@ -37,7 +47,14 @@ const ACTIVITY_TYPES = [
   { value: 'Taak', label: 'Taak', icon: ClipboardList },
 ] as const;
 
-export function ActivityForm({ defaultValues, accounts = [], deals = [], users = [], onSuccess, onCancel }: Props) {
+export function ActivityForm({
+  defaultValues,
+  accounts = [],
+  deals = [],
+  users = [],
+  onSuccess,
+  onCancel,
+}: Props) {
   const router = useRouter();
   const [type, setType] = useState<string>(defaultValues?.type ?? 'Meeting');
   const [accountId, setAccountId] = useState(defaultValues?.account_id ?? '');
@@ -72,7 +89,9 @@ export function ActivityForm({ defaultValues, accounts = [], deals = [], users =
       return null;
     }
 
-    const result = isEdit ? await updateActivity(defaultValues!.id!, parsed.data) : await createActivity(parsed.data);
+    const result = isEdit
+      ? await updateActivity(defaultValues!.id!, parsed.data)
+      : await createActivity(parsed.data);
 
     if ('error' in result && result.error) {
       toast.error(typeof result.error === 'string' ? result.error : 'Er ging iets mis');
@@ -166,7 +185,9 @@ export function ActivityForm({ defaultValues, accounts = [], deals = [], users =
         <div className="space-y-2">
           <Label>Toegewezen aan</Label>
           <Select value={assignedTo} onValueChange={(v) => setAssignedTo(v ?? '')}>
-            <SelectTrigger>{users.find((u) => u.id === assignedTo)?.name ?? '— niemand —'}</SelectTrigger>
+            <SelectTrigger>
+              {users.find((u) => u.id === assignedTo)?.name ?? '— niemand —'}
+            </SelectTrigger>
             <SelectContent>
               <SelectItem value="">— niemand —</SelectItem>
               {users.map((u) => (
@@ -215,7 +236,9 @@ export function ActivityForm({ defaultValues, accounts = [], deals = [], users =
           <Label>Account *</Label>
           {accounts.length > 0 ? (
             <Select value={accountId} onValueChange={(v) => setAccountId(v ?? '')}>
-              <SelectTrigger>{accounts.find((a) => a.id === accountId)?.name ?? 'Selecteer account...'}</SelectTrigger>
+              <SelectTrigger>
+                {accounts.find((a) => a.id === accountId)?.name ?? 'Selecteer account...'}
+              </SelectTrigger>
               <SelectContent>
                 {accounts.map((a) => (
                   <SelectItem key={a.id} value={a.id}>
@@ -225,7 +248,12 @@ export function ActivityForm({ defaultValues, accounts = [], deals = [], users =
               </SelectContent>
             </Select>
           ) : (
-            <Input value={accountId} onChange={(e) => setAccountId(e.target.value)} required placeholder="Account ID" />
+            <Input
+              value={accountId}
+              onChange={(e) => setAccountId(e.target.value)}
+              required
+              placeholder="Account ID"
+            />
           )}
         </div>
       )}

@@ -19,11 +19,18 @@ export async function toggleActivityDone(id: string): Promise<ActionResult> {
 
   const supabase = await createServerClient();
 
-  const { data: activity } = await supabase.from('activities').select('is_done').eq('id', id).single();
+  const { data: activity } = await supabase
+    .from('activities')
+    .select('is_done')
+    .eq('id', id)
+    .single();
 
   if (!activity) return err('Activiteit niet gevonden');
 
-  const { error } = await supabase.from('activities').update({ is_done: !activity.is_done }).eq('id', id);
+  const { error } = await supabase
+    .from('activities')
+    .update({ is_done: !activity.is_done })
+    .eq('id', id);
 
   if (error) {
     logger.error({ err: error }, '[toggleActivityDone] database error');

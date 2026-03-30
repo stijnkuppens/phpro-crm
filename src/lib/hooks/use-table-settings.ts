@@ -29,7 +29,9 @@ const NOOP_RESULT = {
 } as const;
 
 export function useTableSettings(tableId: string) {
-  const [settings, setSettings] = useState<TableSettings | null>(() => (tableId ? readSettings(tableId) : null));
+  const [settings, setSettings] = useState<TableSettings | null>(() =>
+    tableId ? readSettings(tableId) : null,
+  );
 
   const updateVisibility = useCallback(
     (visibility: Record<string, boolean>) => {

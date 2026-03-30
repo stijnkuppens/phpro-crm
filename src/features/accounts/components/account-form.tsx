@@ -23,7 +23,11 @@ import {
   type HostingEntry,
 } from '@/features/accounts/components/account-form-hosting-section';
 import { AccountFormPeopleSection } from '@/features/accounts/components/account-form-people-section';
-import { type AccountFormValues, type AccountReferenceData, accountFormSchema } from '@/features/accounts/types';
+import {
+  type AccountFormValues,
+  type AccountReferenceData,
+  accountFormSchema,
+} from '@/features/accounts/types';
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -57,7 +61,12 @@ type Props = {
 
 // ── Main form ────────────────────────────────────────────────────────────────
 
-export function AccountForm({ referenceData, defaultValues, onSuccess, formRef: externalFormRef }: Props) {
+export function AccountForm({
+  referenceData,
+  defaultValues,
+  onSuccess,
+  formRef: externalFormRef,
+}: Props) {
   const router = useRouter();
   const internalFormRef = useRef<HTMLFormElement>(null);
   const formRef = externalFormRef ?? internalFormRef;
@@ -73,9 +82,13 @@ export function AccountForm({ referenceData, defaultValues, onSuccess, formRef: 
   };
 
   // Controlled state for relation fields
-  const [samenwerkingsvormIds, setSamenwerkingsvormIds] = useState<string[]>(defaultValues?.samenwerkingsvormIds ?? []);
+  const [samenwerkingsvormIds, setSamenwerkingsvormIds] = useState<string[]>(
+    defaultValues?.samenwerkingsvormIds ?? [],
+  );
   const [techStackIds, setTechStackIds] = useState<string[]>(defaultValues?.techStackIds ?? []);
-  const [manualServices, setManualServices] = useState<string[]>(defaultValues?.manualServices ?? []);
+  const [manualServices, setManualServices] = useState<string[]>(
+    defaultValues?.manualServices ?? [],
+  );
   const [competenceCenters, setCompetenceCenters] = useState<CompetenceCenterEntry[]>(
     defaultValues?.competenceCenters?.map((cc) => ({
       id: cc.id,
@@ -97,7 +110,9 @@ export function AccountForm({ referenceData, defaultValues, onSuccess, formRef: 
   );
 
   function toggleSamenwerkingsvorm(id: string) {
-    setSamenwerkingsvormIds((prev) => (prev.includes(id) ? prev.filter((v) => v !== id) : [...prev, id]));
+    setSamenwerkingsvormIds((prev) =>
+      prev.includes(id) ? prev.filter((v) => v !== id) : [...prev, id],
+    );
   }
 
   function addCompetenceCenter() {
@@ -130,7 +145,14 @@ export function AccountForm({ referenceData, defaultValues, onSuccess, formRef: 
   function addHosting() {
     setHosting((prev) => [
       ...prev,
-      { provider_id: '', provider_name: '', environment_id: '', environment_name: '', url: '', notes: '' },
+      {
+        provider_id: '',
+        provider_name: '',
+        environment_id: '',
+        environment_name: '',
+        url: '',
+        notes: '',
+      },
     ]);
   }
 
@@ -161,7 +183,8 @@ export function AccountForm({ referenceData, defaultValues, onSuccess, formRef: 
       account_director: (formData.get('account_director') as string) || undefined,
       project_manager: (formData.get('project_manager') as string) || undefined,
       team: (formData.get('team') as string) || undefined,
-      phpro_contract: (formData.get('phpro_contract') as AccountFormValues['phpro_contract']) || undefined,
+      phpro_contract:
+        (formData.get('phpro_contract') as AccountFormValues['phpro_contract']) || undefined,
     };
 
     const parsed = accountFormSchema.safeParse(values);
@@ -171,14 +194,18 @@ export function AccountForm({ referenceData, defaultValues, onSuccess, formRef: 
     }
 
     // 1. Save main account
-    const result = isEdit ? await updateAccount(defaultValues!.id!, parsed.data) : await createAccount(parsed.data);
+    const result = isEdit
+      ? await updateAccount(defaultValues!.id!, parsed.data)
+      : await createAccount(parsed.data);
 
     if ('error' in result && result.error) {
       toast.error(typeof result.error === 'string' ? result.error : 'Er ging iets mis');
       return null;
     }
 
-    const accountId = isEdit ? defaultValues!.id! : (result as { success: true; data?: { id: string } }).data?.id;
+    const accountId = isEdit
+      ? defaultValues!.id!
+      : (result as { success: true; data?: { id: string } }).data?.id;
 
     if (!accountId) {
       toast.error('Kon account ID niet ophalen');
@@ -188,18 +215,27 @@ export function AccountForm({ referenceData, defaultValues, onSuccess, formRef: 
     // 2. Sync FK relations
     const relationResults = await Promise.all([
       syncAccountFKRelation(accountId, 'account_tech_stacks', 'technology_id', techStackIds),
-      syncAccountFKRelation(accountId, 'account_samenwerkingsvormen', 'collaboration_type_id', samenwerkingsvormIds),
+      syncAccountFKRelation(
+        accountId,
+        'account_samenwerkingsvormen',
+        'collaboration_type_id',
+        samenwerkingsvormIds,
+      ),
       syncAccountFKRelation(accountId, 'account_manual_services', 'service_name', manualServices),
     ]);
 
     const relationError = relationResults.find((r) => 'error' in r && r.error);
     if (relationError && 'error' in relationError) {
-      toast.error(typeof relationError.error === 'string' ? relationError.error : 'Fout bij opslaan relaties');
+      toast.error(
+        typeof relationError.error === 'string' ? relationError.error : 'Fout bij opslaan relaties',
+      );
     }
 
     // 3. Sync hosting: delete existing, add new
     if (defaultValues?.hosting) {
-      await Promise.all(defaultValues.hosting.map((h) => deleteAccountRelation('account_hosting', h.id)));
+      await Promise.all(
+        defaultValues.hosting.map((h) => deleteAccountRelation('account_hosting', h.id)),
+      );
     }
     if (hosting.length > 0) {
       await Promise.all(
@@ -219,7 +255,9 @@ export function AccountForm({ referenceData, defaultValues, onSuccess, formRef: 
     // 4. Sync competence centers: delete existing, add new
     if (defaultValues?.competenceCenters) {
       await Promise.all(
-        defaultValues.competenceCenters.map((cc) => deleteAccountRelation('account_competence_centers', cc.id)),
+        defaultValues.competenceCenters.map((cc) =>
+          deleteAccountRelation('account_competence_centers', cc.id),
+        ),
       );
     }
     if (competenceCenters.length > 0) {
@@ -267,7 +305,9 @@ export function AccountForm({ referenceData, defaultValues, onSuccess, formRef: 
 
         {/* -- Right Column: PHPro Intern -- */}
         <div className="space-y-4">
-          <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">PHPro Intern</h3>
+          <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+            PHPro Intern
+          </h3>
 
           <AccountFormPeopleSection
             defaultValues={defaultValues}
@@ -310,7 +350,11 @@ export function AccountForm({ referenceData, defaultValues, onSuccess, formRef: 
           {/* Manual Services chip input */}
           <div className="space-y-1.5">
             <Label>PHPro Services manueel</Label>
-            <StringChipInput values={manualServices} onChange={setManualServices} placeholder="Zoek service..." />
+            <StringChipInput
+              values={manualServices}
+              onChange={setManualServices}
+              placeholder="Zoek service..."
+            />
           </div>
 
           {/* Competence Centers */}

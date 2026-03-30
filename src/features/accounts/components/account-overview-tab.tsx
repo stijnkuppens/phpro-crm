@@ -34,7 +34,9 @@ export function AccountOverviewTab({ account, contract, contacts, internalPeople
           <InfoRow label="Grootte" value={account.size} />
           <InfoRow
             label="Omzet"
-            value={account.revenue ? `€${Number(account.revenue).toLocaleString('nl-BE')}` : undefined}
+            value={
+              account.revenue ? `€${Number(account.revenue).toLocaleString('nl-BE')}` : undefined
+            }
           />
           <InfoRow label="Telefoon" value={account.phone} />
           <InfoRow label="Website" value={account.website} />
@@ -45,7 +47,9 @@ export function AccountOverviewTab({ account, contract, contacts, internalPeople
           {account.about && (
             <div className="pt-2 border-t">
               <span className="text-sm font-semibold">Over</span>
-              <p className="text-sm text-muted-foreground mt-0.5 whitespace-pre-wrap">{account.about}</p>
+              <p className="text-sm text-muted-foreground mt-0.5 whitespace-pre-wrap">
+                {account.about}
+              </p>
             </div>
           )}
         </CardContent>
@@ -102,7 +106,10 @@ export function AccountOverviewTab({ account, contract, contacts, internalPeople
           <div className="flex items-center gap-2">
             <Shield className="h-4 w-4 text-muted-foreground" />
             <span className="font-medium">Raamcontract</span>
-            <Badge variant={contract?.has_framework_contract ? 'default' : 'secondary'} className="text-xs">
+            <Badge
+              variant={contract?.has_framework_contract ? 'default' : 'secondary'}
+              className="text-xs"
+            >
               {contract?.has_framework_contract ? 'Actief' : 'Nee'}
             </Badge>
           </div>
@@ -121,7 +128,10 @@ export function AccountOverviewTab({ account, contract, contacts, internalPeople
           <div className="flex items-center gap-2">
             <Shield className="h-4 w-4 text-muted-foreground" />
             <span className="font-medium">SLA</span>
-            <Badge variant={contract?.has_service_contract ? 'default' : 'secondary'} className="text-xs">
+            <Badge
+              variant={contract?.has_service_contract ? 'default' : 'secondary'}
+              className="text-xs"
+            >
               {contract?.has_service_contract ? 'Actief' : 'Nee'}
             </Badge>
           </div>
@@ -180,7 +190,9 @@ export function AccountOverviewTab({ account, contract, contacts, internalPeople
               {account.competence_centers.map((cc) => (
                 <div key={cc.id} className="flex items-center gap-3">
                   <span className="font-medium">{cc.cc.name}</span>
-                  {cc.contact_person && <span className="text-muted-foreground">{cc.contact_person}</span>}
+                  {cc.contact_person && (
+                    <span className="text-muted-foreground">{cc.contact_person}</span>
+                  )}
                 </div>
               ))}
             </div>
@@ -275,7 +287,15 @@ export function AccountOverviewTab({ account, contract, contacts, internalPeople
   );
 }
 
-function PersonRow({ label, value, person }: { label: string; value?: string | null; person?: ReferenceOption }) {
+function PersonRow({
+  label,
+  value,
+  person,
+}: {
+  label: string;
+  value?: string | null;
+  person?: ReferenceOption;
+}) {
   if (!value) return null;
   const initials = value
     .split(/\s+/)

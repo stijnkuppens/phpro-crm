@@ -13,5 +13,9 @@ export const getReferenceOptions = cache(async (table: string) => {
     .select(select)
     .eq('active', true)
     .order('sort_order', { ascending: true });
-  return (data ?? []) as { id: string; name: string; avatar_url?: string | null }[];
+  return (data ?? []) as {
+    id: string;
+    name: string;
+    avatar_url?: string | null;
+  }[];
 });

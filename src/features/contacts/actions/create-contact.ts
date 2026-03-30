@@ -9,7 +9,9 @@ import { requirePermission } from '@/lib/require-permission';
 import { createServerClient } from '@/lib/supabase/server';
 import { type ContactFormValues, contactFormSchema } from '../types';
 
-export async function createContact(values: ContactFormValues): Promise<ActionResult<{ id: string }>> {
+export async function createContact(
+  values: ContactFormValues,
+): Promise<ActionResult<{ id: string }>> {
   try {
     await requirePermission('contacts.write');
   } catch {
@@ -30,7 +32,9 @@ export async function createContact(values: ContactFormValues): Promise<ActionRe
   }
 
   // Create empty personal info record
-  const { error: personalInfoError } = await supabase.from('contact_personal_info').insert({ contact_id: data.id });
+  const { error: personalInfoError } = await supabase
+    .from('contact_personal_info')
+    .insert({ contact_id: data.id });
 
   if (personalInfoError) {
     logger.error({ err: personalInfoError }, '[createContact] personalInfo error');
@@ -41,7 +45,10 @@ export async function createContact(values: ContactFormValues): Promise<ActionRe
     action: 'contact.created',
     entityType: 'contact',
     entityId: data.id,
-    metadata: { name: `${parsed.data.first_name} ${parsed.data.last_name}`, body: parsed.data },
+    metadata: {
+      name: `${parsed.data.first_name} ${parsed.data.last_name}`,
+      body: parsed.data,
+    },
   });
 
   revalidatePath('/admin/contacts');

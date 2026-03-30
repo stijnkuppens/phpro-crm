@@ -12,14 +12,15 @@ type Props = {
 
 export default async function ContractenPage({ params }: Props) {
   const { id } = await params;
-  const [contract, hourlyRates, slaRates, indexationConfig, indexationDraft, indexationHistory] = await Promise.all([
-    getContract(id),
-    getHourlyRates(id),
-    getSlaRates(id),
-    getIndexationConfig(id),
-    getIndexationDraft(id),
-    getIndexationHistory(id),
-  ]);
+  const [contract, hourlyRates, slaRates, indexationConfig, indexationDraft, indexationHistory] =
+    await Promise.all([
+      getContract(id),
+      getHourlyRates(id),
+      getSlaRates(id),
+      getIndexationConfig(id),
+      getIndexationDraft(id),
+      getIndexationHistory(id),
+    ]);
   return (
     <ContractsTab
       accountId={id}

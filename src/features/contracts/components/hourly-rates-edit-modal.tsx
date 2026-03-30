@@ -20,7 +20,14 @@ type Props = {
   onSaved: () => void;
 };
 
-export function HourlyRatesEditModal({ accountId, year, existingRates, open, onClose, onSaved }: Props) {
+export function HourlyRatesEditModal({
+  accountId,
+  year,
+  existingRates,
+  open,
+  onClose,
+  onSaved,
+}: Props) {
   const [loading, setLoading] = useState(false);
   const [rows, setRows] = useState<RateEntry[]>(() => {
     const yearRates = existingRates.filter((r) => r.year === year);

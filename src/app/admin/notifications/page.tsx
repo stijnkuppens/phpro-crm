@@ -7,7 +7,10 @@ export default async function NotificationsPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="Meldingen" breadcrumbs={[{ label: 'Admin', href: '/admin' }, { label: 'Meldingen' }]} />
+      <PageHeader
+        title="Meldingen"
+        breadcrumbs={[{ label: 'Admin', href: '/admin' }, { label: 'Meldingen' }]}
+      />
       <NotificationList initialData={notifications} />
     </div>
   );

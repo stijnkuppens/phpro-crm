@@ -9,7 +9,9 @@ import { requirePermission } from '@/lib/require-permission';
 import { createServerClient } from '@/lib/supabase/server';
 import { type AccountFormValues, accountFormSchema } from '../types';
 
-export async function createAccount(values: AccountFormValues): Promise<ActionResult<{ id: string }>> {
+export async function createAccount(
+  values: AccountFormValues,
+): Promise<ActionResult<{ id: string }>> {
   let userId: string;
   try {
     ({ userId } = await requirePermission('accounts.write'));

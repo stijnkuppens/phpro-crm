@@ -9,6 +9,8 @@ import type { Role } from '@/types/acl';
 type AuthState = {
   user: User | null;
   role: Role | null;
+  avatarPath: string | null;
+  fullName: string | null;
   loading: boolean;
 };
 
@@ -16,6 +18,8 @@ export function useAuth() {
   const [state, setState] = useState<AuthState>({
     user: null,
     role: null,
+    avatarPath: null,
+    fullName: null,
     loading: true,
   });
 
@@ -35,17 +39,22 @@ export function useAuth() {
         // Fetch role outside the callback's synchronous flow to avoid deadlock
         supabase
           .from('user_profiles')
-          .select('role')
+          .select('role, avatar_url, full_name')
           .eq('id', session.user.id)
           .single()
           .then(({ data, error }) => {
             if (error) {
-              logger.error({ err: error, entity: 'user_profiles' }, 'Failed to fetch user role');
+              logger.error({ err: error, entity: 'user_profiles' }, 'Failed to fetch user profile');
             }
-            setState((prev) => ({ ...prev, role: (data?.role as Role) ?? null }));
+            setState((prev) => ({
+              ...prev,
+              role: (data?.role as Role) ?? null,
+              avatarPath: data?.avatar_url ?? null,
+              fullName: data?.full_name ?? null,
+            }));
           });
       } else {
-        setState({ user: null, role: null, loading: false });
+        setState({ user: null, role: null, avatarPath: null, fullName: null, loading: false });
       }
     });
 

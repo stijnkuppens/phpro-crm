@@ -49,7 +49,9 @@ export function AccountActivitiesTab({
 
     const result = await updateActivity(activity.id, values);
     if ('error' in result && result.error) {
-      setData((prev) => prev.map((a) => (a.id === activity.id ? { ...a, is_done: activity.is_done } : a)));
+      setData((prev) =>
+        prev.map((a) => (a.id === activity.id ? { ...a, is_done: activity.is_done } : a)),
+      );
       toast.error('Kon status niet bijwerken');
     }
   }
@@ -84,7 +86,10 @@ export function AccountActivitiesTab({
         onEdit={setEditTarget}
         onDelete={handleDelete}
         emptyIcon={Sparkles}
-        emptyAction={{ label: 'Nieuwe activiteit', onClick: () => setModalOpen(true) }}
+        emptyAction={{
+          label: 'Nieuwe activiteit',
+          onClick: () => setModalOpen(true),
+        }}
       />
 
       {modalOpen && (
@@ -100,7 +105,13 @@ export function AccountActivitiesTab({
       )}
 
       {editTarget && (
-        <Modal key={editTarget.id} open onClose={() => setEditTarget(null)} title="Activiteit bewerken" size="wide">
+        <Modal
+          key={editTarget.id}
+          open
+          onClose={() => setEditTarget(null)}
+          title="Activiteit bewerken"
+          size="wide"
+        >
           <ActivityForm
             defaultValues={{
               id: editTarget.id,

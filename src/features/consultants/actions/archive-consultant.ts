@@ -8,7 +8,10 @@ import { logger } from '@/lib/logger';
 import { requirePermission } from '@/lib/require-permission';
 import { createServerClient } from '@/lib/supabase/server';
 
-export async function archiveConsultant(id: string, archive: boolean = true): Promise<ActionResult> {
+export async function archiveConsultant(
+  id: string,
+  archive: boolean = true,
+): Promise<ActionResult> {
   try {
     await requirePermission('consultants.write');
   } catch {

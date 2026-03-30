@@ -64,7 +64,11 @@ export async function closeDeal(dealId: string, values: CloseDealValues): Promis
       closed_notes: parsed.data.closed_notes,
       longterm_date: parsed.data.longterm_date,
       probability:
-        parsed.data.closed_type === 'won' ? 100 : parsed.data.closed_type === 'longterm' ? stage.probability : 0,
+        parsed.data.closed_type === 'won'
+          ? 100
+          : parsed.data.closed_type === 'longterm'
+            ? stage.probability
+            : 0,
     })
     .eq('id', dealId);
 
@@ -77,7 +81,11 @@ export async function closeDeal(dealId: string, values: CloseDealValues): Promis
     action: `deal.closed.${parsed.data.closed_type}`,
     entityType: 'deal',
     entityId: dealId,
-    metadata: { closed_type: parsed.data.closed_type, reason: parsed.data.closed_reason ?? null, before: deal },
+    metadata: {
+      closed_type: parsed.data.closed_type,
+      reason: parsed.data.closed_reason ?? null,
+      before: deal,
+    },
   });
 
   revalidatePath('/admin/deals');

@@ -15,7 +15,10 @@ export const getContacts = cache(
     filters,
     page = 1,
     pageSize = 25,
-  }: GetContactsParams = {}): Promise<{ data: ContactWithDetails[]; count: number }> => {
+  }: GetContactsParams = {}): Promise<{
+    data: ContactWithDetails[];
+    count: number;
+  }> => {
     const supabase = await createServerClient();
     const from = (page - 1) * pageSize;
     const to = from + pageSize - 1;
@@ -53,6 +56,9 @@ export const getContacts = cache(
       return { data: [], count: 0 };
     }
 
-    return { data: (data as unknown as ContactWithDetails[]) ?? [], count: count ?? 0 };
+    return {
+      data: (data as unknown as ContactWithDetails[]) ?? [],
+      count: count ?? 0,
+    };
   },
 );

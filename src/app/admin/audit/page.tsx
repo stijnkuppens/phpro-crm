@@ -7,7 +7,10 @@ export default async function AuditPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="Audit Log" breadcrumbs={[{ label: 'Admin', href: '/admin' }, { label: 'Audit Log' }]} />
+      <PageHeader
+        title="Audit Log"
+        breadcrumbs={[{ label: 'Admin', href: '/admin' }, { label: 'Audit Log' }]}
+      />
       <AuditList initialData={data} initialCount={count} />
     </div>
   );

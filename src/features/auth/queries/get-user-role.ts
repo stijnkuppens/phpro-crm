@@ -10,7 +10,11 @@ export const getUserRole = cache(async () => {
   const user = await getUser();
   if (!user) return null;
   const supabase = await getServerClient();
-  const { data, error } = await supabase.from('user_profiles').select('role').eq('id', user.id).single();
+  const { data, error } = await supabase
+    .from('user_profiles')
+    .select('role')
+    .eq('id', user.id)
+    .single();
   if (error) logger.error({ err: error, entity: 'user_profiles' }, 'Failed to fetch user role');
   return data?.role ?? null;
 });

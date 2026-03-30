@@ -80,7 +80,9 @@
       "Bash(find /Users/stijnkuppens/phpro/ai-projects/phpro_crm -maxdepth 2 -name prettier* -o -name .prettierrc* -o -name biome*)",
       "Bash(npx biome:*)",
       "mcp__plugin_context7_context7__resolve-library-id",
-      "Bash(npm uninstall:*)"
+      "Bash(npm uninstall:*)",
+      "Bash(python3 -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\(json.dumps\\(d.get\\(''''nav'''',{}\\), indent=2\\)\\)\")",
+      "Bash(task db:migrate)"
     ]
   }
 }

@@ -30,7 +30,14 @@ const sizes = {
   lg: 'h-16 w-16 text-xl',
 };
 
-export function AvatarUpload({ currentPath, fallback, storagePath, onUploaded, size = 'md', round = true }: Props) {
+export function AvatarUpload({
+  currentPath,
+  fallback,
+  storagePath,
+  onUploaded,
+  size = 'md',
+  round = true,
+}: Props) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
   const [imageUrl, setImageUrl] = useState<string | null>(null);

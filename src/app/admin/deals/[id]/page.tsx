@@ -22,13 +22,14 @@ export default async function DealDetailPage({ params }: Props) {
   const { id } = await params;
   const supabase = await createServerClient();
 
-  const [deal, activitiesResult, communicationsResult, pipelines, { data: ownerRows }] = await Promise.all([
-    getDeal(id),
-    getActivities({ filters: { deal_id: id }, pageSize: 50 }),
-    getCommunications({ filters: { deal_id: id }, pageSize: 50 }),
-    getPipelines(),
-    supabase.from('user_profiles').select('id, full_name').order('full_name'),
-  ]);
+  const [deal, activitiesResult, communicationsResult, pipelines, { data: ownerRows }] =
+    await Promise.all([
+      getDeal(id),
+      getActivities({ filters: { deal_id: id }, pageSize: 50 }),
+      getCommunications({ filters: { deal_id: id }, pageSize: 50 }),
+      getPipelines(),
+      supabase.from('user_profiles').select('id, full_name').order('full_name'),
+    ]);
 
   if (!deal) {
     notFound();
@@ -60,7 +61,10 @@ export default async function DealDetailPage({ params }: Props) {
         activities={activitiesResult.data}
         communications={communicationsResult.data}
         pipelines={pipelines}
-        owners={(ownerRows ?? []).map((o) => ({ id: o.id, name: o.full_name ?? '' }))}
+        owners={(ownerRows ?? []).map((o) => ({
+          id: o.id,
+          name: o.full_name ?? '',
+        }))}
         consultant={consultant}
       />
     </div>

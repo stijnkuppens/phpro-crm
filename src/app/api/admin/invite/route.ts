@@ -21,11 +21,18 @@ export async function POST(request: Request) {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401, headers: { 'Cache-Control': 'no-store' } });
+    return NextResponse.json(
+      { error: 'Unauthorized' },
+      { status: 401, headers: { 'Cache-Control': 'no-store' } },
+    );
   }
 
   // Verify the caller is an admin
-  const { data: profile } = await supabase.from('user_profiles').select('role').eq('id', user.id).single();
+  const { data: profile } = await supabase
+    .from('user_profiles')
+    .select('role')
+    .eq('id', user.id)
+    .single();
 
   if (profile?.role !== 'admin') {
     return NextResponse.json(
@@ -36,7 +43,10 @@ export async function POST(request: Request) {
 
   const { email } = await request.json();
   if (!email || typeof email !== 'string') {
-    return NextResponse.json({ error: 'Email is required' }, { status: 400, headers: { 'Cache-Control': 'no-store' } });
+    return NextResponse.json(
+      { error: 'Email is required' },
+      { status: 400, headers: { 'Cache-Control': 'no-store' } },
+    );
   }
 
   // Use the service role client to invite

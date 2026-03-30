@@ -40,7 +40,13 @@ export const activityColumns: ColumnDef<ActivityWithRelations>[] = [
     header: 'Datum',
     cell: ({ getValue }) => {
       const d = getValue<string>();
-      return d ? new Date(d).toLocaleDateString('nl-BE', { day: '2-digit', month: 'short', year: 'numeric' }) : '';
+      return d
+        ? new Date(d).toLocaleDateString('nl-BE', {
+            day: '2-digit',
+            month: 'short',
+            year: 'numeric',
+          })
+        : '';
     },
   },
   {
@@ -58,7 +64,11 @@ export const activityColumns: ColumnDef<ActivityWithRelations>[] = [
     id: 'account',
     meta: {
       label: 'Account',
-      filter: { type: 'select', filterKey: 'account_id', placeholder: 'Alle accounts' },
+      filter: {
+        type: 'select',
+        filterKey: 'account_id',
+        placeholder: 'Alle accounts',
+      },
     },
     header: 'Account',
   },

@@ -22,7 +22,10 @@ export function AccountSearchField() {
     <div className="space-y-1.5">
       <Label>Account *</Label>
       <ComboboxFilter
-        options={meta.accountOptions.map((a) => ({ value: a.id, label: a.name }))}
+        options={meta.accountOptions.map((a) => ({
+          value: a.id,
+          label: a.name,
+        }))}
         value={state.selectedAccountId || 'all'}
         onValueChange={(v) => {
           const id = v === 'all' ? '' : v;

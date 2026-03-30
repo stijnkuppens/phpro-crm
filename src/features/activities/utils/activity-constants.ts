@@ -1,6 +1,21 @@
-import { Calendar, type LucideIcon, Mail, Monitor, PartyPopper, Phone, UtensilsCrossed } from 'lucide-react';
+import {
+  Calendar,
+  type LucideIcon,
+  Mail,
+  Monitor,
+  PartyPopper,
+  Phone,
+  UtensilsCrossed,
+} from 'lucide-react';
 
-export const GROUP_ORDER = ['Vandaag', 'Morgen', 'Deze week', 'Later', 'Verstreken', 'Gedaan'] as const;
+export const GROUP_ORDER = [
+  'Vandaag',
+  'Morgen',
+  'Deze week',
+  'Later',
+  'Verstreken',
+  'Gedaan',
+] as const;
 
 export const GROUP_COLORS: Record<string, string> = {
   Vandaag: 'text-primary-action',

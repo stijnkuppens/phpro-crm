@@ -9,7 +9,10 @@ import { getAccountFilterOptions } from '@/features/accounts/queries/get-account
 import { getAccounts } from '@/features/accounts/queries/get-accounts';
 
 export default async function AccountsPage() {
-  const [{ data, count }, filterOptions] = await Promise.all([getAccounts(), getAccountFilterOptions()]);
+  const [{ data, count }, filterOptions] = await Promise.all([
+    getAccounts(),
+    getAccountFilterOptions(),
+  ]);
 
   return (
     <div className="space-y-6">

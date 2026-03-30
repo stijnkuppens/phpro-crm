@@ -43,7 +43,11 @@ export function RefChipInput({ selectedIds, onChange, options, placeholder }: Pr
         {selectedIds.map((id, i) => (
           <Badge key={id} variant="secondary" className="gap-1 pr-1">
             {selectedNames[i]}
-            <button type="button" onClick={() => remove(id)} className="ml-0.5 hover:text-destructive">
+            <button
+              type="button"
+              onClick={() => remove(id)}
+              className="ml-0.5 hover:text-destructive"
+            >
               <X className="h-3 w-3" />
             </button>
           </Badge>

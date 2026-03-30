@@ -28,7 +28,11 @@ export function DateRangePicker({
         render={
           <Button
             variant="outline"
-            className={cn('justify-start text-left font-normal', !value?.from && 'text-muted-foreground', className)}
+            className={cn(
+              'justify-start text-left font-normal',
+              !value?.from && 'text-muted-foreground',
+              className,
+            )}
           >
             <CalendarIcon className="mr-2 h-4 w-4" />
             {value?.from ? (
@@ -47,7 +51,13 @@ export function DateRangePicker({
         }
       />
       <PopoverContent className="w-auto p-0" align="start">
-        <Calendar mode="range" selected={value} onSelect={onChange} numberOfMonths={2} locale={nlBE} />
+        <Calendar
+          mode="range"
+          selected={value}
+          onSelect={onChange}
+          numberOfMonths={2}
+          locale={nlBE}
+        />
       </PopoverContent>
     </Popover>
   );

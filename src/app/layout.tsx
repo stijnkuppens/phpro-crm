@@ -26,9 +26,19 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   const brandTheme = cookieStore.get('brand-theme')?.value ?? 'phpro';
 
   return (
-    <html lang={locale} className={cn('font-sans', geist.variable)} data-brand={brandTheme} suppressHydrationWarning>
+    <html
+      lang={locale}
+      className={cn('font-sans', geist.variable)}
+      data-brand={brandTheme}
+      suppressHydrationWarning
+    >
       <body>
-        <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
           <NextIntlClientProvider messages={messages}>
             <NuqsAdapter>{children}</NuqsAdapter>
             <Toaster />

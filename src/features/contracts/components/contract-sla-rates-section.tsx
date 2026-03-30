@@ -13,7 +13,11 @@ type Props = {
   slaVisibleYears: number[];
   currentYear: number;
   getSlaState: (year: number) => SlaYearState;
-  updateSlaField: (year: number, field: 'fixed_monthly_rate' | 'support_hourly_rate', value: string) => void;
+  updateSlaField: (
+    year: number,
+    field: 'fixed_monthly_rate' | 'support_hourly_rate',
+    value: string,
+  ) => void;
   addSlaTool: (year: number) => void;
   removeSlaTool: (year: number, index: number) => void;
   updateSlaTool: (year: number, index: number, field: keyof ToolEntry, value: string) => void;
@@ -33,7 +37,9 @@ export function ContractSlaRatesSection({
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between px-1">
-        <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">SLA Tarieven</h2>
+        <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+          SLA Tarieven
+        </h2>
         <div className="flex items-center gap-2">
           <Button variant="ghost" size="icon-sm" onClick={() => setSlaWindowStart((y) => y + 1)}>
             <ChevronLeft />
@@ -93,7 +99,12 @@ export function ContractSlaRatesSection({
               <div className="space-y-2 border-t pt-3">
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-medium text-muted-foreground">Tools & Modules</span>
-                  <Button type="button" variant="outline" size="xs" onClick={() => addSlaTool(year)}>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="xs"
+                    onClick={() => addSlaTool(year)}
+                  >
                     <Plus /> Tool
                   </Button>
                 </div>

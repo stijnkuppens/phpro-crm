@@ -27,6 +27,12 @@ export default async function ConsultantsPage() {
   }));
 
   return (
-    <ConsultantListView initialData={firstPage} initialCount={count} stats={stats} roles={roles} accounts={accounts} />
+    <ConsultantListView
+      initialData={firstPage}
+      initialCount={count}
+      stats={stats}
+      roles={roles}
+      accounts={accounts}
+    />
   );
 }

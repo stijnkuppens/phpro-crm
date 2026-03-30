@@ -7,7 +7,9 @@ import type { Permission, Role } from '@/types/acl';
  * Reads the current user session and checks the permission.
  * Throws if denied. Returns user context for use in the action.
  */
-export async function requirePermission(permission: Permission): Promise<{ userId: string; role: Role }> {
+export async function requirePermission(
+  permission: Permission,
+): Promise<{ userId: string; role: Role }> {
   const supabase = await createServerClient();
   const {
     data: { user },

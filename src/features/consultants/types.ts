@@ -9,7 +9,8 @@ export type Consultant = Database['public']['Tables']['consultants']['Row'];
 export type ConsultantLanguage = Database['public']['Tables']['consultant_languages']['Row'];
 export type ConsultantRateHistory = Database['public']['Tables']['consultant_rate_history']['Row'];
 export type ConsultantExtension = Database['public']['Tables']['consultant_extensions']['Row'];
-export type ConsultantContractAttribution = Database['public']['Tables']['consultant_contract_attributions']['Row'];
+export type ConsultantContractAttribution =
+  Database['public']['Tables']['consultant_contract_attributions']['Row'];
 
 export type ConsultantStatus = Consultant['status']; // 'bench' | 'actief' | 'stopgezet'
 
@@ -33,7 +34,13 @@ export type ConsultantWithDetails = Consultant & {
 // Contract status helpers
 // ---------------------------------------------------------------------------
 
-export type ContractStatus = 'stopgezet' | 'onbepaald' | 'verlopen' | 'kritiek' | 'waarschuwing' | 'actief';
+export type ContractStatus =
+  | 'stopgezet'
+  | 'onbepaald'
+  | 'verlopen'
+  | 'kritiek'
+  | 'waarschuwing'
+  | 'actief';
 
 export const contractStatusColors: Record<ContractStatus, string> = {
   actief: 'bg-green-100 text-green-800',

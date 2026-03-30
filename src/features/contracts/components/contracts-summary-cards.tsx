@@ -99,7 +99,8 @@ export function ContractsSummaryCards({ contract, indexationConfig }: Props) {
                     className="inline-flex items-center gap-1.5 text-xs text-primary-action hover:underline cursor-pointer"
                   >
                     <Download className="h-3 w-3" />
-                    {contract.framework_doc_path.split('/').pop()?.replace(/^\d+_/, '') ?? 'Document'}
+                    {contract.framework_doc_path.split('/').pop()?.replace(/^\d+_/, '') ??
+                      'Document'}
                   </button>
                 )}
                 {contract.framework_pdf_url && (

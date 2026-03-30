@@ -54,7 +54,11 @@ export type AccountWithRelations = Account & {
 };
 
 // ── Reference data type (passed as props to form) ───────────────────────────
-export type ReferenceOption = { id: string; name: string; avatar_url?: string | null };
+export type ReferenceOption = {
+  id: string;
+  name: string;
+  avatar_url?: string | null;
+};
 
 export type AccountReferenceData = {
   technologies: ReferenceOption[];

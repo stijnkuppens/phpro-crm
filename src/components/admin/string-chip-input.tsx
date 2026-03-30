@@ -33,7 +33,11 @@ export function StringChipInput({ values, onChange, placeholder }: Props) {
         {values.map((v) => (
           <Badge key={v} variant="secondary" className="gap-1 pr-1">
             {v}
-            <button type="button" onClick={() => remove(v)} className="ml-0.5 hover:text-destructive">
+            <button
+              type="button"
+              onClick={() => remove(v)}
+              className="ml-0.5 hover:text-destructive"
+            >
               <X className="h-3 w-3" />
             </button>
           </Badge>

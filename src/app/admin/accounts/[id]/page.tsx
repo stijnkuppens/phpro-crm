@@ -28,7 +28,12 @@ export default async function AccountOverviewPage({ params }: Props) {
           <Pencil /> Bewerken
         </Button>
       </div>
-      <AccountOverviewTab account={account} contract={contract} contacts={contacts} internalPeople={internalPeople} />
+      <AccountOverviewTab
+        account={account}
+        contract={contract}
+        contacts={contacts}
+        internalPeople={internalPeople}
+      />
     </>
   );
 }

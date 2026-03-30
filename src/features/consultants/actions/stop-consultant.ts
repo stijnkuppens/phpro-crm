@@ -13,7 +13,10 @@ const stopSchema = z.object({
   stop_reason: z.string().optional(),
 });
 
-export async function stopConsultant(id: string, values: z.infer<typeof stopSchema>): Promise<ActionResult> {
+export async function stopConsultant(
+  id: string,
+  values: z.infer<typeof stopSchema>,
+): Promise<ActionResult> {
   try {
     await requirePermission('consultants.write');
   } catch {
@@ -46,7 +49,11 @@ export async function stopConsultant(id: string, values: z.infer<typeof stopSche
     action: 'consultant.stopped',
     entityType: 'consultant',
     entityId: id,
-    metadata: { stop_date: parsed.data.stop_date, stop_reason: parsed.data.stop_reason ?? null, before },
+    metadata: {
+      stop_date: parsed.data.stop_date,
+      stop_reason: parsed.data.stop_reason ?? null,
+      before,
+    },
   });
 
   revalidatePath('/admin/consultants');

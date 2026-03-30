@@ -22,7 +22,11 @@ export default function FileUpload({
   maxSize = 5 * 1024 * 1024,
   onUpload,
 }: FileUploadProps) {
-  const { uploadMany, uploading, progress } = useFileUpload({ bucket, pathPrefix: currentPath, onUpload });
+  const { uploadMany, uploading, progress } = useFileUpload({
+    bucket,
+    pathPrefix: currentPath,
+    onUpload,
+  });
   const [dragOver, setDragOver] = useState(false);
 
   const handleFiles = useCallback(

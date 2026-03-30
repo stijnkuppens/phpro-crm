@@ -64,12 +64,19 @@ export function AccountContactsTab({ accountId, initialData, initialCount }: Pro
         loading={loading}
         refreshing={refreshing}
         rowActions={(row) => [
-          { icon: SquarePen, label: 'Bewerken', onClick: () => setEditId(row.id) },
+          {
+            icon: SquarePen,
+            label: 'Bewerken',
+            onClick: () => setEditId(row.id),
+          },
           {
             icon: Trash2,
             label: 'Verwijderen',
             variant: 'destructive' as const,
-            confirm: { title: 'Contact verwijderen?', description: 'Dit verwijdert het contact permanent.' },
+            confirm: {
+              title: 'Contact verwijderen?',
+              description: 'Dit verwijdert het contact permanent.',
+            },
             onClick: () => handleDelete(row.id),
           },
         ]}
@@ -84,7 +91,9 @@ export function AccountContactsTab({ accountId, initialData, initialCount }: Pro
                   <span className="truncate font-medium text-sm">{name}</span>
                   {row.is_steerco && <StatusBadge positive>Steerco</StatusBadge>}
                 </div>
-                {row.title && <div className="truncate text-xs text-muted-foreground">{row.title}</div>}
+                {row.title && (
+                  <div className="truncate text-xs text-muted-foreground">{row.title}</div>
+                )}
                 {row.email && (
                   <div className="flex items-center gap-1 text-xs text-muted-foreground mt-0.5">
                     <Mail className="h-3 w-3" />

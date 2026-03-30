@@ -74,7 +74,12 @@ type DataTableFiltersProps<T> = {
   filterOptions?: Record<string, FilterOption[]>;
 };
 
-export function DataTableFilters<T>({ columns, filters, onFilterChange, filterOptions }: DataTableFiltersProps<T>) {
+export function DataTableFilters<T>({
+  columns,
+  filters,
+  onFilterChange,
+  filterOptions,
+}: DataTableFiltersProps<T>) {
   const isMobile = useIsMobile();
   const [filtersExpanded, setFiltersExpanded] = useState(false);
 
@@ -138,7 +143,9 @@ export function DataTableFilters<T>({ columns, filters, onFilterChange, filterOp
             type="button"
             onClick={() => onFilterChange({ ...filters, [key]: undefined })}
             className={`shrink-0 px-3 py-1 text-xs font-medium rounded-full transition-colors ${
-              !active ? 'bg-primary text-primary-foreground' : 'bg-muted/50 text-muted-foreground hover:bg-muted'
+              !active
+                ? 'bg-primary text-primary-foreground'
+                : 'bg-muted/50 text-muted-foreground hover:bg-muted'
             }`}
           >
             {meta.allLabel ?? 'Alle'}
@@ -147,7 +154,12 @@ export function DataTableFilters<T>({ columns, filters, onFilterChange, filterOp
             <button
               key={opt.value}
               type="button"
-              onClick={() => onFilterChange({ ...filters, [key]: active === opt.value ? undefined : opt.value })}
+              onClick={() =>
+                onFilterChange({
+                  ...filters,
+                  [key]: active === opt.value ? undefined : opt.value,
+                })
+              }
               className={`shrink-0 px-3 py-1 text-xs font-medium rounded-full transition-colors ${
                 active === opt.value
                   ? 'bg-primary text-primary-foreground'
@@ -173,7 +185,11 @@ export function DataTableFilters<T>({ columns, filters, onFilterChange, filterOp
             className="shrink-0"
             onClick={() => setFiltersExpanded(!filtersExpanded)}
           >
-            {filtersExpanded ? <X className="h-4 w-4" /> : <SlidersHorizontal className="h-4 w-4" />}
+            {filtersExpanded ? (
+              <X className="h-4 w-4" />
+            ) : (
+              <SlidersHorizontal className="h-4 w-4" />
+            )}
             {!filtersExpanded && activeFilterCount > 0 && (
               <span className="ml-1 flex h-4 w-4 items-center justify-center rounded-full bg-primary-foreground text-primary text-[10px] font-bold">
                 {activeFilterCount}
@@ -205,7 +221,10 @@ export function DataTableFilters<T>({ columns, filters, onFilterChange, filterOp
  * Converts filter state + column meta into Supabase-compatible query params.
  * Use in list components to build orFilter/eqFilters for fetchList().
  */
-export function buildFilterQuery<T>(columns: ColumnDef<T>[], filters: Record<string, string | undefined>) {
+export function buildFilterQuery<T>(
+  columns: ColumnDef<T>[],
+  filters: Record<string, string | undefined>,
+) {
   let orFilter: string | undefined;
   const eqFilters: Record<string, string> = {};
 

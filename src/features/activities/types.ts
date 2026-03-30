@@ -16,7 +16,15 @@ export type ActivityWithRelations = Activity & {
   assignee: { id: string; full_name: string | null } | null;
 };
 
-export const ACTIVITY_TYPES = ['Meeting', 'Demo', 'Call', 'E-mail', 'Lunch', 'Event', 'Taak'] as const;
+export const ACTIVITY_TYPES = [
+  'Meeting',
+  'Demo',
+  'Call',
+  'E-mail',
+  'Lunch',
+  'Event',
+  'Taak',
+] as const;
 export type ActivityType = (typeof ACTIVITY_TYPES)[number];
 
 export const activityFormSchema = z.object({

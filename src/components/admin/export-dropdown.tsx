@@ -20,7 +20,9 @@ export function ExportDropdown({ entity, columns, filters = {} }: ExportDropdown
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [selectedKeys, setSelectedKeys] = useState<Set<string>>(() => new Set(columns.map((c) => c.key)));
+  const [selectedKeys, setSelectedKeys] = useState<Set<string>>(
+    () => new Set(columns.map((c) => c.key)),
+  );
 
   const toggleColumn = (key: string) => {
     setSelectedKeys((prev) => {
@@ -96,7 +98,11 @@ export function ExportDropdown({ entity, columns, filters = {} }: ExportDropdown
             <div>
               <div className="mb-2 flex items-center justify-between">
                 <span className="text-sm font-medium">Kolommen</span>
-                <button type="button" onClick={toggleAll} className="text-xs text-primary-action hover:underline">
+                <button
+                  type="button"
+                  onClick={toggleAll}
+                  className="text-xs text-primary-action hover:underline"
+                >
                   {selectedKeys.size === columns.length ? 'Geen selecteren' : 'Alles selecteren'}
                 </button>
               </div>
@@ -104,7 +110,10 @@ export function ExportDropdown({ entity, columns, filters = {} }: ExportDropdown
                 {columns.map((col) => (
                   // biome-ignore lint/a11y/noLabelWithoutControl: label wraps Checkbox which renders its own input
                   <label key={col.key} className="flex cursor-pointer items-center gap-2 text-sm">
-                    <Checkbox checked={selectedKeys.has(col.key)} onCheckedChange={() => toggleColumn(col.key)} />
+                    <Checkbox
+                      checked={selectedKeys.has(col.key)}
+                      onCheckedChange={() => toggleColumn(col.key)}
+                    />
                     {col.label}
                   </label>
                 ))}

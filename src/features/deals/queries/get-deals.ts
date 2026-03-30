@@ -15,7 +15,10 @@ export const getDeals = cache(
     filters,
     page = 1,
     pageSize = 50,
-  }: GetDealsParams = {}): Promise<{ data: DealWithRelations[]; count: number }> => {
+  }: GetDealsParams = {}): Promise<{
+    data: DealWithRelations[];
+    count: number;
+  }> => {
     const supabase = await createServerClient();
     const from = (page - 1) * pageSize;
     const to = from + pageSize - 1;
@@ -49,7 +52,10 @@ export const getDeals = cache(
       query = query.eq('owner_id', filters.owner_id);
     }
     if (filters?.forecast_category) {
-      query = query.eq('forecast_category', filters.forecast_category as 'Commit' | 'Best Case' | 'Pipeline' | 'Omit');
+      query = query.eq(
+        'forecast_category',
+        filters.forecast_category as 'Commit' | 'Best Case' | 'Pipeline' | 'Omit',
+      );
     }
     if (filters?.origin) {
       query = query.eq('origin', filters.origin as 'rechtstreeks' | 'cronos');
@@ -67,6 +73,9 @@ export const getDeals = cache(
       return { data: [], count: 0 };
     }
 
-    return { data: (data as unknown as DealWithRelations[]) ?? [], count: count ?? 0 };
+    return {
+      data: (data as unknown as DealWithRelations[]) ?? [],
+      count: count ?? 0,
+    };
   },
 );

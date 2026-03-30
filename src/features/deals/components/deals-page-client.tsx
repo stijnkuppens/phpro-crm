@@ -16,9 +16,12 @@ import { dealExportColumns } from '../export-columns';
 import { DealKanban } from './deal-kanban';
 import { DealList } from './deal-list';
 
-const DealEditModal = dynamic(() => import('./deal-edit-modal').then((m) => ({ default: m.DealEditModal })), {
-  ssr: false,
-});
+const DealEditModal = dynamic(
+  () => import('./deal-edit-modal').then((m) => ({ default: m.DealEditModal })),
+  {
+    ssr: false,
+  },
+);
 
 import type { DealCard, DealWithRelations, Pipeline } from '../types';
 
@@ -36,8 +39,16 @@ type Props = {
   accounts: { id: string; name: string }[];
 };
 
-export function DealsPageClient({ pipelines, initialDeals, initialCount, owners, accounts }: Props) {
-  const [viewMode, setViewMode] = useQueryState('view', { defaultValue: 'list' });
+export function DealsPageClient({
+  pipelines,
+  initialDeals,
+  initialCount,
+  owners,
+  accounts,
+}: Props) {
+  const [viewMode, setViewMode] = useQueryState('view', {
+    defaultValue: 'list',
+  });
   const [filters, setFilters] = useState<Record<string, string | undefined>>({});
   const [page, setPage] = useQueryState('page', parseAsInteger.withDefault(1));
   const [showQuickDeal, setShowQuickDeal] = useState(false);
@@ -54,10 +65,15 @@ export function DealsPageClient({ pipelines, initialDeals, initialCount, owners,
 
   // Build filter options from pipelines + current data
   const filterOptions = useMemo<Record<string, FilterOption[]>>(() => {
-    const pipelineOpts: FilterOption[] = pipelines.map((p) => ({ value: p.id, label: p.name }));
+    const pipelineOpts: FilterOption[] = pipelines.map((p) => ({
+      value: p.id,
+      label: p.name,
+    }));
 
     const activePipelineId = filters.pipeline_id;
-    const relevantPipelines = activePipelineId ? pipelines.filter((p) => p.id === activePipelineId) : pipelines;
+    const relevantPipelines = activePipelineId
+      ? pipelines.filter((p) => p.id === activePipelineId)
+      : pipelines;
     const stageOpts: FilterOption[] = relevantPipelines
       .flatMap((p) => p.stages)
       .filter((s) => !s.is_closed)
@@ -67,13 +83,18 @@ export function DealsPageClient({ pipelines, initialDeals, initialCount, owners,
     for (const d of data) {
       if (d.owner?.id && d.owner.full_name) ownerMap.set(d.owner.id, d.owner.full_name);
     }
-    const ownerOpts: FilterOption[] = [...ownerMap.entries()].map(([id, name]) => ({ value: id, label: name }));
+    const ownerOpts: FilterOption[] = [...ownerMap.entries()].map(([id, name]) => ({
+      value: id,
+      label: name,
+    }));
 
     const leadSources = new Set<string>();
     for (const d of data) {
       if (d.lead_source) leadSources.add(d.lead_source);
     }
-    const leadSourceOpts: FilterOption[] = [...leadSources].sort().map((s) => ({ value: s, label: s }));
+    const leadSourceOpts: FilterOption[] = [...leadSources]
+      .sort()
+      .map((s) => ({ value: s, label: s }));
 
     return {
       pipeline_id: pipelineOpts,

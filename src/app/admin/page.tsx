@@ -8,7 +8,11 @@ export default async function DashboardPage() {
 
   const [stats, activitiesResult] = await Promise.all([
     getDashboardStats(),
-    supabase.from('activities').select('id, type, subject, date').order('date', { ascending: false }).limit(5),
+    supabase
+      .from('activities')
+      .select('id, type, subject, date')
+      .order('date', { ascending: false })
+      .limit(5),
   ]);
 
   return (

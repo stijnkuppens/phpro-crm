@@ -28,7 +28,11 @@ export function InviteForm() {
     const email = formData.get('email') as string;
     const fullName = formData.get('fullName') as string;
 
-    const result = await inviteUser({ email, fullName, role: role as (typeof roles)[number] });
+    const result = await inviteUser({
+      email,
+      fullName,
+      role: role as (typeof roles)[number],
+    });
     if (result.error) {
       toast.error(typeof result.error === 'string' ? result.error : 'Uitnodiging mislukt');
       return null;

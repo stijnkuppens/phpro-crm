@@ -9,7 +9,10 @@ import { logger } from '@/lib/logger';
 import { requirePermission } from '@/lib/require-permission';
 import { createServerClient } from '@/lib/supabase/server';
 
-function sanitizeValues(table: AccountSubTable, values: Record<string, unknown>): Record<string, unknown> {
+function sanitizeValues(
+  table: AccountSubTable,
+  values: Record<string, unknown>,
+): Record<string, unknown> {
   const allowed = ALLOWED_RELATION_COLUMNS[table];
   const sanitized: Record<string, unknown> = {};
   for (const key of allowed) {
@@ -37,7 +40,10 @@ export async function addAccountRelation(
   // account_cc_services has no account_id column; other tables do
   const insertValues = table === 'account_cc_services' ? safe : { ...safe, account_id: accountId };
   // biome-ignore lint/suspicious/noExplicitAny: dynamic table name returns union type that cannot be narrowed
-  const { data, error } = await (supabase.from(table) as any).insert(insertValues).select('id').single();
+  const { data, error } = await (supabase.from(table) as any)
+    .insert(insertValues)
+    .select('id')
+    .single();
 
   if (error) {
     logger.error({ err: error }, '[addAccountRelation] database error');
@@ -77,7 +83,10 @@ export async function updateAccountRelation(
   return ok();
 }
 
-export async function deleteAccountRelation(table: AccountSubTable, id: string): Promise<ActionResult> {
+export async function deleteAccountRelation(
+  table: AccountSubTable,
+  id: string,
+): Promise<ActionResult> {
   try {
     await requirePermission('accounts.write');
   } catch {
@@ -108,7 +117,11 @@ export async function deleteAccountRelation(table: AccountSubTable, id: string):
  */
 export async function syncAccountFKRelation(
   accountId: string,
-  table: 'account_tech_stacks' | 'account_samenwerkingsvormen' | 'account_services' | 'account_manual_services',
+  table:
+    | 'account_tech_stacks'
+    | 'account_samenwerkingsvormen'
+    | 'account_services'
+    | 'account_manual_services',
   field: string,
   values: string[],
 ): Promise<ActionResult> {
@@ -120,7 +133,9 @@ export async function syncAccountFKRelation(
 
   const supabase = await createServerClient();
   // biome-ignore lint/suspicious/noExplicitAny: dynamic table name returns union type that cannot be narrowed
-  const { data: before } = await (supabase.from(table) as any).select('*').eq('account_id', accountId);
+  const { data: before } = await (supabase.from(table) as any)
+    .select('*')
+    .eq('account_id', accountId);
   const rows = values.map((v) => ({ account_id: accountId, [field]: v }));
   const { error } = await supabase.rpc('sync_account_fk_relation', {
     p_account_id: accountId,
@@ -136,7 +151,12 @@ export async function syncAccountFKRelation(
   await logAction({
     action: `${table}.synced`,
     entityType: table,
-    metadata: { account_id: accountId, count: values.length, before, after: rows },
+    metadata: {
+      account_id: accountId,
+      count: values.length,
+      before,
+      after: rows,
+    },
   });
 
   revalidatePath('/admin/accounts');

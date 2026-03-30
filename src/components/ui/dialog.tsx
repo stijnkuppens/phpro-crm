@@ -70,7 +70,9 @@ function DialogContent({
 }
 
 function DialogHeader({ className, ...props }: React.ComponentProps<'div'>) {
-  return <div data-slot="dialog-header" className={cn('flex flex-col gap-2', className)} {...props} />;
+  return (
+    <div data-slot="dialog-header" className={cn('flex flex-col gap-2', className)} {...props} />
+  );
 }
 
 function DialogFooter({
@@ -91,7 +93,9 @@ function DialogFooter({
       {...props}
     >
       {children}
-      {showCloseButton && <DialogPrimitive.Close render={<Button variant="outline" />}>Close</DialogPrimitive.Close>}
+      {showCloseButton && (
+        <DialogPrimitive.Close render={<Button variant="outline" />}>Close</DialogPrimitive.Close>
+      )}
     </div>
   );
 }

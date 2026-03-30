@@ -1,5 +1,8 @@
 // Module-level formatter instances — constructed once, reused everywhere.
-const currencyFormatter = new Intl.NumberFormat('nl-BE', { style: 'currency', currency: 'EUR' });
+const currencyFormatter = new Intl.NumberFormat('nl-BE', {
+  style: 'currency',
+  currency: 'EUR',
+});
 const eurFormatter = new Intl.NumberFormat('nl-BE', {
   style: 'currency',
   currency: 'EUR',
@@ -49,7 +52,10 @@ export function formatDate(date: string | Date): string {
 
 /** Format a datetime as DD/MM/YYYY HH:mm */
 export function formatDateTime(date: string | Date): string {
-  return new Intl.DateTimeFormat('nl-BE', { dateStyle: 'short', timeStyle: 'short' }).format(new Date(date));
+  return new Intl.DateTimeFormat('nl-BE', {
+    dateStyle: 'short',
+    timeStyle: 'short',
+  }).format(new Date(date));
 }
 
 /** Days between now and a target date (negative = past) */

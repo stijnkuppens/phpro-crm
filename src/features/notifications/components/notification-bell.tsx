@@ -79,9 +79,13 @@ export function NotificationBell() {
     async (notification: Notification) => {
       if (!notification.read) {
         await markAsRead(notification.id);
-        setNotifications((prev) => prev.map((n) => (n.id === notification.id ? { ...n, read: true } : n)));
+        setNotifications((prev) =>
+          prev.map((n) => (n.id === notification.id ? { ...n, read: true } : n)),
+        );
       }
-      const link = (notification.metadata as Record<string, unknown> | null)?.link as string | undefined;
+      const link = (notification.metadata as Record<string, unknown> | null)?.link as
+        | string
+        | undefined;
       if (link) {
         router.push(link);
       }
@@ -101,7 +105,9 @@ export function NotificationBell() {
           <Button variant="ghost" size="sm" className="relative h-8 w-8">
             <Bell className="h-4 w-4" />
             {unreadCount > 0 && (
-              <Badge className="absolute -right-1 -top-1 h-4 w-4 rounded-full p-0 text-[10px]">{unreadCount}</Badge>
+              <Badge className="absolute -right-1 -top-1 h-4 w-4 rounded-full p-0 text-[10px]">
+                {unreadCount}
+              </Badge>
             )}
           </Button>
         }
@@ -111,7 +117,12 @@ export function NotificationBell() {
           <DropdownMenuLabel className="flex items-center justify-between">
             Meldingen
             {unreadCount > 0 && (
-              <Button variant="ghost" size="sm" className="h-auto p-0 text-xs" onClick={handleMarkAllRead}>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-auto p-0 text-xs"
+                onClick={handleMarkAllRead}
+              >
                 Alles gelezen
               </Button>
             )}
@@ -122,7 +133,11 @@ export function NotificationBell() {
           <div className="p-4 text-center text-sm text-muted-foreground">Geen meldingen</div>
         ) : (
           notifications.slice(0, 5).map((n) => (
-            <DropdownMenuItem key={n.id} onClick={() => handleClick(n)} className="flex flex-col items-start gap-1 p-3">
+            <DropdownMenuItem
+              key={n.id}
+              onClick={() => handleClick(n)}
+              className="flex flex-col items-start gap-1 p-3"
+            >
               <span className={n.read ? 'text-muted-foreground' : 'font-medium'}>{n.title}</span>
               {n.message && <span className="text-xs text-muted-foreground">{n.message}</span>}
               <span className="text-xs text-muted-foreground">
@@ -134,7 +149,10 @@ export function NotificationBell() {
         {notifications.length > 5 && (
           <>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={() => router.push('/admin/notifications')} className="justify-center text-sm">
+            <DropdownMenuItem
+              onClick={() => router.push('/admin/notifications')}
+              className="justify-center text-sm"
+            >
               Alle meldingen bekijken
             </DropdownMenuItem>
           </>

@@ -3,7 +3,13 @@
 import { FormSectionHeading } from '@/components/admin/form-section-heading';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import type { AccountFormValues } from '@/features/accounts/types';
 import { formatNumber } from '@/lib/format';
@@ -31,7 +37,12 @@ export function AccountFormCompanySection({ defaultValues }: Props) {
 
       <div className="space-y-1.5">
         <Label htmlFor="domain">Domein</Label>
-        <Input id="domain" name="domain" defaultValue={defaultValues?.domain ?? ''} placeholder="bv. bedrijf.be" />
+        <Input
+          id="domain"
+          name="domain"
+          defaultValue={defaultValues?.domain ?? ''}
+          placeholder="bv. bedrijf.be"
+        />
       </div>
 
       <div className="grid grid-cols-2 gap-4">
@@ -91,17 +102,22 @@ export function AccountFormCompanySection({ defaultValues }: Props) {
         <div className="space-y-1.5">
           <Label htmlFor="revenue_display">Omzet</Label>
           <div className="relative">
-            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">€</span>
+            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">
+              €
+            </span>
             <Input
               id="revenue_display"
               type="text"
               inputMode="numeric"
-              defaultValue={defaultValues?.revenue ? formatNumber(Number(defaultValues.revenue)) : ''}
+              defaultValue={
+                defaultValues?.revenue ? formatNumber(Number(defaultValues.revenue)) : ''
+              }
               placeholder="bv. 1.000.000"
               className="pl-7"
               onChange={(e) => {
                 const raw = e.target.value.replace(/\D/g, '');
-                const hidden = e.target.form?.querySelector<HTMLInputElement>('input[name="revenue"]');
+                const hidden =
+                  e.target.form?.querySelector<HTMLInputElement>('input[name="revenue"]');
                 if (hidden) hidden.value = raw;
                 if (raw) {
                   e.target.value = formatNumber(Number(raw));
@@ -115,12 +131,22 @@ export function AccountFormCompanySection({ defaultValues }: Props) {
 
       <div className="space-y-1.5">
         <Label htmlFor="phone">Telefoon</Label>
-        <Input id="phone" name="phone" defaultValue={defaultValues?.phone ?? ''} placeholder="+32 ..." />
+        <Input
+          id="phone"
+          name="phone"
+          defaultValue={defaultValues?.phone ?? ''}
+          placeholder="+32 ..."
+        />
       </div>
 
       <div className="space-y-1.5">
         <Label htmlFor="website">Website</Label>
-        <Input id="website" name="website" defaultValue={defaultValues?.website ?? ''} placeholder="www.bedrijf.be" />
+        <Input
+          id="website"
+          name="website"
+          defaultValue={defaultValues?.website ?? ''}
+          placeholder="www.bedrijf.be"
+        />
       </div>
 
       <div className="space-y-1.5">

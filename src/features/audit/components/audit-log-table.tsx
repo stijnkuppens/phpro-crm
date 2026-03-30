@@ -26,7 +26,14 @@ type AuditLogTableProps = {
   filterBar?: React.ReactNode;
 };
 
-export function AuditLogTable({ data, pagination, onPageChange, loading, refreshing, filterBar }: AuditLogTableProps) {
+export function AuditLogTable({
+  data,
+  pagination,
+  onPageChange,
+  loading,
+  refreshing,
+  filterBar,
+}: AuditLogTableProps) {
   const [selectedLog, setSelectedLog] = useState<AuditLog | null>(null);
 
   const columns: ColumnDef<AuditLog>[] = [
@@ -36,7 +43,9 @@ export function AuditLogTable({ data, pagination, onPageChange, loading, refresh
       meta: { label: 'Tijdstip' },
       header: 'Timestamp',
       cell: ({ row }) => (
-        <span className="whitespace-nowrap text-muted-foreground">{formatTimestamp(row.original.created_at)}</span>
+        <span className="whitespace-nowrap text-muted-foreground">
+          {formatTimestamp(row.original.created_at)}
+        </span>
       ),
     },
     {
@@ -44,7 +53,9 @@ export function AuditLogTable({ data, pagination, onPageChange, loading, refresh
       id: 'user_id',
       meta: { label: 'Gebruiker' },
       header: 'User',
-      cell: ({ row }) => <span className="font-mono text-xs">{row.original.user_id?.slice(0, 8) ?? 'system'}</span>,
+      cell: ({ row }) => (
+        <span className="font-mono text-xs">{row.original.user_id?.slice(0, 8) ?? 'system'}</span>
+      ),
     },
     {
       accessorKey: 'action',
@@ -65,7 +76,9 @@ export function AuditLogTable({ data, pagination, onPageChange, loading, refresh
       id: 'entity_id',
       meta: { label: 'Entiteit ID' },
       header: 'Entity ID',
-      cell: ({ row }) => <span className="font-mono text-xs">{row.original.entity_id?.slice(0, 8) ?? '\u2014'}</span>,
+      cell: ({ row }) => (
+        <span className="font-mono text-xs">{row.original.entity_id?.slice(0, 8) ?? '\u2014'}</span>
+      ),
     },
     {
       id: 'detail',
@@ -92,7 +105,11 @@ export function AuditLogTable({ data, pagination, onPageChange, loading, refresh
         loading={loading}
         refreshing={refreshing}
       />
-      <AuditDetail log={selectedLog} open={selectedLog !== null} onCloseAction={() => setSelectedLog(null)} />
+      <AuditDetail
+        log={selectedLog}
+        open={selectedLog !== null}
+        onCloseAction={() => setSelectedLog(null)}
+      />
     </>
   );
 }

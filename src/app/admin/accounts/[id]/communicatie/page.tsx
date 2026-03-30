@@ -19,7 +19,11 @@ export default async function CommunicatiePage({ params }: Props) {
       accountId={id}
       initialData={communications.data}
       initialCount={communications.count}
-      contacts={contacts.map((c) => ({ id: c.id, first_name: c.first_name, last_name: c.last_name }))}
+      contacts={contacts.map((c) => ({
+        id: c.id,
+        first_name: c.first_name,
+        last_name: c.last_name,
+      }))}
       deals={deals.map((d) => ({ id: d.id, title: d.title }))}
     />
   );

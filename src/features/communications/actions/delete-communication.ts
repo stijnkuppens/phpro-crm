@@ -19,7 +19,11 @@ export async function deleteCommunication(id: string): Promise<ActionResult> {
   if (!parsedId.success) return err('Ongeldig ID');
 
   const supabase = await createServerClient();
-  const { data: snapshot } = await supabase.from('communications').select('*').eq('id', id).single();
+  const { data: snapshot } = await supabase
+    .from('communications')
+    .select('*')
+    .eq('id', id)
+    .single();
   const { error } = await supabase.from('communications').delete().eq('id', id);
 
   if (error) {

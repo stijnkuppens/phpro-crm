@@ -36,7 +36,11 @@ export function StopConsultantModal({ consultantId, open, onClose, onSuccess }: 
     if (moveToBench) {
       const benchResult = await moveToBenchAction(consultantId);
       if ('error' in benchResult && benchResult.error) {
-        toast.error(typeof benchResult.error === 'string' ? benchResult.error : 'Kon niet naar bench verplaatsen');
+        toast.error(
+          typeof benchResult.error === 'string'
+            ? benchResult.error
+            : 'Kon niet naar bench verplaatsen',
+        );
       } else {
         toast.success('Consultant stopgezet en naar bench verplaatst');
         onSuccess?.();

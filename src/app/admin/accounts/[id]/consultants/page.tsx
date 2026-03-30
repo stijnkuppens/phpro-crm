@@ -16,6 +16,11 @@ export default async function ConsultantsPage({ params }: Props) {
   ]);
   const roles = rolesRaw.map((r) => ({ value: r.name, label: r.name }));
   return (
-    <AccountConsultantsTab accountId={id} accountName={account?.name ?? ''} consultants={consultants} roles={roles} />
+    <AccountConsultantsTab
+      accountId={id}
+      accountName={account?.name ?? ''}
+      consultants={consultants}
+      roles={roles}
+    />
   );
 }

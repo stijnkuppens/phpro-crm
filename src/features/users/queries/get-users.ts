@@ -7,6 +7,7 @@ export type UserWithEmail = {
   avatar_url: string;
   role: string;
   email: string;
+  last_sign_in_at: string | null;
   created_at: string;
 };
 
@@ -20,14 +21,23 @@ export const getUsers = cache(async (): Promise<UserWithEmail[]> => {
 
   if (!profiles) return [];
 
-  const emailMap = new Map((authData?.users ?? []).map((u) => [u.id, u.email ?? '']));
+  const authMap = new Map(
+    (authData?.users ?? []).map((u) => [
+      u.id,
+      { email: u.email ?? '', last_sign_in_at: u.last_sign_in_at ?? null },
+    ]),
+  );
 
-  return profiles.map((p) => ({
-    id: p.id,
-    full_name: p.full_name ?? '',
-    avatar_url: p.avatar_url ?? '',
-    role: p.role,
-    email: emailMap.get(p.id) ?? '',
-    created_at: p.created_at,
-  }));
+  return profiles.map((p) => {
+    const auth = authMap.get(p.id);
+    return {
+      id: p.id,
+      full_name: p.full_name ?? '',
+      avatar_url: p.avatar_url ?? '',
+      role: p.role,
+      email: auth?.email ?? '',
+      last_sign_in_at: auth?.last_sign_in_at ?? null,
+      created_at: p.created_at,
+    };
+  });
 });

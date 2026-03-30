@@ -13,7 +13,10 @@ const extendSchema = z.object({
   notes: z.string().optional(),
 });
 
-export async function extendConsultant(id: string, values: z.infer<typeof extendSchema>): Promise<ActionResult> {
+export async function extendConsultant(
+  id: string,
+  values: z.infer<typeof extendSchema>,
+): Promise<ActionResult> {
   try {
     await requirePermission('consultants.write');
   } catch {

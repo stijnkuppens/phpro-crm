@@ -10,13 +10,24 @@ type ListPageToolbarProps = {
   actions?: React.ReactNode;
 };
 
-export function ListPageToolbar({ tabs, activeTab, onTabSelect, getTabHref, actions }: ListPageToolbarProps) {
+export function ListPageToolbar({
+  tabs,
+  activeTab,
+  onTabSelect,
+  getTabHref,
+  actions,
+}: ListPageToolbarProps) {
   if (!tabs?.length && !actions) return null;
 
   return (
     <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
       {tabs?.length ? (
-        <SubNav items={tabs} activeKey={activeTab ?? ''} onSelect={onTabSelect} getHref={getTabHref} />
+        <SubNav
+          items={tabs}
+          activeKey={activeTab ?? ''}
+          onSelect={onTabSelect}
+          getHref={getTabHref}
+        />
       ) : (
         <div />
       )}

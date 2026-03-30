@@ -15,7 +15,10 @@ export function CronosDetailsSection() {
         Cronos details
       </p>
       <div className="space-y-1">
-        <label htmlFor="cronos-cc" className="block text-xs font-medium text-gray-600 dark:text-gray-400">
+        <label
+          htmlFor="cronos-cc"
+          className="block text-xs font-medium text-gray-600 dark:text-gray-400"
+        >
           Competence Center
         </label>
         <Input
@@ -27,7 +30,10 @@ export function CronosDetailsSection() {
         />
       </div>
       <div className="space-y-1">
-        <label htmlFor="cronos-contact" className="block text-xs font-medium text-gray-600 dark:text-gray-400">
+        <label
+          htmlFor="cronos-contact"
+          className="block text-xs font-medium text-gray-600 dark:text-gray-400"
+        >
           Contactpersoon Cronos
         </label>
         <Input
@@ -39,7 +45,10 @@ export function CronosDetailsSection() {
         />
       </div>
       <div className="space-y-1">
-        <label htmlFor="cronos-email" className="block text-xs font-medium text-gray-600 dark:text-gray-400">
+        <label
+          htmlFor="cronos-email"
+          className="block text-xs font-medium text-gray-600 dark:text-gray-400"
+        >
           E-mail Cronos
         </label>
         <Input

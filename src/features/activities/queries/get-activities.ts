@@ -15,7 +15,10 @@ export const getActivities = cache(
     filters,
     page = 1,
     pageSize = 25,
-  }: GetActivitiesParams = {}): Promise<{ data: ActivityWithRelations[]; count: number }> => {
+  }: GetActivitiesParams = {}): Promise<{
+    data: ActivityWithRelations[];
+    count: number;
+  }> => {
     const supabase = await createServerClient();
     const from = (page - 1) * pageSize;
     const to = from + pageSize - 1;
@@ -39,7 +42,10 @@ export const getActivities = cache(
       query = query.ilike('subject', `%${escapeSearch(filters.search)}%`);
     }
     if (filters?.type) {
-      query = query.eq('type', filters.type as 'Meeting' | 'Demo' | 'Call' | 'E-mail' | 'Lunch' | 'Event');
+      query = query.eq(
+        'type',
+        filters.type as 'Meeting' | 'Demo' | 'Call' | 'E-mail' | 'Lunch' | 'Event',
+      );
     }
     if (filters?.account_id) {
       query = query.eq('account_id', filters.account_id);
@@ -58,6 +64,9 @@ export const getActivities = cache(
       return { data: [], count: 0 };
     }
 
-    return { data: (data as unknown as ActivityWithRelations[]) ?? [], count: count ?? 0 };
+    return {
+      data: (data as unknown as ActivityWithRelations[]) ?? [],
+      count: count ?? 0,
+    };
   },
 );

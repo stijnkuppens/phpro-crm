@@ -9,7 +9,11 @@ import { type ActionResult, err, ok } from '@/lib/action-result';
 import { logger } from '@/lib/logger';
 import { requirePermission } from '@/lib/require-permission';
 import { createServiceRoleClient } from '@/lib/supabase/admin';
-import { type AllowedExportEntity, type CreateExportJobValues, createExportJobSchema } from '../types';
+import {
+  type AllowedExportEntity,
+  type CreateExportJobValues,
+  createExportJobSchema,
+} from '../types';
 
 const ENTITY_SELECT_QUERIES: Record<AllowedExportEntity, string> = {
   accounts: ACCOUNT_EXPORT_SELECT,
@@ -20,7 +24,9 @@ const ENTITY_SELECT_QUERIES: Record<AllowedExportEntity, string> = {
   communications: '*',
 };
 
-export async function createExportJob(values: CreateExportJobValues): Promise<ActionResult<{ id: string }>> {
+export async function createExportJob(
+  values: CreateExportJobValues,
+): Promise<ActionResult<{ id: string }>> {
   const { userId } = await requirePermission('jobs.read');
 
   const parsed = createExportJobSchema.safeParse(values);

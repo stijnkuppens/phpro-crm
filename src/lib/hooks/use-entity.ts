@@ -58,7 +58,9 @@ export function useEntity<T extends Record<string, unknown>>({
       let query = queryTable(table).select(select, { count: 'exact' }).range(from, to);
 
       if (sort) {
-        query = query.order(sort.column, { ascending: sort.direction === 'asc' });
+        query = query.order(sort.column, {
+          ascending: sort.direction === 'asc',
+        });
       } else {
         query = query.order('created_at', { ascending: false });
       }
@@ -160,5 +162,16 @@ export function useEntity<T extends Record<string, unknown>>({
     [table, queryTable],
   );
 
-  return { data, total, loading, refreshing, fetchList, getById, create, update, remove, bulkDelete };
+  return {
+    data,
+    total,
+    loading,
+    refreshing,
+    fetchList,
+    getById,
+    create,
+    update,
+    remove,
+    bulkDelete,
+  };
 }

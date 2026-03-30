@@ -29,7 +29,12 @@ export function AuditFilters({ filters, onFilterChange }: AuditFiltersProps) {
       <ComboboxFilter
         options={ENTITY_TYPE_OPTIONS.map((opt) => ({ value: opt, label: opt }))}
         value={filters.entityType ?? 'all'}
-        onValueChange={(v) => onFilterChange({ ...filters, entityType: v === 'all' ? undefined : v })}
+        onValueChange={(v) =>
+          onFilterChange({
+            ...filters,
+            entityType: v === 'all' ? undefined : v,
+          })
+        }
         placeholder="Alle entiteiten"
         searchPlaceholder="Zoek entiteit..."
         className="w-44"
@@ -40,7 +45,10 @@ export function AuditFilters({ filters, onFilterChange }: AuditFiltersProps) {
         <DateRangePicker
           value={
             filters.dateFrom
-              ? { from: new Date(filters.dateFrom), to: filters.dateTo ? new Date(filters.dateTo) : undefined }
+              ? {
+                  from: new Date(filters.dateFrom),
+                  to: filters.dateTo ? new Date(filters.dateTo) : undefined,
+                }
               : undefined
           }
           onChange={(range: DateRange | undefined) =>

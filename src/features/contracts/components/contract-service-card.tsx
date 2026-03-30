@@ -17,7 +17,14 @@ type Props = {
   accountId: string;
 };
 
-export function ContractServiceCard({ hasService, serviceUrl, serviceDoc, onChange, contract, accountId }: Props) {
+export function ContractServiceCard({
+  hasService,
+  serviceUrl,
+  serviceDoc,
+  onChange,
+  contract,
+  accountId,
+}: Props) {
   return (
     <Card>
       <CardContent className="p-5 space-y-4">
@@ -56,7 +63,11 @@ export function ContractServiceCard({ hasService, serviceUrl, serviceDoc, onChan
               />
             </div>
             <div className="flex items-center gap-2">
-              <input type="checkbox" id="service_indefinite" defaultChecked={contract?.service_indefinite ?? false} />
+              <input
+                type="checkbox"
+                id="service_indefinite"
+                defaultChecked={contract?.service_indefinite ?? false}
+              />
               <Label htmlFor="service_indefinite">Onbepaalde duur</Label>
             </div>
           </div>

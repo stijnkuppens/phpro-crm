@@ -1,6 +1,12 @@
 'use client';
 
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { type BrandTheme, useBrandTheme } from '@/lib/hooks/use-brand-theme';
 
 const BRANDS: { value: BrandTheme; label: string }[] = [

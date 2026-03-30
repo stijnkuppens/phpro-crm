@@ -34,7 +34,10 @@ export function BenchFormModal({ open, onClose, consultant }: Props) {
   const [avatarPath, setAvatarPath] = useState(consultant?.avatar_path ?? null);
   const [priority, setPriority] = useState(consultant?.priority ?? 'Medium');
   const [languages, setLanguages] = useState<LanguageFormValues[]>(
-    consultant?.languages?.map((l) => ({ language: l.language, level: l.level as LanguageFormValues['level'] })) ?? [],
+    consultant?.languages?.map((l) => ({
+      language: l.language,
+      level: l.level as LanguageFormValues['level'],
+    })) ?? [],
   );
 
   function addLanguage() {
@@ -59,8 +62,12 @@ export function BenchFormModal({ open, onClose, consultant }: Props) {
       city: (formData.get('city') as string) || undefined,
       priority: priority as 'High' | 'Medium' | 'Low',
       available_date: (formData.get('available_date') as string) || null,
-      min_hourly_rate: formData.get('min_hourly_rate') ? Number(formData.get('min_hourly_rate')) : null,
-      max_hourly_rate: formData.get('max_hourly_rate') ? Number(formData.get('max_hourly_rate')) : null,
+      min_hourly_rate: formData.get('min_hourly_rate')
+        ? Number(formData.get('min_hourly_rate'))
+        : null,
+      max_hourly_rate: formData.get('max_hourly_rate')
+        ? Number(formData.get('max_hourly_rate'))
+        : null,
       roles: rolesRaw
         ? rolesRaw
             .split(',')
@@ -100,7 +107,12 @@ export function BenchFormModal({ open, onClose, consultant }: Props) {
   }, null);
 
   return (
-    <Modal open={open} onClose={onClose} title={isEdit ? 'Consultant bewerken' : 'Nieuwe consultant'} size="wide">
+    <Modal
+      open={open}
+      onClose={onClose}
+      title={isEdit ? 'Consultant bewerken' : 'Nieuwe consultant'}
+      size="wide"
+    >
       <form action={formAction} className="space-y-4">
         {/* Avatar — only for edit (need ID for storage path) */}
         {isEdit && (
@@ -121,11 +133,21 @@ export function BenchFormModal({ open, onClose, consultant }: Props) {
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-2">
             <Label htmlFor="first_name">Voornaam *</Label>
-            <Input id="first_name" name="first_name" defaultValue={consultant?.first_name ?? ''} required />
+            <Input
+              id="first_name"
+              name="first_name"
+              defaultValue={consultant?.first_name ?? ''}
+              required
+            />
           </div>
           <div className="space-y-2">
             <Label htmlFor="last_name">Achternaam *</Label>
-            <Input id="last_name" name="last_name" defaultValue={consultant?.last_name ?? ''} required />
+            <Input
+              id="last_name"
+              name="last_name"
+              defaultValue={consultant?.last_name ?? ''}
+              required
+            />
           </div>
         </div>
 
@@ -204,7 +226,12 @@ export function BenchFormModal({ open, onClose, consultant }: Props) {
         {/* Description */}
         <div className="space-y-2">
           <Label htmlFor="description">Beschrijving</Label>
-          <Textarea id="description" name="description" rows={3} defaultValue={consultant?.description ?? ''} />
+          <Textarea
+            id="description"
+            name="description"
+            rows={3}
+            defaultValue={consultant?.description ?? ''}
+          />
         </div>
 
         {/* CV Upload */}

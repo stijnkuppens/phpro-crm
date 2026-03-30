@@ -82,7 +82,8 @@ export function IndexationWizard({ accountId, open, onClose, draft }: Props) {
     return {
       rates,
       sla,
-      pctHourly: draft?.adjustment_pct_hourly != null ? String(Number(draft.adjustment_pct_hourly)) : '',
+      pctHourly:
+        draft?.adjustment_pct_hourly != null ? String(Number(draft.adjustment_pct_hourly)) : '',
       pctSla: draft?.adjustment_pct_sla != null ? String(Number(draft.adjustment_pct_sla)) : '',
       info: draft?.info ?? '',
     };
@@ -245,7 +246,12 @@ export function IndexationWizard({ accountId, open, onClose, draft }: Props) {
   }
 
   return (
-    <Modal open={open} onClose={onClose} title={`Indexatie — ${STEP_TITLES[step - 1]}`} size="extra-wide">
+    <Modal
+      open={open}
+      onClose={onClose}
+      title={`Indexatie — ${STEP_TITLES[step - 1]}`}
+      size="extra-wide"
+    >
       {/* Step indicator */}
       <div className="flex items-center gap-2 mb-6">
         {STEP_TITLES.map((title, i) => {
@@ -259,12 +265,16 @@ export function IndexationWizard({ accountId, open, onClose, draft }: Props) {
                 onClick={() => goToStep(s)}
                 disabled={s >= step}
                 className={`h-8 w-8 rounded-full flex items-center justify-center text-sm font-medium transition-colors ${
-                  completed || current ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'
+                  completed || current
+                    ? 'bg-primary text-primary-foreground'
+                    : 'bg-muted text-muted-foreground'
                 } ${completed ? 'cursor-pointer hover:opacity-80' : s > step ? 'cursor-default' : ''}`}
               >
                 {completed ? <Check className="h-4 w-4" /> : s}
               </button>
-              <span className={`text-sm ${current ? 'font-medium' : 'text-muted-foreground'}`}>{title}</span>
+              <span className={`text-sm ${current ? 'font-medium' : 'text-muted-foreground'}`}>
+                {title}
+              </span>
               {i < STEP_TITLES.length - 1 && <div className="w-8 h-px bg-border" />}
             </div>
           );
@@ -299,11 +309,19 @@ export function IndexationWizard({ accountId, open, onClose, draft }: Props) {
           <div className="grid grid-cols-3 gap-4">
             <div className="space-y-2">
               <Label>Basisjaar</Label>
-              <Input type="number" value={baseYear} onChange={(e) => setBaseYear(Number(e.target.value))} />
+              <Input
+                type="number"
+                value={baseYear}
+                onChange={(e) => setBaseYear(Number(e.target.value))}
+              />
             </div>
             <div className="space-y-2">
               <Label>Doeljaar</Label>
-              <Input type="number" value={targetYear} onChange={(e) => setTargetYear(Number(e.target.value))} />
+              <Input
+                type="number"
+                value={targetYear}
+                onChange={(e) => setTargetYear(Number(e.target.value))}
+              />
             </div>
             <div className="space-y-2">
               <Label>Percentage (%)</Label>
@@ -349,7 +367,9 @@ export function IndexationWizard({ accountId, open, onClose, draft }: Props) {
                     <tr key={r.role} className="border-b last:border-0">
                       <td className="p-2.5">{r.role}</td>
                       <td className="p-2.5 text-right">{formatCurrency(r.current_rate)}</td>
-                      <td className="p-2.5 text-right font-medium">{formatCurrency(r.proposed_rate)}</td>
+                      <td className="p-2.5 text-right font-medium">
+                        {formatCurrency(r.proposed_rate)}
+                      </td>
                       <td
                         className={`p-2.5 text-right text-xs font-medium ${diff > 0 ? 'text-green-600' : diff < 0 ? 'text-red-600' : ''}`}
                       >
@@ -393,8 +413,12 @@ export function IndexationWizard({ accountId, open, onClose, draft }: Props) {
                       <tr key={row.label} className="border-b last:border-0">
                         <td className="p-2.5">{row.label}</td>
                         <td className="p-2.5 text-right">{formatCurrency(row.current)}</td>
-                        <td className="p-2.5 text-right font-medium">{formatCurrency(row.proposed)}</td>
-                        <td className={`p-2.5 text-right text-xs font-medium ${diff > 0 ? 'text-green-600' : ''}`}>
+                        <td className="p-2.5 text-right font-medium">
+                          {formatCurrency(row.proposed)}
+                        </td>
+                        <td
+                          className={`p-2.5 text-right text-xs font-medium ${diff > 0 ? 'text-green-600' : ''}`}
+                        >
                           {diff > 0 ? '+' : ''}
                           {diff !== 0 ? formatCurrency(diff) : '—'}
                         </td>
@@ -500,8 +524,12 @@ export function IndexationWizard({ accountId, open, onClose, draft }: Props) {
                   return (
                     <tr key={r.role} className="border-b last:border-0">
                       <td className="p-2.5">{r.role}</td>
-                      <td className="p-2.5 text-right text-muted-foreground">{formatCurrency(r.current_rate)}</td>
-                      <td className="p-2.5 text-right text-muted-foreground">{formatCurrency(r.proposed_rate)}</td>
+                      <td className="p-2.5 text-right text-muted-foreground">
+                        {formatCurrency(r.current_rate)}
+                      </td>
+                      <td className="p-2.5 text-right text-muted-foreground">
+                        {formatCurrency(r.proposed_rate)}
+                      </td>
                       <td className="p-1.5 w-36">
                         <div className="flex items-center gap-1.5">
                           <Input
@@ -510,7 +538,10 @@ export function IndexationWizard({ accountId, open, onClose, draft }: Props) {
                             onChange={(e) =>
                               setNegotiation((prev) => ({
                                 ...prev,
-                                rates: { ...prev.rates, [r.role]: e.target.value },
+                                rates: {
+                                  ...prev.rates,
+                                  [r.role]: e.target.value,
+                                },
                               }))
                             }
                             placeholder={String(r.proposed_rate)}
@@ -562,14 +593,21 @@ export function IndexationWizard({ accountId, open, onClose, draft }: Props) {
                   ].map((row) => (
                     <tr key={row.key} className="border-b last:border-0">
                       <td className="p-2.5">{row.label}</td>
-                      <td className="p-2.5 text-right text-muted-foreground">{formatCurrency(row.current)}</td>
-                      <td className="p-2.5 text-right text-muted-foreground">{formatCurrency(row.sim)}</td>
+                      <td className="p-2.5 text-right text-muted-foreground">
+                        {formatCurrency(row.current)}
+                      </td>
+                      <td className="p-2.5 text-right text-muted-foreground">
+                        {formatCurrency(row.sim)}
+                      </td>
                       <td className="p-1.5 w-36">
                         <Input
                           type="number"
                           value={negotiation.sla[row.key] ?? ''}
                           onChange={(e) =>
-                            setNegotiation((prev) => ({ ...prev, sla: { ...prev.sla, [row.key]: e.target.value } }))
+                            setNegotiation((prev) => ({
+                              ...prev,
+                              sla: { ...prev.sla, [row.key]: e.target.value },
+                            }))
                           }
                           placeholder={String(row.sim)}
                           className="h-8 text-right text-sm"
@@ -610,7 +648,8 @@ export function IndexationWizard({ accountId, open, onClose, draft }: Props) {
       {step === 4 && simulation && (
         <div className="space-y-5">
           <p className="text-sm text-muted-foreground">
-            Controleer de definitieve tarieven voor {targetYear}. Na goedkeuring worden deze direct toegepast.
+            Controleer de definitieve tarieven voor {targetYear}. Na goedkeuring worden deze direct
+            toegepast.
           </p>
 
           <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
@@ -629,7 +668,9 @@ export function IndexationWizard({ accountId, open, onClose, draft }: Props) {
                         <td className="p-2.5 text-right text-muted-foreground line-through">
                           {formatCurrency(r.current_rate)}
                         </td>
-                        <td className="p-2.5 text-right font-medium text-green-600">{formatCurrency(final)}</td>
+                        <td className="p-2.5 text-right font-medium text-green-600">
+                          {formatCurrency(final)}
+                        </td>
                       </tr>
                     );
                   })}
@@ -663,7 +704,9 @@ export function IndexationWizard({ accountId, open, onClose, draft }: Props) {
                           <td className="p-2.5 text-right text-muted-foreground line-through">
                             {formatCurrency(row.current)}
                           </td>
-                          <td className="p-2.5 text-right font-medium text-green-600">{formatCurrency(row.final)}</td>
+                          <td className="p-2.5 text-right font-medium text-green-600">
+                            {formatCurrency(row.final)}
+                          </td>
                         </tr>
                       ))}
                     </tbody>

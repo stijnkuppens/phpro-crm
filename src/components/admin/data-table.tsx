@@ -33,7 +33,14 @@ import {
   PaginationPrevious,
 } from '@/components/ui/pagination';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useTableSettings } from '@/lib/hooks/use-table-settings';
@@ -82,15 +89,31 @@ type DataTableFilterProps =
         string,
         string | undefined
       >;
-      /** Called when any filter changes */ onFilterChange: (filters: Record<string, string | undefined>) => void;
-      /** Dynamic options keyed by column accessorKey */ filterOptions?: Record<string, FilterOption[]>;
+      /** Called when any filter changes */ onFilterChange: (
+        filters: Record<string, string | undefined>,
+      ) => void;
+      /** Dynamic options keyed by column accessorKey */ filterOptions?: Record<
+        string,
+        FilterOption[]
+      >;
     }
-  | { filterBar?: never; filters?: never; onFilterChange?: never; filterOptions?: never };
+  | {
+      filterBar?: never;
+      filters?: never;
+      onFilterChange?: never;
+      filterOptions?: never;
+    };
 
 type DataTableProps<T> = DataTableBaseProps<T> & DataTableFilterProps;
 
 // biome-ignore lint/suspicious/noExplicitAny: TanStack Table requires any for generic row records
-function RowActionButton<T extends Record<string, any>>({ action, row }: { action: RowAction<T>; row: T }) {
+function RowActionButton<T extends Record<string, any>>({
+  action,
+  row,
+}: {
+  action: RowAction<T>;
+  row: T;
+}) {
   const [confirmOpen, setConfirmOpen] = useState(false);
 
   return (
@@ -133,7 +156,13 @@ function RowActionButton<T extends Record<string, any>>({ action, row }: { actio
 
 /** Kebab menu for row actions on mobile cards */
 // biome-ignore lint/suspicious/noExplicitAny: TanStack Table requires any for generic row records
-function MobileRowActions<T extends Record<string, any>>({ actions, row }: { actions: RowAction<T>[]; row: T }) {
+function MobileRowActions<T extends Record<string, any>>({
+  actions,
+  row,
+}: {
+  actions: RowAction<T>[];
+  row: T;
+}) {
   const [confirmAction, setConfirmAction] = useState<RowAction<T> | null>(null);
 
   if (actions.length === 0) return null;
@@ -158,7 +187,9 @@ function MobileRowActions<T extends Record<string, any>>({ actions, row }: { act
           {actions.map((action) => (
             <DropdownMenuItem
               key={action.label}
-              className={action.variant === 'destructive' ? 'text-destructive focus:text-destructive' : ''}
+              className={
+                action.variant === 'destructive' ? 'text-destructive focus:text-destructive' : ''
+              }
               onClick={(e) => {
                 e.stopPropagation();
                 if (action.confirm) {
@@ -239,7 +270,10 @@ export default function DataTable<T extends Record<string, any>>({
             // biome-ignore lint/a11y/noStaticElementInteractions: stop propagation wrapper for checkbox cell
             // biome-ignore lint/a11y/useKeyWithClickEvents: keyboard handled by the inner Checkbox
             <div onClick={(e) => e.stopPropagation()}>
-              <Checkbox checked={row.getIsSelected()} onCheckedChange={(value) => row.toggleSelected(!!value)} />
+              <Checkbox
+                checked={row.getIsSelected()}
+                onCheckedChange={(value) => row.toggleSelected(!!value)}
+              />
             </div>
           ),
           enableSorting: false,
@@ -336,7 +370,11 @@ export default function DataTable<T extends Record<string, any>>({
                 ))}
             </div>
             {tableId && !showMobileCards && (
-              <ColumnSettings table={table} onOrderChange={handleOrderChange} onReset={handleReset} />
+              <ColumnSettings
+                table={table}
+                onOrderChange={handleOrderChange}
+                onReset={handleReset}
+              />
             )}
           </div>
         </FilterBar>
@@ -344,7 +382,9 @@ export default function DataTable<T extends Record<string, any>>({
 
       {showMobileCards ? (
         /* ── Mobile card list ───────────────────────────── */
-        <div className={`space-y-3 transition-opacity duration-200 ${refreshing ? 'opacity-40' : 'opacity-100'}`}>
+        <div
+          className={`space-y-3 transition-opacity duration-200 ${refreshing ? 'opacity-40' : 'opacity-100'}`}
+        >
           {loading ? (
             Array.from({ length: 5 }).map((_, i) => (
               // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton items with no identity
@@ -411,12 +451,16 @@ export default function DataTable<T extends Record<string, any>>({
                 </TableRow>
               ))}
             </TableHeader>
-            <TableBody className={`transition-opacity duration-200 ${refreshing ? 'opacity-40' : 'opacity-100'}`}>
+            <TableBody
+              className={`transition-opacity duration-200 ${refreshing ? 'opacity-40' : 'opacity-100'}`}
+            >
               {loading ? (
                 Array.from({ length: 5 }).map((_, i) => (
                   // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton rows with no identity
                   <TableRow key={i}>
-                    {Array.from({ length: allColumns.length + (rowActions ? 1 : 0) }).map((_, j) => (
+                    {Array.from({
+                      length: allColumns.length + (rowActions ? 1 : 0),
+                    }).map((_, j) => (
                       // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton cells with no identity
                       <TableCell key={j}>
                         <Skeleton className="h-4 w-full" />
@@ -433,14 +477,20 @@ export default function DataTable<T extends Record<string, any>>({
                     onClick={() => onRowClick?.(row.original)}
                   >
                     {row.getVisibleCells().map((cell) => (
-                      <TableCell key={cell.id}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</TableCell>
+                      <TableCell key={cell.id}>
+                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                      </TableCell>
                     ))}
                     {rowActions && (
                       <TableCell className="w-0 text-right">
                         <div className="flex items-center justify-end gap-1">
                           <TooltipProvider>
                             {rowActions(row.original).map((action) => (
-                              <RowActionButton key={action.label} action={action} row={row.original} />
+                              <RowActionButton
+                                key={action.label}
+                                action={action}
+                                row={row.original}
+                              />
                             ))}
                           </TooltipProvider>
                         </div>
@@ -450,7 +500,10 @@ export default function DataTable<T extends Record<string, any>>({
                 ))
               ) : (
                 <TableRow>
-                  <TableCell colSpan={allColumns.length + (rowActions ? 1 : 0)} className="h-24 text-center">
+                  <TableCell
+                    colSpan={allColumns.length + (rowActions ? 1 : 0)}
+                    className="h-24 text-center"
+                  >
                     No results.
                   </TableCell>
                 </TableRow>
@@ -466,7 +519,9 @@ export default function DataTable<T extends Record<string, any>>({
             <PaginationItem>
               <PaginationPrevious
                 onClick={() => onPageChange?.(Math.max(1, pagination.page - 1))}
-                className={pagination.page <= 1 ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
+                className={
+                  pagination.page <= 1 ? 'pointer-events-none opacity-50' : 'cursor-pointer'
+                }
               />
             </PaginationItem>
             {(() => {
@@ -474,7 +529,10 @@ export default function DataTable<T extends Record<string, any>>({
               let startPage = Math.max(1, pagination.page - Math.floor(maxVisible / 2));
               const endPage = Math.min(totalPages, startPage + maxVisible - 1);
               startPage = Math.max(1, endPage - maxVisible + 1);
-              const pageNumbers = Array.from({ length: endPage - startPage + 1 }, (_, i) => startPage + i);
+              const pageNumbers = Array.from(
+                { length: endPage - startPage + 1 },
+                (_, i) => startPage + i,
+              );
               return pageNumbers.map((page) => (
                 <PaginationItem key={page}>
                   <PaginationLink
@@ -490,7 +548,11 @@ export default function DataTable<T extends Record<string, any>>({
             <PaginationItem>
               <PaginationNext
                 onClick={() => onPageChange?.(Math.min(totalPages, pagination.page + 1))}
-                className={pagination.page >= totalPages ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
+                className={
+                  pagination.page >= totalPages
+                    ? 'pointer-events-none opacity-50'
+                    : 'cursor-pointer'
+                }
               />
             </PaginationItem>
           </PaginationContent>

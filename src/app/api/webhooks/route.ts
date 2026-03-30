@@ -28,14 +28,20 @@ export async function POST(request: Request) {
   const signature = request.headers.get('x-webhook-signature');
 
   if (!verifySignature(body, signature)) {
-    return NextResponse.json({ error: 'Invalid signature' }, { status: 401, headers: { 'Cache-Control': 'no-store' } });
+    return NextResponse.json(
+      { error: 'Invalid signature' },
+      { status: 401, headers: { 'Cache-Control': 'no-store' } },
+    );
   }
 
   let _payload: unknown;
   try {
     _payload = JSON.parse(body);
   } catch {
-    return NextResponse.json({ error: 'Malformed JSON' }, { status: 400, headers: { 'Cache-Control': 'no-store' } });
+    return NextResponse.json(
+      { error: 'Malformed JSON' },
+      { status: 400, headers: { 'Cache-Control': 'no-store' } },
+    );
   }
 
   // Handle webhook payload here

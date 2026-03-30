@@ -48,11 +48,13 @@ export function SlaRatesSubTab({ slaRates, hasServiceContract }: Props) {
   const _toolCount = current?.tools?.length ?? 0;
   const _fixedDiff =
     current && prev
-      ? Math.round((Number(current.fixed_monthly_rate) - Number(prev.fixed_monthly_rate)) * 100) / 100
+      ? Math.round((Number(current.fixed_monthly_rate) - Number(prev.fixed_monthly_rate)) * 100) /
+        100
       : undefined;
   const _supportDiff =
     current && prev
-      ? Math.round((Number(current.support_hourly_rate) - Number(prev.support_hourly_rate)) * 100) / 100
+      ? Math.round((Number(current.support_hourly_rate) - Number(prev.support_hourly_rate)) * 100) /
+        100
       : undefined;
 
   function getToolPrice(sla: SlaRateWithTools | null, name: string): number | null {
@@ -76,7 +78,9 @@ export function SlaRatesSubTab({ slaRates, hasServiceContract }: Props) {
           SLA Tarieven
         </h3>
         {hasServiceContract && (
-          <Badge className="bg-primary/15 text-primary-action border-0 text-xs">Service Contract actief</Badge>
+          <Badge className="bg-primary/15 text-primary-action border-0 text-xs">
+            Service Contract actief
+          </Badge>
         )}
       </div>
 
@@ -102,10 +106,14 @@ export function SlaRatesSubTab({ slaRates, hasServiceContract }: Props) {
           const support = sla ? Number(sla.support_hourly_rate) : 0;
           const tools = sla?.tools?.length ?? 0;
           const prevFixed = prevSla ? Number(prevSla.fixed_monthly_rate) : undefined;
-          const fDiff = prevFixed != null && fixed ? Math.round((fixed - prevFixed) * 100) / 100 : undefined;
+          const fDiff =
+            prevFixed != null && fixed ? Math.round((fixed - prevFixed) * 100) / 100 : undefined;
 
           return (
-            <Card key={year} className={year === currentYear ? 'border-primary/30 bg-primary/5' : ''}>
+            <Card
+              key={year}
+              className={year === currentYear ? 'border-primary/30 bg-primary/5' : ''}
+            >
               <CardContent className="p-4">
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-base font-bold">{year}</span>
@@ -118,11 +126,15 @@ export function SlaRatesSubTab({ slaRates, hasServiceContract }: Props) {
                 {sla ? (
                   <div className="space-y-1.5">
                     <div className="flex items-baseline justify-between">
-                      <span className="text-[10px] uppercase tracking-wider text-muted-foreground">Vast</span>
+                      <span className="text-[10px] uppercase tracking-wider text-muted-foreground">
+                        Vast
+                      </span>
                       <div className="flex items-baseline gap-1.5">
                         <span className="text-lg font-semibold">{formatEUR(fixed)}</span>
                         {fDiff != null && fDiff !== 0 && (
-                          <span className={`text-[10px] font-medium ${fDiff > 0 ? 'text-green-600' : 'text-red-600'}`}>
+                          <span
+                            className={`text-[10px] font-medium ${fDiff > 0 ? 'text-green-600' : 'text-red-600'}`}
+                          >
                             {fDiff > 0 ? '+' : ''}
                             {fDiff}
                           </span>
@@ -130,11 +142,15 @@ export function SlaRatesSubTab({ slaRates, hasServiceContract }: Props) {
                       </div>
                     </div>
                     <div className="flex items-baseline justify-between">
-                      <span className="text-[10px] uppercase tracking-wider text-muted-foreground">Support</span>
+                      <span className="text-[10px] uppercase tracking-wider text-muted-foreground">
+                        Support
+                      </span>
                       <span className="text-lg font-semibold">{formatEUR(support)}/u</span>
                     </div>
                     <div className="flex items-baseline justify-between pt-1 border-t">
-                      <span className="text-[10px] uppercase tracking-wider text-muted-foreground">Tools</span>
+                      <span className="text-[10px] uppercase tracking-wider text-muted-foreground">
+                        Tools
+                      </span>
                       <span className="text-sm font-medium">{tools}</span>
                     </div>
                   </div>
@@ -154,7 +170,10 @@ export function SlaRatesSubTab({ slaRates, hasServiceContract }: Props) {
             <tr className="border-b bg-muted/30">
               <th className="text-left p-3 font-medium">Kostenpost</th>
               {visibleYears.map((year) => (
-                <th key={year} className={`text-right p-3 font-medium ${year === currentYear ? 'bg-primary/5' : ''}`}>
+                <th
+                  key={year}
+                  className={`text-right p-3 font-medium ${year === currentYear ? 'bg-primary/5' : ''}`}
+                >
                   <div className="flex items-center justify-end gap-1.5">
                     {year}
                     {year === currentYear && (
@@ -209,7 +228,10 @@ export function SlaRatesSubTab({ slaRates, hasServiceContract }: Props) {
             <tr className="border-t-2 font-semibold">
               <td className="p-3">Totaal / maand (excl. support)</td>
               {visibleYears.map((year, i) => (
-                <td key={year} className={`p-3 text-right ${year === currentYear ? 'bg-primary/5' : ''}`}>
+                <td
+                  key={year}
+                  className={`p-3 text-right ${year === currentYear ? 'bg-primary/5' : ''}`}
+                >
                   {visibleRates[i] ? (
                     formatEUR(getYearTotal(visibleRates[i]))
                   ) : (
@@ -257,7 +279,9 @@ function RateRow({
   const firstVal = values[0];
   const secondVal = values[1];
   const evolutionDiff =
-    firstVal != null && secondVal != null ? Math.round((firstVal - secondVal) * 100) / 100 : undefined;
+    firstVal != null && secondVal != null
+      ? Math.round((firstVal - secondVal) * 100) / 100
+      : undefined;
 
   return (
     <tr className="border-b last:border-0 hover:bg-muted/20">
@@ -280,7 +304,9 @@ function RateRow({
       ))}
       <td className="p-3 text-right">
         {evolutionDiff != null && evolutionDiff !== 0 ? (
-          <span className={`text-[11px] font-medium ${evolutionDiff > 0 ? 'text-green-600' : 'text-red-600'}`}>
+          <span
+            className={`text-[11px] font-medium ${evolutionDiff > 0 ? 'text-green-600' : 'text-red-600'}`}
+          >
             {evolutionDiff > 0 ? '+' : ''}
             {evolutionDiff}
           </span>

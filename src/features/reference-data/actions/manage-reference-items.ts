@@ -35,14 +35,17 @@ export async function createReferenceItem(
 
   const supabase = await createServerClient();
   // biome-ignore lint/suspicious/noExplicitAny: dynamic table name returns union type that cannot be narrowed
-  const { data, error } = await (supabase.from(table) as any).insert(toDbRow(parsed.data)).select('id').single();
+  const { data, error } = await (supabase.from(table) as any)
+    .insert(toDbRow(parsed.data))
+    .select('id')
+    .single();
 
   if (error) {
     logger.error({ err: error }, '[createReferenceItem] database error');
     return err('Er is een fout opgetreden');
   }
 
-  revalidatePath('/admin/reference-data');
+  revalidatePath('/admin/settings/reference-data');
   return ok(data as { id: string });
 }
 
@@ -71,7 +74,7 @@ export async function updateReferenceItem(
     return err('Er is een fout opgetreden');
   }
 
-  revalidatePath('/admin/reference-data');
+  revalidatePath('/admin/settings/reference-data');
   return ok();
 }
 
@@ -93,6 +96,6 @@ export async function deleteReferenceItem(table: RefTableKey, id: string): Promi
     return err('Er is een fout opgetreden');
   }
 
-  revalidatePath('/admin/reference-data');
+  revalidatePath('/admin/settings/reference-data');
   return ok();
 }

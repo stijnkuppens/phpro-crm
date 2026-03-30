@@ -50,7 +50,7 @@ export function AccountList({ initialData, initialCount, filterOptions }: Accoun
   const handleFilterChange = useCallback((newFilters: Record<string, string | undefined>) => {
     setFilters(newFilters);
     setPage(1);
-  }, []);
+  }, [setPage]);
 
   const handleDelete = async (id: string) => {
     const result = await deleteAccount(id);
@@ -77,7 +77,11 @@ export function AccountList({ initialData, initialCount, filterOptions }: Accoun
         loading={loading}
         refreshing={refreshing}
         rowActions={(row) => [
-          { icon: SquarePen, label: 'Bewerken', onClick: () => router.push(`/admin/accounts/${row.id}/edit`) },
+          {
+            icon: SquarePen,
+            label: 'Bewerken',
+            onClick: () => router.push(`/admin/accounts/${row.id}/edit`),
+          },
           {
             icon: Trash2,
             label: 'Verwijderen',
@@ -102,7 +106,9 @@ export function AccountList({ initialData, initialCount, filterOptions }: Accoun
               <div className="min-w-0 flex-1">
                 <div className="font-medium">{row.name}</div>
                 {row.domain && <div className="text-xs text-muted-foreground">{row.domain}</div>}
-                {row.owner?.full_name && <div className="text-xs text-muted-foreground">{row.owner.full_name}</div>}
+                {row.owner?.full_name && (
+                  <div className="text-xs text-muted-foreground">{row.owner.full_name}</div>
+                )}
                 <div className="mt-1 flex flex-wrap gap-1.5">
                   <StatusBadge colorMap={ACCOUNT_TYPE_STYLES} value={row.type}>
                     {row.type}

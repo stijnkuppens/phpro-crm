@@ -2,7 +2,13 @@
 
 import { RouteErrorCard } from '@/components/admin/route-error-card';
 
-export default function ConsultantsError({ error, reset }: { error: Error & { digest?: string }; reset: () => void }) {
+export default function ConsultantsError({
+  error,
+  reset,
+}: {
+  error: Error & { digest?: string };
+  reset: () => void;
+}) {
   return (
     <RouteErrorCard
       title="Fout bij laden consultants"

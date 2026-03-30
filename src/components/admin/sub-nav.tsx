@@ -90,7 +90,9 @@ export function SubNav({ items, activeKey, onSelect, getHref }: Props) {
             {Icon && <Icon className="h-4 w-4" />}
             {item.label}
             {item.count != null && item.count > 0 && (
-              <Badge className="bg-primary/15 text-primary-action border-0 text-[10px] h-4 px-1.5">{item.count}</Badge>
+              <Badge className="bg-primary/15 text-primary-action border-0 text-[10px] h-4 px-1.5">
+                {item.count}
+              </Badge>
             )}
           </>
         );
@@ -104,7 +106,12 @@ export function SubNav({ items, activeKey, onSelect, getHref }: Props) {
         }
 
         return (
-          <button key={item.key} type="button" onClick={() => onSelect?.(item.key)} className={className}>
+          <button
+            key={item.key}
+            type="button"
+            onClick={() => onSelect?.(item.key)}
+            className={className}
+          >
             {content}
           </button>
         );

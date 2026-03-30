@@ -42,20 +42,22 @@ export function LoginForm({ oauthProviders = [] }: LoginFormProps) {
     if (!accessToken || !refreshToken) return;
 
     const supabase = createBrowserClient();
-    supabase.auth.setSession({ access_token: accessToken, refresh_token: refreshToken }).then(({ error }) => {
-      if (error) {
-        toast.error('Sessie instellen mislukt');
-        setOauthLoading(false);
-        return;
-      }
-      // Clear hash from URL before redirecting
-      window.history.replaceState(null, '', window.location.pathname);
-      if (type === 'invite' || type === 'recovery') {
-        router.replace('/reset-password');
-      } else {
-        router.replace('/admin');
-      }
-    });
+    supabase.auth
+      .setSession({ access_token: accessToken, refresh_token: refreshToken })
+      .then(({ error }) => {
+        if (error) {
+          toast.error('Sessie instellen mislukt');
+          setOauthLoading(false);
+          return;
+        }
+        // Clear hash from URL before redirecting
+        window.history.replaceState(null, '', window.location.pathname);
+        if (type === 'invite' || type === 'recovery') {
+          router.replace('/reset-password');
+        } else {
+          router.replace('/admin');
+        }
+      });
   }, [router]);
 
   const [, formAction] = useActionState(async (_prev: null, formData: FormData) => {
@@ -63,7 +65,10 @@ export function LoginForm({ oauthProviders = [] }: LoginFormProps) {
     const password = formData.get('password') as string;
 
     const supabase = createBrowserClient();
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    const { error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
 
     if (error) {
       toast.error('Inloggen mislukt. Controleer je e-mailadres en wachtwoord.');
@@ -177,7 +182,11 @@ export function LoginForm({ oauthProviders = [] }: LoginFormProps) {
                     disabled={oauthLoading}
                     onClick={() => handleOAuthLogin(provider.id)}
                   >
-                    {oauthLoading ? <Loader2 className="animate-spin" /> : <OAuthIcon provider={provider.id} />}
+                    {oauthLoading ? (
+                      <Loader2 className="animate-spin" />
+                    ) : (
+                      <OAuthIcon provider={provider.id} />
+                    )}
                     Doorgaan met {provider.name}
                   </Button>
                 ))}

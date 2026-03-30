@@ -15,7 +15,8 @@ export function ConsultancyFields() {
         <Label>Bench consultant</Label>
         <Select value={state.consultantId} onValueChange={(v) => actions.setConsultantId(v ?? '')}>
           <SelectTrigger>
-            {state.benchConsultants.find((c) => c.id === state.consultantId)?.name ?? '— Selecteer consultant —'}
+            {state.benchConsultants.find((c) => c.id === state.consultantId)?.name ??
+              '— Selecteer consultant —'}
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="">— Selecteer consultant —</SelectItem>

@@ -112,7 +112,11 @@ export async function saveIndexationDraft(
     action: 'indexation_draft.saved',
     entityType: 'account',
     entityId: accountId,
-    metadata: { draft_id: draft.id, target_year: parsed.data.target_year, body: parsed.data },
+    metadata: {
+      draft_id: draft.id,
+      target_year: parsed.data.target_year,
+      body: parsed.data,
+    },
   });
 
   revalidatePath(`/admin/accounts/${accountId}`);

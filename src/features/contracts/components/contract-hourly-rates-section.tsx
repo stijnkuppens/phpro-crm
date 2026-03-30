@@ -32,7 +32,9 @@ export function ContractHourlyRatesSection({
     <Card>
       <CardContent className="p-5 space-y-4">
         <div className="flex items-center justify-between">
-          <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Uurtarieven</h2>
+          <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+            Uurtarieven
+          </h2>
           <div className="flex items-center gap-2">
             <Button variant="ghost" size="icon-sm" onClick={() => setHrWindowStart((y) => y + 1)}>
               <ChevronLeft />
@@ -68,10 +70,17 @@ export function ContractHourlyRatesSection({
               {hrRoles.map((role) => (
                 <tr key={role} className="border-b last:border-0">
                   <td className="p-1.5">
-                    <Input value={role} onChange={(e) => renameHrRole(role, e.target.value)} className="h-9 text-sm" />
+                    <Input
+                      value={role}
+                      onChange={(e) => renameHrRole(role, e.target.value)}
+                      className="h-9 text-sm"
+                    />
                   </td>
                   {hrVisibleYears.map((year) => (
-                    <td key={year} className={`p-1.5 ${year === currentYear ? 'bg-primary/5' : ''}`}>
+                    <td
+                      key={year}
+                      className={`p-1.5 ${year === currentYear ? 'bg-primary/5' : ''}`}
+                    >
                       <Input
                         type="number"
                         value={hrGrid[role]?.[year] ?? ''}
@@ -96,7 +105,10 @@ export function ContractHourlyRatesSection({
               ))}
               {hrRoles.length === 0 && (
                 <tr>
-                  <td colSpan={hrVisibleYears.length + 2} className="p-6 text-center text-muted-foreground">
+                  <td
+                    colSpan={hrVisibleYears.length + 2}
+                    className="p-6 text-center text-muted-foreground"
+                  >
                     Geen rollen. Klik &quot;Rol toevoegen&quot; om te beginnen.
                   </td>
                 </tr>

@@ -1,6 +1,16 @@
 'use client';
 
-import { Building2, Calendar, CheckCircle2, Pencil, Plus, RotateCcw, Sparkles, TrendingUp, User } from 'lucide-react';
+import {
+  Building2,
+  Calendar,
+  CheckCircle2,
+  Pencil,
+  Plus,
+  RotateCcw,
+  Sparkles,
+  TrendingUp,
+  User,
+} from 'lucide-react';
 import dynamic from 'next/dynamic';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
@@ -24,9 +34,12 @@ import { reopenDeal } from '../actions/reopen-deal';
 import type { DealWithRelations, Pipeline } from '../types';
 import { CloseDealModal } from './close-deal-modal';
 
-const DealEditModal = dynamic(() => import('./deal-edit-modal').then((m) => ({ default: m.DealEditModal })), {
-  ssr: false,
-});
+const DealEditModal = dynamic(
+  () => import('./deal-edit-modal').then((m) => ({ default: m.DealEditModal })),
+  {
+    ssr: false,
+  },
+);
 
 type Props = {
   deal: DealWithRelations;
@@ -34,7 +47,13 @@ type Props = {
   communications: CommunicationWithDetails[];
   pipelines: Pipeline[];
   owners: { id: string; name: string }[];
-  consultant: { id: string; first_name: string; last_name: string; role: string | null; city: string | null } | null;
+  consultant: {
+    id: string;
+    first_name: string;
+    last_name: string;
+    role: string | null;
+    city: string | null;
+  } | null;
 };
 
 import { ORIGIN_LABELS } from '../constants';
@@ -62,16 +81,30 @@ function getInitials(name: string): string {
 }
 
 const fmtDate = (d: string) =>
-  new Date(d).toLocaleDateString('nl-BE', { day: 'numeric', month: 'short', year: 'numeric' });
+  new Date(d).toLocaleDateString('nl-BE', {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+  });
 
-export function DealDetail({ deal, activities, communications, pipelines, owners, consultant }: Props) {
+export function DealDetail({
+  deal,
+  activities,
+  communications,
+  pipelines,
+  owners,
+  consultant,
+}: Props) {
   const router = useRouter();
   const [showClose, setShowClose] = useState(false);
   const [showEdit, setShowEdit] = useState(false);
   const [activityModal, setActivityModal] = useState<
     { mode: 'new' } | { mode: 'edit'; activity: ActivityWithRelations } | null
   >(null);
-  const [confirmDelete, setConfirmDelete] = useState<{ type: 'activity'; id: string } | null>(null);
+  const [confirmDelete, setConfirmDelete] = useState<{
+    type: 'activity';
+    id: string;
+  } | null>(null);
 
   const contactName = deal.contact
     ? `${deal.contact.first_name} ${deal.contact.last_name}${deal.contact.title ? ` \u00B7 ${deal.contact.title}` : ''}`
@@ -82,7 +115,8 @@ export function DealDetail({ deal, activities, communications, pipelines, owners
 
   async function handleToggleActivityDone(id: string) {
     const result = await toggleActivityDone(id);
-    if (!result.success) toast.error(typeof result.error === 'string' ? result.error : 'Er ging iets mis');
+    if (!result.success)
+      toast.error(typeof result.error === 'string' ? result.error : 'Er ging iets mis');
     router.refresh();
   }
 
@@ -122,7 +156,14 @@ export function DealDetail({ deal, activities, communications, pipelines, owners
                   <h2 className="text-xl font-bold">{deal.title}</h2>
                   {deal.pipeline && <Badge variant="outline">{deal.pipeline.name}</Badge>}
                   {deal.stage && (
-                    <Badge style={{ backgroundColor: deal.stage.color, color: 'white' }}>{deal.stage.name}</Badge>
+                    <Badge
+                      style={{
+                        backgroundColor: deal.stage.color,
+                        color: 'white',
+                      }}
+                    >
+                      {deal.stage.name}
+                    </Badge>
                   )}
                   {isClosed && <Badge variant="secondary">Gesloten</Badge>}
                   {deal.closed_type && (
@@ -175,20 +216,31 @@ export function DealDetail({ deal, activities, communications, pipelines, owners
                 value={`${consultant.first_name} ${consultant.last_name}${consultant.city ? ` \u00B7 ${consultant.city}` : ''}`}
               />
             )}
-            {isConsultancy && deal.consultant_role && <InfoRow label="Gevraagde rol" value={deal.consultant_role} />}
+            {isConsultancy && deal.consultant_role && (
+              <InfoRow label="Gevraagde rol" value={deal.consultant_role} />
+            )}
             {isConsultancy && deal.tarief_gewenst != null && (
               <InfoRow label="Gewenst tarief" value={`\u20AC${deal.tarief_gewenst}/u`} />
             )}
             {isConsultancy && deal.tarief_aangeboden != null && (
               <InfoRow label="Aangeboden tarief" value={`\u20AC${deal.tarief_aangeboden}/u`} />
             )}
-            <InfoRow icon={Calendar} label="Sluitdatum" value={deal.close_date ? fmtDate(deal.close_date) : null} />
+            <InfoRow
+              icon={Calendar}
+              label="Sluitdatum"
+              value={deal.close_date ? fmtDate(deal.close_date) : null}
+            />
             <InfoRow label="Leadbron" value={deal.lead_source} />
-            <InfoRow label="Herkomst" value={deal.origin ? (ORIGIN_LABELS[deal.origin] ?? deal.origin) : null} />
+            <InfoRow
+              label="Herkomst"
+              value={deal.origin ? (ORIGIN_LABELS[deal.origin] ?? deal.origin) : null}
+            />
             {deal.origin === 'cronos' && (
               <>
                 {deal.cronos_cc && <InfoRow label="Cronos CC" value={deal.cronos_cc} />}
-                {deal.cronos_contact && <InfoRow label="Cronos contact" value={deal.cronos_contact} />}
+                {deal.cronos_contact && (
+                  <InfoRow label="Cronos contact" value={deal.cronos_contact} />
+                )}
                 {deal.cronos_email && <InfoRow label="Cronos e-mail" value={deal.cronos_email} />}
               </>
             )}
@@ -200,7 +252,9 @@ export function DealDetail({ deal, activities, communications, pipelines, owners
             )}
             {deal.tags && deal.tags.length > 0 && (
               <div className="pt-2 border-t">
-                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">Tags</p>
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">
+                  Tags
+                </p>
                 <div className="flex flex-wrap gap-1.5">
                   {deal.tags.map((t) => (
                     <Badge key={t} variant="outline" className="text-xs">
@@ -301,12 +355,18 @@ export function DealDetail({ deal, activities, communications, pipelines, owners
               </CardHeader>
               <CardContent>
                 <div className="flex items-center gap-3">
-                  <Avatar fallback={getInitials(`${consultant.first_name} ${consultant.last_name}`)} size="md" round />
+                  <Avatar
+                    fallback={getInitials(`${consultant.first_name} ${consultant.last_name}`)}
+                    size="md"
+                    round
+                  />
                   <div>
                     <p className="text-sm font-semibold">
                       {consultant.first_name} {consultant.last_name}
                     </p>
-                    {consultant.city && <p className="text-xs text-muted-foreground">{consultant.city}</p>}
+                    {consultant.city && (
+                      <p className="text-xs text-muted-foreground">{consultant.city}</p>
+                    )}
                   </div>
                 </div>
                 {consultant.role && (
@@ -327,11 +387,16 @@ export function DealDetail({ deal, activities, communications, pipelines, owners
             <CardTitle className="text-sm font-semibold">Afsluiting</CardTitle>
           </CardHeader>
           <CardContent className="space-y-2 text-sm">
-            <InfoRow label="Type" value={CLOSED_TYPE_LABELS[deal.closed_type] ?? deal.closed_type} />
+            <InfoRow
+              label="Type"
+              value={CLOSED_TYPE_LABELS[deal.closed_type] ?? deal.closed_type}
+            />
             <InfoRow label="Reden" value={deal.closed_reason} />
             <InfoRow label="Notities" value={deal.closed_notes} />
             <InfoRow label="Datum" value={deal.closed_at ? fmtDate(deal.closed_at) : null} />
-            {deal.longterm_date && <InfoRow label="Follow-up" value={fmtDate(deal.longterm_date)} />}
+            {deal.longterm_date && (
+              <InfoRow label="Follow-up" value={fmtDate(deal.longterm_date)} />
+            )}
           </CardContent>
         </Card>
       )}
@@ -357,7 +422,10 @@ export function DealDetail({ deal, activities, communications, pipelines, owners
           onToggleDone={(act) => handleToggleActivityDone(act.id)}
           onDelete={(id) => handleDeleteActivity(id)}
           emptyIcon={Sparkles}
-          emptyAction={{ label: 'Eerste activiteit toevoegen', onClick: () => setActivityModal({ mode: 'new' }) }}
+          emptyAction={{
+            label: 'Eerste activiteit toevoegen',
+            onClick: () => setActivityModal({ mode: 'new' }),
+          }}
         />
       </div>
 

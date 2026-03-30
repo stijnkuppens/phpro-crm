@@ -21,10 +21,21 @@ type Props = {
   onSaved: () => void;
 };
 
-export function SlaRatesEditModal({ accountId, year, existingRate, open, onClose, onSaved }: Props) {
+export function SlaRatesEditModal({
+  accountId,
+  year,
+  existingRate,
+  open,
+  onClose,
+  onSaved,
+}: Props) {
   const [loading, setLoading] = useState(false);
-  const [fixedRate, setFixedRate] = useState(existingRate ? String(Number(existingRate.fixed_monthly_rate)) : '');
-  const [supportRate, setSupportRate] = useState(existingRate ? String(Number(existingRate.support_hourly_rate)) : '');
+  const [fixedRate, setFixedRate] = useState(
+    existingRate ? String(Number(existingRate.fixed_monthly_rate)) : '',
+  );
+  const [supportRate, setSupportRate] = useState(
+    existingRate ? String(Number(existingRate.support_hourly_rate)) : '',
+  );
   const [tools, setTools] = useState<ToolEntry[]>(() => {
     if (existingRate?.tools && existingRate.tools.length > 0) {
       return existingRate.tools.map((t) => ({
@@ -55,7 +66,10 @@ export function SlaRatesEditModal({ accountId, year, existingRate, open, onClose
 
     const validTools = tools
       .filter((t) => t.tool_name.trim() && t.monthly_price.trim())
-      .map((t) => ({ tool_name: t.tool_name.trim(), monthly_price: Number(t.monthly_price) }));
+      .map((t) => ({
+        tool_name: t.tool_name.trim(),
+        monthly_price: Number(t.monthly_price),
+      }));
 
     setLoading(true);
     const result = await upsertSlaRates(accountId, year, {
@@ -80,16 +94,28 @@ export function SlaRatesEditModal({ accountId, year, existingRate, open, onClose
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-1.5">
             <Label>Vast maandtarief (€)</Label>
-            <Input type="number" value={fixedRate} onChange={(e) => setFixedRate(e.target.value)} placeholder="0" />
+            <Input
+              type="number"
+              value={fixedRate}
+              onChange={(e) => setFixedRate(e.target.value)}
+              placeholder="0"
+            />
           </div>
           <div className="space-y-1.5">
             <Label>Support uurtarief (€)</Label>
-            <Input type="number" value={supportRate} onChange={(e) => setSupportRate(e.target.value)} placeholder="0" />
+            <Input
+              type="number"
+              value={supportRate}
+              onChange={(e) => setSupportRate(e.target.value)}
+              placeholder="0"
+            />
           </div>
         </div>
 
         <div className="space-y-3">
-          <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Tools</h4>
+          <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+            Tools
+          </h4>
           {tools.map((tool, i) => (
             // biome-ignore lint/suspicious/noArrayIndexKey: dynamically added rows with no stable identity
             <div key={i} className="grid grid-cols-[1fr_120px_40px] gap-2 items-center">

@@ -15,14 +15,19 @@ export const getAccounts = cache(
     filters,
     page = 1,
     pageSize = 25,
-  }: GetAccountsParams = {}): Promise<{ data: AccountListItem[]; count: number }> => {
+  }: GetAccountsParams = {}): Promise<{
+    data: AccountListItem[];
+    count: number;
+  }> => {
     const supabase = await createServerClient();
     const from = (page - 1) * pageSize;
     const to = from + pageSize - 1;
 
     let query = supabase
       .from('accounts')
-      .select('*, owner:user_profiles!owner_id(id, full_name)', { count: 'exact' })
+      .select('*, owner:user_profiles!owner_id(id, full_name)', {
+        count: 'exact',
+      })
       .order('name', { ascending: true })
       .range(from, to);
 
@@ -50,6 +55,9 @@ export const getAccounts = cache(
       return { data: [], count: 0 };
     }
 
-    return { data: (data as unknown as AccountListItem[]) ?? [], count: count ?? 0 };
+    return {
+      data: (data as unknown as AccountListItem[]) ?? [],
+      count: count ?? 0,
+    };
   },
 );

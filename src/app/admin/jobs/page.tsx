@@ -15,7 +15,10 @@ export default async function JobsPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="Jobs" breadcrumbs={[{ label: 'Admin', href: '/admin' }, { label: 'Jobs' }]} />
+      <PageHeader
+        title="Jobs"
+        breadcrumbs={[{ label: 'Admin', href: '/admin' }, { label: 'Jobs' }]}
+      />
       <JobList initialData={data} initialCount={count} userId={user!.id} />
     </div>
   );

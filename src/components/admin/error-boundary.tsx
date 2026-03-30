@@ -40,7 +40,9 @@ export class ErrorBoundary extends Component<Props, State> {
               )}
             </CardContent>
             <CardFooter>
-              <Button onClick={() => this.setState({ hasError: false, error: null })}>Opnieuw proberen</Button>
+              <Button onClick={() => this.setState({ hasError: false, error: null })}>
+                Opnieuw proberen
+              </Button>
             </CardFooter>
           </Card>
         </div>

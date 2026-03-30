@@ -41,7 +41,9 @@ export const getConsultants = cache(
 
     if (search) {
       const s = escapeSearch(search);
-      query = query.or(`first_name.ilike.%${s}%,last_name.ilike.%${s}%,role.ilike.%${s}%,client_name.ilike.%${s}%`);
+      query = query.or(
+        `first_name.ilike.%${s}%,last_name.ilike.%${s}%,role.ilike.%${s}%,client_name.ilike.%${s}%`,
+      );
     }
 
     const { data, count, error } = await query;

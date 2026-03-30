@@ -10,7 +10,9 @@ import { createServerClient } from '@/lib/supabase/server';
 import type { Json } from '@/types/database';
 import { type ActivityFormValues, activityFormSchema } from '../types';
 
-export async function createActivity(values: ActivityFormValues): Promise<ActionResult<{ id: string }>> {
+export async function createActivity(
+  values: ActivityFormValues,
+): Promise<ActionResult<{ id: string }>> {
   let userId: string;
   try {
     ({ userId } = await requirePermission('activities.write'));
@@ -26,7 +28,11 @@ export async function createActivity(values: ActivityFormValues): Promise<Action
   const supabase = await createServerClient();
   const { data, error } = await supabase
     .from('activities')
-    .insert({ ...parsed.data, notes: parsed.data.notes as Json, owner_id: userId })
+    .insert({
+      ...parsed.data,
+      notes: parsed.data.notes as Json,
+      owner_id: userId,
+    })
     .select('id')
     .single();
 

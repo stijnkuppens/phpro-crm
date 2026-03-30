@@ -25,7 +25,11 @@ export async function upsertContract(
   }
 
   const supabase = await createServerClient();
-  const { data: before } = await supabase.from('contracts').select('*').eq('account_id', accountId).single();
+  const { data: before } = await supabase
+    .from('contracts')
+    .select('*')
+    .eq('account_id', accountId)
+    .single();
   const { data, error } = await supabase
     .from('contracts')
     .upsert({ ...parsed.data, account_id: accountId }, { onConflict: 'account_id' })

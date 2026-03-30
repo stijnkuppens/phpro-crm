@@ -19,7 +19,11 @@ export async function moveToBench(id: string): Promise<ActionResult> {
   const supabase = await createServerClient();
 
   // Fetch current consultant to check existing bench fields
-  const { data: consultant, error: fetchError } = await supabase.from('consultants').select('*').eq('id', id).single();
+  const { data: consultant, error: fetchError } = await supabase
+    .from('consultants')
+    .select('*')
+    .eq('id', id)
+    .single();
 
   if (fetchError || !consultant) {
     return err('Consultant niet gevonden');

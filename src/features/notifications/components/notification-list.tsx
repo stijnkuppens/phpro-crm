@@ -18,9 +18,13 @@ export function NotificationList({ initialData }: Props) {
     async (notification: Notification) => {
       if (!notification.read) {
         await markAsRead(notification.id);
-        setNotifications((prev) => prev.map((n) => (n.id === notification.id ? { ...n, read: true } : n)));
+        setNotifications((prev) =>
+          prev.map((n) => (n.id === notification.id ? { ...n, read: true } : n)),
+        );
       }
-      const link = (notification.metadata as Record<string, unknown> | null)?.link as string | undefined;
+      const link = (notification.metadata as Record<string, unknown> | null)?.link as
+        | string
+        | undefined;
       if (link) {
         router.push(link);
       }

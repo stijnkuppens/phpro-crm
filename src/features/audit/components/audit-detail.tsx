@@ -1,7 +1,13 @@
 'use client';
 
 import { Badge } from '@/components/ui/badge';
-import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from '@/components/ui/sheet';
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+} from '@/components/ui/sheet';
 import type { AuditLog } from '../types';
 
 type AuditDetailProps = {
@@ -34,9 +40,17 @@ function formatValue(val: unknown): string {
  * Compares only keys present in `after` (the submitted form fields),
  * plus any keys in `before` that were removed.
  */
-function UpdateDiff({ before, after }: { before: Record<string, unknown>; after: Record<string, unknown> }) {
+function UpdateDiff({
+  before,
+  after,
+}: {
+  before: Record<string, unknown>;
+  after: Record<string, unknown>;
+}) {
   const afterKeys = Object.keys(after);
-  const changed = afterKeys.filter((key) => JSON.stringify(before[key]) !== JSON.stringify(after[key]));
+  const changed = afterKeys.filter(
+    (key) => JSON.stringify(before[key]) !== JSON.stringify(after[key]),
+  );
 
   if (changed.length === 0) {
     return <p className="text-sm text-muted-foreground">Geen wijzigingen.</p>;
@@ -68,20 +82,31 @@ function UpdateDiff({ before, after }: { before: Record<string, unknown>; after:
 }
 
 /** Shows all fields of a created or deleted entity. */
-function BodySnapshot({ data, variant }: { data: Record<string, unknown>; variant: 'created' | 'deleted' }) {
-  const entries = Object.entries(data).filter(([, val]) => val !== null && val !== undefined && val !== '');
+function BodySnapshot({
+  data,
+  variant,
+}: {
+  data: Record<string, unknown>;
+  variant: 'created' | 'deleted';
+}) {
+  const entries = Object.entries(data).filter(
+    ([, val]) => val !== null && val !== undefined && val !== '',
+  );
 
   if (entries.length === 0) {
     return <p className="text-sm text-muted-foreground">Geen data.</p>;
   }
 
-  const colorClass = variant === 'created' ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400';
+  const colorClass =
+    variant === 'created' ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400';
 
   return (
     <div className="space-y-1">
       {entries.map(([key, val]) => (
         <div key={key} className="flex gap-2 text-xs">
-          <span className="w-32 shrink-0 font-medium capitalize text-muted-foreground">{formatKey(key)}</span>
+          <span className="w-32 shrink-0 font-medium capitalize text-muted-foreground">
+            {formatKey(key)}
+          </span>
           <pre className={`whitespace-pre-wrap ${colorClass}`}>{formatValue(val)}</pre>
         </div>
       ))}
@@ -100,7 +125,9 @@ function ExtraMetadata({ metadata }: { metadata: Record<string, unknown> }) {
     <div className="space-y-1">
       {extras.map(([key, val]) => (
         <div key={key} className="flex gap-2 text-xs">
-          <span className="w-32 shrink-0 font-medium capitalize text-muted-foreground">{formatKey(key)}</span>
+          <span className="w-32 shrink-0 font-medium capitalize text-muted-foreground">
+            {formatKey(key)}
+          </span>
           <pre className="whitespace-pre-wrap">{formatValue(val)}</pre>
         </div>
       ))}
@@ -146,8 +173,9 @@ export function AuditDetail({ log, open, onCloseAction }: AuditDetailProps) {
 
             <dt className="font-medium text-muted-foreground">IP Address</dt>
             <dd className="font-mono text-xs">
-              {(isRecord(log.metadata) ? ((log.metadata as Record<string, unknown>).ip_address as string) : null) ??
-                '\u2014'}
+              {(isRecord(log.metadata)
+                ? ((log.metadata as Record<string, unknown>).ip_address as string)
+                : null) ?? '\u2014'}
             </dd>
           </dl>
 

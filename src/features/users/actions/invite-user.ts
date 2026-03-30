@@ -56,7 +56,10 @@ export async function inviteUser(values: InviteUserValues): Promise<ActionResult
 
   // handle_new_user() trigger created user_profiles with default role 'viewer'
   // Update to the selected role
-  const { error: roleError } = await admin.from('user_profiles').update({ role }).eq('id', created.user.id);
+  const { error: roleError } = await admin
+    .from('user_profiles')
+    .update({ role })
+    .eq('id', created.user.id);
 
   if (roleError) {
     logger.error({ err: roleError }, '[inviteUser] updateRole error');

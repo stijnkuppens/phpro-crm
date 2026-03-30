@@ -23,7 +23,10 @@ export async function updateContactAvatar(id: string, path: string): Promise<Act
   if (!parsed.success) return err('Ongeldige invoer');
 
   const supabase = await createServerClient();
-  const { error } = await supabase.from('contacts').update({ avatar_url: parsed.data.path }).eq('id', parsed.data.id);
+  const { error } = await supabase
+    .from('contacts')
+    .update({ avatar_url: parsed.data.path })
+    .eq('id', parsed.data.id);
 
   if (error) {
     logger.error({ err: error }, '[updateContactAvatar] database error');

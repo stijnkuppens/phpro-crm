@@ -49,12 +49,20 @@ export const dealColumns: ColumnDef<DealWithRelations>[] = [
     id: 'origin',
     meta: {
       label: 'Herkomst',
-      filter: { type: 'select', filterKey: 'origin', placeholder: 'Alle herkomst' },
+      filter: {
+        type: 'select',
+        filterKey: 'origin',
+        placeholder: 'Alle herkomst',
+      },
     },
     header: 'Herkomst',
     cell: ({ row }) => {
       const origin = row.original.origin;
-      return origin ? (ORIGIN_LABELS[origin] ?? origin) : <span className="text-muted-foreground">–</span>;
+      return origin ? (
+        (ORIGIN_LABELS[origin] ?? origin)
+      ) : (
+        <span className="text-muted-foreground">–</span>
+      );
     },
   },
   {
@@ -62,7 +70,11 @@ export const dealColumns: ColumnDef<DealWithRelations>[] = [
     id: 'stage',
     meta: {
       label: 'Stage',
-      filter: { type: 'select', filterKey: 'stage_id', placeholder: 'Alle stages' },
+      filter: {
+        type: 'select',
+        filterKey: 'stage_id',
+        placeholder: 'Alle stages',
+      },
     },
     header: 'Stage',
     cell: ({ row }) => {
@@ -86,7 +98,11 @@ export const dealColumns: ColumnDef<DealWithRelations>[] = [
     header: 'Bedrag',
     cell: ({ getValue }) => {
       const n = Number(getValue<number>() ?? 0);
-      return n ? <span className="font-medium">{formatEUR(n)}</span> : <span className="text-muted-foreground">–</span>;
+      return n ? (
+        <span className="font-medium">{formatEUR(n)}</span>
+      ) : (
+        <span className="text-muted-foreground">–</span>
+      );
     },
   },
   {
@@ -96,7 +112,13 @@ export const dealColumns: ColumnDef<DealWithRelations>[] = [
     header: 'Sluitdatum',
     cell: ({ getValue }) => {
       const d = getValue<string | null>();
-      return d ? new Date(d).toLocaleDateString('nl-BE', { day: 'numeric', month: 'short', year: 'numeric' }) : '';
+      return d
+        ? new Date(d).toLocaleDateString('nl-BE', {
+            day: 'numeric',
+            month: 'short',
+            year: 'numeric',
+          })
+        : '';
     },
   },
   {
@@ -124,7 +146,11 @@ export const dealColumns: ColumnDef<DealWithRelations>[] = [
     id: 'owner',
     meta: {
       label: 'Owner',
-      filter: { type: 'select', filterKey: 'owner_id', placeholder: 'Alle owners' },
+      filter: {
+        type: 'select',
+        filterKey: 'owner_id',
+        placeholder: 'Alle owners',
+      },
     },
     header: 'Owner',
     cell: ({ row }) => {

@@ -38,7 +38,9 @@ function BenchDetail({ consultant }: { consultant: ConsultantWithDetails }) {
         <div>
           <span className="text-muted-foreground">Prioriteit:</span>{' '}
           {consultant.priority ? (
-            <Badge className={CONSULTANT_PRIORITY_STYLES[consultant.priority]}>{consultant.priority}</Badge>
+            <Badge className={CONSULTANT_PRIORITY_STYLES[consultant.priority]}>
+              {consultant.priority}
+            </Badge>
           ) : (
             '-'
           )}
@@ -48,7 +50,9 @@ function BenchDetail({ consultant }: { consultant: ConsultantWithDetails }) {
         </div>
         <div>
           <span className="text-muted-foreground">Beschikbaar vanaf:</span>{' '}
-          {consultant.available_date ? new Date(consultant.available_date).toLocaleDateString('nl-BE') : '-'}
+          {consultant.available_date
+            ? new Date(consultant.available_date).toLocaleDateString('nl-BE')
+            : '-'}
         </div>
         <div>
           <span className="text-muted-foreground">Tarief:</span>{' '}
@@ -120,7 +124,9 @@ function BenchDetail({ consultant }: { consultant: ConsultantWithDetails }) {
       {consultant.description && (
         <div>
           <h4 className="text-sm font-medium mb-1">Beschrijving</h4>
-          <p className="text-sm text-muted-foreground whitespace-pre-wrap">{consultant.description}</p>
+          <p className="text-sm text-muted-foreground whitespace-pre-wrap">
+            {consultant.description}
+          </p>
         </div>
       )}
     </div>
@@ -150,7 +156,9 @@ function ActiveDetail({ consultant }: { consultant: ConsultantWithDetails }) {
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger
-                render={<Badge className={`cursor-help ${contractStatusColors[status]}`}>{status}</Badge>}
+                render={
+                  <Badge className={`cursor-help ${contractStatusColors[status]}`}>{status}</Badge>
+                }
               />
               <TooltipContent>{contractStatusDescriptions[status]}</TooltipContent>
             </Tooltip>
@@ -161,7 +169,10 @@ function ActiveDetail({ consultant }: { consultant: ConsultantWithDetails }) {
         </div>
         <div>
           <span className="text-muted-foreground">Periode:</span>{' '}
-          {consultant.start_date ? new Date(consultant.start_date).toLocaleDateString('nl-BE') : '-'} -{' '}
+          {consultant.start_date
+            ? new Date(consultant.start_date).toLocaleDateString('nl-BE')
+            : '-'}{' '}
+          -{' '}
           {consultant.is_indefinite
             ? 'onbepaald'
             : consultant.end_date
@@ -169,7 +180,8 @@ function ActiveDetail({ consultant }: { consultant: ConsultantWithDetails }) {
               : '-'}
         </div>
         <div>
-          <span className="text-muted-foreground">Opzegtermijn:</span> {consultant.notice_period_days ?? 30} dagen
+          <span className="text-muted-foreground">Opzegtermijn:</span>{' '}
+          {consultant.notice_period_days ?? 30} dagen
         </div>
       </div>
 
@@ -187,14 +199,17 @@ function ActiveDetail({ consultant }: { consultant: ConsultantWithDetails }) {
                     : 'bg-blue-100 text-blue-800'
                 }
               >
-                {consultant.contract_attribution.type === 'rechtstreeks' ? 'Rechtstreeks' : 'Cronos'}
+                {consultant.contract_attribution.type === 'rechtstreeks'
+                  ? 'Rechtstreeks'
+                  : 'Cronos'}
               </Badge>
             </div>
             {consultant.contract_attribution.type === 'cronos' && (
               <>
                 {consultant.contract_attribution.cc_name && (
                   <div>
-                    <span className="text-muted-foreground">CC Naam:</span> {consultant.contract_attribution.cc_name}
+                    <span className="text-muted-foreground">CC Naam:</span>{' '}
+                    {consultant.contract_attribution.cc_name}
                   </div>
                 )}
                 {consultant.contract_attribution.cc_contact_person && (
@@ -205,7 +220,8 @@ function ActiveDetail({ consultant }: { consultant: ConsultantWithDetails }) {
                 )}
                 {consultant.contract_attribution.cc_email && (
                   <div>
-                    <span className="text-muted-foreground">CC E-mail:</span> {consultant.contract_attribution.cc_email}
+                    <span className="text-muted-foreground">CC E-mail:</span>{' '}
+                    {consultant.contract_attribution.cc_email}
                   </div>
                 )}
                 {consultant.contract_attribution.cc_phone && (
@@ -260,12 +276,17 @@ function ActiveDetail({ consultant }: { consultant: ConsultantWithDetails }) {
               </thead>
               <tbody>
                 {[...consultant.rate_history]
-                  .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+                  .sort(
+                    (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
+                  )
                   .map((rh) => (
                     <tr key={rh.id} className="border-b last:border-0">
                       <td className="p-2 text-muted-foreground">
                         {new Date(rh.created_at).toLocaleDateString('nl-BE')}{' '}
-                        {new Date(rh.created_at).toLocaleTimeString('nl-BE', { hour: '2-digit', minute: '2-digit' })}
+                        {new Date(rh.created_at).toLocaleTimeString('nl-BE', {
+                          hour: '2-digit',
+                          minute: '2-digit',
+                        })}
                       </td>
                       <td className="p-2">{new Date(rh.date).toLocaleDateString('nl-BE')}</td>
                       <td className="p-2 text-right">{formatCurrency(Number(rh.rate))}</td>
@@ -293,14 +314,21 @@ function ActiveDetail({ consultant }: { consultant: ConsultantWithDetails }) {
               </thead>
               <tbody>
                 {[...consultant.extensions]
-                  .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+                  .sort(
+                    (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
+                  )
                   .map((ext) => (
                     <tr key={ext.id} className="border-b last:border-0">
                       <td className="p-2 text-muted-foreground">
                         {new Date(ext.created_at).toLocaleDateString('nl-BE')}{' '}
-                        {new Date(ext.created_at).toLocaleTimeString('nl-BE', { hour: '2-digit', minute: '2-digit' })}
+                        {new Date(ext.created_at).toLocaleTimeString('nl-BE', {
+                          hour: '2-digit',
+                          minute: '2-digit',
+                        })}
                       </td>
-                      <td className="p-2">{new Date(ext.new_end_date).toLocaleDateString('nl-BE')}</td>
+                      <td className="p-2">
+                        {new Date(ext.new_end_date).toLocaleDateString('nl-BE')}
+                      </td>
                       <td className="p-2 text-muted-foreground">{ext.notes ?? '-'}</td>
                     </tr>
                   ))}
@@ -337,7 +365,9 @@ function StopgezetDetail({ consultant }: { consultant: ConsultantWithDetails }) 
       {consultant.stop_reason && (
         <div>
           <h4 className="text-sm font-medium mb-1">Reden stopzetting</h4>
-          <p className="text-sm text-muted-foreground whitespace-pre-wrap">{consultant.stop_reason}</p>
+          <p className="text-sm text-muted-foreground whitespace-pre-wrap">
+            {consultant.stop_reason}
+          </p>
         </div>
       )}
 
@@ -354,7 +384,9 @@ function StopgezetDetail({ consultant }: { consultant: ConsultantWithDetails }) 
 
 export function ConsultantDetailModal({ consultant: initialConsultant, open, onClose }: Props) {
   const [consultant, setConsultant] = useState(initialConsultant);
-  const [activeModal, setActiveModal] = useState<'stop' | 'extend' | 'rate' | 'contract-attr' | null>(null);
+  const [activeModal, setActiveModal] = useState<
+    'stop' | 'extend' | 'rate' | 'contract-attr' | null
+  >(null);
   const initials = `${consultant.first_name[0]}${consultant.last_name[0]}`;
 
   // Client-side re-fetch is intentional here: after a sub-modal action (stop, extend,
@@ -363,7 +395,11 @@ export function ConsultantDetailModal({ consultant: initialConsultant, open, onC
   // an already-open modal, so we re-fetch the single consultant directly.
   const refresh = useCallback(async () => {
     const supabase = createBrowserClient();
-    const { data } = await supabase.from('consultants').select(CONSULTANT_SELECT).eq('id', consultant.id).single();
+    const { data } = await supabase
+      .from('consultants')
+      .select(CONSULTANT_SELECT)
+      .eq('id', consultant.id)
+      .single();
     if (data) setConsultant(data as unknown as ConsultantWithDetails);
   }, [consultant.id]);
 
@@ -375,7 +411,12 @@ export function ConsultantDetailModal({ consultant: initialConsultant, open, onC
 
   return (
     <>
-      <Modal open={open} onClose={onClose} title={`${consultant.first_name} ${consultant.last_name}`} size="wide">
+      <Modal
+        open={open}
+        onClose={onClose}
+        title={`${consultant.first_name} ${consultant.last_name}`}
+        size="wide"
+      >
         <div className="space-y-6">
           {/* Header with avatar and status */}
           <div className="flex items-center gap-3">

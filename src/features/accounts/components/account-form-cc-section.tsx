@@ -56,7 +56,9 @@ export function AccountFormCCSection({
               }}
             >
               <SelectTrigger>
-                {cc.competence_center_name || <span className="text-muted-foreground">Selecteer CC...</span>}
+                {cc.competence_center_name || (
+                  <span className="text-muted-foreground">Selecteer CC...</span>
+                )}
               </SelectTrigger>
               <SelectContent>
                 {ccOptions.map((o) => (
@@ -66,7 +68,13 @@ export function AccountFormCCSection({
                 ))}
               </SelectContent>
             </Select>
-            <Button type="button" variant="ghost" size="icon" onClick={() => onRemove(index)} className="shrink-0">
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              onClick={() => onRemove(index)}
+              className="shrink-0"
+            >
               <Trash2 className="h-4 w-4 text-muted-foreground" />
             </Button>
           </div>

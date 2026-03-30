@@ -27,30 +27,53 @@ import { useEntity } from '@/lib/hooks/use-entity';
 import { archiveConsultant } from '../actions/archive-consultant';
 import { consultantColumns } from '../columns';
 import { consultantExportColumns } from '../export-columns';
-import { CONSULTANT_SELECT, type ConsultantAccount, type ConsultantStatus, type ConsultantWithDetails } from '../types';
+import {
+  CONSULTANT_SELECT,
+  type ConsultantAccount,
+  type ConsultantStatus,
+  type ConsultantWithDetails,
+} from '../types';
 
 const ConsultantDetailModal = dynamic(
-  () => import('./consultant-detail-modal').then((m) => ({ default: m.ConsultantDetailModal })),
+  () =>
+    import('./consultant-detail-modal').then((m) => ({
+      default: m.ConsultantDetailModal,
+    })),
   { ssr: false },
 );
-const BenchFormModal = dynamic(() => import('./bench-form-modal').then((m) => ({ default: m.BenchFormModal })), {
-  ssr: false,
-});
+const BenchFormModal = dynamic(
+  () => import('./bench-form-modal').then((m) => ({ default: m.BenchFormModal })),
+  {
+    ssr: false,
+  },
+);
 const LinkConsultantWizard = dynamic(
-  () => import('./link-consultant-wizard').then((m) => ({ default: m.LinkConsultantWizard })),
+  () =>
+    import('./link-consultant-wizard').then((m) => ({
+      default: m.LinkConsultantWizard,
+    })),
   { ssr: false },
 );
 const StopConsultantModal = dynamic(
-  () => import('./stop-consultant-modal').then((m) => ({ default: m.StopConsultantModal })),
+  () =>
+    import('./stop-consultant-modal').then((m) => ({
+      default: m.StopConsultantModal,
+    })),
   { ssr: false },
 );
 const ExtendConsultantModal = dynamic(
-  () => import('./extend-consultant-modal').then((m) => ({ default: m.ExtendConsultantModal })),
+  () =>
+    import('./extend-consultant-modal').then((m) => ({
+      default: m.ExtendConsultantModal,
+    })),
   { ssr: false },
 );
-const RateChangeModal = dynamic(() => import('./rate-change-modal').then((m) => ({ default: m.RateChangeModal })), {
-  ssr: false,
-});
+const RateChangeModal = dynamic(
+  () => import('./rate-change-modal').then((m) => ({ default: m.RateChangeModal })),
+  {
+    ssr: false,
+  },
+);
 
 import { Avatar } from '@/components/admin/avatar';
 import { StatusBadge } from '@/components/admin/status-badge';
@@ -131,7 +154,9 @@ export function ConsultantListView({ initialData, initialCount, stats, accounts,
         }
         if (showArchived) {
           // Show archived + selected statuses (non-archived)
-          const statusConditions = realStatuses.map((s) => `and(is_archived.eq.false,status.eq.${s})`).join(',');
+          const statusConditions = realStatuses
+            .map((s) => `and(is_archived.eq.false,status.eq.${s})`)
+            .join(',');
           return q.or(`is_archived.eq.true,${statusConditions}`);
         }
         if (realStatuses.length > 0) {
@@ -193,13 +218,27 @@ export function ConsultantListView({ initialData, initialCount, stats, accounts,
 
   function getRowActions(row: ConsultantWithDetails) {
     if (row.is_archived) {
-      return [{ icon: ArchiveRestore, label: 'Herstellen', onClick: () => handleUnarchive(row) }];
+      return [
+        {
+          icon: ArchiveRestore,
+          label: 'Herstellen',
+          onClick: () => handleUnarchive(row),
+        },
+      ];
     }
     switch (row.status) {
       case 'bench':
         return [
-          { icon: Link2, label: 'Koppel', onClick: () => setActiveModal({ type: 'wizard', consultant: row }) },
-          { icon: SquarePen, label: 'Bewerk', onClick: () => setActiveModal({ type: 'edit', consultant: row }) },
+          {
+            icon: Link2,
+            label: 'Koppel',
+            onClick: () => setActiveModal({ type: 'wizard', consultant: row }),
+          },
+          {
+            icon: SquarePen,
+            label: 'Bewerk',
+            onClick: () => setActiveModal({ type: 'edit', consultant: row }),
+          },
           {
             icon: Archive,
             label: 'Archiveer',
@@ -207,13 +246,18 @@ export function ConsultantListView({ initialData, initialCount, stats, accounts,
             variant: 'destructive' as const,
             confirm: {
               title: 'Consultant archiveren?',
-              description: 'Deze consultant wordt gearchiveerd en is niet meer zichtbaar in de lijst.',
+              description:
+                'Deze consultant wordt gearchiveerd en is niet meer zichtbaar in de lijst.',
             },
           },
         ];
       case 'actief':
         return [
-          { icon: SquarePen, label: 'Bewerk', onClick: () => setActiveModal({ type: 'edit', consultant: row }) },
+          {
+            icon: SquarePen,
+            label: 'Bewerk',
+            onClick: () => setActiveModal({ type: 'edit', consultant: row }),
+          },
           {
             icon: CalendarPlus,
             label: 'Verlengen',
@@ -233,8 +277,16 @@ export function ConsultantListView({ initialData, initialCount, stats, accounts,
         ];
       case 'stopgezet':
         return [
-          { icon: SquarePen, label: 'Bewerk', onClick: () => setActiveModal({ type: 'edit', consultant: row }) },
-          { icon: RotateCcw, label: 'Naar bench', onClick: () => handleMoveToBench(row) },
+          {
+            icon: SquarePen,
+            label: 'Bewerk',
+            onClick: () => setActiveModal({ type: 'edit', consultant: row }),
+          },
+          {
+            icon: RotateCcw,
+            label: 'Naar bench',
+            onClick: () => handleMoveToBench(row),
+          },
         ];
       default:
         return [];
@@ -266,7 +318,11 @@ export function ConsultantListView({ initialData, initialCount, stats, accounts,
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           <StatCard title="Bench" value={stats.benchCount} subtitle="consultants" />
           <StatCard title="Actief" value={stats.activeCount} subtitle="consultants" />
-          <StatCard title="Max maandomzet" value={formatEUR(stats.maxRevenue)} subtitle="op basis van uurtarieven" />
+          <StatCard
+            title="Max maandomzet"
+            value={formatEUR(stats.maxRevenue)}
+            subtitle="op basis van uurtarieven"
+          />
           <StatCard title="Stopgezet" value={stats.stoppedCount} subtitle="consultants" />
         </div>
 
@@ -307,18 +363,23 @@ export function ConsultantListView({ initialData, initialCount, stats, accounts,
           rowActions={(row) => getRowActions(row)}
           renderMobileCard={(row) => {
             const name = `${row.first_name} ${row.last_name}`;
-            const initials = [row.first_name, row.last_name].map((w) => w?.[0]?.toUpperCase() ?? '').join('');
+            const initials = [row.first_name, row.last_name]
+              .map((w) => w?.[0]?.toUpperCase() ?? '')
+              .join('');
             const rate =
               row.status === 'bench'
                 ? (() => {
                     if (row.min_hourly_rate != null && row.max_hourly_rate != null)
                       return `${formatEUR(row.min_hourly_rate)}–${formatEUR(row.max_hourly_rate)}/u`;
-                    if (row.min_hourly_rate != null) return `vanaf ${formatEUR(row.min_hourly_rate)}/u`;
-                    if (row.max_hourly_rate != null) return `tot ${formatEUR(row.max_hourly_rate)}/u`;
+                    if (row.min_hourly_rate != null)
+                      return `vanaf ${formatEUR(row.min_hourly_rate)}/u`;
+                    if (row.max_hourly_rate != null)
+                      return `tot ${formatEUR(row.max_hourly_rate)}/u`;
                     return null;
                   })()
                 : `${formatEUR(getCurrentRate(row))}/u`;
-            const contractStatus = row.status === 'actief' && !row.is_archived ? getContractStatus(row) : null;
+            const contractStatus =
+              row.status === 'actief' && !row.is_archived ? getContractStatus(row) : null;
             const roleLabel = row.status === 'bench' ? row.roles?.[0] : row.role;
             const clientName = row.account?.name ?? row.client_name;
             return (
@@ -328,7 +389,9 @@ export function ConsultantListView({ initialData, initialCount, stats, accounts,
                   <div className="flex flex-wrap items-center gap-1.5">
                     <span className="font-medium">{name}</span>
                     <StatusBadge colorMap={CONSULTANT_STATUS_STYLES} value={row.status}>
-                      {CONSULTANT_STATUS_LABELS[row.status as keyof typeof CONSULTANT_STATUS_LABELS] ?? row.status}
+                      {CONSULTANT_STATUS_LABELS[
+                        row.status as keyof typeof CONSULTANT_STATUS_LABELS
+                      ] ?? row.status}
                     </StatusBadge>
                     {contractStatus && (
                       <span
@@ -338,13 +401,17 @@ export function ConsultantListView({ initialData, initialCount, stats, accounts,
                       </span>
                     )}
                   </div>
-                  {row.city && <div className="mt-0.5 text-xs text-muted-foreground">{row.city}</div>}
+                  {row.city && (
+                    <div className="mt-0.5 text-xs text-muted-foreground">{row.city}</div>
+                  )}
                   {(roleLabel || clientName) && (
                     <div className="mt-1 text-xs text-muted-foreground">
                       {[roleLabel, clientName].filter(Boolean).join(' · ')}
                     </div>
                   )}
-                  {rate && <div className="mt-1 text-sm font-semibold text-primary-action">{rate}</div>}
+                  {rate && (
+                    <div className="mt-1 text-sm font-semibold text-primary-action">{rate}</div>
+                  )}
                 </div>
               </div>
             );

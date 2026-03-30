@@ -12,7 +12,11 @@ export const accountColumns: ColumnDef<AccountListItem>[] = [
     id: 'name',
     meta: {
       label: 'Account',
-      filter: { type: 'search', placeholder: 'Zoek accounts...', searchColumns: ['name', 'domain'] },
+      filter: {
+        type: 'search',
+        placeholder: 'Zoek accounts...',
+        searchColumns: ['name', 'domain'],
+      },
     },
     header: 'Account',
     cell: ({ row }) => {
@@ -125,7 +129,9 @@ export const accountColumns: ColumnDef<AccountListItem>[] = [
     header: 'Consultants',
     cell: ({ row }) => {
       const count = row.original.active_consultant_count;
-      return <StatusBadge positive={count > 0}>{count > 0 ? `${count} actief` : 'Geen'}</StatusBadge>;
+      return (
+        <StatusBadge positive={count > 0}>{count > 0 ? `${count} actief` : 'Geen'}</StatusBadge>
+      );
     },
   },
   {

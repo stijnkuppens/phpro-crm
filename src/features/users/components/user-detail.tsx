@@ -1,75 +1,94 @@
 'use client';
 
-import { useState, useTransition } from 'react';
-import { toast } from 'sonner';
-import { Badge } from '@/components/ui/badge';
+import { Avatar } from '@/components/admin/avatar';
+import { InfoRow } from '@/components/admin/info-row';
+import { StatusBadge } from '@/components/admin/status-badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { updateUserRole } from '@/features/users/actions/update-user-role';
-import { roles } from '@/lib/acl';
-import { useAuth } from '@/lib/hooks/use-auth';
-import type { Role } from '@/types/acl';
-import type { Database } from '@/types/database';
+import { formatDate, formatDateTime } from '@/lib/format';
+import type { UserDetail as UserDetailType } from '../queries/get-user';
 
-type Profile = Database['public']['Tables']['user_profiles']['Row'];
-
-type Props = {
-  profile: Profile;
+const ROLE_LABELS: Record<string, string> = {
+  admin: 'Admin',
+  sales_manager: 'Sales Manager',
+  sales_rep: 'Sales Rep',
+  customer_success: 'Customer Success',
+  marketing: 'Marketing',
 };
 
-export function UserDetail({ profile: initialProfile }: Props) {
-  const { role: currentRole } = useAuth();
-  const [profile, setProfile] = useState(initialProfile);
-  const [isPending, startTransition] = useTransition();
+const ROLE_STYLES: Record<string, string> = {
+  admin: 'bg-purple-100 text-purple-700',
+  sales_manager: 'bg-blue-100 text-blue-700',
+  sales_rep: 'bg-green-100 text-green-700',
+  customer_success: 'bg-orange-100 text-orange-700',
+  marketing: 'bg-pink-100 text-pink-700',
+};
 
-  const handleRoleChange = (newRole: string | null) => {
-    if (!newRole || !(roles as readonly string[]).includes(newRole)) return;
-    const role = newRole as Role;
-    startTransition(async () => {
-      const result = await updateUserRole(profile.id, role);
-      if (result.error) {
-        toast.error(typeof result.error === 'string' ? result.error : 'Failed to update role');
-      } else {
-        toast.success('Role updated');
-        setProfile((prev) => ({ ...prev, role }));
-      }
-    });
-  };
-
+function getInitials(name: string): string {
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Gebruikersdetails</CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        <div>
-          <p className="text-sm font-medium text-muted-foreground">Naam</p>
-          <p>{profile.full_name || '—'}</p>
-        </div>
-        <div>
-          <p className="text-sm font-medium text-muted-foreground">Rol</p>
-          {currentRole === 'admin' ? (
-            <Select value={profile.role} onValueChange={handleRoleChange} disabled={isPending}>
-              <SelectTrigger className="w-40">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {roles.map((r) => (
-                  <SelectItem key={r} value={r}>
-                    {r}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          ) : (
-            <Badge>{profile.role}</Badge>
-          )}
-        </div>
-        <div>
-          <p className="text-sm font-medium text-muted-foreground">Lid sinds</p>
-          <p>{new Date(profile.created_at).toLocaleDateString()}</p>
-        </div>
-      </CardContent>
-    </Card>
+    name
+      .split(' ')
+      .map((n) => n[0])
+      .join('')
+      .toUpperCase() || '?'
+  );
+}
+
+type Props = {
+  user: UserDetailType;
+};
+
+export function UserDetail({ user }: Props) {
+  return (
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      {/* Profile */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-sm font-semibold">Profiel</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4 text-sm">
+          <div className="flex items-center gap-4 pb-2">
+            <Avatar
+              path={user.avatar_url || null}
+              fallback={getInitials(user.full_name)}
+              size="md"
+              round
+            />
+            <div>
+              <p className="font-medium text-base">{user.full_name || 'Naamloos'}</p>
+              <p className="text-muted-foreground">{user.email}</p>
+            </div>
+          </div>
+          <InfoRow label="Rol">
+            <StatusBadge colorMap={ROLE_STYLES} value={user.role}>
+              {ROLE_LABELS[user.role] ?? user.role}
+            </StatusBadge>
+          </InfoRow>
+          <InfoRow label="E-mail" value={user.email} />
+        </CardContent>
+      </Card>
+
+      {/* Account details */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-sm font-semibold">Accountgegevens</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4 text-sm">
+          <InfoRow label="Lid sinds" value={formatDate(user.created_at)} />
+          <InfoRow
+            label="Laatste login"
+            value={user.last_sign_in_at ? formatDateTime(user.last_sign_in_at) : 'Nooit'}
+          />
+          <InfoRow
+            label="E-mail bevestigd"
+            value={user.email_confirmed_at ? formatDate(user.email_confirmed_at) : 'Nee'}
+          />
+          <InfoRow
+            label="Uitgenodigd op"
+            value={user.invited_at ? formatDate(user.invited_at) : undefined}
+          />
+          <InfoRow label="Laatst bijgewerkt" value={formatDateTime(user.updated_at)} />
+        </CardContent>
+      </Card>
+    </div>
   );
 }

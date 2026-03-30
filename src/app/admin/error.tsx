@@ -2,7 +2,13 @@
 
 import { RouteErrorCard } from '@/components/admin/route-error-card';
 
-export default function AdminError({ error, reset }: { error: Error & { digest?: string }; reset: () => void }) {
+export default function AdminError({
+  error,
+  reset,
+}: {
+  error: Error & { digest?: string };
+  reset: () => void;
+}) {
   return (
     <RouteErrorCard
       title="Er ging iets mis"

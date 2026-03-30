@@ -26,7 +26,14 @@ type Props = {
   environments: ReferenceOption[];
 };
 
-export function AccountFormHostingSection({ entries, onAdd, onRemove, onUpdate, providers, environments }: Props) {
+export function AccountFormHostingSection({
+  entries,
+  onAdd,
+  onRemove,
+  onUpdate,
+  providers,
+  environments,
+}: Props) {
   return (
     <div className="space-y-2">
       <div className="flex items-center justify-between">
@@ -45,11 +52,16 @@ export function AccountFormHostingSection({ entries, onAdd, onRemove, onUpdate, 
                 onValueChange={(v) => {
                   if (!v) return;
                   const found = providers.find((o) => o.id === v);
-                  onUpdate(index, { provider_id: v, provider_name: found?.name ?? '' });
+                  onUpdate(index, {
+                    provider_id: v,
+                    provider_name: found?.name ?? '',
+                  });
                 }}
               >
                 <SelectTrigger>
-                  {entry.provider_name || <span className="text-muted-foreground">Provider...</span>}
+                  {entry.provider_name || (
+                    <span className="text-muted-foreground">Provider...</span>
+                  )}
                 </SelectTrigger>
                 <SelectContent>
                   {providers.map((o) => (
@@ -65,11 +77,16 @@ export function AccountFormHostingSection({ entries, onAdd, onRemove, onUpdate, 
                 value={entry.environment_id || undefined}
                 onValueChange={(v) => {
                   const found = environments.find((o) => o.id === v);
-                  onUpdate(index, { environment_id: v ?? '', environment_name: found?.name ?? '' });
+                  onUpdate(index, {
+                    environment_id: v ?? '',
+                    environment_name: found?.name ?? '',
+                  });
                 }}
               >
                 <SelectTrigger>
-                  {entry.environment_name || <span className="text-muted-foreground">Omgeving</span>}
+                  {entry.environment_name || (
+                    <span className="text-muted-foreground">Omgeving</span>
+                  )}
                 </SelectTrigger>
                 <SelectContent>
                   {environments.map((env) => (
@@ -80,11 +97,21 @@ export function AccountFormHostingSection({ entries, onAdd, onRemove, onUpdate, 
                 </SelectContent>
               </Select>
             </div>
-            <Button type="button" variant="ghost" size="icon" onClick={() => onRemove(index)} className="shrink-0">
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              onClick={() => onRemove(index)}
+              className="shrink-0"
+            >
               <Trash2 className="h-4 w-4 text-muted-foreground" />
             </Button>
           </div>
-          <Input value={entry.url} onChange={(e) => onUpdate(index, { url: e.target.value })} placeholder="URL" />
+          <Input
+            value={entry.url}
+            onChange={(e) => onUpdate(index, { url: e.target.value })}
+            placeholder="URL"
+          />
           <Input
             value={entry.notes}
             onChange={(e) => onUpdate(index, { notes: e.target.value })}

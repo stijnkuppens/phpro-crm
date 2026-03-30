@@ -36,7 +36,14 @@ type Props = {
   defaultValues?: Partial<CommunicationFormValues> & { id?: string };
 };
 
-export function CommunicationModal({ open, onClose, accountId, contacts = [], deals = [], defaultValues }: Props) {
+export function CommunicationModal({
+  open,
+  onClose,
+  accountId,
+  contacts = [],
+  deals = [],
+  defaultValues,
+}: Props) {
   const { brand } = useBrandTheme();
   const [sending, setSending] = useState(false);
   const [type, setType] = useState<CommunicationFormValues['type']>(defaultValues?.type ?? 'email');
@@ -49,10 +56,15 @@ export function CommunicationModal({ open, onClose, accountId, contacts = [], de
   const [contentValue, setContentValue] = useState(defaultContentText);
   const [contactId, setContactId] = useState(defaultValues?.contact_id ?? '');
   const [dealId, setDealId] = useState(defaultValues?.deal_id ?? '');
-  const [dateValue, setDateValue] = useState(defaultValues?.date ?? new Date().toISOString().slice(0, 16));
-  const [durationValue, setDurationValue] = useState(defaultValues?.duration_minutes?.toString() ?? '');
+  const [dateValue, setDateValue] = useState(
+    defaultValues?.date ?? new Date().toISOString().slice(0, 16),
+  );
+  const [durationValue, setDurationValue] = useState(
+    defaultValues?.duration_minutes?.toString() ?? '',
+  );
   const isEdit = !!defaultValues?.id;
-  const canSendEmail = type === 'email' && toValue.includes('@') && subjectValue.length > 0 && contentValue.length > 0;
+  const canSendEmail =
+    type === 'email' && toValue.includes('@') && subjectValue.length > 0 && contentValue.length > 0;
 
   const [, formAction] = useActionState(async (_prev: null, fd: FormData) => {
     const contentText = (fd.get('content_text') as string) || '';
@@ -106,7 +118,12 @@ export function CommunicationModal({ open, onClose, accountId, contacts = [], de
   }
 
   return (
-    <Modal open={open} onClose={onClose} title={isEdit ? 'Communicatie bewerken' : 'Nieuwe communicatie'} size="wide">
+    <Modal
+      open={open}
+      onClose={onClose}
+      title={isEdit ? 'Communicatie bewerken' : 'Nieuwe communicatie'}
+      size="wide"
+    >
       <form action={formAction} className="space-y-4">
         {/* Type pills */}
         <div className="flex gap-2">
@@ -177,7 +194,11 @@ export function CommunicationModal({ open, onClose, accountId, contacts = [], de
           </div>
           <div className="space-y-1.5">
             <Label htmlFor="contact_id">Contact</Label>
-            <Select name="contact_id" value={contactId} onValueChange={(v) => setContactId(v ?? '')}>
+            <Select
+              name="contact_id"
+              value={contactId}
+              onValueChange={(v) => setContactId(v ?? '')}
+            >
               <SelectTrigger>
                 {(() => {
                   const c = contacts.find((c) => c.id === contactId);
@@ -235,7 +256,12 @@ export function CommunicationModal({ open, onClose, accountId, contacts = [], de
             Annuleer
           </Button>
           {type === 'email' && (
-            <Button type="button" variant="outline" disabled={sending || !canSendEmail} onClick={handleSendEmail}>
+            <Button
+              type="button"
+              variant="outline"
+              disabled={sending || !canSendEmail}
+              onClick={handleSendEmail}
+            >
               <Send className="h-4 w-4 mr-1.5" />
               {sending ? 'Versturen...' : 'Verstuur via mail'}
             </Button>
