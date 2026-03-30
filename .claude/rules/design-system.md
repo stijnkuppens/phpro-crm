@@ -31,7 +31,12 @@ Tokens are defined as CSS custom properties in `src/app/globals.css` and exposed
 
 #### Brand overrides
 
-Set via `data-brand` attribute on `<html>`. Brand switching is handled by `useBrandTheme()` — never write brand-specific selectors in component CSS.
+Set via `data-brand` attribute on `<html>`. Brand switching is controlled by:
+- Hook: `src/lib/hooks/use-brand-theme.ts` (`useBrandTheme`) — dispatches `CustomEvent` so all instances sync
+- Switcher UI: `src/components/layout/brand-switcher.tsx` (in topbar)
+- CSS variables: `src/app/globals.css` — scoped under `[data-brand="phpro"]` and `[data-brand="25carat"]`
+
+Never write brand-specific selectors in component CSS.
 
 **PHPro** (`[data-brand="phpro"]`)
 - `--primary`: `#bdd431` (lime green)
@@ -550,6 +555,52 @@ type RowAction<T> = {
 ```
 
 When `confirm` is set, clicking the action opens a `ConfirmDialog` before `onClick` fires.
+
+#### DataTable Filter Rules
+
+Every DataTable **must** have at minimum:
+1. **A search bar** — for the entity's primary string column (name, title, email, subject)
+2. **Exclusive pills** — for the entity's primary categorical column (≤5 static options)
+
+Filter layout (rendered by `DataTableFilters`):
+```
+Row 1: [🔍 Search] [Dropdown] [Dropdown] ... [Dropdown]
+Row 2: [Alle] [Option1] [Option2] [Option3]              ← pills always below
+```
+
+| Criteria | Filter type | Column meta |
+|----------|------------|-------------|
+| Free text search on primary string field | Search input | `type: 'search'` |
+| ≤5 static options, pick one | **Pills** | `type: 'pills'`, `allLabel: 'Alle'` |
+| >5 options, or dynamic options | Select dropdown | `type: 'select'` |
+| Searchable list (accounts, users) | Combobox | `ComboboxFilter` in `filterBar` |
+
+Configuring pills in column meta:
+```tsx
+{
+  id: 'type',
+  meta: {
+    label: 'Type',
+    filter: {
+      type: 'pills',
+      options: [
+        { value: 'Klant', label: 'Klant' },
+        { value: 'Prospect', label: 'Prospect' },
+        { value: 'Partner', label: 'Partner' },
+      ],
+      allLabel: 'Alle',
+    },
+  },
+  header: 'Type',
+  cell: ...
+}
+```
+
+**Rules:**
+- Pills are always **exclusive** (one active at a time + "Alle" to clear)
+- For multi-select status filtering (e.g. consultants), use `FilterPill` components in a manual `filterBar`
+- Never put CTA buttons inside the filter bar — use `ListPageToolbar` instead
+- Every pills filter must include an "Alle" option via `allLabel`
 
 ---
 
@@ -1398,6 +1449,35 @@ Always use semantic tokens — never hardcode brand colors in component style at
 | SubNav tab | `bg-primary/10 text-primary-action` | `hover:bg-muted/50 hover:text-foreground` |
 | Primary button | `bg-primary text-primary-foreground` | via shadcn |
 | Toggle active | `bg-primary text-primary-foreground` | — |
+
+### Buttons
+
+All buttons use the shadcn `<Button>` component. **Never hand-roll button styles** with raw `className` on `<Link>` or `<a>`.
+
+| Context | Variant | Size | Example |
+|---------|---------|------|---------|
+| **Primary action** (add, create, save) | `default` | `sm` | `<Button size="sm"><Plus /> Nieuw Account</Button>` |
+| **Page-level edit** (Bewerken in page header) | `default` | default | `<Button render={<Link href="..." />}><Pencil /> Bewerken</Button>` |
+| **Secondary action** (edit, filter, simulate) | `outline` | `sm` | `<Button variant="outline" size="sm"><Pencil /> Bewerken</Button>` |
+| **Empty state CTA** | `outline` | default | `<Button variant="outline"><Plus /> Consultant koppelen</Button>` |
+| **Destructive** (delete, stop) | `destructive` | — | `<Button variant="destructive">Stopzetten</Button>` |
+| **Modal cancel** | `outline` | — | `<Button variant="outline">Annuleren</Button>` |
+| **Modal submit** | `default` | — | `<Button>Opslaan</Button>` |
+| **Ghost** (icon-only, toolbar) | `ghost` | `icon` | `<Button variant="ghost" size="icon"><Pencil /></Button>` |
+
+**Rules:**
+- Primary actions always include a Lucide icon before the label
+- One primary action per section/page header (the most important action)
+- Page header links MUST use the `render` prop: `<Button render={<Link href="..." />}>` (base-ui, not asChild)
+- Do NOT set explicit `className` on SVG icons inside Buttons — the Button handles sizing via `[&_svg]` selectors
+- Save/submit buttons use the `Save` icon from lucide-react
+- All button text is in Dutch
+
+### Icons
+
+- Use Lucide icons (`lucide-react`), never emojis in UI components
+- Icon size in pills/badges: `h-3.5 w-3.5` (or `h-3 w-3` inside Badge with `mr-1`)
+- Icon size in buttons: `h-4 w-4`
 
 ### Heavy Component Loading
 

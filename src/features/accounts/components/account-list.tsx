@@ -1,16 +1,20 @@
 'use client';
 
-import { SquarePen, Trash2 } from 'lucide-react';
+import { Plus, SquarePen, Trash2 } from 'lucide-react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { Avatar } from '@/components/admin/avatar';
 import DataTable from '@/components/admin/data-table';
 import { buildFilterQuery, type FilterOption } from '@/components/admin/data-table-filters';
+import { ExportDropdown } from '@/components/admin/export-dropdown';
 import { StatusBadge } from '@/components/admin/status-badge';
+import { Button } from '@/components/ui/button';
 import { useEntity } from '@/lib/hooks/use-entity';
 import { deleteAccount } from '../actions/delete-account';
 import { accountColumns } from '../columns';
+import { accountExportColumns } from '../export-columns';
 import { ACCOUNT_TYPE_STYLES, type AccountListItem } from '../types';
 
 const PAGE_SIZE = 25;
@@ -63,8 +67,19 @@ export function AccountList({ initialData, initialCount, filterOptions }: Accoun
   };
 
   return (
-    <div className="space-y-4">
-      <DataTable
+    <DataTable
+      toolbar={
+        <div className="flex gap-2">
+          <ExportDropdown
+            entity="accounts"
+            columns={accountExportColumns}
+            filters={{ sort: { column: 'name', direction: 'asc' } }}
+          />
+          <Button size="sm" nativeButton={false} render={<Link href="/admin/accounts/new" />}>
+            <Plus /> Nieuw Account
+          </Button>
+        </div>
+      }
         tableId="accounts"
         columns={accountColumns}
         data={data}
@@ -144,6 +159,5 @@ export function AccountList({ initialData, initialCount, filterOptions }: Accoun
           },
         ]}
       />
-    </div>
   );
 }

@@ -72,6 +72,8 @@ type DataTableBaseProps<T> = {
   bulkActions?: BulkAction[];
   loading?: boolean;
   refreshing?: boolean;
+  /** Action buttons rendered between the filter bar and the table */
+  toolbar?: React.ReactNode;
   /** Render a mobile card for each row. When provided, cards replace the table on mobile viewports. */
   renderMobileCard?: (row: T, actions?: RowAction<T>[]) => React.ReactNode;
 };
@@ -240,6 +242,7 @@ export default function DataTable<T extends Record<string, any>>({
   bulkActions,
   loading,
   refreshing,
+  toolbar,
   renderMobileCard,
 }: DataTableProps<T>) {
   const isMobile = useIsMobile();
@@ -353,6 +356,10 @@ export default function DataTable<T extends Record<string, any>>({
             )}
           </div>
         </div>
+      )}
+
+      {toolbar && (
+        <div className="flex justify-end">{toolbar}</div>
       )}
 
       {(filterBar || filters || (!showMobileCards && tableId)) && (

@@ -321,6 +321,14 @@ supabase.auth.onAuthStateChange((_event, session) => {
 
 This is safe because server-side middleware enforces auth/role checks. The client-side role is for UI only, and `null` role during the brief fetch window is more restrictive, not less.
 
+### Supabase Realtime: WebSocket 431 with self-hosted Docker
+
+The Supabase Realtime service uses Cowboy (Erlang HTTP server) which has a ~4KB limit per header value. The browser sends all `localhost` cookies (chunked Supabase JWT auth tokens from `@supabase/ssr`, totaling 5-8KB) in a single `Cookie` header. Cowboy rejects this with HTTP 431 before the WebSocket upgrade completes.
+
+**Fix:** Kong's `request-transformer` plugin strips the `Cookie` header on the `realtime-v1-ws` route in `docker/volumes/api/kong.yml`. The Realtime WebSocket authenticates via the `apikey` query parameter, not cookies — so cookies are unnecessary. Do not remove this `remove.headers` config.
+
+**Symptom:** `WebSocket connection to 'ws://localhost:8000/realtime/v1/websocket?apikey=...' failed:` in the browser console, with 431 in Kong access logs. curl works fine (sends no cookies).
+
 ### useRealtime: Pagination awareness
 
 The `useRealtime` hook applies INSERT/UPDATE/DELETE events to local state. Be aware that INSERTs prepend without respecting page boundaries. Only use `useRealtime` on views where seeing live updates is more important than strict pagination.

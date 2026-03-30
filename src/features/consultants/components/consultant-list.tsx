@@ -19,6 +19,7 @@ import { toast } from 'sonner';
 import DataTable from '@/components/admin/data-table';
 import { ExportDropdown } from '@/components/admin/export-dropdown';
 import { FilterPill } from '@/components/admin/filter-pill';
+import { ListPageToolbar } from '@/components/admin/list-page-toolbar';
 import { PageHeader } from '@/components/admin/page-header';
 import { StatCard } from '@/components/admin/stat-card';
 import { Button } from '@/components/ui/button';
@@ -296,23 +297,26 @@ export function ConsultantListView({ initialData, initialCount, stats, accounts,
   return (
     <>
       <div className="space-y-6">
-        <PageHeader
-          title="Consultants"
-          breadcrumbs={[{ label: 'Admin', href: '/admin' }, { label: 'Consultants' }]}
-          actions={
-            <div className="flex gap-2">
-              <ExportDropdown
-                entity="consultants"
-                columns={consultantExportColumns}
-                filters={{ sort: { column: 'last_name', direction: 'asc' } }}
-              />
-              <Button size="sm" onClick={() => setShowNewBench(true)}>
-                <Plus />
-                Nieuwe consultant
-              </Button>
-            </div>
-          }
-        />
+        <div>
+          <PageHeader
+            title="Consultants"
+            breadcrumbs={[{ label: 'Admin', href: '/admin' }, { label: 'Consultants' }]}
+          />
+          <ListPageToolbar
+            actions={
+              <div className="flex gap-2">
+                <ExportDropdown
+                  entity="consultants"
+                  columns={consultantExportColumns}
+                  filters={{ sort: { column: 'last_name', direction: 'asc' } }}
+                />
+                <Button size="sm" onClick={() => setShowNewBench(true)}>
+                  <Plus /> Nieuwe consultant
+                </Button>
+              </div>
+            }
+          />
+        </div>
 
         {/* Stat cards */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">

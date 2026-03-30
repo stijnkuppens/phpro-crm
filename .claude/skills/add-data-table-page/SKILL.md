@@ -6,240 +6,312 @@ type: skill
 
 # Add Data Table Page
 
-Creates an admin list page with the project's DataTable component, including debounced search, pagination, row-level delete with confirmation, and bulk actions.
+Creates an admin list page with the project's DataTable component, including server-first data flow, declarative column definitions with filter meta, row actions, and bulk actions.
 
-## Two Files Required
+## Three Files Required
 
-### 1. Column Definitions — `src/features/<feature>/components/<singular>-columns.tsx`
+### 1. Column Definitions — `src/features/{{plural}}/columns.tsx`
 
-Factory function that receives `onDelete` and `onNavigate` callbacks:
+Declarative column array (not a factory function). Filter configuration lives in column `meta`:
 
 ```tsx
 'use client';
 
 import type { ColumnDef } from '@tanstack/react-table';
-import { Button } from '@/components/ui/button';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { MoreHorizontal, Eye, Pencil, Trash2 } from 'lucide-react';
-import type { {{Singular}} } from '../types';
+import { Avatar } from '@/components/admin/avatar';
+import { StatusBadge } from '@/components/admin/status-badge';
+import type { {{Singular}}ListItem } from './types';
+import { {{SINGULAR}}_TYPE_STYLES } from './types';
 
-export function get{{Singular}}Columns(options: {
-  onDelete: (id: string) => void;
-  onNavigate: (path: string) => void;
-}): ColumnDef<{{Singular}}>[] {
-  return [
-    { accessorKey: 'name', header: 'Name' },
-    { accessorKey: 'email', header: 'Email' },
-    {
-      accessorKey: 'created_at',
-      header: 'Created',
-      cell: ({ row }) => new Date(row.getValue('created_at')).toLocaleDateString(),
+export const {{singular}}Columns: ColumnDef<{{Singular}}ListItem>[] = [
+  {
+    accessorKey: 'name',
+    id: 'name',
+    meta: {
+      label: 'Naam',
+      filter: { type: 'search', placeholder: 'Zoek {{plural}}...' },
     },
-    {
-      id: 'actions',
-      enableSorting: false,
-      cell: ({ row }) => (
-        <DropdownMenu>
-          <DropdownMenuTrigger
-            render={
-              <Button variant="ghost" size="sm">
-                <MoreHorizontal className="h-4 w-4" />
-              </Button>
-            }
-          />
-          <DropdownMenuContent align="end">
-            <DropdownMenuItem onClick={() => options.onNavigate(`/admin/{{plural}}/${row.original.id}`)}>
-              <Eye className="mr-2 h-4 w-4" /> View
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => options.onNavigate(`/admin/{{plural}}/${row.original.id}/edit`)}>
-              <Pencil className="mr-2 h-4 w-4" /> Edit
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              className="text-destructive"
-              onClick={() => options.onDelete(row.original.id)}
-            >
-              <Trash2 className="mr-2 h-4 w-4" /> Delete
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      ),
+    header: 'Naam',
+    cell: ({ row }) => (
+      <div className="flex items-center gap-2">
+        <Avatar path={row.original.avatar_path} fallback={row.original.name?.[0] ?? '?'} size="xs" />
+        <span className="font-medium">{row.original.name}</span>
+      </div>
+    ),
+  },
+  {
+    accessorKey: 'type',
+    id: 'type',
+    meta: {
+      label: 'Type',
+      filter: {
+        type: 'pills',
+        options: [
+          { value: 'Klant', label: 'Klant' },
+          { value: 'Prospect', label: 'Prospect' },
+          { value: 'Partner', label: 'Partner' },
+        ],
+        allLabel: 'Alle',
+      },
     },
-  ];
+    header: 'Type',
+    cell: ({ row }) => (
+      <StatusBadge colorMap={ {{SINGULAR}}_TYPE_STYLES} value={row.original.type}>
+        {row.original.type}
+      </StatusBadge>
+    ),
+  },
+  {
+    accessorKey: 'status',
+    id: 'status',
+    meta: { label: 'Status' },
+    header: 'Status',
+    cell: ({ row }) => (
+      <StatusBadge positive={row.original.status === 'Actief'}>
+        {row.original.status}
+      </StatusBadge>
+    ),
+  },
+];
+```
+
+### Column filter meta types:
+
+| Filter type | Meta config | Renders as |
+|-------------|-------------|------------|
+| Search | `{ type: 'search', placeholder: '...' }` | Text input |
+| Pills | `{ type: 'pills', options: [...], allLabel: 'Alle' }` | Exclusive pill row below search |
+| Select | `{ type: 'select', options: [...], placeholder: '...' }` | Dropdown |
+
+**Rules:**
+- Columns file is `columns.tsx` (not `.ts`) — cells render JSX
+- Export a `const` array, not a factory function
+- Every status-like value MUST use `StatusBadge`
+- Every DataTable must have at minimum a search filter and pills for the primary category
+
+### 2. List Component — `src/features/{{plural}}/components/{{singular}}-list.tsx`
+
+```tsx
+'use client';
+
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { Plus, Pencil, Trash2 } from 'lucide-react';
+import { toast } from 'sonner';
+import { Button } from '@/components/ui/button';
+import { ListPageToolbar } from '@/components/admin/list-page-toolbar';
+import DataTable from '@/components/admin/data-table';
+import { useEntity } from '@/lib/hooks/use-entity';
+import { buildFilterQuery } from '@/components/admin/data-table-filters';
+import { {{singular}}Columns } from '../columns';
+import { delete{{Singular}} } from '../actions/delete-{{singular}}';
+import type { {{Singular}}ListItem } from '../types';
+import { escapeSearch } from '@/lib/utils/escape-search';
+import dynamic from 'next/dynamic';
+
+const {{Singular}}FormModal = dynamic(
+  () => import('./{{singular}}-form-modal').then((m) => ({ default: m.{{Singular}}FormModal })),
+);
+
+type Props = {
+  initialData: {{Singular}}ListItem[];
+  initialCount: number;
+};
+
+const PAGE_SIZE = 25;
+
+export function {{Singular}}List({ initialData, initialCount }: Props) {
+  const router = useRouter();
+  const [page, setPage] = useState(1);
+  const [filters, setFilters] = useState<Record<string, string | undefined>>({});
+  const [showNew, setShowNew] = useState(false);
+  const [editId, setEditId] = useState<string | null>(null);
+
+  const { data, total, fetchList, refreshing } = useEntity<{{Singular}}ListItem>({
+    table: '{{table}}',
+    pageSize: PAGE_SIZE,
+    initialData,
+    initialCount,
+  });
+
+  const load = useCallback(() => {
+    const { orFilter, eqFilters } = buildFilterQuery({{singular}}Columns, filters);
+    fetchList({
+      page,
+      sort: { column: 'name', direction: 'asc' },
+      orFilter: orFilter || undefined,
+      eqFilters,
+    });
+  }, [fetchList, page, filters]);
+
+  const isInitialMount = useRef(true);
+  useEffect(() => {
+    if (isInitialMount.current) { isInitialMount.current = false; return; }
+    load();
+  }, [load]);
+
+  useEffect(() => { setPage(1); }, [filters]);
+
+  const handleDelete = useCallback(async (id: string) => {
+    const result = await delete{{Singular}}(id);
+    if (result.success) {
+      toast.success('{{Singular}} verwijderd');
+      load();
+      router.refresh();
+    } else {
+      toast.error(typeof result.error === 'string' ? result.error : 'Er is een fout opgetreden');
+    }
+  }, [load, router]);
+
+  return (
+    <>
+      <div className="space-y-6">
+        <ListPageToolbar
+          actions={
+            <Button size="sm" onClick={() => setShowNew(true)}>
+              <Plus /> Nieuw
+            </Button>
+          }
+        />
+
+        <DataTable
+          tableId="{{plural}}"
+          columns={ {{singular}}Columns}
+          data={data}
+          filters={filters}
+          onFilterChange={setFilters}
+          refreshing={refreshing}
+          pagination={{ page, pageSize: PAGE_SIZE, total }}
+          onPageChange={setPage}
+          onRowClick={(row) => router.push(`/admin/{{plural}}/${row.id}`)}
+          rowActions={(row) => [
+            { icon: Pencil, label: 'Bewerken', onClick: () => setEditId(row.id) },
+            {
+              icon: Trash2,
+              label: 'Verwijderen',
+              onClick: () => handleDelete(row.id),
+              variant: 'destructive' as const,
+              confirm: {
+                title: '{{Singular}} verwijderen?',
+                description: 'Dit kan niet ongedaan worden gemaakt.',
+              },
+            },
+          ]}
+        />
+      </div>
+
+      {showNew && (
+        <{{Singular}}FormModal
+          key="new"
+          {{singular}}Id={null}
+          open
+          onClose={() => setShowNew(false)}
+          onSaved={() => { load(); router.refresh(); }}
+        />
+      )}
+
+      {editId && (
+        <{{Singular}}FormModal
+          key={editId}
+          {{singular}}Id={editId}
+          open
+          onClose={() => setEditId(null)}
+          onSaved={() => { load(); router.refresh(); }}
+        />
+      )}
+    </>
+  );
 }
 ```
 
-**IMPORTANT:** `DropdownMenuTrigger` uses `render` prop (Base UI), NOT `asChild` (Radix).
-
-### 2. List Page — `src/app/admin/<plural>/page.tsx`
+### 3. Server Page — `src/app/admin/{{plural}}/page.tsx`
 
 ```tsx
-'use client';
-
-import { useEffect, useState, useCallback, useRef, useMemo } from 'react';
-import { useRouter } from 'next/navigation';
-import dynamic from 'next/dynamic';
-import type { ColumnDef } from '@tanstack/react-table';
-import { useEntity } from '@/lib/hooks/use-entity';
-import { PageHeader } from '@/components/admin/page-header';
-import { RoleGuard } from '@/components/admin/role-guard';
-import { ConfirmDialog } from '@/components/admin/confirm-dialog';
-import { Button } from '@/components/ui/button';
-import { Skeleton } from '@/components/ui/skeleton';
 import Link from 'next/link';
-import type { {{Singular}} } from '@/features/{{plural}}/types';
-import { get{{Singular}}Columns } from '@/features/{{plural}}/components/{{singular}}-columns';
+import { Plus } from 'lucide-react';
+import { PageHeader } from '@/components/admin/page-header';
+import { Button } from '@/components/ui/button';
+import { get{{Plural}} } from '@/features/{{plural}}/queries/get-{{plural}}';
+import { {{Singular}}List } from '@/features/{{plural}}/components/{{singular}}-list';
 
-const DataTable = dynamic(() => import('@/components/admin/data-table'), {
-  loading: () => <Skeleton className="h-96 w-full" />,
-});
-
-export default function {{Plural}}Page() {
-  const router = useRouter();
-  const { data, total, loading, fetchList, remove, bulkDelete } = useEntity<{{Singular}}>({
-    table: '{{table}}',
-  });
-  const [page, setPage] = useState(1);
-  const [search, setSearch] = useState('');
-  const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
-  const debounceRef = useRef<ReturnType<typeof setTimeout>>(null);
-
-  const handleSearch = useCallback((query: string) => {
-    if (debounceRef.current) clearTimeout(debounceRef.current);
-    debounceRef.current = setTimeout(() => {
-      setSearch(query);
-      setPage(1);
-    }, 300);
-  }, []);
-
-  useEffect(() => {
-    fetchList({
-      page,
-      search: search ? { column: 'name', query: search } : undefined,
-    });
-  }, [page, search, fetchList]);
-
-  const confirmDelete = useCallback(
-    async () => {
-      if (!pendingDeleteId) return;
-      const ok = await remove(pendingDeleteId);
-      setPendingDeleteId(null);
-      if (ok) fetchList({ page });
-    },
-    [remove, fetchList, page, pendingDeleteId],
-  );
-
-  const columns = useMemo(
-    () => get{{Singular}}Columns({ onDelete: setPendingDeleteId, onNavigate: router.push }),
-    [router.push],
-  );
-
+export default async function {{Plural}}Page() {
+  const { data, count } = await get{{Plural}}();
   return (
     <div className="space-y-6">
       <PageHeader
         title="{{Plural}}"
-        breadcrumbs={[{ label: 'Admin', href: '/admin' }, { label: '{{Plural}}' }]}
-        actions={
-          <RoleGuard permission="{{plural}}.write">
-            <Link href="/admin/{{plural}}/new">
-              <Button>Add {{Singular}}</Button>
-            </Link>
-          </RoleGuard>
-        }
-      />
-      <DataTable
-        columns={columns as ColumnDef<Record<string, unknown>>[]}
-        data={data}
-        searchColumn="name"
-        pagination={{ page, pageSize: 10, total }}
-        onPageChange={setPage}
-        onSearch={handleSearch}
-        loading={loading}
-        bulkActions={[
-          {
-            label: 'Delete',
-            action: async (ids) => {
-              const ok = await bulkDelete(ids);
-              if (ok) fetchList({ page });
-            },
-            variant: 'destructive',
-            confirm: {
-              title: 'Delete {{plural}}?',
-              description: 'This will permanently delete the selected {{plural}}. This action cannot be undone.',
-            },
-          },
+        breadcrumbs={[
+          { label: 'Admin', href: '/admin' },
+          { label: '{{Plural}}' },
         ]}
       />
-
-      <ConfirmDialog
-        open={pendingDeleteId !== null}
-        onOpenChange={(open) => { if (!open) setPendingDeleteId(null); }}
-        title="Delete {{singular}}?"
-        description="This will permanently delete this {{singular}}. This action cannot be undone."
-        onConfirm={confirmDelete}
-      />
+      <{{Singular}}List initialData={data} initialCount={count} />
     </div>
   );
 }
 ```
+
+**Also create `loading.tsx` and `error.tsx`** — see `add-admin-page` skill.
 
 ## Key Conventions
 
-### DataTable Props
-- `columns` — cast to `ColumnDef<Record<string, unknown>>[]` when passing
-- `data` — the array from `useEntity`
-- `searchColumn` — which column to show in the search placeholder
-- `pagination` — `{ page, pageSize, total }`
-- `onPageChange`, `onSearch` — callbacks
-- `loading` — shows skeleton rows
-- `bulkActions` — array of `{ label, action, variant?, confirm? }`
+### Server-First Data Flow
+The page (server component) fetches initial data and passes it to the client list component via `initialData`/`initialCount`. The client component only re-fetches when the user changes page/filters.
 
-### useEntity Hook
-`useEntity<T>({ table, pageSize? })` from `@/lib/hooks/use-entity` provides:
-- `data: T[]`, `total: number`, `loading: boolean`
-- `fetchList({ page?, sort?, search? })` — paginated fetch
-- `remove(id)` — single delete, returns boolean
-- `bulkDelete(ids)` — multi-delete, returns boolean
+### Skip Initial Fetch
+```tsx
+const isInitialMount = useRef(true);
+useEffect(() => {
+  if (isInitialMount.current) { isInitialMount.current = false; return; }
+  load();
+}, [load]);
+```
+This prevents double-fetching on mount since `initialData` is already loaded by the server.
+
+### DataTable Props (real interface)
+- `tableId` — enables column visibility persistence via localStorage
+- `columns` — `ColumnDef<T>[]` with filter meta
+- `data` — row data array
+- `filters` / `onFilterChange` — auto-filter state driven by column meta
+- `pagination` — `{ page, pageSize, total }`
+- `onPageChange` — page change callback
+- `onRowClick` — makes rows clickable
+- `rowActions` — `(row: T) => RowAction<T>[]` — per-row icon buttons
+- `bulkActions` — `BulkAction[]` — shown when rows are selected
+- `loading` / `refreshing` — skeleton vs dim states
+
+### Row Actions (not DropdownMenu)
+```tsx
+rowActions={(row) => [
+  { icon: Pencil, label: 'Bewerken', onClick: () => setEditId(row.id) },
+  {
+    icon: Trash2,
+    label: 'Verwijderen',
+    onClick: () => handleDelete(row.id),
+    variant: 'destructive',
+    confirm: { title: '...?', description: '...' },
+  },
+]}
+```
+When `confirm` is set, clicking the action opens a `ConfirmDialog` before `onClick` fires.
 
 ### Delete Pattern
-Single-row delete uses a `pendingDeleteId` state + controlled `ConfirmDialog`:
-1. Column action sets `setPendingDeleteId(row.original.id)`
-2. `ConfirmDialog` opens when `pendingDeleteId !== null`
-3. On confirm: `remove(id)` then `fetchList` to refresh
-4. On cancel: `setPendingDeleteId(null)`
-
-### Search Debouncing
-300ms debounce using `useRef<ReturnType<typeof setTimeout>>`:
-```ts
-const debounceRef = useRef<ReturnType<typeof setTimeout>>(null);
-const handleSearch = useCallback((query: string) => {
-  if (debounceRef.current) clearTimeout(debounceRef.current);
-  debounceRef.current = setTimeout(() => {
-    setSearch(query);
-    setPage(1);  // reset to first page on search
-  }, 300);
-}, []);
+Call the server action directly, check `result.success`, show toast:
+```tsx
+const result = await delete{{Singular}}(id);
+if (result.success) {
+  toast.success('{{Singular}} verwijderd');
+  load();
+  router.refresh();
+} else {
+  toast.error(typeof result.error === 'string' ? result.error : 'Er is een fout opgetreden');
+}
 ```
 
-### Loading Skeleton
-Add `loading.tsx` as a sibling to `page.tsx`:
+### Modal Remounting
+Always use conditional render + `key` to force clean remount when switching entities:
 ```tsx
-import { Skeleton } from '@/components/ui/skeleton';
-
-export default function Loading() {
-  return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <Skeleton className="h-8 w-32" />
-        <Skeleton className="h-10 w-32" />
-      </div>
-      <Skeleton className="h-10 w-64" />
-      <Skeleton className="h-96 w-full" />
-    </div>
-  );
-}
+{editId && (
+  <{{Singular}}FormModal key={editId} {{singular}}Id={editId} open onClose={() => setEditId(null)} />
+)}
 ```

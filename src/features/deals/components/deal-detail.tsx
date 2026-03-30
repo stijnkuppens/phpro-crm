@@ -1,13 +1,13 @@
 'use client';
 
 import {
+  Activity,
   Building2,
   Calendar,
   CheckCircle2,
   Pencil,
   Plus,
   RotateCcw,
-  Sparkles,
   TrendingUp,
   User,
 } from 'lucide-react';
@@ -143,8 +143,7 @@ export function DealDetail({
   return (
     <div className="space-y-6">
       {/* Hero banner */}
-      <Card className="overflow-hidden">
-        <div className="h-1" style={{ backgroundColor: deal.stage?.color ?? '#6366f1' }} />
+      <Card>
         <CardContent className="py-5">
           <div className="flex items-start justify-between">
             <div className="flex items-start gap-4">
@@ -202,7 +201,7 @@ export function DealDetail({
         <Card className="lg:col-span-2">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-sm font-semibold">
-              <Sparkles className="h-4 w-4 text-muted-foreground" />
+              <TrendingUp className="h-4 w-4 text-muted-foreground" />
               Deal info
             </CardTitle>
           </CardHeader>
@@ -405,7 +404,7 @@ export function DealDetail({
       <div>
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2 text-sm font-semibold">
-            <Sparkles className="h-4 w-4 text-muted-foreground" />
+            <Activity className="h-4 w-4 text-muted-foreground" />
             Activiteiten
             {activities.length > 0 && (
               <Badge variant="secondary" className="ml-1">
@@ -421,7 +420,7 @@ export function DealDetail({
           activities={activities}
           onToggleDone={(act) => handleToggleActivityDone(act.id)}
           onDelete={(id) => handleDeleteActivity(id)}
-          emptyIcon={Sparkles}
+          emptyIcon={Activity}
           emptyAction={{
             label: 'Eerste activiteit toevoegen',
             onClick: () => setActivityModal({ mode: 'new' }),

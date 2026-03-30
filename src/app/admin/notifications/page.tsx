@@ -3,15 +3,15 @@ import { NotificationList } from '@/features/notifications/components/notificati
 import { getNotifications } from '@/features/notifications/queries/get-notifications';
 
 export default async function NotificationsPage() {
-  const notifications = await getNotifications();
+  const { data, count } = await getNotifications();
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-2">
       <PageHeader
         title="Meldingen"
         breadcrumbs={[{ label: 'Admin', href: '/admin' }, { label: 'Meldingen' }]}
       />
-      <NotificationList initialData={notifications} />
+      <NotificationList initialData={data} initialCount={count} />
     </div>
   );
 }

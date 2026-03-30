@@ -175,6 +175,9 @@ services:
           hide_credentials: false
       - name: request-transformer
         config:
+          remove:
+            headers:
+              - cookie
           add:
             headers:
               - "x-api-key:$LUA_RT_WS_EXPR"

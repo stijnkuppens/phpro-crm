@@ -1,74 +1,109 @@
 'use client';
 
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useCallback, useState } from 'react';
+import { CheckCheck } from 'lucide-react';
+import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
+import { ListPageToolbar } from '@/components/admin/list-page-toolbar';
+import DataTable from '@/components/admin/data-table';
+import { buildFilterQuery } from '@/components/admin/data-table-filters';
+import { useEntity } from '@/lib/hooks/use-entity';
+import { notificationColumns } from '../columns';
 import { markAllAsRead, markAsRead } from '../actions/mark-as-read';
-import type { Notification } from '../types';
+import type { NotificationListItem } from '../types';
 
 type Props = {
-  initialData: Notification[];
+  initialData: NotificationListItem[];
+  initialCount: number;
 };
 
-export function NotificationList({ initialData }: Props) {
-  const router = useRouter();
-  const [notifications, setNotifications] = useState<Notification[]>(initialData);
+const PAGE_SIZE = 25;
 
-  const handleClick = useCallback(
-    async (notification: Notification) => {
-      if (!notification.read) {
-        await markAsRead(notification.id);
-        setNotifications((prev) =>
-          prev.map((n) => (n.id === notification.id ? { ...n, read: true } : n)),
-        );
-      }
-      const link = (notification.metadata as Record<string, unknown> | null)?.link as
-        | string
-        | undefined;
-      if (link) {
-        router.push(link);
-      }
-    },
-    [router],
-  );
+export function NotificationList({ initialData, initialCount }: Props) {
+  const router = useRouter();
+  const [page, setPage] = useState(1);
+  const [filters, setFilters] = useState<Record<string, string | undefined>>({});
+
+  const { data, total, fetchList, refreshing } = useEntity<NotificationListItem>({
+    table: 'notifications',
+    pageSize: PAGE_SIZE,
+    initialData,
+    initialCount,
+  });
+
+  const load = useCallback(() => {
+    const { orFilter, eqFilters } = buildFilterQuery(notificationColumns, filters);
+
+    // Translate virtual read_status filter to actual `read` column eq filter
+    const resolvedEqFilters = { ...eqFilters };
+    if (resolvedEqFilters?.read_status) {
+      resolvedEqFilters.read = resolvedEqFilters.read_status === 'gelezen' ? 'true' : 'false';
+      delete resolvedEqFilters.read_status;
+    }
+
+    fetchList({
+      page,
+      sort: { column: 'created_at', direction: 'desc' },
+      orFilter: orFilter || undefined,
+      eqFilters: Object.keys(resolvedEqFilters ?? {}).length > 0 ? resolvedEqFilters : undefined,
+    });
+  }, [fetchList, page, filters]);
+
+  const isInitialMount = useRef(true);
+  useEffect(() => {
+    if (isInitialMount.current) { isInitialMount.current = false; return; }
+    load();
+  }, [load]);
+
+  useEffect(() => { setPage(1); }, [filters]);
 
   const handleMarkAllRead = useCallback(async () => {
-    await markAllAsRead();
-    setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
-  }, []);
+    const result = await markAllAsRead();
+    if (result.success) {
+      toast.success('Alle meldingen als gelezen gemarkeerd');
+      load();
+      router.refresh();
+    } else {
+      toast.error(typeof result.error === 'string' ? result.error : 'Er is een fout opgetreden');
+    }
+  }, [load, router]);
 
-  const hasUnread = notifications.some((n) => !n.read);
+  const handleRowClick = useCallback(async (row: NotificationListItem) => {
+    if (!row.read) {
+      await markAsRead(row.id);
+    }
+    const link = (row.metadata as Record<string, unknown> | null)?.link as string | undefined;
+    if (link) {
+      router.push(link);
+    }
+  }, [router]);
+
+  const hasUnread = data.some((n) => !n.read);
 
   return (
-    <div className="space-y-4">
-      {hasUnread && (
-        <div className="flex justify-end">
-          <Button variant="outline" size="sm" onClick={handleMarkAllRead}>
-            Markeer alles als gelezen
-          </Button>
-        </div>
-      )}
-      {notifications.length === 0 ? (
-        <p className="text-muted-foreground">Nog geen meldingen.</p>
-      ) : (
-        <ul className="divide-y">
-          {notifications.map((n) => (
-            <li key={n.id}>
-              <button
-                type="button"
-                className={`flex w-full cursor-pointer flex-col gap-1 p-4 text-left hover:bg-muted/50 ${!n.read ? 'bg-muted/30' : ''}`}
-                onClick={() => handleClick(n)}
-              >
-                <span className={n.read ? 'text-muted-foreground' : 'font-medium'}>{n.title}</span>
-                {n.message && <span className="text-sm text-muted-foreground">{n.message}</span>}
-                <span className="text-xs text-muted-foreground">
-                  {n.created_at ? new Date(n.created_at).toLocaleDateString() : '—'}
-                </span>
-              </button>
-            </li>
-          ))}
-        </ul>
-      )}
+    <div className="space-y-6">
+      <ListPageToolbar
+        actions={
+          hasUnread ? (
+            <Button variant="outline" size="sm" onClick={handleMarkAllRead}>
+              <CheckCheck /> Alles gelezen
+            </Button>
+          ) : undefined
+        }
+      />
+
+      <DataTable
+        tableId="notifications"
+        columns={notificationColumns}
+        data={data}
+        filters={filters}
+        onFilterChange={setFilters}
+        refreshing={refreshing}
+        pagination={{ page, pageSize: PAGE_SIZE, total }}
+        onPageChange={setPage}
+        onRowClick={handleRowClick}
+      />
     </div>
   );
 }

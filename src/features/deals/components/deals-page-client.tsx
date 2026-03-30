@@ -6,6 +6,7 @@ import { parseAsInteger, useQueryState } from 'nuqs';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { buildFilterQuery, type FilterOption } from '@/components/admin/data-table-filters';
 import { ExportDropdown } from '@/components/admin/export-dropdown';
+import { ListPageToolbar } from '@/components/admin/list-page-toolbar';
 import { PageHeader } from '@/components/admin/page-header';
 import { SubNav, type SubNavItem } from '@/components/admin/sub-nav';
 import { Button } from '@/components/ui/button';
@@ -54,6 +55,7 @@ export function DealsPageClient({
   const [showQuickDeal, setShowQuickDeal] = useState(false);
   const [kanbanCreateStageId, setKanbanCreateStageId] = useState<string | null>(null);
   const isInitialMount = useRef(true);
+  const viewModeRef = useRef(viewMode);
 
   const { data, total, loading, refreshing, fetchList } = useEntity<DealWithRelations>({
     table: 'deals',
@@ -111,18 +113,19 @@ export function DealsPageClient({
     const eqFilters: Record<string, string> = { ...autoFilters };
 
     // View mode filter: kanban = active only, archief = closed only
+    const mode = viewModeRef.current;
     // biome-ignore lint/suspicious/noExplicitAny: Supabase query builder type is complex; any is intentional here
     let applyFilters: ((query: any) => any) | undefined;
-    if (viewMode === 'kanban') {
+    if (mode === 'kanban') {
       // biome-ignore lint/suspicious/noExplicitAny: Supabase query builder type is complex; any is intentional here
       applyFilters = (q: any) => q.is('closed_at', null);
-    } else if (viewMode === 'archief') {
+    } else if (mode === 'archief') {
       // biome-ignore lint/suspicious/noExplicitAny: Supabase query builder type is complex; any is intentional here
       applyFilters = (q: any) => q.not('closed_at', 'is', null);
     }
 
     fetchList({ page, orFilter, eqFilters, applyFilters });
-  }, [fetchList, page, filters, viewMode]);
+  }, [fetchList, page, filters]);
 
   const handleFilterChange = useCallback(
     (newFilters: Record<string, string | undefined>) => {
@@ -167,6 +170,20 @@ export function DealsPageClient({
       <PageHeader
         title="Deals"
         breadcrumbs={[{ label: 'Admin', href: '/admin' }, { label: 'Deals' }]}
+      />
+
+      <SubNav
+        items={VIEW_MODES}
+        activeKey={viewMode}
+        onSelect={(key) => {
+          viewModeRef.current = key;
+          setViewMode(key);
+          setPage(1);
+          load();
+        }}
+      />
+
+      <ListPageToolbar
         actions={
           <div className="flex gap-2">
             <ExportDropdown
@@ -179,15 +196,6 @@ export function DealsPageClient({
             </Button>
           </div>
         }
-      />
-
-      <SubNav
-        items={VIEW_MODES}
-        activeKey={viewMode}
-        onSelect={(key) => {
-          setViewMode(key);
-          setPage(1);
-        }}
       />
 
       {viewMode === 'kanban' && kanbanPipeline ? (

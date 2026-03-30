@@ -7,6 +7,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { FilterBar } from '@/components/admin/filter-bar';
 import { FilterPill } from '@/components/admin/filter-pill';
+import { ListPageToolbar } from '@/components/admin/list-page-toolbar';
 import { Modal } from '@/components/admin/modal';
 import { PageHeader } from '@/components/admin/page-header';
 import { Button } from '@/components/ui/button';
@@ -127,15 +128,19 @@ export function ActivityList({ initialData, initialCount, accounts = [] }: Props
   return (
     <>
       <div className="space-y-6">
-        <PageHeader
-          title="Activiteiten"
-          breadcrumbs={[{ label: 'Admin', href: '/admin' }, { label: 'Activiteiten' }]}
-          actions={
-            <Button size="sm" onClick={() => setModalOpen(true)}>
-              <Plus /> Nieuwe activiteit
-            </Button>
-          }
-        />
+        <div>
+          <PageHeader
+            title="Activiteiten"
+            breadcrumbs={[{ label: 'Admin', href: '/admin' }, { label: 'Activiteiten' }]}
+          />
+          <ListPageToolbar
+            actions={
+              <Button size="sm" onClick={() => setModalOpen(true)}>
+                <Plus /> Nieuwe activiteit
+              </Button>
+            }
+          />
+        </div>
 
         <FilterBar>
           <div className="flex flex-col gap-3">

@@ -148,7 +148,7 @@ export function ReferenceDataPage({ initialTable, initialData }: Props) {
   return (
     <div className="flex gap-6">
       {/* Table selector sidebar */}
-      <nav className="w-56 shrink-0 space-y-1">
+      <nav className="w-56 shrink-0 rounded-xl border bg-card p-3 shadow-sm space-y-1 self-start">
         {REF_TABLES.map((t) => (
           <button
             key={t.key}
@@ -164,7 +164,7 @@ export function ReferenceDataPage({ initialTable, initialData }: Props) {
       </nav>
 
       {/* Items table */}
-      <div className="flex-1 space-y-4">
+      <div className="flex-1 rounded-xl border bg-card p-4 shadow-sm space-y-4">
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-semibold">{selectedLabel}</h2>
           <Button

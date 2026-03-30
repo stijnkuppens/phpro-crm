@@ -6,44 +6,67 @@ type: skill
 
 # Add Server Action
 
-Creates Server Actions following the project's 5-step pattern: permission check, Zod parse, Supabase query, error handling, audit log.
+Creates Server Actions following the project's pattern: permission check → Zod safeParse → Supabase query → error handling → audit log → revalidate → return ActionResult.
+
+**Location:** `src/features/<feature>/actions/<verb>-<entity>.ts`
 
 ## The Pattern
 
-Every Server Action in this project lives at `src/features/<feature>/actions/<verb>-<entity>.ts` and follows this structure:
+Every server action MUST:
+1. Return `ActionResult<T>` (never `throw`)
+2. Wrap `requirePermission` in try/catch → `return err('Onvoldoende rechten')`
+3. Use `safeParse` (not `parse`) → return `err(fieldErrors)` on failure
+4. Log DB errors with `logger.error` → return `err('Er is een fout opgetreden')`
+5. Call `revalidatePath` before returning `ok()`
+6. Audit-log the action
 
 ```ts
 'use server';
 
+import { revalidatePath } from 'next/cache';
+import { z } from 'zod';
+import { logAction } from '@/features/audit/actions/log-action';
+import { type ActionResult, err, ok } from '@/lib/action-result';
+import { logger } from '@/lib/logger';
 import { requirePermission } from '@/lib/require-permission';
 import { createServerClient } from '@/lib/supabase/server';
-import { entitySchema } from '../types';
-import { logAction } from '@/features/audit/actions/log-action';
+import { type {{Singular}}FormValues, {{singular}}FormSchema } from '../types';
 
-export async function createEntity(values: unknown) {
-  // 1. Permission check — throws on failure, returns { userId, role }
-  const { userId } = await requirePermission('entities.write');
+export async function create{{Singular}}(
+  values: {{Singular}}FormValues,
+): Promise<ActionResult<{ id: string }>> {
+  try {
+    await requirePermission('{{plural}}.write');
+  } catch {
+    return err('Onvoldoende rechten');
+  }
 
-  // 2. Zod validation — throws ZodError on invalid input
-  const parsed = entitySchema.parse(values);
+  const parsed = {{singular}}FormSchema.safeParse(values);
+  if (!parsed.success) {
+    return err(z.flattenError(parsed.error).fieldErrors);
+  }
 
-  // 3. Supabase query
   const supabase = await createServerClient();
-  const { data, error } = await supabase.from('entities').insert({
-    ...parsed,
-    created_by: userId,
-  }).select('id').single();
+  const { data, error } = await supabase
+    .from('{{table}}')
+    .insert(parsed.data)
+    .select('id')
+    .single();
 
-  // 4. Error handling — EntityForm catches and shows toast
-  if (error) throw new Error(error.message);
+  if (error) {
+    logger.error({ err: error }, '[create{{Singular}}] database error');
+    return err('Er is een fout opgetreden');
+  }
 
-  // 5. Audit log
   await logAction({
-    action: 'entity.created',
-    entityType: 'entity',
+    action: '{{singular}}.created',
+    entityType: '{{singular}}',
     entityId: data.id,
-    metadata: { name: parsed.name },
+    metadata: { name: parsed.data.name, body: parsed.data },
   });
+
+  revalidatePath('/admin/{{plural}}');
+  return ok(data);
 }
 ```
 
@@ -51,123 +74,192 @@ export async function createEntity(values: unknown) {
 
 ### Create Action
 
-```ts
-export async function create{{Singular}}(values: unknown) {
-  const { userId } = await requirePermission('{{plural}}.write');
-  const parsed = {{singular}}Schema.parse(values);
-  const supabase = await createServerClient();
-
-  const { data, error } = await supabase.from('{{table}}').insert({
-    ...parsed,
-    created_by: userId,
-  }).select('id').single();
-
-  if (error) throw new Error(error.message);
-
-  await logAction({
-    action: '{{singular}}.created',
-    entityType: '{{singular}}',
-    entityId: data.id,
-    metadata: { name: parsed.name },
-  });
-}
-```
-
-Key: `insert()` + `.select('id').single()` to get the new ID for the audit log.
+See above. Key points:
+- Returns `ActionResult<{ id: string }>`
+- `.insert(parsed.data).select('id').single()` to get the new ID
+- `metadata` includes the name + full body for audit trail
 
 ### Update Action
 
 ```ts
-export async function update{{Singular}}(id: string, values: unknown) {
-  await requirePermission('{{plural}}.write');
-  const parsed = {{singular}}Schema.parse(values);
-  const supabase = await createServerClient();
+'use server';
 
+import { revalidatePath } from 'next/cache';
+import { z } from 'zod';
+import { logAction } from '@/features/audit/actions/log-action';
+import { type ActionResult, err, ok } from '@/lib/action-result';
+import { logger } from '@/lib/logger';
+import { requirePermission } from '@/lib/require-permission';
+import { createServerClient } from '@/lib/supabase/server';
+import { type {{Singular}}FormValues, {{singular}}FormSchema, entityIdSchema } from '../types';
+
+export async function update{{Singular}}(
+  id: string,
+  values: {{Singular}}FormValues,
+): Promise<ActionResult> {
+  try {
+    await requirePermission('{{plural}}.write');
+  } catch {
+    return err('Onvoldoende rechten');
+  }
+
+  const parsedId = entityIdSchema.safeParse(id);
+  if (!parsedId.success) return err('Ongeldig ID');
+
+  const parsed = {{singular}}FormSchema.safeParse(values);
+  if (!parsed.success) {
+    return err(z.flattenError(parsed.error).fieldErrors);
+  }
+
+  const supabase = await createServerClient();
   const { error } = await supabase
     .from('{{table}}')
-    .update(parsed)
+    .update(parsed.data)
     .eq('id', id);
 
-  if (error) throw new Error(error.message);
+  if (error) {
+    logger.error({ err: error }, '[update{{Singular}}] database error');
+    return err('Er is een fout opgetreden');
+  }
 
   await logAction({
     action: '{{singular}}.updated',
     entityType: '{{singular}}',
     entityId: id,
-    metadata: { name: parsed.name },
+    metadata: { name: parsed.data.name },
   });
+
+  revalidatePath('/admin/{{plural}}');
+  return ok();
 }
 ```
-
-Key: First param is `id: string`. No need to destructure `userId` since we're not setting `created_by`.
 
 ### Delete Action
 
 ```ts
-export async function delete{{Singular}}(id: string) {
-  await requirePermission('{{plural}}.delete');
+'use server';
+
+import { revalidatePath } from 'next/cache';
+import { logAction } from '@/features/audit/actions/log-action';
+import { type ActionResult, err, ok } from '@/lib/action-result';
+import { logger } from '@/lib/logger';
+import { requirePermission } from '@/lib/require-permission';
+import { createServerClient } from '@/lib/supabase/server';
+import { entityIdSchema } from '../types';
+
+export async function delete{{Singular}}(id: string): Promise<ActionResult> {
+  try {
+    await requirePermission('{{plural}}.delete');
+  } catch {
+    return err('Onvoldoende rechten');
+  }
+
+  const parsedId = entityIdSchema.safeParse(id);
+  if (!parsedId.success) return err('Ongeldig ID');
+
   const supabase = await createServerClient();
 
+  // Snapshot before delete for audit trail
+  const { data: snapshot } = await supabase.from('{{table}}').select('*').eq('id', id).single();
   const { error } = await supabase.from('{{table}}').delete().eq('id', id);
 
-  if (error) throw new Error(error.message);
+  if (error) {
+    logger.error({ err: error }, '[delete{{Singular}}] database error');
+    return err('Er is een fout opgetreden');
+  }
 
   await logAction({
     action: '{{singular}}.deleted',
     entityType: '{{singular}}',
     entityId: id,
+    metadata: { snapshot },
   });
+
+  revalidatePath('/admin/{{plural}}');
+  return ok();
 }
 ```
-
-Key: No Zod validation needed. Permission is `.delete` (not `.write`). No metadata in audit log.
 
 ### Custom Action (e.g., approve, archive)
 
 ```ts
-export async function approve{{Singular}}(id: string) {
-  await requirePermission('{{plural}}.write');
-  const supabase = await createServerClient();
+'use server';
 
+import { revalidatePath } from 'next/cache';
+import { logAction } from '@/features/audit/actions/log-action';
+import { type ActionResult, err, ok } from '@/lib/action-result';
+import { logger } from '@/lib/logger';
+import { requirePermission } from '@/lib/require-permission';
+import { createServerClient } from '@/lib/supabase/server';
+
+export async function approve{{Singular}}(id: string): Promise<ActionResult> {
+  try {
+    await requirePermission('{{plural}}.write');
+  } catch {
+    return err('Onvoldoende rechten');
+  }
+
+  const supabase = await createServerClient();
   const { error } = await supabase
     .from('{{table}}')
     .update({ status: 'approved' })
     .eq('id', id);
 
-  if (error) throw new Error(error.message);
+  if (error) {
+    logger.error({ err: error }, '[approve{{Singular}}] database error');
+    return err('Er is een fout opgetreden');
+  }
 
   await logAction({
     action: '{{singular}}.approved',
     entityType: '{{singular}}',
     entityId: id,
   });
+
+  revalidatePath('/admin/{{plural}}');
+  return ok();
 }
+```
+
+## Types (in types.ts)
+
+Every feature's `types.ts` should include an `entityIdSchema` for ID validation:
+
+```ts
+// Never use z.string().uuid() — fixture data uses non-RFC UUIDs
+export const entityIdSchema = z.string().min(1);
 ```
 
 ## Important Details
 
+### ActionResult
+- Import `ok`, `err`, `type ActionResult` from `@/lib/action-result`
+- `ok()` for void, `ok(data)` for data
+- `err('message')` for generic errors, `err(fieldErrors)` for validation errors
+- **NEVER throw** — callers can't distinguish action errors from framework errors
+
 ### requirePermission
 - Located at `src/lib/require-permission.ts`
-- Checks auth (getUser), fetches role from user_profiles, checks ACL
 - Returns `{ userId: string, role: Role }`
-- Throws `'Unauthorized: not authenticated'`, `'Unauthorized: no role assigned'`, or `'Forbidden: missing permission ...'`
+- **Always wrap in try/catch** — return `err('Onvoldoende rechten')` on failure
 
 ### Permission Strings
 Format: `entity.verb` — defined in `src/types/acl.ts`
-- `contacts.read`, `contacts.write`, `contacts.delete`
-- `files.read`, `files.write`, `files.delete`
+- Read: `{{plural}}.read`
+- Write: `{{plural}}.write`
+- Delete: `{{plural}}.delete`
 
 ### logAction
 - Located at `src/features/audit/actions/log-action.ts`
 - Uses service role client internally (bypasses RLS)
-- Captures IP from `x-forwarded-for` header
-- Parameters: `{ action, entityType?, entityId?, metadata? }`
 - Action names use past tense: `contact.created`, `contact.updated`, `contact.deleted`
 
 ### Supabase Clients
 - `createServerClient` from `@/lib/supabase/server` — cookie-based, respects RLS
-- `createServiceRoleClient` from `@/lib/supabase/admin` — bypasses RLS (only use for audit logs, admin operations)
+- `createServiceRoleClient` from `@/lib/supabase/admin` — bypasses RLS (only for audit logs)
 
-### Error Handling
-- Throw `new Error(error.message)` — the `EntityForm` component catches errors and displays them as toast notifications via sonner
-- Zod `.parse()` throws `ZodError` on validation failure — also caught by EntityForm
+### Error Messages
+All user-facing error messages are in **Dutch**:
+- `'Onvoldoende rechten'` — insufficient permissions
+- `'Ongeldig ID'` — invalid ID
+- `'Er is een fout opgetreden'` — generic error

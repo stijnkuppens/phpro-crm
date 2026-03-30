@@ -9,6 +9,7 @@ import { Avatar } from '@/components/admin/avatar';
 import { ComboboxFilter } from '@/components/admin/combobox-filter';
 import DataTable from '@/components/admin/data-table';
 import { ExportDropdown } from '@/components/admin/export-dropdown';
+import { ListPageToolbar } from '@/components/admin/list-page-toolbar';
 import { PageHeader } from '@/components/admin/page-header';
 import { StatusBadge } from '@/components/admin/status-badge';
 import { Button } from '@/components/ui/button';
@@ -128,23 +129,26 @@ export function ContactList({ initialData, initialCount, accounts = [] }: Contac
 
   return (
     <div className="space-y-6">
-      <PageHeader
-        title="Contacts"
-        breadcrumbs={[{ label: 'Admin', href: '/admin' }, { label: 'Contacts' }]}
-        actions={
-          <div className="flex gap-2">
-            <ExportDropdown
-              entity="contacts"
-              columns={contactExportColumns}
-              filters={{ sort: { column: 'last_name', direction: 'asc' } }}
-            />
-            <Button size="sm" onClick={() => setShowNew(true)}>
-              <Plus />
-              Nieuw contact
-            </Button>
-          </div>
-        }
-      />
+      <div>
+        <PageHeader
+          title="Contacts"
+          breadcrumbs={[{ label: 'Admin', href: '/admin' }, { label: 'Contacts' }]}
+        />
+        <ListPageToolbar
+          actions={
+            <div className="flex gap-2">
+              <ExportDropdown
+                entity="contacts"
+                columns={contactExportColumns}
+                filters={{ sort: { column: 'last_name', direction: 'asc' } }}
+              />
+              <Button size="sm" onClick={() => setShowNew(true)}>
+                <Plus /> Nieuw contact
+              </Button>
+            </div>
+          }
+        />
+      </div>
       <DataTable
         tableId="contacts"
         filterBar={
