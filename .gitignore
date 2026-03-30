@@ -43,9 +43,8 @@ docker/volumes/storage/
 # docs (generated/local only)
 docs/
 
-# claude local (keep .claude/rules/ tracked)
+# claude local (keep .claude/rules/ and .claude/skills/ tracked)
 .claude/worktrees/
-.claude/skills/
 .claude/settings.local.json
 
 # ai planning/dev-flow artifacts
