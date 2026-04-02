@@ -22,13 +22,9 @@ export const notificationColumns: ColumnDef<NotificationListItem>[] = [
       const isUnread = !row.original.read;
       return (
         <div className="min-w-0">
-          <div className={`truncate ${isUnread ? 'font-medium' : ''}`}>
-            {row.original.title}
-          </div>
+          <div className={`truncate ${isUnread ? 'font-medium' : ''}`}>{row.original.title}</div>
           {row.original.message && (
-            <div className="truncate text-xs text-muted-foreground">
-              {row.original.message}
-            </div>
+            <div className="truncate text-xs text-muted-foreground">{row.original.message}</div>
           )}
         </div>
       );

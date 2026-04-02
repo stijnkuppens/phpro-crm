@@ -358,9 +358,7 @@ export default function DataTable<T extends Record<string, any>>({
         </div>
       )}
 
-      {toolbar && (
-        <div className="flex justify-end">{toolbar}</div>
-      )}
+      {toolbar && <div className="flex justify-end">{toolbar}</div>}
 
       {(filterBar || filters || (!showMobileCards && tableId)) && (
         <FilterBar>

@@ -3,9 +3,9 @@
 import { Plus } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import DataTable from '@/components/admin/data-table';
 import { ListPageToolbar } from '@/components/admin/list-page-toolbar';
 import { Button } from '@/components/ui/button';
-import DataTable from '@/components/admin/data-table';
 import { userColumns } from '../columns';
 import type { UserWithEmail } from '../queries/get-users';
 

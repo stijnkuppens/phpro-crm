@@ -1,6 +1,9 @@
 # dependencies
 node_modules/
 
+# superpowers
+.superpowers/
+
 # database backups
 supabase/backups/
 

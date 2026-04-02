@@ -1,16 +1,16 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
-import { useRouter } from 'next/navigation';
 import { CheckCheck } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
-import { Button } from '@/components/ui/button';
-import { ListPageToolbar } from '@/components/admin/list-page-toolbar';
 import DataTable from '@/components/admin/data-table';
 import { buildFilterQuery } from '@/components/admin/data-table-filters';
+import { ListPageToolbar } from '@/components/admin/list-page-toolbar';
+import { Button } from '@/components/ui/button';
 import { useEntity } from '@/lib/hooks/use-entity';
-import { notificationColumns } from '../columns';
 import { markAllAsRead, markAsRead } from '../actions/mark-as-read';
+import { notificationColumns } from '../columns';
 import type { NotificationListItem } from '../types';
 
 type Props = {
@@ -52,11 +52,16 @@ export function NotificationList({ initialData, initialCount }: Props) {
 
   const isInitialMount = useRef(true);
   useEffect(() => {
-    if (isInitialMount.current) { isInitialMount.current = false; return; }
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+      return;
+    }
     load();
   }, [load]);
 
-  useEffect(() => { setPage(1); }, [filters]);
+  useEffect(() => {
+    setPage(1);
+  }, [filters]);
 
   const handleMarkAllRead = useCallback(async () => {
     const result = await markAllAsRead();
@@ -69,15 +74,18 @@ export function NotificationList({ initialData, initialCount }: Props) {
     }
   }, [load, router]);
 
-  const handleRowClick = useCallback(async (row: NotificationListItem) => {
-    if (!row.read) {
-      await markAsRead(row.id);
-    }
-    const link = (row.metadata as Record<string, unknown> | null)?.link as string | undefined;
-    if (link) {
-      router.push(link);
-    }
-  }, [router]);
+  const handleRowClick = useCallback(
+    async (row: NotificationListItem) => {
+      if (!row.read) {
+        await markAsRead(row.id);
+      }
+      const link = (row.metadata as Record<string, unknown> | null)?.link as string | undefined;
+      if (link) {
+        router.push(link);
+      }
+    },
+    [router],
+  );
 
   const hasUnread = data.some((n) => !n.read);
 
