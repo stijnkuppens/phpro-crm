@@ -17,7 +17,7 @@ This project uses the **official Supabase Docker Compose stack** for both local 
 11. [Configuring Storage](#configuring-storage)
 12. [Database Migrations](#database-migrations)
 13. [Production Deployment](#production-deployment)
-14. [HTTPS Setup](#https-setup)
+14. [HTTPS Setup (Traefik)](#https-setup-traefik)
 15. [Backups](#backups)
 16. [Updating](#updating)
 17. [Troubleshooting](#troubleshooting)
@@ -43,10 +43,12 @@ The stack consists of these services:
 | **DB** | `supabase-db` | `supabase/postgres` | `5432` (internal) | PostgreSQL with Supabase extensions |
 | **Vector** | `supabase-vector` | `timberio/vector` | `9001` (internal) | Log pipeline to Logflare |
 | **Supavisor** | `supabase-pooler` | `supabase/supavisor` | `54322` (session), `6543` (transaction) | Connection pooler |
+| **Traefik** | `phpro-crm-traefik` | `traefik:v3.4` | `80`, `443` | Reverse proxy + TLS (production profile only) |
 | **Next.js** | `phpro-crm-nextjs` | Custom build | `3000` | App (production profile only) |
 
 ### How traffic flows
 
+**Local dev** (no Traefik):
 ```
 Browser → Kong (:8000) → routes to:
   /auth/v1/*       → Auth (:9999)
@@ -56,9 +58,18 @@ Browser → Kong (:8000) → routes to:
   /functions/v1/*  → Functions (:9000)
   /pg/*            → Meta (:8080)
   /*               → Studio (:3000)   ← protected by HTTP Basic Auth
+
+Browser → Next.js (:3000) → Kong (:8000) internally
 ```
 
-Your Next.js app connects to Kong at `http://localhost:8000` (local dev) or `https://your-domain.com` (production).
+**Production** (with Traefik):
+```
+Browser → Traefik (:443)
+  ├─ crm.yourdomain.com      → Next.js (:3000) → Kong (:8000) internally
+  └─ supabase.yourdomain.com → Kong (:8000) → routes to services (same as above)
+```
+
+Your Next.js app connects to Kong at `http://kong:8000` (internal Docker network) in production, or `http://localhost:8000` in local dev. The browser connects via `https://supabase.yourdomain.com` (Traefik) in production.
 
 ---
 
@@ -627,7 +638,12 @@ DASHBOARD_PASSWORD=YourStrongPasswordWithLetters123
 ```bash
 docker compose pull
 docker compose --profile prod up -d --build
+
+# Verify all services are healthy (including Traefik)
+docker compose --profile prod ps
 ```
+
+Traefik starts automatically with the `prod` profile and provisions TLS certificates. See [HTTPS Setup (Traefik)](#https-setup-traefik) for the full configuration.
 
 ### Step 8: Apply migrations
 
@@ -654,72 +670,250 @@ done
 | `DASHBOARD_PASSWORD` | `supabase` | Strong password |
 | `SUPABASE_PUBLIC_URL` | `http://localhost:8000` | `https://supabase.yourdomain.com` |
 | `API_EXTERNAL_URL` | `http://localhost:8000` | `https://supabase.yourdomain.com` |
-| `SITE_URL` | `http://localhost:3000` | `https://crm.yourdomain.com` |
+| `SITE_URL` | `http://localhost:3000` | `https://yourdomain.com` |
 | `ENABLE_EMAIL_AUTOCONFIRM` | `true` | `false` |
 | `SMTP_HOST` | `supabase-mail` | Real SMTP provider |
 | `DISABLE_SIGNUP` | `false` | `true` (if no public registration) |
 | `NEXT_PUBLIC_DEMO_MODE` | `true` | `false` |
 | `NEXT_PUBLIC_SUPABASE_URL` | `http://localhost:8000` | `https://supabase.yourdomain.com` |
+| `PROXY_DOMAIN` | `your-domain.example.com` | `yourdomain.com` |
+| `ACME_EMAIL` | — | `devops@yourdomain.com` |
+| `TRAEFIK_DASHBOARD_AUTH` | — | htpasswd-encoded credentials |
 
 ---
 
-## HTTPS Setup
+## HTTPS Setup (Traefik)
 
-OAuth providers **require** HTTPS. Two options:
+Production uses **Traefik** as the reverse proxy with automatic Let's Encrypt TLS. Traefik runs as a Docker Compose service alongside the Supabase stack.
 
-### Option A: Caddy (Recommended — automatic TLS)
+### Architecture
+
+```
+Internet → Traefik (:80, :443)
+             ├─ crm.yourdomain.com        → Next.js (:3000)
+             └─ supabase.yourdomain.com   → Kong (:8000)
+                  ├─ /auth/v1/*           → Auth
+                  ├─ /rest/v1/*           → PostgREST
+                  ├─ /realtime/v1/*       → Realtime (WebSocket)
+                  ├─ /storage/v1/*        → Storage
+                  ├─ /functions/v1/*      → Edge Functions
+                  └─ /*                   → Studio
+```
+
+### Step 1: Add Traefik service to `docker-compose.yml`
+
+Add this service at the top of the `services:` block:
+
+```yaml
+  # ──────────────────────────────────────────────────
+  # Traefik — Reverse Proxy & TLS (production only)
+  # ──────────────────────────────────────────────────
+  traefik:
+    container_name: phpro-crm-traefik
+    image: traefik:v3.4
+    profiles: ["prod"]
+    restart: unless-stopped
+    command:
+      # API / Dashboard
+      - "--api.dashboard=true"
+      # Docker provider
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--providers.docker.network=phpro-crm_default"
+      # Entrypoints
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.websecure.address=:443"
+      # HTTP → HTTPS redirect (global)
+      - "--entrypoints.web.http.redirections.entryPoint.to=websecure"
+      - "--entrypoints.web.http.redirections.entryPoint.scheme=https"
+      # Let's Encrypt
+      - "--certificatesresolvers.letsencrypt.acme.httpchallenge=true"
+      - "--certificatesresolvers.letsencrypt.acme.httpchallenge.entrypoint=web"
+      - "--certificatesresolvers.letsencrypt.acme.email=${ACME_EMAIL}"
+      - "--certificatesresolvers.letsencrypt.acme.storage=/letsencrypt/acme.json"
+      # Access log (optional — comment out to disable)
+      - "--accesslog=true"
+      - "--accesslog.fields.headers.defaultmode=drop"
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+      - "letsencrypt:/letsencrypt"
+    labels:
+      # Traefik dashboard (optional — remove for zero dashboard exposure)
+      - "traefik.enable=true"
+      - "traefik.http.routers.traefik-dashboard.rule=Host(`traefik.${PROXY_DOMAIN}`) && (PathPrefix(`/api`) || PathPrefix(`/dashboard`))"
+      - "traefik.http.routers.traefik-dashboard.entrypoints=websecure"
+      - "traefik.http.routers.traefik-dashboard.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.traefik-dashboard.service=api@internal"
+      - "traefik.http.routers.traefik-dashboard.middlewares=traefik-auth"
+      - "traefik.http.middlewares.traefik-auth.basicauth.users=${TRAEFIK_DASHBOARD_AUTH}"
+```
+
+### Step 2: Add Traefik labels to Kong
+
+Add these labels to the existing `kong` service:
+
+```yaml
+  kong:
+    # ... existing config ...
+    labels:
+      - "traefik.enable=true"
+      # HTTPS router
+      - "traefik.http.routers.supabase.rule=Host(`supabase.${PROXY_DOMAIN}`)"
+      - "traefik.http.routers.supabase.entrypoints=websecure"
+      - "traefik.http.routers.supabase.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.supabase.service=supabase"
+      - "traefik.http.services.supabase.loadbalancer.server.port=8000"
+      # Security headers
+      - "traefik.http.routers.supabase.middlewares=supabase-headers"
+      - "traefik.http.middlewares.supabase-headers.headers.customrequestheaders.X-Forwarded-Proto=https"
+      - "traefik.http.middlewares.supabase-headers.headers.stsSeconds=31536000"
+      - "traefik.http.middlewares.supabase-headers.headers.stsIncludeSubdomains=true"
+      - "traefik.http.middlewares.supabase-headers.headers.forceSTSHeader=true"
+```
+
+**Important:** When running behind Traefik, Kong's ports should NOT be exposed to the host. Remove or comment out the `ports` section of the `kong` service in production:
+
+```yaml
+  kong:
+    # In production, remove these lines — Traefik handles external traffic:
+    # ports:
+    #   - ${KONG_HTTP_PORT}:8000/tcp
+    #   - ${KONG_HTTPS_PORT}:8443/tcp
+```
+
+For local dev (no Traefik), the ports remain active because Traefik only starts with the `prod` profile.
+
+### Step 3: Add Traefik labels to Next.js
+
+Add these labels to the existing `nextjs` service:
+
+```yaml
+  nextjs:
+    # ... existing config ...
+    labels:
+      - "traefik.enable=true"
+      # HTTPS router
+      - "traefik.http.routers.nextjs.rule=Host(`${PROXY_DOMAIN}`)"
+      - "traefik.http.routers.nextjs.entrypoints=websecure"
+      - "traefik.http.routers.nextjs.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.nextjs.service=nextjs"
+      - "traefik.http.services.nextjs.loadbalancer.server.port=3000"
+      # Security headers
+      - "traefik.http.routers.nextjs.middlewares=nextjs-headers"
+      - "traefik.http.middlewares.nextjs-headers.headers.stsSeconds=31536000"
+      - "traefik.http.middlewares.nextjs-headers.headers.stsIncludeSubdomains=true"
+      - "traefik.http.middlewares.nextjs-headers.headers.forceSTSHeader=true"
+```
+
+**Important:** Also remove the host port mapping from Next.js in production — Traefik routes traffic:
+
+```yaml
+  nextjs:
+    # In production, remove:
+    # ports:
+    #   - "3000:3000"
+```
+
+### Step 4: Add the letsencrypt volume
+
+Add to the `volumes:` block at the bottom of `docker-compose.yml`:
+
+```yaml
+volumes:
+  db-config:
+  deno-cache:
+  letsencrypt:    # ← add this
+```
+
+### Step 5: Add env vars to `.env`
 
 ```env
-# Add to .env
-PROXY_DOMAIN=supabase.yourdomain.com
+# ── Traefik ──────────────────────────────────────
+PROXY_DOMAIN=yourdomain.com                          # Base domain — Next.js serves on this
+ACME_EMAIL=devops@yourdomain.com                     # Let's Encrypt registration email
+TRAEFIK_DASHBOARD_AUTH=admin:$$apr1$$...              # htpasswd-encoded (see below)
 ```
 
-Comment out Kong's port bindings in `docker-compose.yml` if the proxy is on the same machine.
+**Generate `TRAEFIK_DASHBOARD_AUTH`:**
 
 ```bash
-# Download the Caddy overlay from official repo if not present:
-# curl -o docker-compose.caddy.yml https://raw.githubusercontent.com/supabase/supabase/master/docker/docker-compose.caddy.yml
-
-docker compose -f docker-compose.yml -f docker-compose.caddy.yml up -d
+# Install htpasswd (apt install apache2-utils) then:
+echo $(htpasswd -nB admin) | sed -e 's/\$/\$\$/g'
+# Output: admin:$$2y$$05$$... — paste this as the value
 ```
 
-Caddy automatically provisions and renews Let's Encrypt certificates.
+The `$$` escaping is required because Docker Compose interprets `$` as variable substitution.
 
-### Option B: Existing reverse proxy (Nginx/Traefik)
+**Set `PROXY_DOMAIN` to your base domain** (e.g. `phpro.be`). The routing becomes:
+- `phpro.be` → Next.js app
+- `supabase.phpro.be` → Kong (Supabase API + Studio)
+- `traefik.phpro.be` → Traefik dashboard (optional)
 
-Proxy all traffic to Kong on port 8000. Critical requirements:
+### Step 6: DNS records
 
-- WebSocket support on `/realtime/v1/` (Upgrade + Connection headers)
-- Pass `X-Forwarded-For`, `X-Forwarded-Proto` headers
-- Don't expose Kong's port publicly when behind a proxy
+Create A records pointing to your server's IP:
 
-```nginx
-server {
-    listen 443 ssl;
-    server_name supabase.yourdomain.com;
+| Record | Type | Value |
+|--------|------|-------|
+| `yourdomain.com` | A | `<server-ip>` |
+| `supabase.yourdomain.com` | A | `<server-ip>` |
+| `traefik.yourdomain.com` | A (optional) | `<server-ip>` |
 
-    ssl_certificate     /etc/letsencrypt/live/supabase.yourdomain.com/fullchain.pem;
-    ssl_certificate_key /etc/letsencrypt/live/supabase.yourdomain.com/privkey.pem;
+Traefik automatically requests and renews Let's Encrypt certificates for all configured `Host()` rules once DNS resolves.
 
-    location / {
-        proxy_pass http://127.0.0.1:8000;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
-    }
+### Step 7: Update Supabase URLs in `.env`
 
-    location /realtime/v1/ {
-        proxy_pass http://127.0.0.1:8000;
-        proxy_http_version 1.1;
-        proxy_set_header Upgrade $http_upgrade;
-        proxy_set_header Connection "upgrade";
-        proxy_set_header Host $host;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
-    }
-}
+```env
+SUPABASE_PUBLIC_URL=https://supabase.yourdomain.com
+API_EXTERNAL_URL=https://supabase.yourdomain.com
+SITE_URL=https://yourdomain.com
+NEXT_PUBLIC_SUPABASE_URL=https://supabase.yourdomain.com
 ```
+
+### WebSocket support (Realtime)
+
+Traefik v3 supports WebSocket upgrades **by default** -- no extra configuration needed. The `Upgrade` and `Connection` headers are forwarded automatically when a client sends a WebSocket handshake. This means `/realtime/v1/websocket` works out of the box through the Kong router.
+
+If you see WebSocket 431 errors in the browser, this is the Cowboy header size limit issue (see Gotchas in CLAUDE.md), not a Traefik problem. The Kong `request-transformer` plugin already strips the `Cookie` header on the realtime route.
+
+### Verifying the setup
+
+```bash
+# Check Traefik is running and healthy
+docker compose --profile prod ps traefik
+
+# Check certificate status
+curl -sI https://yourdomain.com | head -5
+curl -sI https://supabase.yourdomain.com | head -5
+
+# Check WebSocket (should return 101 Switching Protocols)
+curl -sI -H "Upgrade: websocket" -H "Connection: Upgrade" \
+  "https://supabase.yourdomain.com/realtime/v1/websocket?apikey=${ANON_KEY}"
+
+# Check Traefik dashboard (if enabled)
+# Visit https://traefik.yourdomain.com/dashboard/
+
+# Check Traefik logs for certificate issues
+docker compose --profile prod logs traefik | grep -i "acme\|certificate\|error"
+```
+
+### Disabling the Traefik dashboard
+
+If you don't want the dashboard exposed at all, remove the `labels` block from the `traefik` service definition. The dashboard is only accessible with the Basic Auth credentials, but removing it eliminates the attack surface entirely.
+
+### Staging certificates (avoid Let's Encrypt rate limits)
+
+While testing, use the Let's Encrypt staging server to avoid hitting rate limits (5 certs/domain/week):
+
+```yaml
+# Add to traefik command: (remove once DNS + config is verified)
+- "--certificatesresolvers.letsencrypt.acme.caserver=https://acme-staging-v02.api.letsencrypt.org/directory"
+```
+
+Staging certs are not trusted by browsers (you'll see a warning), but they confirm your setup works. Remove this line and restart Traefik to switch to production certs.
 
 ---
 
@@ -831,13 +1025,16 @@ In Docker Desktop → Preferences → General, set file sharing to `VirtioFS`.
 [ ] ALL default secrets replaced
 [ ] ANON_KEY and SERVICE_ROLE_KEY regenerated with new JWT_SECRET
 [ ] ENABLE_EMAIL_AUTOCONFIRM=false
-[ ] HTTPS configured and working
-[ ] Kong port (8000) NOT exposed publicly (only via reverse proxy)
+[ ] Traefik running with valid Let's Encrypt certificates (not staging)
+[ ] Kong ports (8000/8443) NOT exposed to host (only reachable via Traefik)
+[ ] Next.js port (3000) NOT exposed to host (only reachable via Traefik)
 [ ] Postgres port (5432) NOT exposed publicly
+[ ] Traefik dashboard disabled or protected with strong Basic Auth
 [ ] DASHBOARD_PASSWORD is strong (with letters)
 [ ] .env is NOT committed to git
 [ ] SERVICE_ROLE_KEY never exposed client-side
 [ ] Backup cron job running and tested
 [ ] DISABLE_SIGNUP=true (if no public registration needed)
 [ ] DOCKER_SOCKET_LOCATION correct for your OS
+[ ] DNS A records set for all domains (app, supabase, traefik)
 ```

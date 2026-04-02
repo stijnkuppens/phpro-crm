@@ -10,7 +10,7 @@
 #   Reset DB:    docker compose down -v && docker compose up -d
 #
 # HTTPS (production):
-#   docker compose -f docker-compose.yml -f docker-compose.caddy.yml up -d
+#   Traefik runs as part of the prod profile — see DOCKER.md for setup
 
 name: phpro-crm
 
