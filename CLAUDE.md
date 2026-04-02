@@ -13,7 +13,8 @@ Claude acts as senior tech lead and solution architect with full responsibility 
 - Supabase (local dev via `supabase start`, production via Docker Compose)
 - `@supabase/ssr` for cookie-based auth
 - Tailwind CSS v4, shadcn/ui components
-- TypeScript strict mode
+- TypeScript strict mode 
+- This project uses Next.js 16+. Be aware that middleware.ts was renamed to proxy.ts in Next.js 16. Do not flag proxy.ts as an issue or suggest middleware.ts patterns.
 
 ## Architecture Rules
 
