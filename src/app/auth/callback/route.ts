@@ -1,5 +1,6 @@
 import { createServerClient } from '@supabase/ssr';
 import { type NextRequest, NextResponse } from 'next/server';
+import { COOKIE_NAME } from '@/lib/supabase/cookie-name';
 
 /**
  * Auth callback route handler.
@@ -28,6 +29,7 @@ export async function GET(request: NextRequest) {
     process.env.SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
+      cookieOptions: { name: COOKIE_NAME },
       cookies: {
         getAll() {
           return request.cookies.getAll();

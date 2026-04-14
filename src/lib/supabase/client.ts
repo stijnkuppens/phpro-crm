@@ -1,5 +1,6 @@
 import { createBrowserClient as createClient } from '@supabase/ssr';
 import { getClientEnv } from '@/lib/env';
+import { COOKIE_NAME } from '@/lib/supabase/cookie-name';
 import type { Database } from '@/types/database';
 
 // Singleton — one client instance for the entire browser session.
@@ -12,6 +13,7 @@ export function createBrowserClient() {
     client = createClient<Database>(
       env.NEXT_PUBLIC_SUPABASE_URL,
       env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+      { cookieOptions: { name: COOKIE_NAME } },
     );
   }
   return client;

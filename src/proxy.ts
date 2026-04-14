@@ -1,6 +1,7 @@
 import { createServerClient } from '@supabase/ssr';
 import { type NextRequest, NextResponse } from 'next/server';
 import { can } from '@/lib/acl';
+import { COOKIE_NAME } from '@/lib/supabase/cookie-name';
 import type { Permission, Role } from '@/types/acl';
 
 const routePermissions: [string, Permission][] = [
@@ -25,6 +26,7 @@ export async function proxy(request: NextRequest) {
     process.env.SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
+      cookieOptions: { name: COOKIE_NAME },
       cookies: {
         getAll() {
           return request.cookies.getAll();

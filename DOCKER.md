@@ -228,47 +228,38 @@ task types:generate
 npm run dev                    # http://localhost:3000
 ```
 
-### Production build & deploy
+### Production deploy
+
+Use the deploy script for all production deployments:
 
 ```bash
-# 1. Pull latest code
-cd /opt/phpro-crm
-git pull origin main
+# First deploy (waits for DB health before migrating)
+./scripts/deploy.sh --init
 
-# 2. Install dependencies
-npm ci --production=false      # Need devDeps for build
+# Subsequent deploys
+./scripts/deploy.sh
 
-# 3. Start/update Supabase stack
-docker compose pull
-docker compose up -d
-sleep 10
-
-# 4. Apply migrations
-task db:migrate
-
-# 5. Load production data (idempotent — safe to re-run)
-task db:data
-
-# 6. Generate TypeScript types from live DB
-task types:generate
-
-# 7. Build Next.js
-npm run build
-
-# 8. Start production (choose one):
-
-# Option A: Next.js outside Docker
-npm run start                  # Runs on port 3000
-
-# Option B: Next.js inside Docker (uses prod profile)
-docker compose --profile prod up -d --build
+# Infra-only changes (skip Next.js rebuild)
+./scripts/deploy.sh --no-build
 ```
 
-### CI/CD pipeline summary
+The script runs these steps:
 
+| Step | Command | What it does |
+|------|---------|-------------|
+| 1 | `git pull origin main` | Pull latest code |
+| 2 | `docker compose pull` | Update Docker images |
+| 3 | `docker compose --profile prod up -d --build` | Start/rebuild stack (Traefik + Supabase + Next.js) |
+| 4 | `npx supabase db push --include-all --db-url ...` | Apply pending migrations |
+| 5 | `supabase/data/*.sql` via `psql` | Load production reference data (idempotent) |
+| 6 | `docker compose --profile prod ps` | Verify all services healthy |
+
+**Pipeline summary:**
 ```
-git push → install deps → docker compose up → db:migrate → db:data → types:generate → npm run build → deploy
+git pull → docker pull → up --build → db push → data load → verify
 ```
+
+> **Note:** The deploy script connects to Postgres on port `5432` (production Docker network), not `54320` (local dev). The `task db:migrate` / `task db:data` shortcuts use `54320` and are for local dev only.
 
 ---
 
@@ -296,13 +287,59 @@ All configuration lives in `.env`. The same file drives both local and productio
 
 **Generating ANON_KEY and SERVICE_ROLE_KEY:**
 
-These are JWTs signed with your `JWT_SECRET`. Use the [Supabase JWT generator](https://supabase.com/docs/guides/self-hosting/docker#generate-api-keys) or:
+These are JWTs signed with your `JWT_SECRET`. Every production deployment **must** regenerate these after changing `JWT_SECRET`.
+
+**Option A: Supabase JWT generator (easiest)**
+
+Visit [supabase.com/docs/guides/self-hosting/docker#generate-api-keys](https://supabase.com/docs/guides/self-hosting/docker#generate-api-keys), paste your `JWT_SECRET`, and copy the generated keys.
+
+**Option B: Command line with Node.js**
 
 ```bash
-# After setting JWT_SECRET, generate keys:
-# ANON_KEY payload:         {"role": "anon", "iss": "supabase", "iat": ..., "exp": ...}
-# SERVICE_ROLE_KEY payload: {"role": "service_role", "iss": "supabase", "iat": ..., "exp": ...}
+# Install jsonwebtoken if not present
+npm install -g jsonwebtoken 2>/dev/null
+
+# Set your secret (the same value as JWT_SECRET in .env)
+JWT_SECRET="your-jwt-secret-here"
+
+# ANON_KEY — client-side, limited access (expires in 10 years)
+node -e "
+  const jwt = require('jsonwebtoken');
+  const payload = { role: 'anon', iss: 'supabase', iat: Math.floor(Date.now()/1000), exp: Math.floor(Date.now()/1000) + 315360000 };
+  console.log(jwt.sign(payload, '$JWT_SECRET'));
+"
+
+# SERVICE_ROLE_KEY — server-side, full access (expires in 10 years)
+node -e "
+  const jwt = require('jsonwebtoken');
+  const payload = { role: 'service_role', iss: 'supabase', iat: Math.floor(Date.now()/1000), exp: Math.floor(Date.now()/1000) + 315360000 };
+  console.log(jwt.sign(payload, '$JWT_SECRET'));
+"
 ```
+
+**Option C: Python**
+
+```bash
+pip install pyjwt 2>/dev/null
+
+JWT_SECRET="your-jwt-secret-here"
+
+# ANON_KEY
+python3 -c "
+import jwt, time
+payload = {'role': 'anon', 'iss': 'supabase', 'iat': int(time.time()), 'exp': int(time.time()) + 315360000}
+print(jwt.encode(payload, '$JWT_SECRET', algorithm='HS256'))
+"
+
+# SERVICE_ROLE_KEY
+python3 -c "
+import jwt, time
+payload = {'role': 'service_role', 'iss': 'supabase', 'iat': int(time.time()), 'exp': int(time.time()) + 315360000}
+print(jwt.encode(payload, '$JWT_SECRET', algorithm='HS256'))
+"
+```
+
+**Important:** The `ANON_KEY` is exposed to browsers via `NEXT_PUBLIC_SUPABASE_ANON_KEY`. The `SERVICE_ROLE_KEY` bypasses RLS and must **never** be exposed client-side.
 
 ### URLs
 
@@ -578,40 +615,43 @@ task db:reset
 - Recommended: 8GB RAM, 4 CPU, 80GB SSD
 - OS: Ubuntu 22.04+ or Debian 12+
 - Install Docker Engine + Docker Compose
+- Install [Task](https://taskfile.dev) (optional, for `task` CLI)
+- Install Node.js 20+ (for `npx supabase`)
 
 ### Step 2: Clone and configure
 
 ```bash
-# On the server
 git clone https://github.com/your-org/phpro-crm.git /opt/phpro-crm
 cd /opt/phpro-crm
-
-# Create production .env from example
 cp .env.example .env
 ```
 
 ### Step 3: Generate all production secrets
 
 ```bash
-# Generate each secret
-openssl rand -base64 24    # POSTGRES_PASSWORD (use only letters+numbers!)
-openssl rand -base64 32    # JWT_SECRET
-openssl rand -base64 48    # SECRET_KEY_BASE
-openssl rand -hex 16       # VAULT_ENC_KEY
+# Random secrets
+openssl rand -base64 24    # POSTGRES_PASSWORD (strip special chars — use only letters+numbers!)
+openssl rand -base64 32    # JWT_SECRET (min 32 chars)
+openssl rand -base64 48    # SECRET_KEY_BASE (min 64 chars)
+openssl rand -hex 16       # VAULT_ENC_KEY (exactly 32 hex chars)
 openssl rand -base64 24    # PG_META_CRYPTO_KEY
-openssl rand -base64 24    # LOGFLARE tokens (x2)
+openssl rand -base64 24    # LOGFLARE_API_KEY
+openssl rand -base64 24    # LOGFLARE_LOGGER_BACKEND_API_KEY
 openssl rand -hex 16       # S3_PROTOCOL_ACCESS_KEY_ID
 openssl rand -hex 32       # S3_PROTOCOL_ACCESS_KEY_SECRET
 ```
 
-Then generate ANON_KEY and SERVICE_ROLE_KEY as JWTs signed with your new JWT_SECRET.
+**Then generate `ANON_KEY` and `SERVICE_ROLE_KEY`** as JWTs signed with the new `JWT_SECRET`. See [Generating ANON_KEY and SERVICE_ROLE_KEY](#generating-anon_key-and-service_role_key) for three methods (web UI, Node.js, Python).
+
+Set all values in `.env` before proceeding.
 
 ### Step 4: Set production URLs
 
 ```env
 SUPABASE_PUBLIC_URL=https://supabase.yourdomain.com
 API_EXTERNAL_URL=https://supabase.yourdomain.com
-SITE_URL=https://crm.yourdomain.com
+SITE_URL=https://yourdomain.com
+NEXT_PUBLIC_SUPABASE_URL=https://supabase.yourdomain.com
 ```
 
 ### Step 5: Configure SMTP
@@ -626,38 +666,65 @@ SMTP_SENDER_NAME=PHPro CRM
 ENABLE_EMAIL_AUTOCONFIRM=false
 ```
 
-### Step 6: Set dashboard credentials
+### Step 6: Set dashboard + Traefik credentials
 
 ```env
 DASHBOARD_USERNAME=admin
 DASHBOARD_PASSWORD=YourStrongPasswordWithLetters123
+
+# Traefik (see HTTPS Setup section for details)
+PROXY_DOMAIN=yourdomain.com
+ACME_EMAIL=devops@yourdomain.com
+TRAEFIK_DASHBOARD_AUTH=admin:$$2y$$05$$...   # htpasswd-encoded
 ```
 
-### Step 7: Start the stack
+### Step 7: Configure Traefik
+
+Add Traefik labels to `docker-compose.yml` as described in [HTTPS Setup (Traefik)](#https-setup-traefik). This includes:
+- Traefik service definition (in the `prod` profile)
+- Labels on `kong` (routes `supabase.yourdomain.com`)
+- Labels on `nextjs` (routes `yourdomain.com`)
+- `letsencrypt` volume
+- DNS A records for all domains
+
+### Step 8: Deploy
 
 ```bash
-docker compose pull
-docker compose --profile prod up -d --build
+# First-time deploy (--init waits for DB health before migrating)
+./scripts/deploy.sh --init
+```
 
-# Verify all services are healthy (including Traefik)
+This single command runs the full pipeline:
+1. `git pull origin main`
+2. `docker compose pull`
+3. `docker compose --profile prod up -d --build` (starts Traefik + Supabase + Next.js)
+4. Waits for DB health (first deploy only)
+5. `npx supabase db push` (applies migrations against port 5432)
+6. Loads `supabase/data/*.sql` (production reference data)
+7. Verifies all services are healthy
+
+### Step 9: Verify
+
+```bash
+# TLS working?
+curl -sI https://yourdomain.com | head -5
+curl -sI https://supabase.yourdomain.com | head -5
+
+# WebSocket working?
+curl -sI -H "Upgrade: websocket" -H "Connection: Upgrade" \
+  "https://supabase.yourdomain.com/realtime/v1/websocket?apikey=${ANON_KEY}"
+
+# All containers healthy?
 docker compose --profile prod ps
 ```
 
-Traefik starts automatically with the `prod` profile and provisions TLS certificates. See [HTTPS Setup (Traefik)](#https-setup-traefik) for the full configuration.
-
-### Step 8: Apply migrations
+### Subsequent deploys
 
 ```bash
-npx supabase db push --db-url "postgresql://postgres:PASSWORD@localhost:5432/postgres"
+./scripts/deploy.sh
 ```
 
-### Step 9: Load production data
-
-```bash
-for f in supabase/data/*.sql; do
-  docker exec -i supabase-db psql -U postgres -q < "$f"
-done
-```
+No `--init` flag needed after the first deploy. The script pulls, rebuilds, migrates, loads data, and verifies.
 
 ### Production .env changes vs local
 
@@ -958,18 +1025,14 @@ docker exec -i supabase-db pg_restore -U postgres -d postgres --clean < backup.d
 ## Updating
 
 ```bash
-# Pull latest images
-docker compose pull
+# Standard deploy — pulls code, images, rebuilds, migrates
+./scripts/deploy.sh
 
-# Restart (brief downtime)
-docker compose down
-docker compose up -d
-
-# Verify
-docker compose ps   # all should show "healthy"
+# Or if only Docker images changed (no code/migration changes):
+./scripts/deploy.sh --no-build
 ```
 
-Check the [changelog](https://github.com/supabase/supabase/blob/master/docker/CHANGELOG.md) before updating.
+Check the [changelog](https://github.com/supabase/supabase/blob/master/docker/CHANGELOG.md) before updating Supabase images.
 
 **Warning:** Changing `JWT_SECRET` invalidates ALL sessions and API keys. This requires regenerating `ANON_KEY`, `SERVICE_ROLE_KEY`, and updating every client app.
 
